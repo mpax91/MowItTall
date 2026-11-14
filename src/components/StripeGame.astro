@@ -1,0 +1,61 @@
+---
+// The stripe game, its frame and the leaf-blower Easter egg ticket.
+---
+    <section class="game" data-game aria-label="Stripe game">
+      <div class="window hud">
+        <span><span class="hud-label">Yard</span> <b data-level>1/3</b></span>
+        <span><span class="hud-label">Pass</span> <b data-pass>0/7</b></span>
+        <span><span class="hud-label">Score</span> <b data-score>–</b></span>
+      </div>
+
+      <div class="screen" data-screen>
+        <canvas tabindex="0" aria-label="Lawn. During a round, drag left and right or use the arrow keys to steer the mower."></canvas>
+
+        <div class="window overlay" data-menu>
+          <h2 data-menu-title>Yard 1: The front yard</h2>
+          <p class="overlay-blurb" data-menu-blurb></p>
+          <p>Drag left and right to steer. Keep every pass straight and snug against the last one.</p>
+          <div class="overlay-foot">
+            <button type="button" class="btn" data-start>Start mowing</button>
+            <span class="overlay-best" data-menu-best hidden></span>
+          </div>
+        </div>
+
+        <div class="window overlay" data-result hidden>
+          <p class="result-score"><span data-total>0</span><span class="stars" data-stars role="img"></span></p>
+          <h2 data-grade>Respectable dad stripes.</h2>
+          <p class="overlay-small" data-best></p>
+          <p class="overlay-small" data-tip></p>
+          <div class="actions">
+            <button type="button" class="btn" data-again>Mow again</button>
+            <button type="button" class="btn btn-quiet" data-next>Next yard</button>
+          </div>
+        </div>
+
+        <p class="toast" data-toast aria-live="polite"></p>
+        <p class="brap" data-brap aria-hidden="true">BRRRRAAAAP</p>
+      </div>
+    </section>
+
+    <dialog class="ticket" data-ticket aria-labelledby="ticket-h">
+      <form method="dialog">
+        <p class="ticket-kicker">Totally unofficial</p>
+        <h2 id="ticket-h">Bedford Blower Patrol</h2>
+        <dl>
+          <dt>Citation</dt><dd>No. 000042</dd>
+          <dt>Offense</dt><dd>Operating a gas leaf blower within earshot of literally everyone.</dd>
+          <dt>Fine</dt><dd>One (1) rake, to be used immediately.</dd>
+        </dl>
+        <p class="ticket-tip">
+          Real tip: you don’t need either one. Mow right over the leaves. They chop up, sink in
+          and feed the lawn.
+        </p>
+        <button class="btn" value="ok">Pay with rake</button>
+      </form>
+    </dialog>
+
+<script>
+  import { initGame } from '../scripts/game.js';
+  const game = document.querySelector('[data-game]');
+  if (game) initGame(game);
+</script>

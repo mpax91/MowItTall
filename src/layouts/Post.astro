@@ -1,0 +1,38 @@
+---
+import Base from './Base.astro';
+const { frontmatter, url } = Astro.props;
+const { title, description, tag } = frontmatter;
+const date = (frontmatter.date instanceof Date ? frontmatter.date.toISOString() : String(frontmatter.date)).slice(0, 10);
+const minutes = frontmatter.minutes || 2;
+const pretty = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+const path = new URL(url || Astro.url.pathname, 'https://mowittall.com').pathname;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BlogPosting',
+  headline: title,
+  description,
+  datePublished: date,
+  author: { '@type': 'Person', name: 'Mike', '@id': 'https://mowittall.com/#mike' },
+  publisher: { '@id': 'https://mowittall.com/#website' },
+  mainEntityOfPage: `https://mowittall.com${path}`,
+};
+---
+<Base title={`${title} | Mow It Tall`} description={description} path={path} jsonLd={jsonLd}>
+  <main id="main" class="post">
+    <header class="post-head">
+      <a class="post-back" href="/clippings/">Clippings</a>
+      <span class="clip-tag">{tag}</span>
+      <h1>{title}</h1>
+      <p class="post-dek">{description}</p>
+      <p class="post-meta">By Mike, Bedford NY. <time datetime={date}>{pretty}</time>. {minutes} min read.</p>
+    </header>
+    <article class="prose">
+      <slot />
+    </article>
+    <aside class="window post-cta">
+      <h2>Want the short version for your yard?</h2>
+      <p>Seven questions, two minutes, one plan.</p>
+      <a class="btn" href="/plan/">Take the quiz</a>
+    </aside>
+  </main>
+</Base>

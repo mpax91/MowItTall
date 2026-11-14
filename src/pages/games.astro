@@ -1,0 +1,21 @@
+---
+import Base from '../layouts/Base.astro';
+import StripeGame from '../components/StripeGame.astro';
+import WhackAWeed from '../components/WhackAWeed.astro';
+const title = 'Lawn games: stripe the yard and whack the weeds | Mow It Tall';
+const description = 'Two quick lawn games: mow perfectly straight stripes, then whack dandelions without hurting the bees. Learn a real lawn tip every round.';
+---
+<Base title={title} description={description} path="/games/">
+  <main id="main" class="page page-games">
+    <header class="page-head">
+      <h1>The games</h1>
+      <p class="lede">Rounds are short, scores are saved, and every one ends with a real tip. It counts as lawn care. Probably.</p>
+    </header>
+    <h2 class="game-title">Stripe it straight</h2>
+  </main>
+  <StripeGame />
+  <div class="page">
+    <h2 class="game-title">Whack-a-Weed</h2>
+  </div>
+  <div class="game-wrap"><WhackAWeed /></div>
+</Base>

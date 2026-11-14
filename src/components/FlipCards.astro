@@ -1,0 +1,85 @@
+---
+// Tap-to-flip cards. Both faces are in the page for search engines and screen readers;
+// the button just turns the card over.
+import PixelIcon from './PixelIcon.astro';
+
+interface Item {
+  id?: string;
+  icon: string[];
+  title: string;
+  sub?: string;
+  back: { label?: string; text: string }[];
+}
+interface Props {
+  items: Item[];
+  layout?: 'grid' | 'list';
+  headingLevel?: 'h3' | 'h2';
+}
+const { items, layout = 'grid', headingLevel = 'h3' } = Astro.props;
+const H = headingLevel;
+---
+<ul class:list={['flips', `flips-${layout}`]} data-flips>
+  {items.map((it, i) => (
+    <li class="flip" id={it.id}>
+      <div class="flip-inner">
+        <div class="flip-face flip-front">
+          <PixelIcon map={it.icon} size={layout === 'list' ? 44 : 52} />
+          <div class="flip-front-text">
+            <H class="flip-title">{it.title}</H>
+            {it.sub && <p class="flip-sub">{it.sub}</p>}
+          </div>
+          <span class="flip-hint" aria-hidden="true">
+            <svg viewBox="0 0 16 16" width="16" height="16"><path d="M3 8a5 5 0 0 1 8.5-3.5L13 6M13 2v4H9M13 8a5 5 0 0 1-8.5 3.5L3 10M3 14v-4h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Tap
+          </span>
+        </div>
+        <div class="flip-face flip-back">
+          <p class="flip-back-title">{it.title}</p>
+          {it.back.map((b) => (
+            <p class="flip-back-row">
+              {b.label && <strong>{b.label}</strong>}
+              {b.text}
+            </p>
+          ))}
+          <span class="flip-hint" aria-hidden="true">Tap to flip back</span>
+        </div>
+      </div>
+      <button type="button" class="flip-btn" aria-expanded="false" aria-label={`${it.title}: show details`}></button>
+    </li>
+  ))}
+</ul>
+
+<script>
+  // The card takes the height of whichever face is showing, so short fronts stay short.
+  const fit = (card) => {
+    const face = card.querySelector(card.classList.contains('is-flipped') ? '.flip-back' : '.flip-front');
+    card.querySelector('.flip-inner').style.height = `${face.offsetHeight}px`;
+  };
+  for (const list of document.querySelectorAll('[data-flips]')) {
+    const cards = [...list.querySelectorAll('.flip')];
+    const fitAll = () => cards.forEach(fit);
+    fitAll();
+    new ResizeObserver(fitAll).observe(list);
+    document.fonts?.ready.then(fitAll);
+    list.addEventListener('click', (e) => {
+      const btn = e.target.closest('.flip-btn');
+      if (!btn) return;
+      const card = btn.closest('.flip');
+      const open = card.classList.toggle('is-flipped');
+      fit(card);
+      btn.setAttribute('aria-expanded', String(open));
+      btn.setAttribute('aria-label', `${card.querySelector('.flip-title').textContent}: ${open ? 'hide' : 'show'} details`);
+    });
+    // One gentle peek the first time the cards scroll into view, so people know they flip.
+    if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const first = list.querySelector('.flip');
+      const io = new IntersectionObserver(([en]) => {
+        if (!en.isIntersecting) return;
+        first.classList.add('is-peeking');
+        setTimeout(() => first.classList.remove('is-peeking'), 1100);
+        io.disconnect();
+      }, { threshold: 0.6 });
+      if (first) io.observe(first);
+    }
+  }
+</script>

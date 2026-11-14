@@ -1,7 +1,17 @@
 ---
 import Base from '../layouts/Base.astro';
 import Calendar from '../components/Calendar.astro';
+import StripeGame from '../components/StripeGame.astro';
+import FlipCards from '../components/FlipCards.astro';
+import SoilGauge from '../components/SoilGauge.astro';
+import { PHOTOS } from '../data/photos.js';
+import { WEEDS } from '../data/weeds.js';
 import PixelIcon from '../components/PixelIcon.astro';
+const posts = Object.values(import.meta.glob('./clippings/[a-z]*.md', { eager: true }))
+  .map((p) => ({ ...p.frontmatter, url: p.url }))
+  .sort((a, b) => new Date(b.date) - new Date(a.date))
+  .slice(0, 3);
+
 
 const title = 'Mow It Tall: the easy guide to a better lawn';
 const description =
@@ -134,6 +144,13 @@ const changes = [
   },
 ];
 
+const changeCards = changes.map((c) => ({
+  icon: c.icon,
+  title: c.title,
+  sub: `Effort: ${c.effort}`,
+  back: [{ text: c.body }],
+}));
+
 const faqs = [
   {
     q: 'How high should I mow my lawn?',
@@ -187,41 +204,7 @@ const jsonLd = {
 };
 ---
 <Base title={title} description={description} path="/" jsonLd={jsonLd}>
-    <section class="game" data-game aria-label="Stripe game">
-      <div class="window hud">
-        <span><span class="hud-label">Yard</span> <b data-level>1/3</b></span>
-        <span><span class="hud-label">Pass</span> <b data-pass>0/7</b></span>
-        <span><span class="hud-label">Score</span> <b data-score>–</b></span>
-      </div>
-
-      <div class="screen" data-screen>
-        <canvas tabindex="0" aria-label="Lawn. During a round, drag left and right or use the arrow keys to steer the mower."></canvas>
-
-        <div class="window overlay" data-menu>
-          <h2 data-menu-title>Yard 1: The front yard</h2>
-          <p class="overlay-blurb" data-menu-blurb></p>
-          <p>Drag left and right to steer. Keep every pass straight and snug against the last one.</p>
-          <div class="overlay-foot">
-            <button type="button" class="btn" data-start>Start mowing</button>
-            <span class="overlay-best" data-menu-best hidden></span>
-          </div>
-        </div>
-
-        <div class="window overlay" data-result hidden>
-          <p class="result-score"><span data-total>0</span><span class="stars" data-stars role="img"></span></p>
-          <h2 data-grade>Respectable dad stripes.</h2>
-          <p class="overlay-small" data-best></p>
-          <p class="overlay-small" data-tip></p>
-          <div class="actions">
-            <button type="button" class="btn" data-again>Mow again</button>
-            <button type="button" class="btn btn-quiet" data-next>Next yard</button>
-          </div>
-        </div>
-
-        <p class="toast" data-toast aria-live="polite"></p>
-        <p class="brap" data-brap aria-hidden="true">BRRRRAAAAP</p>
-      </div>
-    </section>
+    <StripeGame />
 
     <main id="main">
       <section class="intro">
@@ -234,70 +217,74 @@ const jsonLd = {
       </section>
 
       <section class="changes" aria-labelledby="changes-h">
-        <div class="panel">
-          <h2 id="changes-h">Small changes, big lawn</h2>
-          <p class="panel-lede">
-            You don’t have to become a lawn person. Pick one of these. Next month, pick another.
-          </p>
-          <ul class="change-list">
-            {changes.map((c) => (
-              <li class="change">
-                <PixelIcon map={c.icon} size={48} />
-                <div>
-                  <h3>{c.title}</h3>
-                  <p>{c.body}</p>
-                  <p class="effort">Effort: {c.effort}</p>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      <section class="proof" aria-labelledby="proof-h">
-        <h2 id="proof-h">Proof it works</h2>
-        <figure class="photo photo-main">
-          <img
-            src="/img/front-yard-may-800.webp"
-            srcset="/img/front-yard-may-800.webp 800w, /img/front-yard-may-1400.webp 1400w"
-            sizes="(min-width: 900px) 640px, 100vw"
-            width="1400"
-            height="1050"
-            loading="lazy"
-            decoding="async"
-            alt="Mike’s front lawn in Bedford with crisp diagonal mowing stripes, a blue Victorian house and pink rhododendrons in bloom"
-          />
-          <figcaption>My front yard in Bedford, late May.</figcaption>
-        </figure>
-        <figure class="photo photo-side">
-          <img
-            src="/img/spiral-pattern-800.webp"
-            srcset="/img/spiral-pattern-800.webp 800w, /img/spiral-pattern-1400.webp 1400w"
-            sizes="(min-width: 900px) 420px, 100vw"
-            width="1400"
-            height="788"
-            loading="lazy"
-            decoding="async"
-            alt="A backyard lawn mowed in a spiral pattern of light and dark rings, lit up at dusk"
-          />
-          <figcaption>And when I’m feeling fancy.</figcaption>
-        </figure>
-      </section>
-
-      <section class="soil" aria-labelledby="soil-h" data-soil>
-        <div class="soil-card">
-          <h2 id="soil-h">Bedford soil, right now</h2>
-          <p class="soil-value" data-soil-value>…</p>
-          <p class="soil-advice" data-soil-advice>Checking the ground…</p>
-          <div class="soil-bars" data-soil-bars role="img" aria-label="Soil temperature for the last week"></div>
-          <p class="soil-note">
-            Two inches down, updated hourly. Grass and weeds follow soil temperature, not the
-            calendar. That’s why timing matters more than products.
-          </p>
-        </div>
+        <h2 id="changes-h">Small changes, big lawn</h2>
+        <p class="section-lede">You don’t have to become a lawn person. Tap a card. Pick one. Next month, pick another.</p>
+        <FlipCards items={changeCards} layout="list" />
       </section>
 
       <Calendar />
+
+      <SoilGauge />
+
+      <section class="yards-teaser" aria-labelledby="yards-h">
+        <div class="section-head">
+          <h2 id="yards-h">Proof it works</h2>
+          <a class="more" href="/yards/">See the yards</a>
+        </div>
+        <div class="photo-strip">
+          {PHOTOS.map((p) => (
+            <figure class="photo">
+              <img
+                src={`/img/${p.src}-800.webp`}
+                srcset={`/img/${p.src}-800.webp 800w, /img/${p.src}-1400.webp 1400w`}
+                sizes="(min-width: 900px) 420px, 82vw"
+                width={p.w} height={p.h} loading="lazy" decoding="async" alt={p.alt}
+              />
+              <figcaption>{p.caption}</figcaption>
+            </figure>
+          ))}
+        </div>
+      </section>
+
+      <section class="clips-teaser" aria-labelledby="clips-h">
+        <div class="section-head">
+          <h2 id="clips-h">Clippings</h2>
+          <a class="more" href="/clippings/">All posts</a>
+        </div>
+        <p class="section-lede">Lawn takes. Some hot, all short.</p>
+        <ul class="clip-list">
+          {posts.map((p) => (
+            <li>
+              <a class="clip" href={p.url}>
+                <span class="clip-tag">{p.tag}</span>
+                <span class="clip-title">{p.title}</span>
+                <span class="clip-dek">{p.description}</span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section class="weeds-teaser" aria-labelledby="weeds-h">
+        <div class="section-head">
+          <h2 id="weeds-h">What’s that weed?</h2>
+          <a class="more" href="/weeds/">Weed board</a>
+        </div>
+        <p class="section-lede">The usual suspects around here, and how to deal with each one. Easy way, Mike’s way, or just let it be.</p>
+        <div class="weed-chips">
+          {WEEDS.map((w) => (
+            <a class="weed-chip" href={`/weeds/#${w.id}`}><PixelIcon map={w.icon} size={30} />{w.name}</a>
+          ))}
+        </div>
+      </section>
+
+      <section class="games-teaser" aria-labelledby="games-h">
+        <div class="window games-card">
+          <h2 id="games-h">Waste five minutes productively</h2>
+          <p>Whack-a-Weed: tap the dandelions, spare the bees, and whatever you do, don’t touch the gas blower.</p>
+          <a class="btn" href="/games/">Play the games</a>
+        </div>
+      </section>
 
       <section class="plan" id="plan" aria-labelledby="plan-h">
         <h2 id="plan-h">Get your lawn game plan</h2>
@@ -318,30 +305,4 @@ const jsonLd = {
         ))}
       </section>
     </main>
-
-    <dialog class="ticket" data-ticket aria-labelledby="ticket-h">
-      <form method="dialog">
-        <p class="ticket-kicker">Totally unofficial</p>
-        <h2 id="ticket-h">Bedford Blower Patrol</h2>
-        <dl>
-          <dt>Citation</dt><dd>No. 000042</dd>
-          <dt>Offense</dt><dd>Operating a gas leaf blower within earshot of literally everyone.</dd>
-          <dt>Fine</dt><dd>One (1) rake, to be used immediately.</dd>
-        </dl>
-        <p class="ticket-tip">
-          Real tip: you don’t need either one. Mow right over the leaves. They chop up, sink in
-          and feed the lawn.
-        </p>
-        <button class="btn" value="ok">Pay with rake</button>
-      </form>
-    </dialog>
-
-    <script>
-      import { initGame } from '../scripts/game.js';
-      import { initSoil } from '../scripts/soil.js';
-      const game = document.querySelector('[data-game]');
-      if (game) initGame(game);
-      const soil = document.querySelector('[data-soil]');
-      if (soil) initSoil(soil);
-    </script>
 </Base>

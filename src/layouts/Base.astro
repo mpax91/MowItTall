@@ -41,7 +41,11 @@ const url = site + path;
     <header class="top">
       <a class="wordmark" href="/" aria-label="Mow It Tall home">Mow it <span class="wordmark-tall">TALL</span></a>
       <nav class="top-nav" aria-label="Main">
-        <a href="/plan/">Get your plan</a>
+        <a href="/games/" aria-current={path === '/games/' ? 'page' : undefined}>Games</a>
+        <a href="/weeds/" aria-current={path === '/weeds/' ? 'page' : undefined}>Weeds</a>
+        <a href="/clippings/" aria-current={path.startsWith('/clippings/') ? 'page' : undefined}>Clippings</a>
+        <a href="/yards/" aria-current={path === '/yards/' ? 'page' : undefined}>Yards</a>
+        <a class="top-cta" href="/plan/" aria-current={path === '/plan/' ? 'page' : undefined}>Your plan</a>
       </nav>
     </header>
 

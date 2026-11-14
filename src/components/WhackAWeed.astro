@@ -1,0 +1,37 @@
+---
+// Whack-a-Weed: a 30-second tapping game.
+---
+<section class="whack" aria-labelledby="whack-h" data-whack>
+  <div class="window hud">
+    <span><span class="hud-label">Time</span> <b data-w-time>0:30</b></span>
+    <span><span class="hud-label">Score</span> <b data-w-score>0</b></span>
+  </div>
+  <div class="whack-field">
+    <div class="whack-grid">
+      {Array.from({ length: 9 }, () => (
+        <div class="whack-cell"><button type="button" class="whack-hole" data-hole disabled aria-label="Empty patch"></button></div>
+      ))}
+    </div>
+    <div class="window overlay" data-w-start>
+      <h2 id="whack-h">Whack-a-Weed</h2>
+      <p>Tap weeds before they spread. Crabgrass is worth the most. Leave the bees alone. Do not, under any circumstances, touch the gas blower.</p>
+      <div class="overlay-foot">
+        <button type="button" class="btn" data-w-go>Start</button>
+        <span class="overlay-best" data-w-best></span>
+      </div>
+    </div>
+    <div class="window overlay" data-w-end hidden>
+      <p class="result-score"><span data-w-total>0</span></p>
+      <h2 data-w-grade></h2>
+      <p class="overlay-small" data-w-note></p>
+      <p class="overlay-small">Real-life tip: weeds pulled after a rain come out roots and all.</p>
+      <div class="actions"><button type="button" class="btn" data-w-go>Play again</button></div>
+    </div>
+  </div>
+</section>
+
+<script>
+  import { initWhack } from '../scripts/whack.js';
+  const el = document.querySelector('[data-whack]');
+  if (el) initWhack(el);
+</script>

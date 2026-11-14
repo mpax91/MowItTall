@@ -1,0 +1,54 @@
+---
+// Live soil temperature for Bedford as a horizontal thermometer with labeled zones.
+const ZONES = [
+  { id: 'asleep', min: 25, max: 40, name: 'Asleep', what: 'Grass is dormant. Nothing grows, nothing to do.' },
+  { id: 'waking', min: 40, max: 50, name: 'Waking up / winding down', what: 'Roots are working, blades barely grow. Cleanup weather.' },
+  { id: 'go', min: 50, max: 56, name: 'Go time', what: 'Crabgrass starts sprouting near 55°F in spring. Seeding and feeding window in fall.' },
+  { id: 'growing', min: 56, max: 68, name: 'Prime growing', what: 'Grass grows fast. Mow every week and keep it tall.' },
+  { id: 'heat', min: 68, max: 85, name: 'Heat stress', what: 'Cool-season grass struggles. Mow tall, water deep, skip fertilizer.' },
+];
+const lo = 25, hi = 85;
+---
+<section class="soil" aria-labelledby="soil-h" data-soil data-lo={lo} data-hi={hi}>
+  <div class="soil-card">
+    <h2 id="soil-h">Bedford soil, right now</h2>
+    <p class="soil-sub">Two inches down, updated hourly. Grass and weeds go by soil temperature, not the calendar.</p>
+
+    <div class="thermo" role="img" aria-label="Soil thermometer" data-thermo>
+      <div class="thermo-track">
+        {ZONES.map((z) => (
+          <span class={`thermo-zone zone-${z.id}`} style={`flex-grow:${z.max - z.min}`}></span>
+        ))}
+      </div>
+      <div class="thermo-marker" data-marker style="left:30%">
+        <span class="thermo-reading" data-soil-value>…</span>
+      </div>
+      <div class="thermo-ticks" aria-hidden="true">
+        {[30, 40, 50, 60, 70, 80].map((t) => (
+          <span style={`left:${((t - lo) / (hi - lo)) * 100}%`}>{t}°</span>
+        ))}
+      </div>
+    </div>
+
+    <p class="soil-advice" data-soil-advice>Checking the ground…</p>
+    <p class="soil-trend" data-soil-trend></p>
+
+    <ul class="zones">
+      {ZONES.map((z) => (
+        <li class="zone" data-zone={z.id} data-min={z.min} data-max={z.max}>
+          <span class={`zone-dot zone-${z.id}`} aria-hidden="true"></span>
+          <span class="zone-text">
+            <strong>{z.name}</strong> <span class="zone-range">{z.min === 25 ? `Under ${z.max}°F` : z.max === 85 ? `${z.min}°F and up` : `${z.min}–${z.max}°F`}</span>
+            <span class="zone-what">{z.what}</span>
+          </span>
+        </li>
+      ))}
+    </ul>
+  </div>
+</section>
+
+<script>
+  import { initSoil } from '../scripts/soil.js';
+  const soil = document.querySelector('[data-soil]');
+  if (soil) initSoil(soil);
+</script>

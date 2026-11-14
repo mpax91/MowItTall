@@ -24,7 +24,9 @@ function advice(temp, month) {
 export async function initSoil(el) {
   const valueEl = el.querySelector('[data-soil-value]');
   const adviceEl = el.querySelector('[data-soil-advice]');
-  const barsEl = el.querySelector('[data-soil-bars]');
+  const trendEl = el.querySelector('[data-soil-trend]');
+  const marker = el.querySelector('[data-marker]');
+  const lo = Number(el.dataset.lo), hi = Number(el.dataset.hi);
   const url =
     `https://api.open-meteo.com/v1/forecast?latitude=${BEDFORD.lat}&longitude=${BEDFORD.lon}` +
     `&hourly=soil_temperature_6cm&temperature_unit=fahrenheit&timezone=America%2FNew_York&past_days=7&forecast_days=1`;
@@ -42,23 +44,22 @@ export async function initSoil(el) {
     const current = Math.round(temps[idx]);
     valueEl.textContent = `${current}°F`;
     adviceEl.textContent = advice(current, now.getMonth());
+    const pct = Math.max(0, Math.min(100, ((current - lo) / (hi - lo)) * 100));
+    marker.style.left = `${pct}%`;
+    el.querySelector('[data-thermo]').setAttribute('aria-label', `Soil thermometer reading ${current}°F`);
 
-    // One bar per day: the daily average over the last week.
-    const days = [];
-    for (let i = 0; i + 24 <= idx + 1; i += 24) {
-      const slice = temps.slice(i, i + 24).filter((t) => t != null);
-      days.push(slice.reduce((a, b) => a + b, 0) / slice.length);
+    for (const z of el.querySelectorAll('[data-zone]')) {
+      const on = current >= Number(z.dataset.min) && current < Number(z.dataset.max);
+      z.classList.toggle('is-current', on || (current < lo && z.dataset.min == lo) || (current >= hi && z.dataset.max == hi));
     }
-    const recent = days.slice(-7);
-    const lo = Math.min(...recent) - 6, hi = Math.max(...recent) + 4;
-    barsEl.innerHTML = recent
-      .map((t, k) => {
-        const h = Math.max(4, Math.round(((t - lo) / (hi - lo)) * 100));
-        const label = k === recent.length - 1 ? 'Today' : `${recent.length - 1 - k}d ago`;
-        return `<span class="soil-bar" style="--h:${h}%" title="${label}: ${Math.round(t)}°F"></span>`;
-      })
-      .join('');
-    barsEl.setAttribute('aria-label', `Daily soil temperature for the last week: ${recent.map((t) => Math.round(t) + '°F').join(', ')}`);
+
+    const weekAgo = temps[idx - 24 * 7];
+    if (weekAgo != null) {
+      const diff = Math.round(current - weekAgo);
+      trendEl.textContent = diff === 0
+        ? 'Same as a week ago.'
+        : `${Math.abs(diff)}° ${diff > 0 ? 'warmer' : 'cooler'} than a week ago${diff > 0 ? (now.getMonth() < 6 ? '. Spring is coming.' : '.') : (now.getMonth() > 7 ? '. Winter is coming.' : '.')}`;
+    }
     el.classList.add('is-live');
   } catch (err) {
     valueEl.textContent = '--';

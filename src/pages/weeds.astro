@@ -1,0 +1,45 @@
+---
+import Base from '../layouts/Base.astro';
+import FlipCards from '../components/FlipCards.astro';
+import { WEEDS } from '../data/weeds.js';
+
+const title = 'Common lawn weeds in Westchester and how to get rid of them | Mow It Tall';
+const description =
+  'Dandelions, clover, crabgrass, creeping Charlie and more: how to spot the most common lawn weeds in the Northeast, plus the easy fix, Mike’s fix, and when to just let it be.';
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  name: 'Common lawn weeds in the Northeast',
+  itemListElement: WEEDS.map((w, i) => ({
+    '@type': 'ListItem',
+    position: i + 1,
+    name: w.name,
+    url: `https://mowittall.com/weeds/#${w.id}`,
+  })),
+};
+const items = WEEDS.map((w) => ({
+  id: w.id,
+  icon: w.icon,
+  title: w.name,
+  sub: w.looks,
+  back: [
+    { label: 'When: ', text: w.when },
+    { label: 'Easy fix: ', text: w.easy },
+    { label: 'Mike’s fix: ', text: w.mike },
+    { label: 'Or just let it be: ', text: w.chill },
+  ],
+}));
+---
+<Base title={title} description={description} path="/weeds/" jsonLd={jsonLd}>
+  <main id="main" class="page">
+    <header class="page-head">
+      <h1>The weed board</h1>
+      <p class="lede">The weeds you’ll actually see around Bedford and the rest of the Northeast. Find yours, tap it, and pick your level of effort.</p>
+    </header>
+    <FlipCards items={items} layout="list" headingLevel="h2" />
+    <p class="page-note">
+      Before you spray anything: thick, tall grass is the best weed killer there is. Most weeds are just
+      filling in where grass is thin. Always follow the product label.
+    </p>
+  </main>
+</Base>
