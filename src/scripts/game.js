@@ -1,7 +1,6 @@
-// Mow It Tall — the mowing game.
-// Swipe to turn; the mower keeps rolling. Clean, alternating lanes score extra,
-// bumping into things costs points, and the deck height you pick decides
-// what the lawn looks like a week later.
+// Mow It Tall — the stripe game.
+// The mower rolls on its own. You steer left and right to keep each pass straight
+// and tight against the last one, while the lawn tries to push you off line.
 
 /* ------------------------------------------------------------------ palette */
 const hex = (h) => { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
@@ -100,20 +99,6 @@ const MOWER = [0, 1, 2, 3].map((q) => rotate(MOWER_UP, q)); // up, right, down, 
 // where the deck centre lands inside each rotated sprite
 const MOWER_ANCHOR = [[7, 8], [13, 7], [6, 13], [8, 6]];
 
-const GNOME = [
-  '...H...',
-  '..HhH..',
-  '..HhH..',
-  '.HHhHH.',
-  '.FsssF.',
-  '.BbbbB.',
-  'CBbbbBC',
-  'CCBbBCC',
-  '.CCCCC.',
-  '.K...K.',
-];
-const GNOME_COL = { H: C.gnomeHat[1], h: C.gnomeHat[0], F: C.skin, s: C.skin, B: C.gnomeBeard[1], b: C.gnomeBeard[0], C: C.gnomeCoat[1], K: C.ink };
-
 const BLOWER = [
   '.....KK...',
   '....KOOK..',
@@ -126,34 +111,26 @@ const BLOWER_COL = { K: C.ink, O: C.blower[1], o: C.blower[0], S: C.steel[1] };
 
 /* ------------------------------------------------------------------- levels */
 const LEVELS = [
-  {
-    name: 'The front yard',
-    goal: 'Mow the whole lawn before time runs out. Straight lanes that alternate direction score the most.',
-    mode: 'stripes', passes: 1, target: 0.9, obstacles: [],
-  },
-  {
-    name: 'The backyard',
-    goal: 'Same idea, but there’s stuff in the way. Every bump costs you points.',
-    mode: 'stripes', passes: 1, target: 0.88,
-    obstacles: [
-      { kind: 'tree', fx: 0.3, fy: 0.34, r: 12 },
-      { kind: 'tree', fx: 0.7, fy: 0.66, r: 13 },
-      { kind: 'gnome', fx: 0.78, fy: 0.22, r: 5 },
-      { kind: 'ball', fx: 0.24, fy: 0.78, r: 4 },
-    ],
-  },
-  {
-    name: 'The checkerboard',
-    goal: 'The fancy one. Mow it all up and down, then mow it all again side to side.',
-    mode: 'checker', passes: 2, target: 0.8, obstacles: [],
-  },
+  { name: 'The front yard', blurb: 'Flat and friendly. A good place to start.', speed: 60, drift: 5, slope: 0, bumps: 0 },
+  { name: 'The side yard', blurb: 'It’s a little lumpy. The mower will wander.', speed: 68, drift: 11, slope: 0, bumps: 0.7 },
+  { name: 'The hill', blurb: 'Gravity wants you in the flower bed.', speed: 74, drift: 9, slope: 7, bumps: 1 },
 ];
 
-const HEIGHTS = {
-  2: { weeds: 45, scalp: true, line: (n) => `Mowed at 2 inches, ${n} weeds moved in. Short grass lets sun hit the soil, and that’s all weed seeds need. It also burns out first in July.` },
-  3: { weeds: 15, scalp: false, line: (n) => `Mowed at 3 inches, ${n} weeds showed up. Not bad. One notch higher and most of those never sprout.` },
-  4: { weeds: 3, scalp: false, line: (n) => `Mowed at 4 inches, only ${n} weeds. Tall grass shades the soil so weed seeds can’t get going. That’s the whole trick.` },
-};
+const GRADES = [
+  [95, 'Golf course material.'],
+  [87, 'Neighborhood legend.'],
+  [75, 'Respectable dad stripes.'],
+  [60, 'The neighbors noticed. Not in a good way.'],
+  [0, 'Did you mow this during a sneeze?'],
+];
+
+const TIPS = [
+  'Real-life tip: pick a target at the far end of the yard and keep your eyes on it, not the mower.',
+  'Real-life tip: overlap each pass by a couple of inches so you never leave a skinny strip.',
+  'Real-life tip: taller grass shows stripes better. Set your deck to 3.5 to 4 inches.',
+  'Real-life tip: mow a lap around the edges first. It gives you room to turn neatly.',
+  'Real-life tip: switch your stripe direction every week so the grass doesn’t lean one way.',
+];
 
 /* --------------------------------------------------------------------- game */
 export function initGame(root) {
@@ -162,93 +139,73 @@ export function initGame(root) {
   const screen = root.querySelector('[data-screen]');
   const $ = (s) => root.querySelector(s);
   const ui = {
-    level: $('[data-level]'), time: $('[data-time]'), pct: $('[data-pct]'), score: $('[data-score]'),
-    menu: $('[data-menu]'), menuTitle: $('[data-menu-title]'), menuGoal: $('[data-menu-goal]'), start: $('[data-start]'),
-    result: $('[data-result]'), resultTitle: $('[data-result-title]'), stars: $('[data-stars]'), rows: $('[data-rows]'),
-    week: $('[data-week]'), lesson: $('[data-lesson]'), next: $('[data-next]'), retry: $('[data-retry]'),
-    toast: $('[data-toast]'), brap: $('[data-brap]'), heights: root.querySelectorAll('[data-height]'),
+    level: $('[data-level]'), pass: $('[data-pass]'), score: $('[data-score]'),
+    menu: $('[data-menu]'), menuTitle: $('[data-menu-title]'), menuBlurb: $('[data-menu-blurb]'), menuBest: $('[data-menu-best]'),
+    start: $('[data-start]'),
+    result: $('[data-result]'), grade: $('[data-grade]'), total: $('[data-total]'), stars: $('[data-stars]'),
+    best: $('[data-best]'), tip: $('[data-tip]'), again: $('[data-again]'), next: $('[data-next]'),
+    toast: $('[data-toast]'), brap: $('[data-brap]'),
   };
   const ticket = document.querySelector('[data-ticket]');
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   let W = 0, H = 0, img, data, staticLayer, staticAlpha;
-  let lawn; // {top,bottom,left,right}
-  let mask, cutV, cutH, uncutTone, cutVar, grassTotal;
-  let lane = 14;
-  let obstacles = [];
+  let lawn, mask, cutDir, uncutTone, cutVar;
+  let lane = 14, passes = 7, deck = 7;
   let blowerPos = { x: 0, y: 0 };
   let levelIndex = 0;
-  let height = 3;
-  let state = 'menu'; // menu | play | result | week
-  let timeLeft = 0, timeLimit = 0, bumps = 0, stall = 0, bonk = 0;
-  let particles = [];
-  let shake = 0;
-  let weekT = 0, weekWeeds = [], weekScalp = [], weekView = false;
-  const mower = { x: 0, y: 0, dir: 0, snapX: null, snapY: null, uturn: null };
-  const DIRS = [[0, -1], [1, 0], [0, 1], [-1, 0]];
-  let lastWidth = 0;
+  let state = 'menu'; // menu | play | turn | result | paused
+  let pass = 0, passScores = [], samples = [], prevSamples = null, turnT = 0;
+  let particles = [], shake = 0, bumpV = 0;
+  let input = 0; // keyboard steer, -1..1
+  let lastWidth = 0, seed = 1;
+  const mower = { x: 0, y: 0, dir: 0 };
+
+  const store = {
+    get: (k) => { try { return Number(localStorage.getItem(k)) || 0; } catch { return 0; } },
+    set: (k, v) => { try { localStorage.setItem(k, String(v)); } catch { /* private mode */ } },
+  };
 
   /* ------------------------------------------------------------ build */
-  function build(keepState = false) {
+  function build() {
     const rect = canvas.getBoundingClientRect();
-    const scale = Math.max(2, Math.round(rect.width / 175));
-    W = Math.max(120, Math.round(rect.width / scale));
-    H = Math.max(160, Math.round(rect.height / scale));
+    const scale = Math.max(2, Math.round(rect.width / 120));
+    W = Math.max(100, Math.round(rect.width / scale));
+    H = Math.max(140, Math.round(rect.height / scale));
     canvas.width = W; canvas.height = H;
     img = ctx.createImageData(W, H);
     data = img.data;
 
     lawn = { top: 24, bottom: H - 12, left: 4, right: W - 4 };
+    const lw = lawn.right - lawn.left;
+    passes = Math.max(5, Math.min(9, Math.round(lw / 14)));
+    lane = lw / passes;
+    deck = Math.round(lane / 2);
+
     const n = W * H;
     mask = new Uint8Array(n);
-    cutV = new Int8Array(n);
-    cutH = new Int8Array(n);
+    cutDir = new Int8Array(n);
     uncutTone = new Uint8Array(n);
     cutVar = new Uint8Array(n);
-
-    const lvl = LEVELS[levelIndex];
-    const lw = lawn.right - lawn.left, lh = lawn.bottom - lawn.top;
-    obstacles = lvl.obstacles.map((o) => ({ ...o, x: Math.round(lawn.left + o.fx * lw), y: Math.round(lawn.top + o.fy * lh) }));
-
-    grassTotal = 0;
     for (let y = 0; y < H; y++) {
       for (let x = 0; x < W; x++) {
         const i = y * W + x;
-        const inLawn = x >= lawn.left && x < lawn.right && y >= lawn.top && y < lawn.bottom;
-        let blocked = false;
-        for (const o of obstacles) if ((x - o.x) ** 2 + (y - o.y) ** 2 <= (o.r + 0.5) ** 2) blocked = true;
-        if (inLawn && !blocked) { mask[i] = 1; grassTotal++; }
-        // clumpy uncut grass: big soft clumps + blade streaks + pixel grain
-        const clump = smooth(x, y, 5, 1);
-        const streak = smooth(x * 3, y, 4, 2);
-        const grain = hash(x, y, 3);
+        if (x >= lawn.left && x < lawn.right && y >= lawn.top && y < lawn.bottom) mask[i] = 1;
+        const clump = smooth(x, y, 5, 1), streak = smooth(x * 3, y, 4, 2), grain = hash(x, y, 3);
         let t = clump * 3.2 + streak * 2.2 + grain * 1.6 - 0.6;
-        if (grain > 0.93) t += 1.5; // sunlit tips
+        if (grain > 0.93) t += 1.5;
         uncutTone[i] = Math.max(0, Math.min(6, Math.floor(t)));
         cutVar[i] = hash(x, y, 4) > 0.55 ? 1 : 0;
       }
     }
-    // lanes line up with the lawn edges
-    const lanes = Math.max(6, Math.round(lw / 14));
-    lane = lw / lanes;
-
     blowerPos = { x: W - 22, y: 9 };
     buildStatic();
-    resetMower();
-    weekView = false;
-    timeLimit = Math.ceil((lvl.passes * grassTotal) / (lane * 44) * 1.5 + 8);
-    if (!keepState) timeLeft = timeLimit;
+    mower.x = lawn.left + lane / 2;
+    mower.y = lawn.bottom - deck;
+    mower.dir = 0;
     hud();
   }
 
-  function resetMower() {
-    mower.x = lawn.left + lane / 2;
-    mower.y = lawn.bottom - 7;
-    mower.dir = 0;
-    mower.snapX = mower.x; mower.snapY = null; mower.uturn = null;
-  }
-
-  // Beds, hedge, sidewalk and obstacles never change: draw them once.
   function buildStatic() {
     staticLayer = new Uint8ClampedArray(W * H * 3);
     staticAlpha = new Uint8Array(W * H);
@@ -258,7 +215,6 @@ export function initGame(root) {
       staticLayer[i * 3] = c[0]; staticLayer[i * 3 + 1] = c[1]; staticLayer[i * 3 + 2] = c[2];
       staticAlpha[i] = 1;
     };
-    // mulch bed behind hedge, cobble edge, side beds
     for (let y = 0; y < H; y++) {
       for (let x = 0; x < W; x++) {
         const g = hash(x, y, 7), m = smooth(x, y, 3, 8);
@@ -270,8 +226,7 @@ export function initGame(root) {
           put(x, y, seam ? C.mulch[0] : C.cobble[r === 0 ? 3 : Math.min(2, Math.floor(g * 3))]);
         } else if (y >= lawn.bottom + 3) {
           const joint = (x % 28 === 0) || y === lawn.bottom + 3;
-          const tone = joint ? 0 : 2 + Math.floor(g * 2.2 + (y === lawn.bottom + 4 ? 1 : 0));
-          put(x, y, C.walk[Math.min(4, tone)]);
+          put(x, y, C.walk[Math.min(4, joint ? 0 : 2 + Math.floor(g * 2.2 + (y === lawn.bottom + 4 ? 1 : 0)))]);
         } else if (y >= lawn.bottom) {
           put(x, y, y === lawn.bottom ? C.curb[0] : C.curb[1]);
         } else if (x < lawn.left || x >= lawn.right) {
@@ -280,7 +235,6 @@ export function initGame(root) {
         }
       }
     }
-    // arborvitae row: lit from the upper left, dithered
     for (let x0 = -4; x0 < W + 6; x0 += 10) {
       const h = 15 + Math.floor(hash(x0, 1, 2) * 5);
       const cx = x0 + 5;
@@ -295,7 +249,6 @@ export function initGame(root) {
         }
       }
     }
-    // rhododendrons: leafy mounds dotted with flower trusses
     [0.14, 0.5, 0.84].forEach((fx, k) => {
       const cx = Math.round(W * fx), cy = 16;
       for (let y = -6; y <= 5; y++) {
@@ -304,21 +257,17 @@ export function initGame(root) {
           if (d > 1) continue;
           const n = smooth(cx + x, cy + y, 2, 30 + k);
           const lit = 0.6 - x / 18 - y / 12;
-          let c;
-          if (n > 0.55) c = C.rhodie[Math.max(0, Math.min(4, Math.floor(lit * 3 + n * 2 + dither(x, y))))];
-          else c = C.hedge[Math.max(1, Math.min(5, Math.floor(lit * 4 + 2 + dither(x, y))))];
+          let c = n > 0.55
+            ? C.rhodie[Math.max(0, Math.min(4, Math.floor(lit * 3 + n * 2 + dither(x, y))))]
+            : C.hedge[Math.max(1, Math.min(5, Math.floor(lit * 4 + 2 + dither(x, y))))];
           if (d > 0.86) c = C.hedge[1];
           put(cx + x, cy + y, c);
         }
       }
     });
-    stamp(put, BLOWER, BLOWER_COL, blowerPos.x, blowerPos.y);
-  }
-
-  function stamp(put, map, col, ox, oy) {
-    for (let y = 0; y < map.length; y++) for (let x = 0; x < map[y].length; x++) {
-      const ch = map[y][x];
-      if (ch !== '.' && col[ch]) put(ox + x, oy + y, col[ch]);
+    for (let y = 0; y < BLOWER.length; y++) for (let x = 0; x < BLOWER[y].length; x++) {
+      const ch = BLOWER[y][x];
+      if (ch !== '.') put(blowerPos.x + x, blowerPos.y + y, BLOWER_COL[ch]);
     }
   }
 
@@ -334,94 +283,42 @@ export function initGame(root) {
     data[o] *= k; data[o + 1] *= k; data[o + 2] *= k;
   }
 
-  function grassColor(i, x, y) {
-    const v = cutV[i], h = cutH[i];
-    // a week later: grass grows back in and stripes soften
-    if (weekView && (v || h)) {
-      if (hash(x, y, 13) < weekT * 0.85) return C.uncut[uncutTone[i]];
-    }
-    if (!v && !h) return C.uncut[uncutTone[i]];
-    // light when bent away from you (mowed upward / leftward), dark toward you
-    let t = 2 - v * 2 + (h ? -h : 0);
-    t = Math.max(0, Math.min(4, t));
-    if (height === 2) return C.scalp[t];
-    return (cutVar[i] ? C.cutAlt : C.cut)[t];
-  }
-
   function draw(dt) {
-    for (let y = 0; y < H; y++) {
-      for (let x = 0; x < W; x++) {
-        const i = y * W + x;
-        if (staticAlpha[i]) {
-          const o = i * 4, s = i * 3;
-          data[o] = staticLayer[s]; data[o + 1] = staticLayer[s + 1]; data[o + 2] = staticLayer[s + 2]; data[o + 3] = 255;
-        } else {
-          px(x, y, grassColor(i, x, y));
-        }
+    for (let i = 0, n = W * H; i < n; i++) {
+      const o = i * 4;
+      if (staticAlpha[i]) {
+        const s = i * 3;
+        data[o] = staticLayer[s]; data[o + 1] = staticLayer[s + 1]; data[o + 2] = staticLayer[s + 2];
+      } else {
+        const d = cutDir[i];
+        // mowed upward = grass leans away from you = light stripe
+        const c = d === 0 ? C.uncut[uncutTone[i]] : (cutVar[i] ? C.cutAlt : C.cut)[d < 0 ? 4 : 0];
+        data[o] = c[0]; data[o + 1] = c[1]; data[o + 2] = c[2];
       }
+      data[o + 3] = 255;
     }
-    // hedge casts a soft shadow onto the top of the lawn
     for (let y = lawn.top; y < lawn.top + 6; y++) {
       const k = 0.72 + (y - lawn.top) * 0.05;
       for (let x = lawn.left; x < lawn.right; x++) if (dither(x, y) < 0.9 - (y - lawn.top) * 0.12) darken(x, y, k);
     }
-    if (weekView) drawWeek();
-    drawObstacles();
-    if (!weekView) drawMower();
+    drawMower();
     drawParticles(dt);
     ctx.putImageData(img, 0, 0);
-  }
-
-  function drawObstacles() {
-    for (const o of obstacles) {
-      if (o.kind === 'tree') {
-        // drop shadow down-right, then a lit, dithered canopy
-        for (let y = -o.r; y <= o.r; y++) for (let x = -o.r; x <= o.r; x++) {
-          if (x * x + y * y <= o.r * o.r && dither(x, y) < 0.75) darken(o.x + x + 4, o.y + y + 5, 0.62);
-        }
-        for (let y = -o.r - 2; y <= o.r + 2; y++) for (let x = -o.r - 2; x <= o.r + 2; x++) {
-          const wob = (smooth(o.x + x, o.y + y, 3, 40) - 0.5) * 4;
-          const d = Math.hypot(x, y);
-          if (d > o.r + wob * 0.6) continue;
-          const lit = 0.55 - (x + y) / (o.r * 2.6) + (smooth(o.x + x, o.y + y, 2, 41) - 0.5) * 0.6;
-          let t = Math.floor(lit * 6 + dither(x, y) * 1.4 + 0.8);
-          if (d > o.r + wob * 0.6 - 1) t = 0;
-          px(o.x + x, o.y + y, C.canopy[Math.max(0, Math.min(6, t))]);
-        }
-      } else if (o.kind === 'gnome') {
-        for (let x = -3; x <= 4; x++) darken(o.x + x + 1, o.y + 5, 0.6);
-        stampLive(GNOME, GNOME_COL, o.x - 3, o.y - 5);
-      } else if (o.kind === 'ball') {
-        for (let y = -3; y <= 3; y++) for (let x = -3; x <= 3; x++) {
-          if (x * x + y * y > 10) continue;
-          if (x * x + y * y <= 10 && x * x + y * y > 6) darken(o.x + x + 2, o.y + y + 2, 0.65);
-        }
-        for (let y = -3; y <= 3; y++) for (let x = -3; x <= 3; x++) {
-          if (x * x + y * y > 9) continue;
-          const band = Math.abs(x + y) <= 1 ? 1 : x + y < 0 ? 0 : 2;
-          px(o.x + x, o.y + y, (x === -1 && y === -2) ? C.ball[1] : C.ball[band]);
-        }
-      }
-    }
-  }
-
-  function stampLive(map, col, ox, oy) {
-    for (let y = 0; y < map.length; y++) for (let x = 0; x < map[y].length; x++) {
-      const ch = map[y][x];
-      if (ch !== '.' && col[ch]) px(ox + x, oy + y, col[ch]);
-    }
   }
 
   function drawMower() {
     const map = MOWER[mower.dir];
     const [ax, ay] = MOWER_ANCHOR[mower.dir];
     const ox = Math.round(mower.x) - ax, oy = Math.round(mower.y) - ay;
-    // shadow
     for (let y = 0; y < map.length; y++) for (let x = 0; x < map[y].length; x++) {
-      if (map[y][x] !== '.' && map[y][x] !== 'G' && map[y][x] !== 'g') darken(ox + x + 2, oy + y + 2, 0.6);
+      const ch = map[y][x];
+      if (ch !== '.' && ch !== 'G' && ch !== 'g') darken(ox + x + 2, oy + y + 2, 0.6);
     }
-    const jitter = state === 'play' && stall <= 0 && !reduceMotion && (performance.now() / 60 | 0) % 2 ? 1 : 0;
-    stampLive(map, MOWER_COL, ox, oy + (mower.dir % 2 === 0 ? 0 : jitter));
+    const jitter = state === 'play' && !reduceMotion && (performance.now() / 60 | 0) % 2 ? 1 : 0;
+    for (let y = 0; y < map.length; y++) for (let x = 0; x < map[y].length; x++) {
+      const ch = map[y][x];
+      if (ch !== '.') px(ox + x + (mower.dir % 2 ? jitter : 0), oy + y, MOWER_COL[ch]);
+    }
   }
 
   function drawParticles(dt) {
@@ -432,236 +329,109 @@ export function initGame(root) {
     }
   }
 
-  function drawWeek() {
-    const shown = Math.floor(weekWeeds.length * Math.min(1, weekT * 1.15));
-    for (let k = 0; k < weekScalp.length; k++) {
-      const s = weekScalp[k];
-      if (weekT < s.t) continue;
-      for (let y = -s.r; y <= s.r; y++) for (let x = -s.r; x <= s.r; x++) {
-        if (x * x + y * y > s.r * s.r || dither(s.x + x, s.y + y) > 0.7) continue;
-        const i = (s.y + y) * W + (s.x + x);
-        if (mask[i]) px(s.x + x, s.y + y, C.brown[Math.floor(hash(s.x + x, s.y + y, 2) * 3)]);
-      }
-    }
-    for (let k = 0; k < shown; k++) {
-      const w = weekWeeds[k];
-      if (w.type === 0) {
-        // dandelion: rosette + flower
-        px(w.x - 1, w.y + 1, C.stem); px(w.x + 2, w.y + 1, C.stem); px(w.x, w.y + 2, C.stem);
-        px(w.x, w.y, C.dandelion[0]); px(w.x + 1, w.y, C.dandelion[0]);
-        px(w.x, w.y - 1, C.dandelion[1]); px(w.x + 1, w.y - 1, C.dandelion[0]);
-      } else {
-        px(w.x, w.y, C.clover[0]); px(w.x + 1, w.y, C.clover[1]); px(w.x, w.y + 1, C.clover[1]);
-      }
-    }
-  }
-
   /* ----------------------------------------------------------- update */
-  function cut() {
-    const [dx, dy] = DIRS[mower.dir];
-    const r = Math.floor(lane / 2);
+  function cutAt() {
+    const dy = mower.dir === 0 ? -1 : 1;
     const cx = Math.round(mower.x), cy = Math.round(mower.y);
     let fresh = 0;
-    for (let y = cy - r; y < cy + r; y++) {
-      for (let x = cx - r; x < cx + r; x++) {
+    for (let y = cy - deck; y < cy + deck; y++) {
+      for (let x = cx - deck; x < cx + deck; x++) {
         if (x < 0 || y < 0 || x >= W || y >= H) continue;
         const i = y * W + x;
         if (!mask[i]) continue;
-        if (dy) { if (!cutV[i] && !cutH[i]) fresh++; cutV[i] = dy; }
-        else { if (!cutV[i] && !cutH[i]) fresh++; cutH[i] = dx; }
+        if (!cutDir[i]) fresh++;
+        cutDir[i] = dy;
       }
     }
-    if (fresh && !reduceMotion && particles.length < 140) {
-      // side discharge to the mower's right
-      const sx = -dy, sy = dx;
-      for (let k = 0; k < 2; k++) {
-        particles.push({
-          x: cx + sx * (r + 1), y: cy + sy * (r + 1),
-          vx: sx * (25 + Math.random() * 30) + (Math.random() - 0.5) * 14,
-          vy: sy * (25 + Math.random() * 30) + (Math.random() - 0.5) * 14,
-          life: 0.35 + Math.random() * 0.35, c: C.clip[k + (Math.random() > 0.5 ? 1 : 0)],
-        });
-      }
+    if (fresh && !reduceMotion && particles.length < 120) {
+      const side = mower.dir === 0 ? 1 : -1; // discharge chute on the mower's right
+      particles.push({
+        x: cx + side * (deck + 1), y: cy,
+        vx: side * (25 + Math.random() * 30), vy: (Math.random() - 0.5) * 16,
+        life: 0.35 + Math.random() * 0.3, c: C.clip[Math.floor(Math.random() * 3)],
+      });
     }
   }
 
-  function atWall() {
-    const r = lane / 2;
-    return [
-      mower.y <= lawn.top + r + 0.6, mower.x >= lawn.right - r - 0.6,
-      mower.y >= lawn.bottom - r - 0.6, mower.x <= lawn.left + r + 0.6,
-    ][mower.dir];
-  }
-
-  function turn(dir, auto = false) {
-    if (state !== 'play' || dir === mower.dir) return;
-    // Swiping sideways at the end of a lane does a U-turn: shift one lane, head back.
-    if (!auto && (dir - mower.dir + 4) % 2 === 1 && atWall()) {
-      const [dx, dy] = DIRS[dir];
-      mower.uturn = { tx: mower.x + dx * lane, ty: mower.y + dy * lane, then: (mower.dir + 2) % 4 };
-    } else if (!auto) {
-      mower.uturn = null;
-    }
-    mower.dir = dir;
-    // snap onto the nearest lane so stripes line up cleanly
-    if (dir % 2 === 0) {
-      const k = Math.round((mower.x - lawn.left - lane / 2) / lane);
-      mower.snapX = lawn.left + lane / 2 + Math.max(0, Math.min(Math.round((lawn.right - lawn.left) / lane) - 1, k)) * lane;
-      mower.snapY = null;
-    } else {
-      const lanesY = Math.floor((lawn.bottom - lawn.top) / lane);
-      const k = Math.round((mower.y - lawn.top - lane / 2) / lane);
-      mower.snapY = lawn.top + lane / 2 + Math.max(0, Math.min(lanesY - 1, k)) * lane;
-      mower.snapX = null;
-    }
+  function startPass() {
+    mower.dir = pass % 2 === 0 ? 0 : 2;
+    mower.y = mower.dir === 0 ? lawn.bottom - deck : lawn.top + deck;
+    // swing around into roughly the next lane; lining it up is your job
+    const ideal = prevSamples ? prevSamples.mean + lane : lawn.left + lane / 2;
+    const miss = (Math.random() - 0.5) * lane * 0.5;
+    mower.x = Math.max(lawn.left + deck, Math.min(lawn.right - deck, ideal + (pass === 0 ? miss * 0.5 : miss)));
+    samples = [];
+    bumpV = 0;
+    seed = Math.floor(Math.random() * 1000);
+    state = 'play';
   }
 
   function update(dt) {
-    if (state === 'week') {
-      weekT = Math.min(1, weekT + dt / 2.6);
-      ui.time.textContent = `Day ${1 + Math.floor(weekT * 6)}`;
-      if (weekT >= 1) finishWeek();
+    if (state === 'turn') {
+      turnT -= dt;
+      if (turnT <= 0) startPass();
       return;
     }
     if (state !== 'play') return;
-    timeLeft -= dt;
-    if (stall > 0) stall -= dt;
-    else {
-      const [dx, dy] = DIRS[mower.dir];
-      const sp = 44;
-      let nx = mower.x + dx * sp * dt, ny = mower.y + dy * sp * dt;
-      if (mower.snapX != null) nx += (mower.snapX - nx) * Math.min(1, dt * 14);
-      if (mower.snapY != null) ny += (mower.snapY - ny) * Math.min(1, dt * 14);
-      const r = lane / 2;
-      nx = Math.max(lawn.left + r, Math.min(lawn.right - r, nx));
-      ny = Math.max(lawn.top + r, Math.min(lawn.bottom - r, ny));
-      const hit = obstacles.find((o) => Math.hypot(nx - o.x, ny - o.y) < o.r + r - 1);
-      if (hit) {
-        bumps++; stall = 0.55; shake = reduceMotion ? 0 : 0.25;
-        nx = mower.x - dx * 3; ny = mower.y - dy * 3;
-        toast(hit.kind === 'gnome' ? 'Sorry, gnome. −50' : hit.kind === 'ball' ? 'Boing. −50' : 'Bonk. −50');
-      }
-      mower.x = nx; mower.y = ny;
-      cut();
-      const u = mower.uturn;
-      if (u) {
-        const done = mower.dir % 2 === 1 ? (dx > 0 ? nx >= u.tx - 0.5 : nx <= u.tx + 0.5) || atWall()
-          : (dy > 0 ? ny >= u.ty - 0.5 : ny <= u.ty + 0.5) || atWall();
-        if (done) { mower.uturn = null; turn(u.then, true); }
-      }
-    }
-    const cov = coverage();
-    hud(cov);
-    if (cov >= 0.995 || timeLeft <= 0) endLevel();
+    const lvl = LEVELS[levelIndex];
+    const dy = mower.dir === 0 ? -1 : 1;
+    // the lawn pushes back: lumps, a slope, the odd root
+    let drift = (smooth(mower.y, 0, 14, seed) - 0.5) * 2 * lvl.drift + lvl.slope;
+    if (lvl.bumps && Math.random() < lvl.bumps * dt) bumpV += (Math.random() > 0.5 ? 1 : -1) * (14 + Math.random() * 10);
+    bumpV *= Math.pow(0.04, dt);
+    mower.x += (drift + bumpV + input * 34) * dt;
+    mower.x = Math.max(lawn.left + deck, Math.min(lawn.right - deck, mower.x));
+    mower.y += dy * lvl.speed * dt;
+    samples.push(mower.x);
+    cutAt();
+    const doneUp = mower.dir === 0 && mower.y <= lawn.top + deck;
+    const doneDown = mower.dir === 2 && mower.y >= lawn.bottom - deck;
+    if (doneUp || doneDown) finishPass();
   }
 
-  function coverage() {
-    const checker = LEVELS[levelIndex].mode === 'checker';
-    let c = 0;
-    for (let i = 0; i < mask.length; i++) {
-      if (!mask[i]) continue;
-      if (checker ? (cutV[i] && cutH[i]) : (cutV[i] || cutH[i])) c++;
-    }
-    return c / grassTotal;
-  }
+  function finishPass() {
+    // straightness: average wobble around the pass's own average line
+    const mean = samples.reduce((a, b) => a + b, 0) / samples.length;
+    const wobble = samples.reduce((a, b) => a + Math.abs(b - mean), 0) / samples.length;
+    const straight = Math.max(0, 1 - wobble / 3.5);
+    // spacing: how far this pass sits from where it should, next to the last one
+    const target = prevSamples ? prevSamples.mean + lane : lawn.left + lane / 2;
+    const offset = mean - target;
+    const spacing = Math.max(0, 1 - Math.abs(offset) / (lane * 0.45));
+    const score = Math.round((straight * 0.65 + spacing * 0.35) * 100);
+    passScores.push(score);
+    prevSamples = { mean };
 
-  // Share of lanes that are fully mowed in one direction, alternating with the neighbour.
-  function stripeQuality() {
-    const best = (vertical) => {
-      const count = vertical ? Math.round((lawn.right - lawn.left) / lane) : Math.floor((lawn.bottom - lawn.top) / lane);
-      let clean = 0, prev = 0;
-      for (let k = 0; k < count; k++) {
-        let tot = 0, pos = 0, neg = 0;
-        const a = Math.round((vertical ? lawn.left : lawn.top) + k * lane), b = Math.round(a + lane);
-        for (let p = a; p < b; p++) {
-          for (let q = vertical ? lawn.top : lawn.left; q < (vertical ? lawn.bottom : lawn.right); q++) {
-            const i = vertical ? q * W + p : p * W + q;
-            if (!mask[i]) continue;
-            tot++;
-            const d = vertical ? cutV[i] : cutH[i];
-            if (d > 0) pos++; else if (d < 0) neg++;
-          }
-        }
-        const dom = pos >= neg ? 1 : -1;
-        const share = Math.max(pos, neg) / Math.max(1, tot);
-        if (share >= 0.82 && dom !== prev) { clean++; prev = dom; } else prev = 0;
-      }
-      return clean / count;
-    };
-    return Math.max(best(true), best(false));
+    let note = score >= 95 ? 'Laser straight' : score >= 85 ? 'Clean' : score >= 70 ? 'Bit wobbly' : score >= 50 ? 'Wobbly' : 'Yikes';
+    if (spacing < 0.6) note += offset > 0 ? ', gap' : ', overlap';
+    toast(`${score}  ${note}`);
+    pass++;
+    hud();
+    if (pass >= passes) return endLevel();
+    // turn around
+    state = 'turn';
+    turnT = 0.45;
+    mower.dir = 1;
   }
 
   function endLevel() {
     state = 'result';
     setTouch(false);
-    const lvl = LEVELS[levelIndex];
-    const cov = coverage();
-    const met = cov >= lvl.target;
-    const quality = lvl.mode === 'checker' ? cov : stripeQuality();
-    const pts = {
-      mowed: Math.round(cov * 1000),
-      stripes: lvl.mode === 'checker' ? 0 : Math.round(quality * 500),
-      time: met ? Math.max(0, Math.round(timeLeft)) * 10 : 0,
-      bumps: -bumps * 50,
-    };
-    const total = Math.max(0, pts.mowed + pts.stripes + pts.time + pts.bumps);
-    let stars = met ? 1 : 0;
-    if (met && quality >= 0.6) stars++;
-    if (met && quality >= 0.85 && bumps === 0) stars++;
-    root.dataset.lastScore = total;
-
-    ui.resultTitle.textContent = met ? (stars === 3 ? 'Perfect stripes.' : 'Nicely done.') : 'Out of time.';
-    ui.stars.innerHTML = [0, 1, 2].map((k) => `<span class="star${k < stars ? ' is-on' : ''}" aria-hidden="true"></span>`).join('');
+    const avg = Math.round(passScores.reduce((a, b) => a + b, 0) / passScores.length);
+    const total = avg * 10;
+    const key = `mit-best-${levelIndex}`;
+    const prevBest = store.get(key);
+    if (total > prevBest) store.set(key, total);
+    const stars = avg >= 90 ? 3 : avg >= 75 ? 2 : avg >= 55 ? 1 : 0;
+    ui.grade.textContent = GRADES.find(([min]) => avg >= min)[1];
+    ui.total.textContent = total;
+    ui.stars.innerHTML = [0, 1, 2].map((k) => `<span class="star${k < stars ? ' is-on' : ''}"></span>`).join('');
     ui.stars.setAttribute('aria-label', `${stars} of 3 stars`);
-    const row = (label, v) => `<div><dt>${label}</dt><dd>${v > 0 && label !== 'Lawn mowed' ? '+' : ''}${v}</dd></div>`;
-    ui.rows.innerHTML =
-      row('Lawn mowed', pts.mowed) +
-      (lvl.mode === 'checker' ? '' : row('Clean stripes', pts.stripes)) +
-      row('Time left', pts.time) +
-      (bumps ? row(`Bumps (${bumps})`, pts.bumps) : '') +
-      `<div class="total"><dt>Score</dt><dd>${total}</dd></div>`;
-    ui.next.textContent = levelIndex < LEVELS.length - 1 ? 'Next level' : 'Play again from level 1';
-    ui.next.hidden = true;
-    ui.week.hidden = false;
-    ui.lesson.hidden = true;
-    ui.retry.hidden = false;
-    show(ui.result);
-  }
-
-  function startWeek() {
-    hide(ui.result);
-    state = 'week';
-    weekView = true;
-    weekT = 0;
-    const cfg = HEIGHTS[height];
-    const n = Math.max(1, Math.round((grassTotal / 30000) * cfg.weeds * (0.85 + Math.random() * 0.3)));
-    weekWeeds = [];
-    let tries = 0;
-    while (weekWeeds.length < n && tries++ < n * 20) {
-      const x = lawn.left + 2 + Math.floor(Math.random() * (lawn.right - lawn.left - 4));
-      const y = lawn.top + 6 + Math.floor(Math.random() * (lawn.bottom - lawn.top - 9));
-      if (mask[y * W + x]) weekWeeds.push({ x, y, type: Math.random() > 0.3 ? 0 : 1 });
-    }
-    weekScalp = cfg.scalp
-      ? Array.from({ length: 5 }, (_, k) => ({
-          x: lawn.left + 8 + Math.floor(Math.random() * (lawn.right - lawn.left - 16)),
-          y: lawn.top + 10 + Math.floor(Math.random() * (lawn.bottom - lawn.top - 20)),
-          r: 4 + Math.floor(Math.random() * 4), t: 0.3 + k * 0.12,
-        }))
-      : [];
-    if (reduceMotion) weekT = 0.999;
-  }
-
-  function finishWeek() {
-    state = 'result';
-    ui.time.textContent = 'Day 7';
-    ui.lesson.textContent = HEIGHTS[height].line(weekWeeds.length);
-    ui.lesson.hidden = false;
-    ui.week.hidden = true;
-    ui.next.hidden = false;
-    ui.rows.innerHTML = '';
-    ui.stars.innerHTML = '';
-    ui.resultTitle.textContent = 'One week later';
+    ui.best.textContent = total > prevBest
+      ? (prevBest ? `New best on this yard. Old best: ${prevBest}.` : 'Your first score on this yard.')
+      : `Your best on this yard: ${prevBest}.`;
+    ui.tip.textContent = TIPS[Math.floor(Math.random() * TIPS.length)];
+    ui.next.textContent = levelIndex < LEVELS.length - 1 ? 'Next yard' : 'Back to yard 1';
     show(ui.result);
   }
 
@@ -669,32 +439,35 @@ export function initGame(root) {
   function openMenu() {
     state = 'menu';
     setTouch(false);
-    const lvl = LEVELS[levelIndex];
     build();
-    ui.menuTitle.textContent = `Level ${levelIndex + 1}: ${lvl.name}`;
-    ui.menuGoal.textContent = lvl.goal;
+    const lvl = LEVELS[levelIndex];
+    ui.menuTitle.textContent = `Yard ${levelIndex + 1}: ${lvl.name}`;
+    ui.menuBlurb.textContent = lvl.blurb;
+    const best = store.get(`mit-best-${levelIndex}`);
+    ui.menuBest.textContent = best ? `Your best: ${best}` : '';
+    ui.menuBest.hidden = !best;
     hide(ui.result);
     show(ui.menu);
   }
 
   function startLevel() {
     hide(ui.menu);
-    bumps = 0; stall = 0;
     build();
-    state = 'play';
+    pass = 0; passScores = []; prevSamples = null;
     setTouch(true);
+    hud();
+    startPass();
   }
 
   function show(el) { el.hidden = false; }
   function hide(el) { el.hidden = true; }
-  // Only grab touches while actually playing, so the page scrolls normally otherwise.
   function setTouch(on) { canvas.style.touchAction = on ? 'none' : 'pan-y'; screen.classList.toggle('is-playing', on); }
 
-  function hud(cov = 0) {
+  function hud() {
     ui.level.textContent = `${levelIndex + 1}/${LEVELS.length}`;
-    const t = Math.max(0, Math.ceil(state === 'play' ? timeLeft : timeLimit));
-    ui.time.textContent = `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
-    ui.pct.textContent = `${Math.floor(cov * 100)}%`;
+    ui.pass.textContent = `${Math.min(pass + (state === 'menu' ? 0 : 1), passes)}/${passes}`;
+    const avg = passScores.length ? Math.round(passScores.reduce((a, b) => a + b, 0) / passScores.length) : 0;
+    ui.score.textContent = passScores.length ? avg * 10 : '–';
   }
 
   let toastTimer;
@@ -702,11 +475,11 @@ export function initGame(root) {
     ui.toast.textContent = msg;
     ui.toast.classList.add('is-on');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => ui.toast.classList.remove('is-on'), 900);
+    toastTimer = setTimeout(() => ui.toast.classList.remove('is-on'), 1100);
   }
 
   /* ------------------------------------------------------------ input */
-  let swipe = null;
+  let drag = null;
   const toLawn = (e) => {
     const r = canvas.getBoundingClientRect();
     return { x: ((e.clientX - r.left) / r.width) * W, y: ((e.clientY - r.top) / r.height) * H };
@@ -717,40 +490,37 @@ export function initGame(root) {
       blowerPrank();
       return;
     }
-    if (state !== 'play') return;
-    swipe = { x: e.clientX, y: e.clientY };
+    if (state !== 'play' && state !== 'turn') return;
+    drag = { x: e.clientX };
     canvas.setPointerCapture(e.pointerId);
   });
   canvas.addEventListener('pointermove', (e) => {
-    if (!swipe) return;
-    const dx = e.clientX - swipe.x, dy = e.clientY - swipe.y;
-    if (Math.hypot(dx, dy) < 18) return;
-    turn(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 1 : 3) : (dy > 0 ? 2 : 0));
-    swipe = { x: e.clientX, y: e.clientY }; // allow chained swipes without lifting
+    if (!drag || state !== 'play') { if (drag) drag.x = e.clientX; return; }
+    const r = canvas.getBoundingClientRect();
+    // steer relative to where your thumb started, 1:1 with the lawn
+    mower.x += ((e.clientX - drag.x) / r.width) * W;
+    mower.x = Math.max(lawn.left + deck, Math.min(lawn.right - deck, mower.x));
+    drag.x = e.clientX;
   });
-  const endSwipe = () => { swipe = null; };
-  canvas.addEventListener('pointerup', endSwipe);
-  canvas.addEventListener('pointercancel', endSwipe);
+  const endDrag = () => { drag = null; };
+  canvas.addEventListener('pointerup', endDrag);
+  canvas.addEventListener('pointercancel', endDrag);
   window.addEventListener('keydown', (e) => {
     if (e.target.closest?.('input, textarea, select, button')) return;
-    const d = { ArrowUp: 0, ArrowRight: 1, ArrowDown: 2, ArrowLeft: 3 }[e.key];
-    if (d != null && state === 'play') { e.preventDefault(); turn(d); }
+    if (state === 'play' || state === 'turn') {
+      if (e.key === 'ArrowLeft') { input = -1; e.preventDefault(); }
+      if (e.key === 'ArrowRight') { input = 1; e.preventDefault(); }
+    }
     if ((e.key === 'b' || e.key === 'B') && document.activeElement === canvas) blowerPrank();
   });
-
-  ui.heights.forEach((b) => b.addEventListener('click', () => {
-    height = Number(b.dataset.height);
-    ui.heights.forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
-  }));
-  ui.start.addEventListener('click', startLevel);
-  ui.week.addEventListener('click', startWeek);
-  ui.retry.addEventListener('click', openMenu);
-  ui.next.addEventListener('click', () => {
-    levelIndex = (levelIndex + 1) % LEVELS.length;
-    openMenu();
+  window.addEventListener('keyup', (e) => {
+    if ((e.key === 'ArrowLeft' && input < 0) || (e.key === 'ArrowRight' && input > 0)) input = 0;
   });
 
-  // Pause when scrolled out of view.
+  ui.start.addEventListener('click', startLevel);
+  ui.again.addEventListener('click', () => { hide(ui.result); startLevel(); });
+  ui.next.addEventListener('click', () => { levelIndex = (levelIndex + 1) % LEVELS.length; openMenu(); });
+
   let visible = true;
   new IntersectionObserver(([en]) => { visible = en.isIntersecting; }, { threshold: 0.25 }).observe(canvas);
 
@@ -768,7 +538,7 @@ export function initGame(root) {
     ui.brap.classList.remove('is-on');
     void ui.brap.offsetWidth;
     ui.brap.classList.add('is-on');
-    if (state === 'play') state = 'paused';
+    if (state === 'play' || state === 'turn') state = 'paused';
     setTimeout(() => ticket?.showModal?.(), reduceMotion ? 0 : 750);
   }
   ticket?.addEventListener('close', () => { if (state === 'paused') state = 'play'; });
@@ -794,7 +564,7 @@ export function initGame(root) {
     const w = canvas.getBoundingClientRect().width;
     if (Math.abs(w - lastWidth) < 2) return;
     lastWidth = w;
-    if (state === 'play') { build(true); } else build();
+    if (state === 'menu') build();
   }).observe(canvas);
 
   openMenu();

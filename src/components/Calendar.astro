@@ -1,0 +1,118 @@
+---
+// A live, horizontally scrolling lawn calendar. The server renders every task (good for
+// search engines); the browser stamps today's date and marks what's done, now and next.
+import { TASKS, MONTHS_LONG, windowText } from '../data/tasks.js';
+
+const list = TASKS.filter((t) => t.level <= 2);
+const months = MONTHS_LONG.map((name, i) => ({
+  name,
+  tasks: list.filter((t) => t.start[0] === i + 1),
+}));
+---
+<section class="calendar" aria-labelledby="cal-h" data-calendar>
+  <div class="cal-head">
+    <h2 id="cal-h">What your lawn needs right now</h2>
+    <p class="cal-today">
+      Today is <time data-today>this week</time>. Timing is set for Bedford and the rest of the Northeast.
+    </p>
+  </div>
+
+  <div class="cal-summary" data-summary>
+    <div class="cal-sum" data-sum="last">
+      <p class="cal-sum-label">Last up</p>
+      <p class="cal-sum-title" data-title>…</p>
+      <p class="cal-sum-when" data-when></p>
+    </div>
+    <div class="cal-sum is-now" data-sum="now">
+      <p class="cal-sum-label">Do it now</p>
+      <p class="cal-sum-title" data-title>…</p>
+      <p class="cal-sum-when" data-when></p>
+    </div>
+    <div class="cal-sum" data-sum="next">
+      <p class="cal-sum-label">Next up</p>
+      <p class="cal-sum-title" data-title>…</p>
+      <p class="cal-sum-when" data-when></p>
+    </div>
+  </div>
+
+  <div class="cal-track" data-track tabindex="0" aria-label="Lawn care calendar, January to December. Scroll sideways.">
+    {months.map((m, i) => (
+      <div class="cal-month" data-month={i + 1}>
+        <h3 class="cal-month-name">{m.name}</h3>
+        <span class="cal-flag" hidden>Today</span>
+        {m.tasks.length === 0 && (
+          <p class="cal-rest">{i < 2 ? 'Rest. Dream about spring.' : 'Nothing new. Keep it up.'}</p>
+        )}
+        {m.tasks.map((t) => (
+          <article class="cal-task" data-task={t.id} data-start={t.start.join('-')} data-end={t.end.join('-')}>
+            <p class="cal-window">{windowText(t)}</p>
+            <h4>{t.title}</h4>
+            <p>{t.short}</p>
+            <p class="cal-status" data-status></p>
+          </article>
+        ))}
+      </div>
+    ))}
+  </div>
+  <p class="cal-cta">
+    This is the general plan. <a href="/plan/">Take the quiz</a> to get one for your yard and your energy level.
+  </p>
+</section>
+
+<script>
+  import { TASKS, statusOf, snapshot, windowText, fmt } from '../data/tasks.js';
+
+  const root = document.querySelector('[data-calendar]');
+  if (root) {
+    const today = new Date();
+    const list = TASKS.filter((t) => t.level <= 2);
+    root.querySelector('[data-today]').textContent = today.toLocaleDateString('en-US', {
+      weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+    });
+    root.querySelector('[data-today]').setAttribute('datetime', today.toISOString().slice(0, 10));
+
+    const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+    for (const card of root.querySelectorAll('[data-task]')) {
+      const t = TASKS.find((x) => x.id === card.dataset.task);
+      const s = statusOf(t, today);
+      card.dataset.state = s.state;
+      card.querySelector('[data-status]').textContent =
+        s.state === 'now' ? `Happening now, ${plural(s.daysLeft, 'day')} left`
+        : s.state === 'next' ? `In ${plural(s.days, 'day')}`
+        : 'Done for this year';
+    }
+
+    const snap = snapshot(list, today);
+    const fill = (key, title, when) => {
+      const el = root.querySelector(`[data-sum="${key}"]`);
+      el.querySelector('[data-title]').textContent = title;
+      el.querySelector('[data-when]').textContent = when;
+    };
+    if (snap.last) fill('last', snap.last.t.title, `${windowText(snap.last.t)}. Ended ${plural(snap.last.s.ago, 'day')} ago.`);
+    else root.querySelector('[data-sum="last"]').hidden = true;
+    if (snap.now.length) {
+      const first = snap.now[0];
+      const extra = snap.now.length > 1 ? ` Plus ${snap.now.length - 1} more below.` : '';
+      fill('now', first.t.title, `Through ${fmt(first.t.end)}. ${plural(first.s.daysLeft, 'day')} left.${extra}`);
+    } else {
+      fill('now', 'Nothing urgent. Enjoy it.', 'Your lawn is between jobs.');
+    }
+    if (snap.next) fill('next', snap.next.t.title, `Starts ${fmt(snap.next.t.start)}. In ${plural(snap.next.s.days, 'day')}.`);
+
+    // mark this month and scroll it into view, with last month peeking in
+    const month = today.getMonth() + 1;
+    const col = root.querySelector(`[data-month="${month}"]`);
+    col.classList.add('is-current');
+    col.querySelector('.cal-flag').hidden = false;
+    const track = root.querySelector('[data-track]');
+    const prev = col.previousElementSibling;
+    const align = () => {
+      const pad = parseFloat(getComputedStyle(track).paddingLeft) || 0;
+      const delta = col.getBoundingClientRect().left - track.getBoundingClientRect().left - pad - (prev ? 48 : 0);
+      track.style.scrollSnapType = 'none'; // let last month peek in
+      track.scrollLeft += delta;
+      track.addEventListener('pointerdown', () => { track.style.scrollSnapType = ''; }, { once: true });
+    };
+    requestAnimationFrame(align);
+  }
+</script>

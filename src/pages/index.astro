@@ -1,8 +1,6 @@
 ---
-import '@fontsource-variable/bricolage-grotesque';
-import '@fontsource/atkinson-hyperlegible-next/400.css';
-import '@fontsource/atkinson-hyperlegible-next/700.css';
-import '../styles/global.css';
+import Base from '../layouts/Base.astro';
+import Calendar from '../components/Calendar.astro';
 import PixelIcon from '../components/PixelIcon.astro';
 
 const title = 'Mow It Tall: the easy guide to a better lawn';
@@ -188,67 +186,35 @@ const jsonLd = {
   ],
 };
 ---
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <title>{title}</title>
-    <meta name="description" content={description} />
-    <!-- Preview build: remove noindex at launch on mowittall.com -->
-    <meta name="robots" content="noindex" />
-    <link rel="canonical" href={site + '/'} />
-    <meta name="theme-color" content="#173d27" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:url" content={site + '/'} />
-    <meta property="og:image" content={site + '/img/backyard-stripes-1400.webp'} />
-    <meta name="twitter:card" content="summary_large_image" />
-    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
-  </head>
-  <body>
-    <a class="skip" href="#main">Skip the game</a>
-
-    <header class="top">
-      <a class="wordmark" href="/" aria-label="Mow It Tall home">Mow it <span class="wordmark-tall">tall</span></a>
-    </header>
-
-    <section class="game" data-game aria-label="Mowing game">
+<Base title={title} description={description} path="/" jsonLd={jsonLd}>
+    <section class="game" data-game aria-label="Stripe game">
       <div class="window hud">
-        <span><span class="hud-label">Level</span> <b data-level>1/3</b></span>
-        <span><span class="hud-label">Time</span> <b data-time>0:00</b></span>
-        <span><span class="hud-label">Mowed</span> <b data-pct>0%</b></span>
+        <span><span class="hud-label">Yard</span> <b data-level>1/3</b></span>
+        <span><span class="hud-label">Pass</span> <b data-pass>0/7</b></span>
+        <span><span class="hud-label">Score</span> <b data-score>–</b></span>
       </div>
 
       <div class="screen" data-screen>
-        <canvas tabindex="0" aria-label="Lawn. During a level, swipe or use the arrow keys to turn the mower."></canvas>
+        <canvas tabindex="0" aria-label="Lawn. During a round, drag left and right or use the arrow keys to steer the mower."></canvas>
 
         <div class="window overlay" data-menu>
-          <h2 data-menu-title>Level 1: The front yard</h2>
-          <p data-menu-goal></p>
-          <fieldset class="heights">
-            <legend>Pick your mower height</legend>
-            <div class="seg">
-              <button type="button" data-height="2" aria-pressed="false">2″<small>Short</small></button>
-              <button type="button" data-height="3" aria-pressed="true">3″<small>Medium</small></button>
-              <button type="button" data-height="4" aria-pressed="false">4″<small>Tall</small></button>
-            </div>
-          </fieldset>
-          <p class="how">Swipe to turn. The mower keeps rolling. At the end of a lane, swipe sideways to turn around.</p>
-          <button type="button" class="btn" data-start>Start mowing</button>
+          <h2 data-menu-title>Yard 1: The front yard</h2>
+          <p class="overlay-blurb" data-menu-blurb></p>
+          <p>Drag left and right to steer. Keep every pass straight and snug against the last one.</p>
+          <div class="overlay-foot">
+            <button type="button" class="btn" data-start>Start mowing</button>
+            <span class="overlay-best" data-menu-best hidden></span>
+          </div>
         </div>
 
         <div class="window overlay" data-result hidden>
-          <h2 data-result-title>Nicely done.</h2>
-          <div class="stars" data-stars role="img"></div>
-          <dl class="rows" data-rows></dl>
-          <p class="lesson" data-lesson hidden></p>
+          <p class="result-score"><span data-total>0</span><span class="stars" data-stars role="img"></span></p>
+          <h2 data-grade>Respectable dad stripes.</h2>
+          <p class="overlay-small" data-best></p>
+          <p class="overlay-small" data-tip></p>
           <div class="actions">
-            <button type="button" class="btn" data-week>See it a week later</button>
-            <button type="button" class="btn" data-next hidden>Next level</button>
-            <button type="button" class="btn btn-quiet" data-retry>Try again</button>
+            <button type="button" class="btn" data-again>Mow again</button>
+            <button type="button" class="btn btn-quiet" data-next>Next yard</button>
           </div>
         </div>
 
@@ -264,7 +230,7 @@ const jsonLd = {
           The easy guide to a better lawn. No jargon, no 40-step programs. Just a few small
           changes from a guy in Bedford, NY whose neighbors keep asking about his stripes.
         </p>
-        <a class="btn" href="#plan">Get your lawn game plan</a>
+        <a class="btn" href="/plan/">Get your lawn game plan</a>
       </section>
 
       <section class="changes" aria-labelledby="changes-h">
@@ -331,13 +297,15 @@ const jsonLd = {
         </div>
       </section>
 
+      <Calendar />
+
       <section class="plan" id="plan" aria-labelledby="plan-h">
         <h2 id="plan-h">Get your lawn game plan</h2>
         <p>
-          Answer a few quick questions about your yard and how much time you actually want to
-          spend. Get a simple plan, and a calendar that reminds you when to do each thing.
+          Seven quick questions about your yard and how much effort you’re honestly willing to
+          give. You get a plan, plus reminders for your phone’s calendar.
         </p>
-        <p class="soon">Coming this winter, in time for spring.</p>
+        <a class="btn" href="/plan/">Take the quiz</a>
       </section>
 
       <section class="faq" aria-labelledby="faq-h">
@@ -350,11 +318,6 @@ const jsonLd = {
         ))}
       </section>
     </main>
-
-    <footer class="footer">
-      <p>Made in Bedford, NY by Mike.</p>
-      <p>No gas leaf blowers were used in the making of this website.</p>
-    </footer>
 
     <dialog class="ticket" data-ticket aria-labelledby="ticket-h">
       <form method="dialog">
@@ -381,5 +344,4 @@ const jsonLd = {
       const soil = document.querySelector('[data-soil]');
       if (soil) initSoil(soil);
     </script>
-  </body>
-</html>
+</Base>

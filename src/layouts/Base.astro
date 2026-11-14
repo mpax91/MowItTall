@@ -1,0 +1,55 @@
+---
+import '@fontsource-variable/bricolage-grotesque';
+import '@fontsource/atkinson-hyperlegible-next/400.css';
+import '@fontsource/atkinson-hyperlegible-next/700.css';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+  path?: string;
+  jsonLd?: object;
+  image?: string;
+}
+const { title, description, path = '/', jsonLd, image = '/img/backyard-stripes-1400.webp' } = Astro.props;
+const site = 'https://mowittall.com';
+const url = site + path;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <!-- Preview build: remove noindex at launch on mowittall.com -->
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href={url} />
+    <meta name="theme-color" content="#173d27" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Mow It Tall" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={url} />
+    <meta property="og:image" content={site + image} />
+    <meta name="twitter:card" content="summary_large_image" />
+    {jsonLd && <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />}
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <header class="top">
+      <a class="wordmark" href="/" aria-label="Mow It Tall home">Mow it <span class="wordmark-tall">TALL</span></a>
+      <nav class="top-nav" aria-label="Main">
+        <a href="/plan/">Get your plan</a>
+      </nav>
+    </header>
+
+    <slot />
+
+    <footer class="footer">
+      <p>Made in Bedford, NY by Mike.</p>
+      <p>No gas leaf blowers were used in the making of this website.</p>
+    </footer>
+  </body>
+</html>
