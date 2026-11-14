@@ -172,6 +172,13 @@ h3 { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.005em; }
 .overlay[hidden] { display: none; }
 .overlay h2 { font-size: 1.45rem; margin-bottom: 8px; }
 .overlay p { margin: 0 0 14px; font-size: 1rem; line-height: 1.45; color: #e3efdc; }
+.yard-pick { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 8px; margin-bottom: 8px; }
+.yard-pick h2 { margin: 0 !important; text-align: center; }
+.yard-arrow {
+  width: 36px; height: 36px; border-radius: 9px; cursor: pointer;
+  font-family: var(--display); font-size: 1.6rem; font-weight: 800; line-height: 1;
+  color: #fff; background: rgba(0, 0, 0, 0.25); border: 2px solid rgba(238, 245, 230, 0.4);
+}
 .overlay-blurb { font-weight: 700; color: #fff !important; margin-bottom: 6px !important; }
 .overlay-foot { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .overlay-best, .overlay-small { font-size: 0.92rem !important; color: #b9d8b4 !important; }
