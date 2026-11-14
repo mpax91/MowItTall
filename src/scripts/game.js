@@ -144,7 +144,7 @@ export function initGame(root) {
     start: $('[data-start]'),
     result: $('[data-result]'), grade: $('[data-grade]'), total: $('[data-total]'), stars: $('[data-stars]'),
     best: $('[data-best]'), tip: $('[data-tip]'), again: $('[data-again]'), next: $('[data-next]'),
-    toast: $('[data-toast]'), brap: $('[data-brap]'),
+    toast: $('[data-toast]'), brap: $('[data-brap]'), push: $('[data-push]'),
   };
   const ticket = document.querySelector('[data-ticket]');
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -158,6 +158,8 @@ export function initGame(root) {
   let pass = 0, passScores = [], samples = [], prevSamples = null, turnT = 0;
   let particles = [], shake = 0, bumpV = 0;
   let input = 0; // keyboard steer, -1..1
+  let keyPush = false; // holding Up or Space
+  const pushing = () => drag !== null || keyPush;
   let lastWidth = 0, seed = 1;
   const mower = { x: 0, y: 0, dir: 0 };
 
@@ -314,7 +316,7 @@ export function initGame(root) {
       const ch = map[y][x];
       if (ch !== '.' && ch !== 'G' && ch !== 'g') darken(ox + x + 2, oy + y + 2, 0.6);
     }
-    const jitter = state === 'play' && !reduceMotion && (performance.now() / 60 | 0) % 2 ? 1 : 0;
+    const jitter = state === 'play' && pushing() && !reduceMotion && (performance.now() / 60 | 0) % 2 ? 1 : 0;
     for (let y = 0; y < map.length; y++) for (let x = 0; x < map[y].length; x++) {
       const ch = map[y][x];
       if (ch !== '.') px(ox + x + (mower.dir % 2 ? jitter : 0), oy + y, MOWER_COL[ch]);
@@ -375,11 +377,17 @@ export function initGame(root) {
     if (state !== 'play') return;
     const lvl = LEVELS[levelIndex];
     const dy = mower.dir === 0 ? -1 : 1;
+    const moving = pushing();
+    ui.push?.classList.toggle('is-on', !moving);
+    // keyboard steering works even while parked, so you can line up first
+    mower.x += input * 34 * dt;
+    mower.x = Math.max(lawn.left + deck, Math.min(lawn.right - deck, mower.x));
+    if (!moving) return; // the mower only rolls while you push it
     // the lawn pushes back: lumps, a slope, the odd root
     let drift = (smooth(mower.y, 0, 14, seed) - 0.5) * 2 * lvl.drift + lvl.slope;
     if (lvl.bumps && Math.random() < lvl.bumps * dt) bumpV += (Math.random() > 0.5 ? 1 : -1) * (14 + Math.random() * 10);
     bumpV *= Math.pow(0.04, dt);
-    mower.x += (drift + bumpV + input * 34) * dt;
+    mower.x += (drift + bumpV) * dt;
     mower.x = Math.max(lawn.left + deck, Math.min(lawn.right - deck, mower.x));
     mower.y += dy * lvl.speed * dt;
     samples.push(mower.x);
@@ -409,6 +417,7 @@ export function initGame(root) {
     hud();
     if (pass >= passes) return endLevel();
     // turn around
+    ui.push?.classList.remove('is-on');
     state = 'turn';
     turnT = 0.45;
     mower.dir = 1;
@@ -416,6 +425,7 @@ export function initGame(root) {
 
   function endLevel() {
     state = 'result';
+    ui.push?.classList.remove('is-on');
     setTouch(false);
     const avg = Math.round(passScores.reduce((a, b) => a + b, 0) / passScores.length);
     const total = avg * 10;
@@ -455,8 +465,8 @@ export function initGame(root) {
     build();
     pass = 0; passScores = []; prevSamples = null;
     setTouch(true);
-    hud();
     startPass();
+    hud();
   }
 
   function show(el) { el.hidden = false; }
@@ -510,11 +520,13 @@ export function initGame(root) {
     if (state === 'play' || state === 'turn') {
       if (e.key === 'ArrowLeft') { input = -1; e.preventDefault(); }
       if (e.key === 'ArrowRight') { input = 1; e.preventDefault(); }
+      if (e.key === 'ArrowUp' || e.key === ' ') { keyPush = true; e.preventDefault(); }
     }
     if ((e.key === 'b' || e.key === 'B') && document.activeElement === canvas) blowerPrank();
   });
   window.addEventListener('keyup', (e) => {
     if ((e.key === 'ArrowLeft' && input < 0) || (e.key === 'ArrowRight' && input > 0)) input = 0;
+    if (e.key === 'ArrowUp' || e.key === ' ') keyPush = false;
   });
 
   ui.start.addEventListener('click', startLevel);

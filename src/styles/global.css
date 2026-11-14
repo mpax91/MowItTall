@@ -249,6 +249,18 @@ h3 { font-size: 1.2rem; font-weight: 700; letter-spacing: -0.005em; }
   transition: opacity 0.15s, transform 0.15s;
 }
 .toast.is-on { opacity: 1; transform: translate(-50%, 0); }
+.push-hint {
+  position: absolute; left: 50%; bottom: 22%;
+  transform: translateX(-50%);
+  margin: 0; z-index: 2; pointer-events: none;
+  font-family: var(--display); font-weight: 800; font-size: 1.15rem;
+  color: var(--ink); background: var(--paper);
+  padding: 8px 16px; border-radius: 10px;
+  box-shadow: 0 0 0 2px var(--win-edge), 0 4px 0 rgba(5, 20, 10, 0.35);
+  opacity: 0; transition: opacity 0.15s;
+}
+.push-hint.is-on { opacity: 1; animation: nudge 1.4s ease-in-out infinite; }
+@keyframes nudge { 50% { transform: translate(-50%, -5px); } }
 .brap {
   top: 16%; right: 6%;
   color: var(--sun);
