@@ -1,6 +1,5 @@
 ---
-import '@fontsource/pixelify-sans/500.css';
-import '@fontsource/pixelify-sans/700.css';
+import '@fontsource-variable/bricolage-grotesque';
 import '@fontsource/atkinson-hyperlegible-next/400.css';
 import '@fontsource/atkinson-hyperlegible-next/700.css';
 import '../styles/global.css';
@@ -199,7 +198,7 @@ const jsonLd = {
     <!-- Preview build: remove noindex at launch on mowittall.com -->
     <meta name="robots" content="noindex" />
     <link rel="canonical" href={site + '/'} />
-    <meta name="theme-color" content="#1f4a2b" />
+    <meta name="theme-color" content="#173d27" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
@@ -210,36 +209,57 @@ const jsonLd = {
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
   </head>
   <body>
-    <a class="skip" href="#main">Skip the mowing</a>
+    <a class="skip" href="#main">Skip the game</a>
 
-    <header class="hero" data-lawn>
-      <canvas
-        tabindex="0"
-        aria-label="A lawn you can mow. Drag across it, or focus it and use the arrow keys."
-      ></canvas>
-
-      <div class="yard-sign">
-        <h1>
-          <span class="logo" aria-hidden="true">Mow it <span class="logo-tall">tall</span></span>
-          <span class="sr-only">Mow It Tall: the easy guide to a better lawn</span>
-        </h1>
-        <span class="stake stake-l" aria-hidden="true"></span>
-        <span class="stake stake-r" aria-hidden="true"></span>
-      </div>
-
-      <p class="hint" data-hint aria-hidden="true">Drag to mow</p>
-      <p class="hud" data-hud aria-live="off">0% mowed</p>
-      <p class="brap" data-brap aria-hidden="true">BRRRRAAAAP</p>
-
-      <div class="done" data-done hidden>
-        <p>Look at those stripes. Light stripes are grass bent away from you, dark ones toward you.</p>
-        <button type="button" class="btn btn-small" data-reset>Mow again</button>
-      </div>
+    <header class="top">
+      <a class="wordmark" href="/" aria-label="Mow It Tall home">Mow it <span class="wordmark-tall">tall</span></a>
     </header>
+
+    <section class="game" data-game aria-label="Mowing game">
+      <div class="window hud">
+        <span><span class="hud-label">Level</span> <b data-level>1/3</b></span>
+        <span><span class="hud-label">Time</span> <b data-time>0:00</b></span>
+        <span><span class="hud-label">Mowed</span> <b data-pct>0%</b></span>
+      </div>
+
+      <div class="screen" data-screen>
+        <canvas tabindex="0" aria-label="Lawn. During a level, swipe or use the arrow keys to turn the mower."></canvas>
+
+        <div class="window overlay" data-menu>
+          <h2 data-menu-title>Level 1: The front yard</h2>
+          <p data-menu-goal></p>
+          <fieldset class="heights">
+            <legend>Pick your mower height</legend>
+            <div class="seg">
+              <button type="button" data-height="2" aria-pressed="false">2″<small>Short</small></button>
+              <button type="button" data-height="3" aria-pressed="true">3″<small>Medium</small></button>
+              <button type="button" data-height="4" aria-pressed="false">4″<small>Tall</small></button>
+            </div>
+          </fieldset>
+          <p class="how">Swipe to turn. The mower keeps rolling. At the end of a lane, swipe sideways to turn around.</p>
+          <button type="button" class="btn" data-start>Start mowing</button>
+        </div>
+
+        <div class="window overlay" data-result hidden>
+          <h2 data-result-title>Nicely done.</h2>
+          <div class="stars" data-stars role="img"></div>
+          <dl class="rows" data-rows></dl>
+          <p class="lesson" data-lesson hidden></p>
+          <div class="actions">
+            <button type="button" class="btn" data-week>See it a week later</button>
+            <button type="button" class="btn" data-next hidden>Next level</button>
+            <button type="button" class="btn btn-quiet" data-retry>Try again</button>
+          </div>
+        </div>
+
+        <p class="toast" data-toast aria-live="polite"></p>
+        <p class="brap" data-brap aria-hidden="true">BRRRRAAAAP</p>
+      </div>
+    </section>
 
     <main id="main">
       <section class="intro">
-        <p class="tagline">You don’t need to be a know-it-all. Just mow it tall.</p>
+        <h1 class="tagline">You don’t need to be a <span class="nowrap">know-it-all.</span> Just mow it tall.</h1>
         <p class="lede">
           The easy guide to a better lawn. No jargon, no 40-step programs. Just a few small
           changes from a guy in Bedford, NY whose neighbors keep asking about his stripes.
@@ -354,10 +374,10 @@ const jsonLd = {
     </dialog>
 
     <script>
-      import { initLawn } from '../scripts/lawn.js';
+      import { initGame } from '../scripts/game.js';
       import { initSoil } from '../scripts/soil.js';
-      const lawn = document.querySelector('[data-lawn]');
-      if (lawn) initLawn(lawn);
+      const game = document.querySelector('[data-game]');
+      if (game) initGame(game);
       const soil = document.querySelector('[data-soil]');
       if (soil) initSoil(soil);
     </script>
