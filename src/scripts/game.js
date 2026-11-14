@@ -1,6 +1,6 @@
 // Mow It Tall — the stripe game.
-// Six yards, each with its own pattern: straight stripes, diagonals, obstacles, leaves,
-// a checkerboard and a spiral. Hold to push, steer to keep every pass straight and snug.
+// Pull-start the mower, then paint the stripes yourself: drag to drive, and every straight
+// pass you lay down gets scored. Eight yards, from a starter home to a snowy Christmas lawn.
 
 /* ------------------------------------------------------------------ palette */
 const hex = (h) => { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
@@ -52,6 +52,17 @@ const C = {
   rail: ramp('#6b5a48', '#8a7a66', '#a69580'),
   night: ramp('#07140c', '#0c1d12', '#12291a', '#1a3622'),
   dog: ramp('#5a3a22', '#8a5a34', '#b07a4a', '#1a120d'),
+  dirt: ramp('#9a6a3e', '#a8774a', '#b58456', '#c49464'),
+  chalk: ramp('#e8ece6', '#ffffff'),
+  snow: ramp('#dfe8f0', '#eef3f8', '#ffffff', '#c9d6e3'),
+  turkey: ramp('#5a3a22', '#7a4e2c', '#a86a3a', '#c8372d', '#f4b03a', '#2f2a26'),
+  ghost: ramp('#dfe6ee', '#f6f8fb', '#1a120d'),
+  stone: ramp('#6c7378', '#8a9196', '#a9afb3'),
+  sky: ramp('#1c1430', '#2a1d45', '#3a2a5c'),
+  moon: ramp('#f2e6b8', '#fff6d6'),
+  smoke: ramp('#8a8f94', '#b4b9bd', '#d6d9dc'),
+  wall: ramp('#173d27', '#1f4e31', '#2a5e3b'),
+  lights: ramp('#e0463a', '#f6c945', '#4fb3e8', '#7fd65a'),
 };
 
 /* -------------------------------------------------------------------- noise */
@@ -126,73 +137,100 @@ const BLOWER = [
 ];
 const BLOWER_COL = { K: C.ink, O: C.blower[1], o: C.blower[0], S: C.steel[1] };
 
-const DOG = [
-  'k.........',
-  'kk.....kk.',
-  '.BBBBBBbk.',
-  'BBBBBBBBBk',
-  '.BbBBBBB..',
-  '.k.k..k.k.',
-];
-const DOG_COL = { B: C.dog[2], b: C.dog[1], k: C.dog[3] };
+/* ------------------------------------------------------------------ sprites */
+const S = {
+  dog: { map: ['k.........', 'kk.....kk.', '.BBBBBBbk.', 'BBBBBBBBBk', '.BbBBBBB..', '.k.k..k.k.'], col: { B: C.dog[2], b: C.dog[1], k: C.dog[3] } },
+  turkey: {
+    map: ['.kTkTk...', 'kTOTOTk..', 'kOTkTOk..', '.kkBBkkk.', '..kBBBWHk', '..kBbBkRk', '...kBBk..', '...y..y..'],
+    col: { k: C.ink, T: C.turkey[0], O: C.turkey[4], B: C.turkey[1], b: C.turkey[0], H: C.turkey[5], W: C.trim[1], R: C.turkey[3], y: C.turkey[4] },
+  },
+  ghost: { map: ['..WWWW..', '.WWWWWW.', 'WWkWWkWW', 'WWWWWWWW', 'WWWkkWWW', 'WWWWWWWW', 'WWWWWWWW', 'W.WW.WW.'], col: { W: C.ghost[1], k: C.ghost[2] } },
+  stone: { map: ['.SSSS.', 'SsSSsS', 'SSssSS', 'SsSSsS', 'SSSSSS', 'SSSSSS', 'ssssss'], col: { S: C.stone[1], s: C.stone[0] } },
+  jack: { map: ['...g...', '.OOgOO.', 'OOOOOOO', 'OyOOOyO', 'OOOOOOO', 'OyyyyyO', '.OOOOO.'], col: { O: C.pumpkin[1], g: C.pumpkin[2], y: C.glow[0] } },
+  snowman: {
+    map: ['..kk..', '.kkkk.', '.WkWW.', '.WWOW.', '..WW..', '.WWkWW', 'WWWWWW', 'WWkWWW', '.WWWW.'],
+    col: { W: C.snow[2], k: C.ink, O: C.blower[1] },
+  },
+  sleigh: {
+    map: ['.R...........R..', 'RRR.........RRR.', '.B..rrrrrRSS.B..', '.BBBrrrrrRSSBB..', '..BrrrrrrrrrrB..', '...yyyyyyyyyy...'],
+    col: { R: C.dog[1], B: C.dog[2], r: C.red[2], S: C.red[3], y: C.glow[0] },
+  },
+  gnome: {
+    map: ['...H...', '..HhH..', '.HHhHH.', '.FsssF.', '.BbbbB.', 'CBbbbBC', 'CCBbBCC', '.CCCCC.', '.K...K.'],
+    col: { H: C.gnomeHat[1], h: C.gnomeHat[0], F: C.skin, s: C.skin, B: C.gnomeBeard[1], b: C.gnomeBeard[0], C: C.gnomeCoat[1], K: C.ink },
+  },
+};
+
+const UP = [0, -1], RIGHT = [1, 0], D1 = [Math.SQRT1_2, -Math.SQRT1_2], D2 = [-Math.SQRT1_2, -Math.SQRT1_2];
 
 /* ------------------------------------------------------------------- levels */
-// pattern: vertical | diagonal | backyard | leaves | checker | spiral
-// lawn: how much room the scenery takes (top band, side beds) in lawn pixels
+// axes: the stripe directions this yard wants. Mowing along an axis lays a light stripe,
+// mowing back lays a dark one. layer: leaves (two passes to mulch) or snow (one pass).
 const LEVELS = [
   {
-    name: 'The starter home', pattern: 'vertical', scene: 'hedge',
+    id: 'starter', name: 'The starter home', short: 'Starter home', scene: 'hedge', axes: [UP],
     blurb: 'Flat, square, forgiving. Like a first apartment, but grass.',
-    how: 'Straight up-and-down stripes. Keep each pass snug against the last one.',
-    speed: 60, drift: 5, slope: 0, bumps: 0,
+    how: 'Paint straight stripes up and down the lawn.',
   },
   {
-    name: 'The Victorian', pattern: 'diagonal', scene: 'victorian', top: 48,
+    id: 'victorian', name: 'The Victorian', short: 'Victorian', scene: 'victorian', top: 48, axes: [D1],
     blurb: 'Diagonal stripes, because this house has standards.',
-    how: 'Every pass runs corner to corner. Slide your thumb across the line to steer.',
-    speed: 58, drift: 6, slope: 0, bumps: 0.3,
+    how: 'Paint every stripe corner to corner, on the diagonal.',
   },
   {
-    name: 'The backyard', pattern: 'backyard', scene: 'shed',
-    blurb: 'Two trees, a gnome, and the neighbor’s dog. None of them will move for you. Well, one will.',
-    how: 'Swerve around the obstacles and get back on your line. Bumps cost points.',
-    speed: 58, drift: 6, slope: 0, bumps: 0.4,
+    id: 'backyard', name: 'The backyard', short: 'Backyard', scene: 'shed', axes: [UP],
+    blurb: 'Two trees, a gnome and the neighbor’s dog. Only one of them will move for you.',
+    how: 'Straight stripes, but steer around the obstacles. Bumps cost points.',
+    statics: [['tree', 0.32, 0.3, 9], ['tree', 0.7, 0.68, 10], ['gnome', 0.78, 0.2, 4]], movers: 'dog',
   },
   {
-    name: 'Leaf season', pattern: 'leaves', scene: 'autumn', side: 22,
-    blurb: 'No blower. This is Bedford. Mow the leaves right into the lawn.',
-    how: 'Mow each lane twice, up and back, to chop the leaves into confetti.',
-    speed: 72, drift: 6, slope: 0, bumps: 0.4,
+    id: 'ballpark', name: 'The ballpark', short: 'Ballpark', scene: 'ballpark', top: 30, axes: [D1, D2],
+    blurb: 'Big league criss-cross. Stay off the infield dirt.',
+    how: 'Paint diagonal stripes one way, then cross them the other way.',
+    infield: true,
   },
   {
-    name: 'The country club', pattern: 'checker', scene: 'club', square: true,
+    id: 'club', name: 'The country club', short: 'Country club', scene: 'club', square: true, axes: [UP, RIGHT], both: true,
     blurb: 'Up and down, then side to side. Very fancy. Very petty.',
-    how: 'First mow every lane up and down. Then do it all again side to side.',
-    speed: 62, drift: 7, slope: 0, bumps: 0.5,
+    how: 'Mow it all up and down, then all again side to side for a checkerboard.',
   },
   {
-    name: 'The spiral', pattern: 'spiral', scene: 'night', square: true,
-    blurb: 'Mike’s signature move. Best done at dusk, for maximum neighbor confusion.',
-    how: 'Go around in rings, outside in. Slide in and out to keep every ring even.',
-    speed: 54, drift: 5, slope: 0, bumps: 0.3,
+    id: 'halloween', name: 'The haunted lawn', short: 'Halloween', scene: 'halloween', axes: [UP], layer: 'leaves',
+    blurb: 'Leaves everywhere, tombstones, and something floating around. Mow fast.',
+    how: 'Mow over each strip twice to chop the leaves. Dodge the ghost.',
+    statics: [['stone', 0.25, 0.35, 4], ['stone', 0.72, 0.55, 4], ['jack', 0.5, 0.78, 4]], movers: 'ghost',
+  },
+  {
+    id: 'thanksgiving', name: 'The turkey trot', short: 'Thanksgiving', scene: 'autumn', side: 18, axes: [UP], layer: 'leaves',
+    blurb: 'Fall leaves and three turkeys who refuse to leave. Gobble gobble.',
+    how: 'Mow over each strip twice to mulch the leaves. Don’t mow the turkeys.',
+    movers: 'turkeys',
+  },
+  {
+    id: 'christmas', name: 'The snow day', short: 'Christmas', scene: 'snowday', top: 48, axes: [UP], layer: 'snow',
+    blurb: 'Nobody mows in December. You’re not nobody. Watch for the sleigh.',
+    how: 'Clear the snow in straight stripes. Steer around the snowman and Santa.',
+    statics: [['snowman', 0.72, 0.4, 5]], movers: 'santa',
   },
 ];
 
 const GRADES = [
-  [95, 'Golf course material.'],
-  [87, 'Neighborhood legend.'],
-  [75, 'Respectable dad stripes.'],
-  [60, 'The neighbors noticed. Not in a good way.'],
+  [920, 'Golf course material.'],
+  [820, 'Neighborhood legend.'],
+  [700, 'Respectable dad stripes.'],
+  [550, 'The neighbors noticed. Not in a good way.'],
   [0, 'Did you mow this during a sneeze?'],
 ];
 
 const TIPS = {
-  vertical: 'Real-life tip: pick a target at the far end of the yard and keep your eyes on it, not the mower.',
-  diagonal: 'Real-life tip: switch stripe direction every week, so the grass doesn’t lean one way and get matted down.',
-  backyard: 'Real-life tip: mow a lap around trees and beds first. Then your straight passes have room to turn.',
-  leaves: 'Real-life tip: mow leaves when they’re dry. If you can see grass through the confetti, you’re done.',
-  checker: 'Real-life tip: taller grass shows patterns better. Set your deck to 3.5 to 4 inches.',
-  spiral: 'Real-life tip: start the spiral with two laps around the outside edge, then work in.',
+  starter: 'Real-life tip: pick a target at the far end of the yard and walk toward it. Don’t stare at the mower.',
+  victorian: 'Real-life tip: change your stripe direction every week so the grass doesn’t lean one way.',
+  backyard: 'Real-life tip: mow a lap around trees and beds first, then your straight passes have room to turn.',
+  ballpark: 'Real-life tip: stripes are just grass bent in different directions. A roller behind the mower makes them pop.',
+  club: 'Real-life tip: taller grass shows patterns better. Set your deck to 3.5 to 4 inches.',
+  halloween: 'Real-life tip: mow leaves when they’re dry. If you can see grass through the confetti, you’re done.',
+  thanksgiving: 'Real-life tip: chopped leaves feed the lawn for free. Skip the rake, skip the blower.',
+  christmas: 'Real-life tip: please don’t actually mow in the snow. Do the last cut of the year in November, a notch lower.',
 };
 
 /* --------------------------------------------------------------------- game */
@@ -202,39 +240,41 @@ export function initGame(root) {
   const screen = root.querySelector('[data-screen]');
   const $ = (s) => root.querySelector(s);
   const ui = {
-    level: $('[data-level]'), pass: $('[data-pass]'), score: $('[data-score]'),
-    menu: $('[data-menu]'), menuTitle: $('[data-menu-title]'), menuBlurb: $('[data-menu-blurb]'),
-    menuHow: $('[data-menu-how]'), menuBest: $('[data-menu-best]'),
-    start: $('[data-start]'), prevYard: $('[data-prev-yard]'), nextYard: $('[data-next-yard]'),
+    level: $('[data-level]'), pct: $('[data-pct]'), time: $('[data-time]'),
+    picker: $('[data-picker]'), pickList: $('[data-pick-list]'), random: $('[data-random]'),
+    ready: $('[data-ready]'), readyTitle: $('[data-ready-title]'), readyBlurb: $('[data-ready-blurb]'),
+    readyHow: $('[data-ready-how]'), readyBest: $('[data-ready-best]'), cord: $('[data-cord]'), back: $('[data-back]'),
     result: $('[data-result]'), grade: $('[data-grade]'), total: $('[data-total]'), stars: $('[data-stars]'),
-    best: $('[data-best]'), tip: $('[data-tip]'), again: $('[data-again]'), next: $('[data-next]'),
+    detail: $('[data-detail]'), tip: $('[data-tip]'), again: $('[data-again]'), pick: $('[data-pick]'),
     toast: $('[data-toast]'), brap: $('[data-brap]'), push: $('[data-push]'),
   };
   const ticket = document.querySelector('[data-ticket]');
   const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  let W = 0, H = 0, img, data, staticLayer, staticAlpha, glowMask;
-  let lawn, mask, cutV, cutH, uncutTone, cutVar, leaf, leafHit;
-  let lane = 14, deck = 7;
-  let passes = [], passIndex = 0, passScores = [], samples = [], prevMean = 0, bumpsThisPass = 0;
-  let obstacles = [], dog = null, leafTotal = 0;
+  let W = 0, H = 0, img, data, staticLayer, staticAlpha, overlay;
+  let lawn, mask, cut, toneA, toneB, uncutTone, cutVar, layer, layerHit, grassTotal;
+  const deck = 6;
+  let level = LEVELS[0];
+  let statics = [], movers = [];
   let blowerPos = { x: 0, y: 0 };
-  let levelIndex = 0;
-  let state = 'menu'; // menu | play | turn | result | paused
-  let turnT = 0, particles = [], shake = 0, bumpV = 0, stall = 0;
-  let input = { x: 0, y: 0 }, keyPush = false, drag = null;
-  let lastWidth = 0, seed = 1;
-  const mower = { x: 0, y: 0, dir: 0, t: 0, lat: 0 };
-  const pushing = () => drag !== null || keyPush;
+  let state = 'picker'; // picker | ready | play | result | paused
+  let timeLeft = 0, timeLimit = 0, bumps = 0, stall = 0;
+  let particles = [], shake = 0, smokeT = 0, coverT = 0, coverage = 0, flakes = [];
+  let strokes = [], stroke = null, strokeId = 0;
+  let target = null, drag = null, keys = { x: 0, y: 0 }, moved = false;
+  let lastWidth = 0;
+  const mower = { x: 0, y: 0, dir: 0, hx: 0, hy: -1 };
 
   const store = {
     get: (k) => { try { return Number(localStorage.getItem(k)) || 0; } catch { return 0; } },
     set: (k, v) => { try { localStorage.setItem(k, String(v)); } catch { /* private mode */ } },
   };
 
+  // yard picker buttons
+  ui.pickList.innerHTML = LEVELS.map((l, i) => `<button type="button" class="pick" data-i="${i}">${l.short}</button>`).join('');
+
   /* ------------------------------------------------------------ build */
   function build() {
-    const lvl = LEVELS[levelIndex];
     const rect = canvas.getBoundingClientRect();
     const scale = Math.max(2, Math.round(rect.width / 120));
     W = Math.max(100, Math.round(rect.width / scale));
@@ -243,180 +283,85 @@ export function initGame(root) {
     img = ctx.createImageData(W, H);
     data = img.data;
 
-    const side = lvl.side || 4;
-    let top = lvl.top || 24;
+    const side = level.side || 4;
+    let top = level.top || 24;
     const bottom = H - 12;
-    if (lvl.square) top = Math.max(top, bottom - (W - side * 2));
+    if (level.square) top = Math.max(top, bottom - (W - side * 2));
     lawn = { top, bottom, left: side, right: W - side };
+    const lw = lawn.right - lawn.left, lh = lawn.bottom - lawn.top;
 
     const n = W * H;
     mask = new Uint8Array(n);
-    cutV = new Int8Array(n);
-    cutH = new Int8Array(n);
+    cut = new Uint8Array(n);
+    toneA = new Int8Array(n);
+    toneB = new Int8Array(n);
     uncutTone = new Uint8Array(n);
     cutVar = new Uint8Array(n);
-    leaf = new Uint8Array(n);
-    leafHit = new Int16Array(n).fill(-1);
-    glowMask = new Uint8Array(n);
+    layer = new Uint8Array(n);
+    layerHit = new Int32Array(n).fill(-1);
+    overlay = new Uint8Array(n); // chalk lines drawn on top of the grass
 
-    // obstacles for the backyard
-    const lw = lawn.right - lawn.left, lh = lawn.bottom - lawn.top;
-    obstacles = lvl.pattern === 'backyard'
-      ? [
-          { kind: 'tree', x: lawn.left + lw * 0.32, y: lawn.top + lh * 0.3, r: 9 },
-          { kind: 'tree', x: lawn.left + lw * 0.7, y: lawn.top + lh * 0.68, r: 10 },
-          { kind: 'gnome', x: lawn.left + lw * 0.78, y: lawn.top + lh * 0.2, r: 4 },
-        ].map((o) => ({ ...o, x: Math.round(o.x), y: Math.round(o.y) }))
-      : [];
-    dog = null;
+    statics = (level.statics || []).map(([kind, fx, fy, r]) => ({ kind, r, x: Math.round(lawn.left + fx * lw), y: Math.round(lawn.top + fy * lh) }));
+    movers = [];
 
-    leafTotal = 0;
+    // ballpark: infield dirt diamond with bases, foul lines in chalk
+    const home = { x: Math.round((lawn.left + lawn.right) / 2), y: lawn.bottom - 4 };
+    const dia = Math.round(Math.min(lw * 0.36, lh * 0.3));
+    const dc = { x: home.x, y: home.y - dia };
+    level._diamond = { home, dia, dc };
+
+    grassTotal = 0;
     for (let y = 0; y < H; y++) {
       for (let x = 0; x < W; x++) {
         const i = y * W + x;
-        const inLawn = x >= lawn.left && x < lawn.right && y >= lawn.top && y < lawn.bottom;
-        const blocked = obstacles.some((o) => (x - o.x) ** 2 + (y - o.y) ** 2 <= (o.r + 0.5) ** 2);
-        if (inLawn && !blocked) mask[i] = 1;
+        let ok = x >= lawn.left && x < lawn.right && y >= lawn.top && y < lawn.bottom;
+        if (ok && statics.some((o) => (x - o.x) ** 2 + (y - o.y) ** 2 <= (o.r + 0.5) ** 2)) ok = false;
+        if (ok && level.infield) {
+          const m = Math.abs(x - dc.x) + Math.abs(y - dc.y);
+          const onPath = m <= dia + 4 && m >= dia - 4;
+          const nearHome = (x - home.x) ** 2 + (y - home.y) ** 2 < 64;
+          const mound = (x - dc.x) ** 2 + (y - dc.y) ** 2 < 16;
+          if (onPath || nearHome || mound) ok = false;
+          if (ok && (Math.abs((x - home.x) + (y - home.y)) < 1 || Math.abs((x - home.x) - (y - home.y)) < 1) && y < home.y) overlay[i] = 1;
+        }
+        if (ok) { mask[i] = 1; grassTotal++; }
         const clump = smooth(x, y, 5, 1), streak = smooth(x * 3, y, 4, 2), grain = hash(x, y, 3);
         let t = clump * 3.2 + streak * 2.2 + grain * 1.6 - 0.6;
         if (grain > 0.93) t += 1.5;
         uncutTone[i] = Math.max(0, Math.min(6, Math.floor(t)));
         cutVar[i] = hash(x, y, 4) > 0.55 ? 1 : 0;
-        if (lvl.pattern === 'leaves' && mask[i] && smooth(x, y, 3, 77) + hash(x, y, 78) * 0.5 > 0.95) {
-          leaf[i] = 2; leafTotal++;
-        }
+        if (ok && level.layer === 'leaves' && smooth(x, y, 3, 77) + hash(x, y, 78) * 0.5 > 0.82) layer[i] = 2;
+        if (ok && level.layer === 'snow' && smooth(x, y, 6, 90) + hash(x, y, 91) * 0.3 > 0.32) layer[i] = 1;
       }
     }
     blowerPos = { x: W - 22, y: 9 };
-    buildStatic(lvl);
-    passes = makePasses(lvl);
-    passIndex = 0;
-    placeAtPass(passes[0], 0);
-    hud();
-  }
-
-  /* ----------------------------------------------------------- passes */
-  function makePasses(lvl) {
-    const r = { l: lawn.left + deck, rt: lawn.right - deck, t: lawn.top + deck, b: lawn.bottom - deck };
-    const w = lawn.right - lawn.left, h = lawn.bottom - lawn.top;
-    const list = [];
-    const verticals = (doubled = false) => {
-      const n = Math.max(4, Math.min(9, Math.round(w / 14)));
-      lane = w / n;
-      for (let k = 0; k < n; k++) {
-        const x = lawn.left + lane * (k + 0.5);
-        const up = { type: 'line', sx: x, sy: r.b, dx: 0, dy: -1, nx: 1, ny: 0, len: r.b - r.t, tv: -1 };
-        const down = { type: 'line', sx: x, sy: r.t, dx: 0, dy: 1, nx: 1, ny: 0, len: r.b - r.t, tv: 1 };
-        if (doubled) list.push({ ...up }, { ...down, same: true });
-        else list.push(k % 2 === 0 ? up : down);
-      }
-    };
-    if (lvl.pattern === 'vertical' || lvl.pattern === 'backyard') verticals();
-    else if (lvl.pattern === 'leaves') verticals(true);
-    else if (lvl.pattern === 'checker') {
-      verticals();
-      const m = Math.max(4, Math.round(h / lane));
-      const laneH = h / m;
-      for (let k = 0; k < m; k++) {
-        const y = lawn.top + laneH * (k + 0.5);
-        const right = k % 2 === 0;
-        list.push({
-          type: 'line', sx: right ? r.l : r.rt, sy: y, dx: right ? 1 : -1, dy: 0, nx: 0, ny: 1,
-          len: r.rt - r.l, th: right ? 1 : -1, reset: k === 0,
-        });
-      }
-    } else if (lvl.pattern === 'diagonal') {
-      lane = 14;
-      const s2 = Math.SQRT1_2;
-      const d = [s2, -s2], nrm = [s2, s2];
-      const corners = [[r.l, r.t], [r.rt, r.t], [r.l, r.b], [r.rt, r.b]].map(([x, y]) => x * nrm[0] + y * nrm[1]);
-      const cmin = Math.min(...corners), cmax = Math.max(...corners);
-      const count = Math.floor((cmax - cmin) / lane);
-      const c0 = cmin + ((cmax - cmin) - count * lane) / 2 + lane / 2;
-      let k = 0;
-      for (let j = 0; j < count; j++) {
-        const c = c0 + j * lane;
-        const bx = nrm[0] * c, by = nrm[1] * c;
-        const sx1 = (r.l - bx) / d[0], sx2 = (r.rt - bx) / d[0];
-        const sy1 = (r.b - by) / d[1], sy2 = (r.t - by) / d[1];
-        const smin = Math.max(Math.min(sx1, sx2), Math.min(sy1, sy2));
-        const smax = Math.min(Math.max(sx1, sx2), Math.max(sy1, sy2));
-        if (smax - smin < 10) continue;
-        const fwd = k % 2 === 0;
-        const s0 = fwd ? smin : smax;
-        list.push({
-          type: 'line', sx: bx + d[0] * s0, sy: by + d[1] * s0,
-          dx: fwd ? d[0] : -d[0], dy: fwd ? d[1] : -d[1], nx: nrm[0], ny: nrm[1],
-          len: smax - smin, tv: fwd ? -1 : 1,
-        });
-        k++;
-      }
-    } else if (lvl.pattern === 'spiral') {
-      lane = 13;
-      const cx = (lawn.left + lawn.right) / 2, cy = (lawn.top + lawn.bottom) / 2;
-      const maxR = Math.min(w, h) / 2 - deck;
-      for (let k = 0, rr = maxR; rr >= lane * 0.7; k++, rr -= lane) {
-        list.push({ type: 'ring', cx, cy, r: rr, sign: k % 2 === 0 ? 1 : -1, len: Math.PI * 2 * rr, tv: k % 2 === 0 ? -1 : 1, last: rr - lane < lane * 0.7 });
-      }
-    }
-    return list;
-  }
-
-  // position and steering normal for a pass at distance t and lateral offset lat
-  function geom(p, t, lat) {
-    if (p.type === 'line') {
-      return { x: p.sx + p.dx * t + p.nx * lat, y: p.sy + p.dy * t + p.ny * lat, dx: p.dx, dy: p.dy, nx: p.nx, ny: p.ny };
-    }
-    const th = -Math.PI / 2 + p.sign * (t / p.r);
-    const cs = Math.cos(th), sn = Math.sin(th);
-    const rr = p.r + lat;
-    return { x: p.cx + rr * cs, y: p.cy + rr * sn, dx: -sn * p.sign, dy: cs * p.sign, nx: cs, ny: sn };
-  }
-
-  function facing(dx, dy) {
-    return Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 1 : 3) : (dy > 0 ? 2 : 0);
-  }
-
-  function placeAtPass(p, lat) {
-    mower.t = 0;
-    mower.lat = lat;
-    const g = geom(p, 0, lat);
-    mower.x = g.x; mower.y = g.y;
-    mower.dir = facing(g.dx, g.dy);
-  }
-
-  function startPass() {
-    const p = passes[passIndex];
-    const target = passIndex === 0 || p.reset ? 0 : prevMean;
-    const miss = (Math.random() - 0.5) * lane * 0.5 * (passIndex === 0 ? 0.5 : 1);
-    placeAtPass(p, Math.max(-lane, Math.min(lane, target + miss)));
-    p.target = target;
-    samples = [];
-    bumpsThisPass = 0;
-    bumpV = 0;
-    seed = Math.floor(Math.random() * 1000);
-    state = 'play';
+    buildStatic();
+    mower.x = lawn.left + 8;
+    mower.y = lawn.bottom - 8;
+    mower.dir = 0; mower.hx = 0; mower.hy = -1;
+    flakes = level.layer === 'snow' ? Array.from({ length: 26 }, () => ({ x: Math.random() * W, y: Math.random() * H, v: 6 + Math.random() * 8 })) : [];
+    timeLimit = Math.round((grassTotal / (deck * 2 * 70)) * (level.both || level.axes.length > 1 ? 2.2 : 1.6) * (level.layer === 'leaves' ? 1.8 : 1) + 15);
+    timeLeft = timeLimit;
     hud();
   }
 
   /* ------------------------------------------------------- scenery */
-  function buildStatic(lvl) {
+  function buildStatic() {
     staticLayer = new Uint8ClampedArray(W * H * 3);
     staticAlpha = new Uint8Array(W * H);
-    const put = (x, y, c, glow = false) => {
+    const put = (x, y, c) => {
       x = Math.round(x); y = Math.round(y);
       if (x < 0 || y < 0 || x >= W || y >= H) return;
       const i = y * W + x;
       staticLayer[i * 3] = c[0]; staticLayer[i * 3 + 1] = c[1]; staticLayer[i * 3 + 2] = c[2];
       staticAlpha[i] = 1;
-      if (glow) glowMask[i] = 1;
     };
     const band = lawn.top - 4;
-    // ground everywhere that isn't lawn: mulch beds, cobble edging, curb and sidewalk
     for (let y = 0; y < H; y++) {
       for (let x = 0; x < W; x++) {
         const g = hash(x, y, 7), m = smooth(x, y, 3, 8);
         const mulch = C.mulch[Math.min(4, Math.floor(m * 3 + g * 2))];
+        const i = y * W + x;
         if (y < band) put(x, y, mulch);
         else if (y < lawn.top) {
           const rr = y - band;
@@ -430,20 +375,21 @@ export function initGame(root) {
         } else if (x < lawn.left || x >= lawn.right) {
           const edge = x === lawn.left - 1 || x === lawn.right;
           put(x, y, edge ? C.cobble[1 + (y % 3 === 0 ? 0 : 1)] : mulch);
+        } else if (level.infield && !mask[i] && !statics.some((o) => (x - o.x) ** 2 + (y - o.y) ** 2 <= (o.r + 0.5) ** 2)) {
+          put(x, y, C.dirt[Math.floor(hash(x, y, 33) * 3 + smooth(x, y, 3, 34))]);
         }
       }
     }
     const blob = (cx, cy, rx, ry, pick) => {
       for (let y = -ry; y <= ry; y++) for (let x = -rx; x <= rx; x++) {
         const d = (x * x) / (rx * rx) + (y * y) / (ry * ry);
-        if (d > 1) continue;
-        put(cx + x, cy + y, pick(x, y, d, cx + x, cy + y));
+        if (d <= 1) put(cx + x, cy + y, pick(x, y, d, cx + x, cy + y));
       }
     };
-    const hedgeRow = (y0 = 1) => {
+    const rect = (x0, y0, w, h, c) => { for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) put(x, y, typeof c === 'function' ? c(x, y) : c); };
+    const hedgeRow = () => {
       for (let x0 = -4; x0 < W + 6; x0 += 10) {
-        const h = 15 + Math.floor(hash(x0, 1, 2) * 5);
-        const cx = x0 + 5;
+        const h = 15 + Math.floor(hash(x0, 1, 2) * 5), cx = x0 + 5;
         for (let y = 0; y < h; y++) {
           const half = Math.round(((y + 3) / (h + 3)) * 5.5);
           for (let dx = -half; dx <= half; dx++) {
@@ -451,41 +397,27 @@ export function initGame(root) {
             const light = 0.5 - dx / (half * 2 + 1) - (y / h) * 0.25 + (smooth(x, y, 2, 5) - 0.5) * 0.7;
             let t = Math.floor(light * 6 + dither(x, y) * 1.6 + 1.5);
             if (dx === -half || dx === half || y === h - 1) t = 0;
-            put(x, y + y0, C.hedge[Math.max(0, Math.min(6, t))]);
+            put(x, y + 1, C.hedge[Math.max(0, Math.min(6, t))]);
           }
         }
       }
     };
     const rhodie = (cx, cy, k, rx = 9, ry = 6) => blob(cx, cy, rx, ry, (x, y, d, ax, ay) => {
-      const n = smooth(ax, ay, 2, 30 + k);
+      const nn = smooth(ax, ay, 2, 30 + k);
       const lit = 0.6 - x / (rx * 2) - y / (ry * 2);
       if (d > 0.86) return C.hedge[1];
-      return n > 0.55
-        ? C.rhodie[Math.max(0, Math.min(4, Math.floor(lit * 3 + n * 2 + dither(x, y))))]
+      return nn > 0.55
+        ? C.rhodie[Math.max(0, Math.min(4, Math.floor(lit * 3 + nn * 2 + dither(x, y))))]
         : C.hedge[Math.max(1, Math.min(5, Math.floor(lit * 4 + 2 + dither(x, y))))];
     });
-    const rect = (x0, y0, w, h, c) => { for (let y = y0; y < y0 + h; y++) for (let x = x0; x < x0 + w; x++) put(x, y, typeof c === 'function' ? c(x, y) : c); };
-
-    if (lvl.scene === 'hedge' || lvl.scene === 'shed') {
-      hedgeRow();
-      [0.14, 0.5, 0.84].forEach((fx, k) => rhodie(Math.round(W * fx), 16, k));
-      if (lvl.scene === 'shed') {
-        const sx = W - 34, sw = 28;
-        rect(sx - 2, 1, sw + 4, 5, (x, y) => C.roof[(x + y) % 3]);
-        rect(sx, 6, sw, 13, (x, y) => (x - sx) % 4 === 0 ? C.barn[0] : C.barn[2]);
-        rect(sx + 9, 9, 10, 10, C.trim[1]);
-        rect(sx + 10, 10, 8, 9, C.barn[1]);
-        rect(sx + 3, 9, 4, 4, C.trim[1]); rect(sx + 4, 10, 2, 2, C.pane[1]);
-      }
-    } else if (lvl.scene === 'victorian') {
-      // a blue Victorian with white trim and a porch, rhododendrons out front
+    const house = (snowy) => {
       const roofH = 5, porchTop = band - 14;
-      rect(0, 0, W, roofH, (x, y) => C.roof[Math.floor(hash(x >> 1, y, 3) * 3)]);
+      rect(0, 0, W, roofH, (x, y) => snowy ? C.snow[(x + y) % 3] : C.roof[Math.floor(hash(x >> 1, y, 3) * 3)]);
       rect(0, roofH, W, 1, C.trim[0]);
       rect(0, roofH + 1, W, porchTop - roofH - 1, (x, y) => (y % 3 === 0 ? C.siding[0] : C.siding[1 + (hash(x, y, 2) > 0.8 ? 1 : 0)]));
       for (let wx = 6; wx < W - 10; wx += 20) {
         rect(wx, roofH + 4, 9, 11, C.trim[1]);
-        rect(wx + 1, roofH + 5, 7, 9, (x, y) => (x === wx + 4 || y === roofH + 9) ? C.trim[1] : C.pane[(x + y) % 2]);
+        rect(wx + 1, roofH + 5, 7, 9, (x, y) => (x === wx + 4 || y === roofH + 9) ? C.trim[1] : (snowy ? C.glow[(x + y) % 2] : C.pane[(x + y) % 2]));
       }
       rect(0, porchTop, W, 2, C.trim[1]);
       rect(0, porchTop + 2, W, 10, C.siding[0]);
@@ -493,52 +425,81 @@ export function initGame(root) {
       rect(0, porchTop + 12, W, 2, C.trim[0]);
       const steps = Math.round(W / 2) - 8;
       for (let k = 0; k < 3; k++) rect(steps - k, porchTop + 12 + k * 2, 16 + k * 2, 2, C.trim[1 - (k % 2)]);
+      if (snowy) for (let x = 1; x < W; x += 3) put(x, porchTop + (x % 6 < 3 ? 1 : 2), C.lights[(x / 3 | 0) % 4]);
       rhodie(14, band - 3, 1, 12, 6);
       rhodie(W - 14, band - 3, 2, 12, 6);
-    } else if (lvl.scene === 'autumn') {
-      // maples in full color along the back
-      for (let k = 0; k < 4; k++) {
-        const cx = Math.round((W / 4) * (k + 0.5)), cy = 9;
-        blob(cx, cy, 17, 11, (x, y, d, ax, ay) => {
-          const n = smooth(ax, ay, 2, 50 + k);
-          const lit = 0.65 - x / 34 - y / 22 + (n - 0.5) * 0.8;
-          const t = d > 0.9 ? 0 : Math.floor(lit * 5 + dither(ax, ay) * 1.5 + 0.5);
-          return C.maple[Math.max(0, Math.min(5, t))];
-        });
-      }
-      // pumpkins in the side beds
-      for (let y = lawn.top + 20; y < lawn.bottom - 10; y += 46) {
-        for (const x of [Math.round(lawn.left / 2), Math.round((W + lawn.right) / 2)]) {
-          blob(x, y, 4, 3, (dx, dy) => (dx === 0 || Math.abs(dx) === 2) ? C.pumpkin[0] : C.pumpkin[1]);
-          put(x, y - 4, C.pumpkin[2]); put(x + 1, y - 5, C.pumpkin[2]);
+      if (snowy) { for (let x = 2; x < 26; x++) put(x, band - 9 + Math.round(Math.sin(x) * 0.5), C.snow[2]); for (let x = W - 26; x < W - 2; x++) put(x, band - 9, C.snow[2]); }
+    };
+
+    switch (level.scene) {
+      case 'hedge':
+      case 'shed':
+        hedgeRow();
+        [0.14, 0.5, 0.84].forEach((fx, k) => rhodie(Math.round(W * fx), 16, k));
+        if (level.scene === 'shed') {
+          const sx = W - 34, sw = 28;
+          rect(sx - 2, 1, sw + 4, 5, (x, y) => C.roof[(x + y) % 3]);
+          rect(sx, 6, sw, 13, (x) => (x - sx) % 4 === 0 ? C.barn[0] : C.barn[2]);
+          rect(sx + 9, 9, 10, 10, C.trim[1]); rect(sx + 10, 10, 8, 9, C.barn[1]);
         }
+        break;
+      case 'victorian': house(false); break;
+      case 'snowday': house(true); break;
+      case 'autumn':
+        for (let k = 0; k < 4; k++) {
+          const cx = Math.round((W / 4) * (k + 0.5));
+          blob(cx, 9, 17, 11, (x, y, d, ax, ay) => {
+            const nn = smooth(ax, ay, 2, 50 + k);
+            const lit = 0.65 - x / 34 - y / 22 + (nn - 0.5) * 0.8;
+            return C.maple[Math.max(0, Math.min(5, d > 0.9 ? 0 : Math.floor(lit * 5 + dither(ax, ay) * 1.5 + 0.5)))];
+          });
+        }
+        for (let y = lawn.top + 20; y < lawn.bottom - 10; y += 46) {
+          for (const x of [Math.round(lawn.left / 2), Math.round((W + lawn.right) / 2)]) {
+            blob(x, y, 4, 3, (dx) => (dx === 0 || Math.abs(dx) === 2) ? C.pumpkin[0] : C.pumpkin[1]);
+            put(x, y - 4, C.pumpkin[2]);
+          }
+        }
+        break;
+      case 'club': {
+        rect(0, 0, W, band, (x, y) => C.rough[Math.min(3, Math.floor(smooth(x, y, 4, 60) * 3 + hash(x, y, 61)))]);
+        blob(Math.round(W * 0.26), Math.round(band * 0.62), 16, 7, (x, y, d, ax, ay) => d > 0.82 ? C.sand[0] : C.sand[1 + (hash(ax, ay, 62) > 0.6 ? 1 : 0)]);
+        const gx = Math.round(W * 0.66), gy = Math.round(band * 0.42);
+        blob(gx, gy, 20, 11, (x, y, d, ax, ay) => d > 0.88 ? C.green[0] : C.green[1 + ((ax + ay) % 6 < 3 ? 1 : 0)]);
+        rect(gx, gy - 16, 1, 16, C.trim[1]);
+        for (let k = 0; k < 5; k++) rect(gx + 1, gy - 16 + k, 7 - k, 1, C.flag[0]);
+        break;
       }
-    } else if (lvl.scene === 'club') {
-      // the top of the yard is the course: rough, a bunker, a green and a flag
-      rect(0, 0, W, band, (x, y) => C.rough[Math.min(3, Math.floor(smooth(x, y, 4, 60) * 3 + hash(x, y, 61)))]);
-      blob(Math.round(W * 0.26), Math.round(band * 0.62), 16, 7, (x, y, d, ax, ay) => d > 0.82 ? C.sand[0] : C.sand[1 + (hash(ax, ay, 62) > 0.6 ? 1 : 0)]);
-      const gx = Math.round(W * 0.66), gy = Math.round(band * 0.42);
-      blob(gx, gy, 20, 11, (x, y, d, ax, ay) => d > 0.88 ? C.green[0] : C.green[1 + ((ax + ay) % 6 < 3 ? 1 : 0)]);
-      rect(gx, gy - 16, 1, 16, C.trim[1]);
-      for (let k = 0; k < 5; k++) rect(gx + 1, gy - 16 + k, 7 - k, 1, C.flag[0]);
-      put(gx + 4, gy + 2, C.trim[1]); put(gx + 5, gy + 2, C.trim[0]);
-    } else if (lvl.scene === 'night') {
-      // dusk: dark woods, a red barn with the light on, a split-rail fence
-      rect(0, 0, W, band, (x, y) => C.night[Math.min(3, Math.floor(smooth(x, y, 5, 70) * 3 + (y / band) * 1.5))]);
-      const bx = Math.round(W * 0.58), bw = 30, by = Math.max(4, band - 34);
-      for (let y = 0; y < 8; y++) rect(bx - y + 4, by + y, bw - 8 + y * 2, 1, C.roof[1]);
-      rect(bx, by + 8, bw, 22, (x, y) => (x - bx) % 4 === 0 ? C.barn[0] : C.barn[1]);
-      rect(bx, by + 8, 1, 22, C.trim[0]); rect(bx + bw - 1, by + 8, 1, 22, C.trim[0]);
-      rect(bx + 9, by + 14, 12, 16, C.trim[0]);
-      for (let y = by + 15; y < by + 30; y++) for (let x = bx + 10; x < bx + 20; x++) put(x, y, C.glow[hash(x, y, 71) > 0.7 ? 1 : 0], true);
-      for (let y = by + 6; y < by + 8; y++) for (let x = bx + 13; x < bx + 17; x++) put(x, y, C.glow[1], true);
-      // fence rails just above the lawn
-      for (let x = 0; x < W; x++) {
-        put(x, band - 9, C.rail[1]); put(x, band - 5, C.rail[1]);
-        if (x % 18 === 4) for (let y = band - 12; y < band; y++) put(x, y, C.rail[(y & 1) ? 0 : 2]), put(x + 1, y, C.rail[0]);
+      case 'ballpark': {
+        // outfield wall with a yellow top line and a scoreboard
+        rect(0, 0, W, band, (x, y) => C.wall[(y < 2 ? 2 : Math.floor(hash(x, y, 40) * 2))]);
+        rect(0, band - 2, W, 1, C.glow[0]);
+        const sx = Math.round(W / 2) - 18;
+        rect(sx, 2, 36, band - 6, C.night[1]);
+        for (let k = 0; k < 9; k++) { put(sx + 4 + k * 3, 6, C.glow[k % 2]); put(sx + 4 + k * 3, 10, C.glow[(k + 1) % 2]); }
+        // bases and home plate on the dirt
+        const { home, dia, dc } = level._diamond;
+        const base = (x, y) => rect(x - 1, y - 1, 3, 3, C.chalk[1]);
+        base(dc.x + dia, dc.y); base(dc.x, dc.y - dia); base(dc.x - dia, dc.y);
+        rect(home.x - 1, home.y - 1, 3, 2, C.chalk[1]); put(home.x, home.y + 1, C.chalk[1]);
+        rect(dc.x - 1, dc.y, 3, 1, C.chalk[0]);
+        break;
+      }
+      case 'halloween': {
+        rect(0, 0, W, band, (x, y) => C.sky[Math.min(2, Math.floor((y / band) * 2.5 + hash(x, y, 81) * 0.4))]);
+        blob(W - 16, 8, 5, 5, (x, y, d) => d > 0.7 ? C.moon[0] : C.moon[1]);
+        for (const tx of [10, Math.round(W * 0.45)]) {
+          rect(tx, 4, 2, band - 4, C.night[0]);
+          for (let k = 0; k < 6; k++) { const bx = tx + (k % 2 ? 1 : -1) * (2 + k), by = 6 + k * 2; rect(Math.min(tx, bx), by, Math.abs(bx - tx) + 1, 1, C.night[0]); }
+        }
+        for (let x = 0; x < W; x++) { if (x % 6 < 2) rect(x, band - 8, 1, 8, C.night[1]); put(x, band - 6, C.night[1]); }
+        for (const jx of [8, W - 30]) for (let y = 0; y < 7; y++) for (let x = 0; x < 7; x++) {
+          const ch = S.jack.map[y][x];
+          if (ch !== '.') put(jx + x, band - 8 + y, S.jack.col[ch]);
+        }
+        break;
       }
     }
-    // the gas blower hiding somewhere up top (every yard has one)
     for (let y = 0; y < BLOWER.length; y++) for (let x = 0; x < BLOWER[y].length; x++) {
       const ch = BLOWER[y][x];
       if (ch !== '.') put(blowerPos.x + x, blowerPos.y + y, BLOWER_COL[ch]);
@@ -558,61 +519,70 @@ export function initGame(root) {
     const o = (y * W + x) * 4;
     data[o] *= k; data[o + 1] *= k; data[o + 2] *= k;
   }
+  function sprite(sp, x, y, flip = false, shadow = true) {
+    const m = sp.map;
+    m.forEach((row, yy) => [...row].forEach((ch, xx) => {
+      if (ch === '.' || !sp.col[ch]) return;
+      const fx = flip ? row.length - 1 - xx : xx;
+      if (shadow) darken(x + fx + 1, y + yy + 2, 0.7);
+    }));
+    m.forEach((row, yy) => [...row].forEach((ch, xx) => {
+      if (ch === '.' || !sp.col[ch]) return;
+      px(x + (flip ? row.length - 1 - xx : xx), y + yy, sp.col[ch]);
+    }));
+  }
 
   function draw(dt) {
-    const lvl = LEVELS[levelIndex];
     for (let i = 0, n = W * H; i < n; i++) {
       const o = i * 4;
-      let c;
       if (staticAlpha[i]) {
         const s = i * 3;
         data[o] = staticLayer[s]; data[o + 1] = staticLayer[s + 1]; data[o + 2] = staticLayer[s + 2]; data[o + 3] = 255;
         continue;
       }
-      const v = cutV[i], h = cutH[i];
-      if (!v && !h) c = C.uncut[uncutTone[i]];
+      let c;
+      if (!cut[i]) c = C.uncut[uncutTone[i]];
       else {
-        // light when the grass leans away from you, dark when it leans toward you
-        const t = Math.max(0, Math.min(4, 2 - v * 2 - h));
+        // light where the grass leans away from you, dark where it leans toward you
+        const t = Math.max(0, Math.min(4, 2 - toneA[i] * 2 - toneB[i]));
         c = (cutVar[i] ? C.cutAlt : C.cut)[t];
       }
-      const lf = leaf[i];
-      if (lf === 2) c = C.leafLawn[Math.floor(hash(i % W >> 1, (i / W) >> 1, 79) * 5)];
-      else if (lf === 1 && hash(i, 0, 80) > 0.55) c = C.chopped[i & 1];
+      const L = layer[i];
+      if (L) {
+        const x = i % W, y = (i / W) | 0;
+        if (level.layer === 'snow') c = C.snow[Math.floor(hash(x, y, 92) * 3.2) % 4];
+        else if (L === 2) c = C.leafLawn[Math.floor(hash(x >> 1, y >> 1, 79) * 5)];
+        else if (hash(i, 0, 80) > 0.55) c = C.chopped[i & 1];
+      }
+      if (overlay[i]) c = C.chalk[0];
       data[o] = c[0]; data[o + 1] = c[1]; data[o + 2] = c[2]; data[o + 3] = 255;
     }
-    if (lvl.scene !== 'club' && lvl.scene !== 'night') {
+    if (level.scene !== 'club' && level.scene !== 'ballpark') {
       for (let y = lawn.top; y < lawn.top + 6; y++) {
         const k = 0.72 + (y - lawn.top) * 0.05;
         for (let x = lawn.left; x < lawn.right; x++) if (dither(x, y) < 0.9 - (y - lawn.top) * 0.12) darken(x, y, k);
       }
     }
-    drawObstacles();
+    drawThings();
     drawMower();
     drawParticles(dt);
-    if (lvl.scene === 'night') nightTint();
+    if (level.scene === 'halloween') tint(0.72, 0.68, 0.85);
+    for (const f of flakes) {
+      f.y += f.v * dt; f.x += Math.sin(f.y / 9) * 0.2;
+      if (f.y > H) { f.y = -2; f.x = Math.random() * W; }
+      px(f.x, f.y, C.snow[2]);
+    }
     ctx.putImageData(img, 0, 0);
   }
 
-  function nightTint() {
-    // porch light from the bottom of the screen, everything else falls off into dusk
-    const lx = W / 2, ly = H + 10, reach = H * 1.05;
-    for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
-      const i = y * W + x;
-      if (glowMask[i]) continue;
-      const d = Math.hypot(x - lx, y - ly) / reach;
-      const k = 0.38 + 0.62 * Math.max(0, 1 - d * d);
-      const o = i * 4;
-      data[o] *= k * 0.92; data[o + 1] *= k; data[o + 2] *= Math.min(1, k * 1.08);
-    }
+  function tint(r, g, b) {
+    for (let i = 0; i < W * H; i++) { const o = i * 4; data[o] *= r; data[o + 1] *= g; data[o + 2] *= b; }
   }
 
-  function drawObstacles() {
-    for (const o of obstacles) {
+  function drawThings() {
+    for (const o of statics) {
       if (o.kind === 'tree') {
-        for (let y = -o.r; y <= o.r; y++) for (let x = -o.r; x <= o.r; x++) {
-          if (x * x + y * y <= o.r * o.r && dither(x, y) < 0.75) darken(o.x + x + 4, o.y + y + 5, 0.6);
-        }
+        for (let y = -o.r; y <= o.r; y++) for (let x = -o.r; x <= o.r; x++) if (x * x + y * y <= o.r * o.r && dither(x, y) < 0.75) darken(o.x + x + 4, o.y + y + 5, 0.6);
         for (let y = -o.r - 2; y <= o.r + 2; y++) for (let x = -o.r - 2; x <= o.r + 2; x++) {
           const wob = (smooth(o.x + x, o.y + y, 3, 40) - 0.5) * 4;
           const d = Math.hypot(x, y);
@@ -622,36 +592,30 @@ export function initGame(root) {
           if (d > o.r + wob * 0.6 - 1) t = 0;
           px(o.x + x, o.y + y, C.canopy[Math.max(0, Math.min(6, t))]);
         }
-      } else if (o.kind === 'gnome') {
-        for (let x = -3; x <= 4; x++) darken(o.x + x + 1, o.y + 5, 0.6);
-        const G = ['...H...', '..HhH..', '.HHhHH.', '.FsssF.', '.BbbbB.', 'CBbbbBC', 'CCBbBCC', '.CCCCC.', '.K...K.'];
-        const col = { H: C.gnomeHat[1], h: C.gnomeHat[0], F: C.skin, s: C.skin, B: C.gnomeBeard[1], b: C.gnomeBeard[0], C: C.gnomeCoat[1], K: C.ink };
-        G.forEach((row, y) => [...row].forEach((ch, x) => { if (col[ch]) px(o.x - 3 + x, o.y - 5 + y, col[ch]); }));
+      } else {
+        const sp = S[o.kind];
+        sprite(sp, o.x - (sp.map[0].length >> 1), o.y - (sp.map.length >> 1));
       }
     }
-    if (dog) {
-      const flip = dog.vx < 0;
-      DOG.forEach((row, y) => [...row].forEach((ch, x) => {
-        if (ch === '.') return;
-        const xx = flip ? row.length - 1 - x : x;
-        darken(dog.x + xx + 1, dog.y + y + 2, 0.7);
-        px(dog.x + xx, dog.y + y, DOG_COL[ch]);
-      }));
+    for (const m of movers) {
+      const sp = S[m.kind];
+      sprite(sp, m.x - (sp.map[0].length >> 1), m.y - (sp.map.length >> 1), m.vx < 0, m.kind !== 'ghost');
     }
   }
 
   function drawMower() {
     const map = MOWER[mower.dir];
     const [ax, ay] = MOWER_ANCHOR[mower.dir];
-    const ox = Math.round(mower.x) - ax, oy = Math.round(mower.y) - ay;
+    // a running engine rattles
+    const j = state === 'play' && !reduceMotion ? ((performance.now() / 45 | 0) % 2) : 0;
+    const ox = Math.round(mower.x) - ax + (mower.dir % 2 ? 0 : j), oy = Math.round(mower.y) - ay + (mower.dir % 2 ? j : 0);
     for (let y = 0; y < map.length; y++) for (let x = 0; x < map[y].length; x++) {
       const ch = map[y][x];
       if (ch !== '.' && ch !== 'G' && ch !== 'g') darken(ox + x + 2, oy + y + 2, 0.6);
     }
-    const jitter = state === 'play' && pushing() && stall <= 0 && !reduceMotion && (performance.now() / 60 | 0) % 2 ? 1 : 0;
     for (let y = 0; y < map.length; y++) for (let x = 0; x < map[y].length; x++) {
       const ch = map[y][x];
-      if (ch !== '.') px(ox + x + (mower.dir % 2 ? jitter : 0), oy + y + (mower.dir % 2 ? 0 : jitter), MOWER_COL[ch]);
+      if (ch !== '.') px(ox + x, oy + y, MOWER_COL[ch]);
     }
   }
 
@@ -663,214 +627,301 @@ export function initGame(root) {
     }
   }
 
-  /* ----------------------------------------------------------- update */
-  function cutAt(g, p) {
+  /* ---------------------------------------------------------- mowing */
+  function cutHere() {
     const cx = Math.round(mower.x), cy = Math.round(mower.y);
+    const tA = toneFor(level.axes[0]), tB = level.axes[1] ? toneFor(level.axes[1]) : 0;
     let fresh = 0, chopped = 0;
     for (let y = cy - deck; y < cy + deck; y++) {
       for (let x = cx - deck; x < cx + deck; x++) {
         if (x < 0 || y < 0 || x >= W || y >= H) continue;
         const i = y * W + x;
         if (!mask[i]) continue;
-        if (!cutV[i] && !cutH[i]) fresh++;
-        if (p.th) cutH[i] = p.th;
-        else cutV[i] = p.tv;
-        // each pass chops a leaf one step: whole, then confetti, then gone
-        if (leaf[i] && leafHit[i] !== passIndex) { leaf[i]--; leafHit[i] = passIndex; chopped++; }
+        if (!cut[i]) { cut[i] = 1; fresh++; }
+        if (tA) toneA[i] = tA;
+        if (tB) toneB[i] = tB;
+        // each separate pass chops a leaf one step: whole, then confetti, then gone
+        if (layer[i] && layerHit[i] !== strokeId) { layer[i]--; layerHit[i] = strokeId; chopped++; }
       }
     }
-    if ((fresh || chopped) && !reduceMotion && particles.length < 140) {
-      const sx = -g.dy, sy = g.dx; // discharge chute on the mower's right
+    if ((fresh || chopped) && !reduceMotion && particles.length < 160) {
+      const sx = -mower.hy, sy = mower.hx; // discharge chute on the mower's right
       particles.push({
-        x: cx + sx * (deck + 1), y: cy + sy * (deck + 1),
+        x: cx + sx * (deck + 2), y: cy + sy * (deck + 2),
         vx: sx * (25 + Math.random() * 30) + (Math.random() - 0.5) * 12,
         vy: sy * (25 + Math.random() * 30) + (Math.random() - 0.5) * 12,
         life: 0.35 + Math.random() * 0.3,
-        c: chopped ? C.leafLawn[Math.floor(Math.random() * 4)] : C.clip[Math.floor(Math.random() * 3)],
+        c: chopped ? (level.layer === 'snow' ? C.snow[2] : C.leafLawn[Math.floor(Math.random() * 4)]) : C.clip[Math.floor(Math.random() * 3)],
       });
     }
   }
 
-  function updateDog(dt) {
-    if (LEVELS[levelIndex].pattern !== 'backyard') return;
-    if (!dog && Math.random() < dt * 0.22) {
-      const fromLeft = Math.random() > 0.5;
-      dog = {
-        x: fromLeft ? lawn.left - 10 : lawn.right,
-        y: Math.round(lawn.top + 10 + Math.random() * (lawn.bottom - lawn.top - 24)),
-        vx: fromLeft ? 46 : -46,
-      };
+  // +1 dark / -1 light when you're driving along an axis; 0 when you're crossing it
+  function toneFor(axis) {
+    const d = mower.hx * axis[0] + mower.hy * axis[1];
+    return Math.abs(d) > 0.8 ? (d > 0 ? -1 : 1) : 0;
+  }
+
+  /* ---------------------------------------------------------- strokes */
+  // A stroke is one straight-ish pass. It ends when you turn more than ~50 degrees.
+  function strokePoint() {
+    if (!stroke) { stroke = { pts: [[mower.x, mower.y]], len: 0, dir: null, bumps: 0 }; strokeId++; return; }
+    const last = stroke.pts[stroke.pts.length - 1];
+    const step = Math.hypot(mower.x - last[0], mower.y - last[1]);
+    if (step < 0.6) return;
+    stroke.pts.push([mower.x, mower.y]);
+    stroke.len += step;
+    if (!stroke.dir && stroke.len > 10) {
+      const f = stroke.pts[0];
+      const d = Math.hypot(mower.x - f[0], mower.y - f[1]) || 1;
+      stroke.dir = [(mower.x - f[0]) / d, (mower.y - f[1]) / d];
     }
-    if (dog) {
-      dog.x += dog.vx * dt;
-      if (dog.x < lawn.left - 14 || dog.x > lawn.right + 4) dog = null;
+    if (stroke.dir) {
+      const dot = mower.hx * stroke.dir[0] + mower.hy * stroke.dir[1];
+      if (dot < 0.64) { endStroke(); strokePoint(); }
     }
   }
 
-  function bump(msg) {
-    bumpsThisPass++;
+  function endStroke() {
+    const s = stroke;
+    stroke = null;
+    if (!s || s.len < 28 || s.pts.length < 8) return;
+    // best-fit line through the pass, then how far you wandered off it
+    const n = s.pts.length;
+    let mx = 0, my = 0;
+    for (const [x, y] of s.pts) { mx += x; my += y; }
+    mx /= n; my /= n;
+    let sxx = 0, syy = 0, sxy = 0;
+    for (const [x, y] of s.pts) { sxx += (x - mx) ** 2; syy += (y - my) ** 2; sxy += (x - mx) * (y - my); }
+    const ang = 0.5 * Math.atan2(2 * sxy, sxx - syy);
+    const ux = Math.cos(ang), uy = Math.sin(ang);
+    let dev = 0;
+    for (const [x, y] of s.pts) dev += ((x - mx) * -uy + (y - my) * ux) ** 2;
+    const rms = Math.sqrt(dev / n);
+    const straight = Math.max(0, 1 - rms / 2.4);
+    // and how close that line is to the yard's stripe direction
+    const align = Math.max(...level.axes.map((a) => Math.abs(ux * a[0] + uy * a[1])));
+    const errDeg = Math.acos(Math.min(1, align)) * 180 / Math.PI;
+    const aligned = Math.max(0, 1 - errDeg / 20);
+    const score = Math.round((straight * 0.7 + aligned * 0.3) * 100);
+    strokes.push({ score, len: s.len });
+    const note = score >= 95 ? 'Laser straight' : score >= 85 ? 'Clean' : score >= 70 ? 'Bit wobbly' : score >= 50 ? 'Wobbly' : 'Yikes';
+    toast(errDeg > 15 ? `${score}  ${note}, wrong angle` : `${score}  ${note}`);
+  }
+
+  /* ---------------------------------------------------------- movers */
+  function updateMovers(dt) {
+    const lw = lawn.right - lawn.left, lh = lawn.bottom - lawn.top;
+    if (level.movers === 'dog' && !movers.length && Math.random() < dt * 0.2) {
+      const l = Math.random() > 0.5;
+      movers.push({ kind: 'dog', r: 4, x: l ? lawn.left - 6 : lawn.right + 6, y: lawn.top + 12 + Math.random() * (lh - 24), vx: l ? 46 : -46, vy: 0, cross: true });
+    }
+    if (level.movers === 'santa' && !movers.length && Math.random() < dt * 0.15) {
+      const l = Math.random() > 0.5;
+      movers.push({ kind: 'sleigh', r: 6, x: l ? -10 : W + 10, y: lawn.top + 14 + Math.random() * (lh - 30), vx: l ? 40 : -40, vy: 0, cross: true });
+    }
+    if (level.movers === 'ghost' && !movers.length) movers.push({ kind: 'ghost', r: 4, x: lawn.left + lw / 2, y: lawn.top + lh / 2, vx: 18, vy: 0, t: 0, ghost: true });
+    if (level.movers === 'turkeys' && !movers.length) {
+      for (let k = 0; k < 3; k++) movers.push({ kind: 'turkey', r: 4, x: lawn.left + lw * (0.25 + k * 0.25), y: lawn.top + lh * (0.25 + (k % 2) * 0.4), vx: 10, vy: 6, wander: true });
+    }
+    for (const m of movers) {
+      if (m.ghost) {
+        m.t += dt;
+        m.x = lawn.left + lw / 2 + Math.sin(m.t * 0.5) * lw * 0.38;
+        m.y = lawn.top + lh / 2 + Math.sin(m.t * 0.83) * lh * 0.38;
+        m.vx = Math.cos(m.t * 0.5);
+      } else if (m.wander) {
+        if (Math.random() < dt * 0.6) { const a = Math.random() * Math.PI * 2; m.vx = Math.cos(a) * 10; m.vy = Math.sin(a) * 10; }
+        m.x += m.vx * dt; m.y += m.vy * dt;
+        if (m.x < lawn.left + 5 || m.x > lawn.right - 5) m.vx = -m.vx;
+        if (m.y < lawn.top + 5 || m.y > lawn.bottom - 5) m.vy = -m.vy;
+        m.x = Math.max(lawn.left + 5, Math.min(lawn.right - 5, m.x));
+        m.y = Math.max(lawn.top + 5, Math.min(lawn.bottom - 5, m.y));
+        m.vx *= Math.pow(0.5, dt * 0.2) || 1;
+      } else {
+        m.x += m.vx * dt;
+      }
+    }
+    movers = movers.filter((m) => !m.cross || (m.x > -20 && m.x < W + 20));
+  }
+
+  function bump(msg, away) {
+    bumps++;
     stall = 0.5;
     shake = reduceMotion ? 0 : 0.22;
-    mower.t = Math.max(0, mower.t - 4);
+    if (away) { mower.x += away[0] * 5; mower.y += away[1] * 5; target = { x: mower.x, y: mower.y }; }
+    endStroke();
     toast(`${msg} −15`);
   }
 
+  /* ----------------------------------------------------------- update */
   function update(dt) {
-    if (state === 'turn') {
-      turnT -= dt;
-      if (turnT <= 0) startPass();
-      return;
-    }
     if (state !== 'play') return;
-    const lvl = LEVELS[levelIndex];
-    const p = passes[passIndex];
-    updateDog(dt);
-    const moving = pushing();
-    ui.push?.classList.toggle('is-on', !moving);
-    let g = geom(p, mower.t, mower.lat);
-    // keyboard steering works even while parked, so you can line up first
-    mower.lat += (input.x * g.nx + input.y * g.ny) * 34 * dt;
-    if (stall > 0) { stall -= dt; }
-    else if (moving) {
-      let drift = (smooth(mower.t, 0, 14, seed) - 0.5) * 2 * lvl.drift + lvl.slope;
-      if (lvl.bumps && Math.random() < lvl.bumps * dt) bumpV += (Math.random() > 0.5 ? 1 : -1) * (14 + Math.random() * 10);
-      bumpV *= Math.pow(0.04, dt);
-      mower.lat += (drift + bumpV) * dt;
-      mower.t += lvl.speed * dt;
-    }
-    mower.lat = Math.max(-lane * 1.3, Math.min(lane * 1.3, mower.lat));
-    g = geom(p, Math.min(mower.t, p.len), mower.lat);
-    // keep the deck on the lawn
-    for (let k = 0; k < 12 && (g.x < lawn.left + deck || g.x > lawn.right - deck || g.y < lawn.top + deck || g.y > lawn.bottom - deck); k++) {
-      mower.lat *= 0.8;
-      g = geom(p, Math.min(mower.t, p.len), mower.lat);
-    }
-    mower.x = g.x; mower.y = g.y;
-    mower.dir = facing(g.dx, g.dy);
+    timeLeft -= dt;
+    updateMovers(dt);
+    if (stall > 0) stall -= dt;
 
-    if (moving && stall <= 0) {
-      // after three bumps in one pass, you squeeze by (and keep the penalty)
-      const hitObs = bumpsThisPass < 3 && obstacles.find((o) => Math.hypot(g.x - o.x, g.y - o.y) < o.r + deck - 1);
-      if (hitObs) {
-        // get knocked a little to the side so you can work around it
-        const side = (g.x - hitObs.x) * g.nx + (g.y - hitObs.y) * g.ny;
-        let dir = side >= 0 ? 1 : -1;
-        if (Math.abs(mower.lat + dir * 4) > lane * 1.25) dir = -dir;
-        mower.lat += dir * 4;
-        return bump(hitObs.kind === 'gnome' ? 'Sorry, gnome.' : 'Bonk.');
+    // keyboard driving
+    if (keys.x || keys.y) target = { x: (target?.x ?? mower.x) + keys.x * 70 * dt, y: (target?.y ?? mower.y) + keys.y * 70 * dt };
+
+    if (target && stall <= 0) {
+      target.x = Math.max(lawn.left + deck, Math.min(lawn.right - deck, target.x));
+      target.y = Math.max(lawn.top + deck, Math.min(lawn.bottom - deck, target.y));
+      const dx = target.x - mower.x, dy = target.y - mower.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist > 0.3) {
+        const step = Math.min(dist, 80 * dt);
+        mower.x += (dx / dist) * step;
+        mower.y += (dy / dist) * step;
+        // heading eases toward the direction of travel so turns read smoothly
+        const k = Math.min(1, dt * 14);
+        mower.hx += ((dx / dist) - mower.hx) * k;
+        mower.hy += ((dy / dist) - mower.hy) * k;
+        const hl = Math.hypot(mower.hx, mower.hy) || 1;
+        mower.hx /= hl; mower.hy /= hl;
+        mower.dir = Math.abs(mower.hx) > Math.abs(mower.hy) ? (mower.hx > 0 ? 1 : 3) : (mower.hy > 0 ? 2 : 0);
+        if (!moved) { moved = true; ui.push?.classList.remove('is-on'); }
+        cutHere();
+        strokePoint();
+        const hit = statics.find((o) => Math.hypot(mower.x - o.x, mower.y - o.y) < o.r + deck - 1)
+          || movers.find((o) => Math.hypot(mower.x - o.x, mower.y - o.y) < o.r + deck);
+        if (hit) {
+          const d = Math.hypot(mower.x - hit.x, mower.y - hit.y) || 1;
+          const msg = { tree: 'Bonk.', gnome: 'Sorry, gnome.', dog: 'The dog is fine. Your score isn’t.', turkey: 'Gobble!', ghost: 'Boo.', stone: 'Rest in peace, mower blade.', jack: 'Pumpkin down.', snowman: 'Frosty has notes.', sleigh: 'Santa saw that.' }[hit.kind] || 'Bonk.';
+          if (hit.wander) { hit.vx = (hit.x - mower.x) * 4; hit.vy = (hit.y - mower.y) * 4; }
+          bump(msg, [(mower.x - hit.x) / d, (mower.y - hit.y) / d]);
+        }
       }
-      if (dog && Math.abs(dog.x + 5 - g.x) < deck + 4 && Math.abs(dog.y + 3 - g.y) < deck + 2) {
-        dog.vx *= 1.8;
-        return bump('The dog is fine. Your score isn’t.');
-      }
-      // swerving around obstacles doesn't count against straightness
-      const near = obstacles.some((o) => Math.hypot(g.x - o.x, g.y - o.y) < o.r + deck + 14);
-      samples.push({ lat: mower.lat, near });
-      cutAt(g, p);
     }
-    if (mower.t >= p.len) finishPass();
+
+    // exhaust puffs out the back while the engine runs
+    smokeT -= dt;
+    if (smokeT <= 0 && !reduceMotion) {
+      smokeT = 0.12;
+      particles.push({ x: mower.x - mower.hx * 10, y: mower.y - mower.hy * 10, vx: (Math.random() - 0.5) * 6, vy: -8 - Math.random() * 6, life: 0.6, c: C.smoke[Math.floor(Math.random() * 3)] });
+    }
+
+    coverT -= dt;
+    if (coverT <= 0) {
+      coverT = 0.25;
+      coverage = measure();
+      hud();
+      if (coverage >= (level.both ? 0.82 : 0.92)) endLevel();
+    }
+    if (timeLeft <= 0) endLevel();
   }
 
-  function finishPass() {
-    const p = passes[passIndex];
-    const counted = samples.filter((s) => !s.near);
-    const use = counted.length > 4 ? counted : samples;
-    const mean = use.reduce((a, s) => a + s.lat, 0) / Math.max(1, use.length);
-    const wobble = use.reduce((a, s) => a + Math.abs(s.lat - mean), 0) / Math.max(1, use.length);
-    const straight = Math.max(0, 1 - wobble / 3.5);
-    const offset = mean - (p.target || 0);
-    const spacing = Math.max(0, 1 - Math.abs(offset) / (lane * 0.45));
-    const score = Math.max(0, Math.round((straight * 0.65 + spacing * 0.35) * 100) - bumpsThisPass * 15);
-    passScores.push(score);
-    prevMean = mean;
-    if (p.last) finishSpiralCenter(p);
-
-    let note = score >= 95 ? 'Laser straight' : score >= 85 ? 'Clean' : score >= 70 ? 'Bit wobbly' : score >= 50 ? 'Wobbly' : 'Yikes';
-    if (spacing < 0.6) note += (p.same ? ', missed your lane' : offset > 0 ? ', gap' : ', overlap');
-    toast(`${score}  ${note}`);
-    passIndex++;
-    hud();
-    if (passIndex >= passes.length) return endLevel();
-    ui.push?.classList.remove('is-on');
-    state = 'turn';
-    turnT = 0.4;
-  }
-
-  function finishSpiralCenter(p) {
-    // the last little circle in the middle gets mowed with the final ring
-    const rr = Math.max(0, p.r - deck + 1);
-    for (let y = -rr; y <= rr; y++) for (let x = -rr; x <= rr; x++) {
-      if (x * x + y * y > rr * rr) continue;
-      const i = Math.round(p.cy + y) * W + Math.round(p.cx + x);
-      if (mask[i]) cutV[i] = -p.tv;
+  function measure() {
+    let c = 0;
+    for (let i = 0; i < mask.length; i++) {
+      if (!mask[i] || !cut[i] || layer[i]) continue;
+      if (level.both && !(toneA[i] && toneB[i])) continue;
+      c++;
     }
+    return c / grassTotal;
   }
 
   function endLevel() {
+    endStroke();
     state = 'result';
-    ui.push?.classList.remove('is-on');
     setTouch(false);
-    const lvl = LEVELS[levelIndex];
-    let avg = Math.round(passScores.reduce((a, b) => a + b, 0) / passScores.length);
-    let extra = '';
-    if (lvl.pattern === 'leaves') {
-      let left = 0;
-      for (let i = 0; i < leaf.length; i++) if (leaf[i]) left++;
-      const mulched = leafTotal ? 1 - left / leafTotal : 1;
-      avg = Math.round(avg * 0.6 + mulched * 40);
-      extra = `Leaves mulched: ${Math.round(mulched * 100)}%. `;
-    }
-    const total = avg * 10;
-    const key = `mit-best-${levelIndex}`;
+    ui.push?.classList.remove('is-on');
+    coverage = measure();
+    const totalLen = strokes.reduce((a, s) => a + s.len, 0);
+    const straight = totalLen ? strokes.reduce((a, s) => a + s.score * s.len, 0) / totalLen : 0;
+    const timeBonus = coverage >= 0.85 ? Math.round(Math.max(0, timeLeft / timeLimit) * 100) : 0;
+    const total = Math.max(0, Math.round(straight * 6 + coverage * 300 + timeBonus - bumps * 15));
+    const key = `mit-best-${level.id}`;
     const prevBest = store.get(key);
     if (total > prevBest) store.set(key, total);
-    const stars = avg >= 90 ? 3 : avg >= 75 ? 2 : avg >= 55 ? 1 : 0;
-    ui.grade.textContent = GRADES.find(([min]) => avg >= min)[1];
+    const stars = total >= 900 ? 3 : total >= 750 ? 2 : total >= 550 ? 1 : 0;
+    ui.grade.textContent = GRADES.find(([min]) => total >= min)[1];
     ui.total.textContent = total;
     ui.stars.innerHTML = [0, 1, 2].map((k) => `<span class="star${k < stars ? ' is-on' : ''}"></span>`).join('');
     ui.stars.setAttribute('aria-label', `${stars} of 3 stars`);
-    ui.best.textContent = extra + (total > prevBest
-      ? (prevBest ? `New best on this yard. Old best: ${prevBest}.` : 'Your first score on this yard.')
-      : `Your best on this yard: ${prevBest}.`);
-    ui.tip.textContent = TIPS[lvl.pattern];
-    ui.next.textContent = levelIndex < LEVELS.length - 1 ? 'Next yard' : 'Back to yard 1';
+    const what = level.layer === 'leaves' ? 'Mowed and mulched' : level.layer === 'snow' ? 'Cleared' : level.both ? 'Checkerboarded' : 'Mowed';
+    ui.detail.textContent = `Straightness ${Math.round(straight)}. ${what} ${Math.round(coverage * 100)}%.${bumps ? ` Bumps: ${bumps}.` : ''} ${total > prevBest ? (prevBest ? `New best! Old best: ${prevBest}.` : 'First score on this yard.') : `Your best: ${prevBest}.`}`;
+    ui.tip.textContent = TIPS[level.id];
     show(ui.result);
   }
 
   /* ------------------------------------------------------------- flow */
-  function openMenu() {
-    state = 'menu';
+  function openPicker() {
+    state = 'picker';
     setTouch(false);
-    build();
-    const lvl = LEVELS[levelIndex];
-    ui.menuTitle.textContent = `Yard ${levelIndex + 1}: ${lvl.name}`;
-    ui.menuBlurb.textContent = lvl.blurb;
-    ui.menuHow.textContent = lvl.how;
-    const best = store.get(`mit-best-${levelIndex}`);
-    ui.menuBest.textContent = best ? `Your best: ${best}` : '';
-    ui.menuBest.hidden = !best;
-    hide(ui.result);
-    show(ui.menu);
+    hide(ui.ready); hide(ui.result);
+    show(ui.picker);
   }
 
-  function startLevel() {
-    hide(ui.menu);
+  function chooseLevel(i) {
+    level = LEVELS[i];
     build();
-    passScores = []; prevMean = 0; particles = [];
-    setTouch(true);
-    startPass();
+    state = 'ready';
+    hide(ui.picker); hide(ui.result);
+    ui.readyTitle.textContent = level.name;
+    ui.readyBlurb.textContent = level.blurb;
+    ui.readyHow.textContent = level.how;
+    const best = store.get(`mit-best-${level.id}`);
+    ui.readyBest.textContent = best ? `Your best here: ${best}` : '';
+    ui.readyBest.hidden = !best;
+    ui.cord.style.setProperty('--p', '0');
+    ui.cord.textContent = 'Hold to start the mower';
+    show(ui.ready);
+    hud();
   }
+
+  function startEngine() {
+    hide(ui.ready);
+    strokes = []; stroke = null; bumps = 0; particles = []; moved = false; target = null;
+    coverage = 0; timeLeft = timeLimit;
+    state = 'play';
+    setTouch(true);
+    ui.push?.classList.add('is-on');
+    shake = reduceMotion ? 0 : 0.3;
+    for (let k = 0; k < 10 && !reduceMotion; k++) particles.push({ x: mower.x, y: mower.y + 8, vx: (Math.random() - 0.5) * 30, vy: -10 - Math.random() * 20, life: 0.8, c: C.smoke[k % 3] });
+    hud();
+  }
+
+  // pull-start: hold the button for a moment and the engine catches
+  let cordT = null, cordRAF = 0;
+  const HOLD = 1100;
+  function cordDown(e) {
+    e.preventDefault();
+    if (cordT !== null) return;
+    cordT = performance.now();
+    ui.cord.textContent = 'Keep holding…';
+    const tick = () => {
+      const p = Math.min(1, (performance.now() - cordT) / HOLD);
+      ui.cord.style.setProperty('--p', String(p));
+      if (p >= 1) { cordT = null; ui.cord.textContent = 'Vroom!'; startEngine(); return; }
+      cordRAF = requestAnimationFrame(tick);
+    };
+    cordRAF = requestAnimationFrame(tick);
+  }
+  function cordUp() {
+    if (cordT === null) return;
+    cancelAnimationFrame(cordRAF);
+    cordT = null;
+    ui.cord.style.setProperty('--p', '0');
+    ui.cord.textContent = 'Sputter. Hold it a little longer';
+  }
+  ui.cord.addEventListener('pointerdown', cordDown);
+  ui.cord.addEventListener('pointerup', cordUp);
+  ui.cord.addEventListener('pointerleave', cordUp);
+  ui.cord.addEventListener('pointercancel', cordUp);
+  ui.cord.addEventListener('keydown', (e) => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) cordDown(e); });
+  ui.cord.addEventListener('keyup', (e) => { if (e.key === ' ' || e.key === 'Enter') cordUp(); });
+  ui.cord.addEventListener('contextmenu', (e) => e.preventDefault());
 
   function show(el) { el.hidden = false; }
   function hide(el) { el.hidden = true; }
   function setTouch(on) { canvas.style.touchAction = on ? 'none' : 'pan-y'; screen.classList.toggle('is-playing', on); }
 
   function hud() {
-    ui.level.textContent = `${levelIndex + 1}/${LEVELS.length}`;
-    const shown = state === 'menu' ? 0 : Math.min(passIndex + 1, passes.length);
-    ui.pass.textContent = `${shown}/${passes.length}`;
-    const avg = passScores.length ? Math.round(passScores.reduce((a, b) => a + b, 0) / passScores.length) : 0;
-    ui.score.textContent = passScores.length ? avg * 10 : '–';
+    ui.level.textContent = level.short;
+    ui.pct.textContent = `${Math.floor(coverage * 100)}%`;
+    const t = Math.max(0, Math.ceil(timeLeft));
+    ui.time.textContent = `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}`;
   }
 
   let toastTimer;
@@ -882,55 +933,46 @@ export function initGame(root) {
   }
 
   /* ------------------------------------------------------------ input */
+  // Drag anywhere: the mower follows your thumb's movement (like a trackpad),
+  // so your thumb never covers the mower.
   const toLawn = (e) => {
     const r = canvas.getBoundingClientRect();
     return { x: ((e.clientX - r.left) / r.width) * W, y: ((e.clientY - r.top) / r.height) * H };
   };
   canvas.addEventListener('pointerdown', (e) => {
     const p = toLawn(e);
-    if (p.x >= blowerPos.x - 3 && p.x <= blowerPos.x + 13 && p.y >= blowerPos.y - 4 && p.y <= blowerPos.y + 10) {
-      blowerPrank();
-      return;
-    }
-    if (state !== 'play' && state !== 'turn') return;
-    drag = { x: e.clientX, y: e.clientY };
+    if (p.x >= blowerPos.x - 3 && p.x <= blowerPos.x + 13 && p.y >= blowerPos.y - 4 && p.y <= blowerPos.y + 10) { blowerPrank(); return; }
+    if (state !== 'play') return;
+    drag = p;
+    target = { x: mower.x, y: mower.y };
     canvas.setPointerCapture(e.pointerId);
   });
   canvas.addEventListener('pointermove', (e) => {
-    if (!drag) return;
-    if (state === 'play') {
-      const r = canvas.getBoundingClientRect();
-      // slide across your line to steer: only the part of the drag that crosses the pass counts
-      const ddx = ((e.clientX - drag.x) / r.width) * W;
-      const ddy = ((e.clientY - drag.y) / r.height) * H;
-      const g = geom(passes[passIndex], Math.min(mower.t, passes[passIndex].len), mower.lat);
-      mower.lat += ddx * g.nx + ddy * g.ny;
-    }
-    drag.x = e.clientX; drag.y = e.clientY;
+    if (!drag || state !== 'play') return;
+    const p = toLawn(e);
+    target.x += p.x - drag.x;
+    target.y += p.y - drag.y;
+    drag = p;
   });
-  const endDrag = () => { drag = null; };
+  const endDrag = () => { drag = null; if (target) target = { x: mower.x, y: mower.y }; };
   canvas.addEventListener('pointerup', endDrag);
   canvas.addEventListener('pointercancel', endDrag);
   window.addEventListener('keydown', (e) => {
-    if (e.target.closest?.('input, textarea, select, button')) return;
-    if (state === 'play' || state === 'turn') {
-      const k = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
-      if (k) { input.x = k[0] || input.x; input.y = k[1] || input.y; e.preventDefault(); }
-      if (e.key === ' ') { keyPush = true; e.preventDefault(); }
-    }
-    if ((e.key === 'b' || e.key === 'B') && document.activeElement === canvas) blowerPrank();
+    if (state !== 'play' || e.target.closest?.('input, textarea, select, button')) return;
+    const k = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key];
+    if (k) { if (k[0]) keys.x = k[0]; if (k[1]) keys.y = k[1]; e.preventDefault(); }
   });
   window.addEventListener('keyup', (e) => {
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') input.x = 0;
-    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') input.y = 0;
-    if (e.key === ' ') keyPush = false;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') keys.x = 0;
+    if (e.key === 'ArrowUp' || e.key === 'ArrowDown') keys.y = 0;
+    if (!keys.x && !keys.y && state === 'play') target = { x: mower.x, y: mower.y };
   });
 
-  ui.start.addEventListener('click', startLevel);
-  ui.again.addEventListener('click', () => { hide(ui.result); startLevel(); });
-  ui.next.addEventListener('click', () => { levelIndex = (levelIndex + 1) % LEVELS.length; openMenu(); });
-  ui.prevYard?.addEventListener('click', () => { levelIndex = (levelIndex - 1 + LEVELS.length) % LEVELS.length; openMenu(); });
-  ui.nextYard?.addEventListener('click', () => { levelIndex = (levelIndex + 1) % LEVELS.length; openMenu(); });
+  ui.pickList.addEventListener('click', (e) => { const b = e.target.closest('[data-i]'); if (b) chooseLevel(Number(b.dataset.i)); });
+  ui.random.addEventListener('click', () => chooseLevel(Math.floor(Math.random() * LEVELS.length)));
+  ui.back.addEventListener('click', openPicker);
+  ui.again.addEventListener('click', () => chooseLevel(LEVELS.indexOf(level)));
+  ui.pick.addEventListener('click', openPicker);
 
   let visible = true;
   new IntersectionObserver(([en]) => { visible = en.isIntersecting; }, { threshold: 0.25 }).observe(canvas);
@@ -938,21 +980,15 @@ export function initGame(root) {
   function blowerPrank() {
     if (!reduceMotion) {
       shake = 0.7;
-      for (let k = 0; k < 44; k++) {
-        particles.push({
-          x: blowerPos.x, y: blowerPos.y + 3,
-          vx: -40 - Math.random() * 100, vy: (Math.random() - 0.2) * 70,
-          life: 0.8 + Math.random() * 0.9, c: C.leaf[k % 3],
-        });
-      }
+      for (let k = 0; k < 44; k++) particles.push({ x: blowerPos.x, y: blowerPos.y + 3, vx: -40 - Math.random() * 100, vy: (Math.random() - 0.2) * 70, life: 0.8 + Math.random() * 0.9, c: C.leaf[k % 3] });
     }
     ui.brap.classList.remove('is-on');
     void ui.brap.offsetWidth;
     ui.brap.classList.add('is-on');
-    if (state === 'play' || state === 'turn') state = 'paused';
+    if (state === 'play') { state = 'paused'; drag = null; }
     setTimeout(() => ticket?.showModal?.(), reduceMotion ? 0 : 750);
   }
-  ticket?.addEventListener('close', () => { if (state === 'paused') state = 'play'; });
+  ticket?.addEventListener('close', () => { if (state === 'paused') { state = 'play'; target = { x: mower.x, y: mower.y }; } });
 
   /* ------------------------------------------------------------- loop */
   let last = performance.now();
@@ -975,9 +1011,10 @@ export function initGame(root) {
     const w = canvas.getBoundingClientRect().width;
     if (Math.abs(w - lastWidth) < 2) return;
     lastWidth = w;
-    if (state === 'menu') build();
+    if (state === 'picker' || state === 'ready') build();
   }).observe(canvas);
 
-  openMenu();
+  build();
+  openPicker();
   requestAnimationFrame(frame);
 }

@@ -3,41 +3,46 @@
 ---
     <section class="game" data-game aria-label="Stripe game">
       <div class="window hud">
-        <span><span class="hud-label">Yard</span> <b data-level>1/6</b></span>
-        <span><span class="hud-label">Pass</span> <b data-pass>0/8</b></span>
-        <span><span class="hud-label">Score</span> <b data-score>–</b></span>
+        <span><span class="hud-label">Yard</span> <b data-level>Starter home</b></span>
+        <span><span class="hud-label">Mowed</span> <b data-pct>0%</b></span>
+        <span><span class="hud-label">Time</span> <b data-time>0:00</b></span>
       </div>
 
       <div class="screen" data-screen>
-        <canvas tabindex="0" aria-label="Lawn. During a round, hold your finger on the lawn to push the mower and slide to steer. On a keyboard, hold space to push and use the arrow keys to steer."></canvas>
+        <canvas tabindex="0" aria-label="Lawn. After the mower starts, drag anywhere on the lawn to drive it and paint stripes. On a keyboard, use the arrow keys."></canvas>
 
-        <div class="window overlay" data-menu>
-          <div class="yard-pick">
-            <button type="button" class="yard-arrow" data-prev-yard aria-label="Previous yard">‹</button>
-            <h2 data-menu-title>Yard 1: The starter home</h2>
-            <button type="button" class="yard-arrow" data-next-yard aria-label="Next yard">›</button>
-          </div>
-          <p class="overlay-blurb" data-menu-blurb></p>
-          <p data-menu-how></p>
-          <p class="overlay-small">Hold your thumb on the lawn to push. Slide across your line to steer.</p>
+        <div class="window overlay" data-picker>
+          <h2>Pick a yard</h2>
+          <p class="overlay-small">Pull-start the mower, then paint the straightest stripes you can.</p>
+          <button type="button" class="btn btn-wide" data-random>Surprise me</button>
+          <p class="pick-label">Or choose your own adventure</p>
+          <div class="pick-list" data-pick-list></div>
+        </div>
+
+        <div class="window overlay" data-ready hidden>
+          <h2 data-ready-title>The starter home</h2>
+          <p class="overlay-blurb" data-ready-blurb></p>
+          <p data-ready-how></p>
+          <p class="overlay-small">Drag anywhere on the lawn to drive. Your thumb paints the stripes.</p>
+          <button type="button" class="cord" data-cord style="--p:0">Hold to start the mower</button>
           <div class="overlay-foot">
-            <button type="button" class="btn" data-start>Start mowing</button>
-            <span class="overlay-best" data-menu-best hidden></span>
+            <button type="button" class="link-btn" data-back>Pick a different yard</button>
+            <span class="overlay-best" data-ready-best hidden></span>
           </div>
         </div>
 
         <div class="window overlay" data-result hidden>
           <p class="result-score"><span data-total>0</span><span class="stars" data-stars role="img"></span></p>
           <h2 data-grade>Respectable dad stripes.</h2>
-          <p class="overlay-small" data-best></p>
+          <p class="overlay-small" data-detail></p>
           <p class="overlay-small" data-tip></p>
           <div class="actions">
             <button type="button" class="btn" data-again>Mow again</button>
-            <button type="button" class="btn btn-quiet" data-next>Next yard</button>
+            <button type="button" class="btn btn-quiet" data-pick>Pick another yard</button>
           </div>
         </div>
 
-        <p class="push-hint" data-push aria-hidden="true">Hold to push</p>
+        <p class="push-hint" data-push aria-hidden="true">Drag to mow</p>
         <p class="toast" data-toast aria-live="polite"></p>
         <p class="brap" data-brap aria-hidden="true">BRRRRAAAAP</p>
       </div>
