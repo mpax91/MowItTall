@@ -3,13 +3,13 @@ import Base from '../../layouts/Base.astro';
 const posts = Object.values(import.meta.glob('./[a-z]*.md', { eager: true }))
   .map((p) => ({ ...p.frontmatter, url: p.url }))
   .sort((a, b) => new Date(b.date) - new Date(a.date));
-const title = 'Clippings: lawn takes, some hot, all short | Mow It Tall';
+const title = 'The Mow It Tall blog: lawn takes, some hot, all short';
 const description = 'Opinionated, short, occasionally petty lawn care takes from Bedford, NY. No 3,000-word guides. No fluff.';
 ---
-<Base title={title} description={description} path="/clippings/">
+<Base title={title} description={description} path="/blog/">
   <main id="main" class="page">
     <header class="page-head">
-      <h1>Clippings</h1>
+      <h1>The blog</h1>
       <p class="lede">Lawn takes. Some hot, all short. If a post takes longer to read than it takes to mow your front yard, I failed.</p>
     </header>
     <ul class="clip-list clip-list-big">

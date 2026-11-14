@@ -1,0 +1,68 @@
+---
+import Base from '../layouts/Base.astro';
+import FlipCards from '../components/FlipCards.astro';
+import PixelIcon from '../components/PixelIcon.astro';
+import { changeCards } from '../data/changes.js';
+import { WEEDS } from '../data/weeds.js';
+import { PHOTOS } from '../data/photos.js';
+
+const title = 'Lawn care 101 for beginners in the Northeast | Mow It Tall';
+const description =
+  'The basics of a better lawn in Bedford, Westchester and the Northeast: six small habits, a guide to common weeds, and real photos from a beginner-friendly yard.';
+---
+<Base title={title} description={description} path="/lawn-101/">
+  <main id="main">
+    <section class="page-head page-head-hub">
+      <h1>Lawn 101</h1>
+      <p class="lede">Everything a beginner actually needs, and nothing you don’t. Start with one small change. That’s it. That’s the class.</p>
+    </section>
+
+    <section class="changes" aria-labelledby="changes-h">
+      <h2 id="changes-h">Six small changes</h2>
+      <p class="section-lede">Tap a card. Pick one. Next month, pick another.</p>
+      <FlipCards items={changeCards} layout="list" />
+    </section>
+
+    <section class="weeds-teaser" aria-labelledby="weeds-h">
+      <div class="section-head">
+        <h2 id="weeds-h">What’s that weed?</h2>
+        <a class="more" href="/weeds/">Weed guide</a>
+      </div>
+      <p class="section-lede">The usual suspects around here, and how to deal with each one. Easy way, my way, or just let it be.</p>
+      <div class="weed-chips">
+        {WEEDS.map((w) => (
+          <a class="weed-chip" href={`/weeds/#${w.id}`}><PixelIcon map={w.icon} size={30} />{w.name}</a>
+        ))}
+      </div>
+    </section>
+
+    <section class="yards-teaser" aria-labelledby="yards-h">
+      <div class="section-head">
+        <h2 id="yards-h">Proof it works</h2>
+        <a class="more" href="/yards/">See the yards</a>
+      </div>
+      <p class="section-lede">My yard in Bedford. Regular push mower, no lawn company, just these habits.</p>
+      <div class="photo-strip">
+        {PHOTOS.map((p) => (
+          <figure class="photo">
+            <img
+              src={`/img/${p.src}-800.webp`}
+              srcset={`/img/${p.src}-800.webp 800w, /img/${p.src}-1400.webp 1400w`}
+              sizes="(min-width: 900px) 420px, 82vw"
+              width={p.w} height={p.h} loading="lazy" decoding="async" alt={p.alt}
+            />
+            <figcaption>{p.caption}</figcaption>
+          </figure>
+        ))}
+      </div>
+    </section>
+
+    <section class="plan plan-mid" aria-labelledby="plan-h">
+      <div class="window plan-card">
+        <h2 id="plan-h">Want the short list for your yard?</h2>
+        <p>Seven questions, two minutes. I’ll tell you exactly what to do and when.</p>
+        <a class="btn" href="/plan/">Take the quiz</a>
+      </div>
+    </section>
+  </main>
+</Base>

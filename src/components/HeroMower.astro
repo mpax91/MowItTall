@@ -1,8 +1,32 @@
 ---
-// Homepage hero: what this site is, the main call to action, and a strip of lawn to play with.
+// Homepage hero: the headline, a quick mowing game, then what the site is and the main call to action.
 ---
 <section class="hero2" aria-labelledby="hero-h" data-hero>
   <h1 id="hero-h">A better lawn, without becoming a lawn person.</h1>
+
+  <div class="mow" data-mow>
+    <div class="mow-stats" aria-live="polite">
+      <span>Mowed <b data-pct>0%</b></span>
+      <span>Passes <b data-passes>0</b></span>
+      <span>Best <b data-best>–</b></span>
+    </div>
+    <div class="mow-lawn">
+      <canvas aria-label="A small lawn with a push mower. Use the slider to line up the mower and hold the button to mow."></canvas>
+      <p class="mow-hint" data-hint aria-hidden="true">Slide to line up. Hold to mow.</p>
+      <div class="mow-result" data-result hidden>
+        <p class="mow-score"><b data-score>0</b><span>/100</span></p>
+        <p class="mow-title" data-title></p>
+        <p class="mow-detail" data-detail></p>
+        <p class="mow-tip" data-tip></p>
+        <button type="button" class="btn mow-again" data-again>Mow again</button>
+      </div>
+    </div>
+    <div class="mow-track" data-mow-track role="slider" tabindex="0" aria-label="Mower position" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <span class="mow-knob" data-knob aria-hidden="true"><i></i><i></i><i></i></span>
+    </div>
+    <button type="button" class="mow-hold" data-hold><span>Hold to mow</span></button>
+  </div>
+
   <p class="hero-lede">
     Small, easy changes, timed for Bedford and the rest of the Northeast. Take the two-minute
     quiz and get a free lawn plan built for your yard and how much effort you actually want to give.
@@ -15,20 +39,14 @@
     <span class="hero-now-label">Right now in Bedford:</span> <strong data-now-title></strong>
     <a href="#cal-h">See the live calendar</a>
   </p>
-
-  <div class="hero-lawn" data-hero-lawn>
-    <canvas aria-label="A strip of lawn. Drag across it to mow stripes."></canvas>
-    <p class="hero-hint" data-hint aria-hidden="true">Drag your thumb across the grass</p>
-    <button type="button" class="hero-regrow" data-regrow hidden>Let it grow back</button>
-  </div>
   <p class="hero-tag">You don’t need to be a <span class="nowrap">know-it-all.</span> Just mow it tall.</p>
 </section>
 
 <script>
-  import { initHeroLawn } from '../scripts/heroLawn.js';
+  import { initHeroMower } from '../scripts/heroMower.js';
   import { TASKS, snapshot, fmt } from '../data/tasks.js';
-  const lawn = document.querySelector('[data-hero-lawn]');
-  if (lawn) initHeroLawn(lawn);
+  const mow = document.querySelector('[data-mow]');
+  if (mow) initHeroMower(mow);
   const now = document.querySelector('[data-hero-now]');
   if (now) {
     const snap = snapshot(TASKS.filter((t) => t.level <= 2), new Date());

@@ -1,0 +1,39 @@
+---
+import Base from '../layouts/Base.astro';
+import Calendar from '../components/Calendar.astro';
+import SoilGauge from '../components/SoilGauge.astro';
+
+const title = 'Free lawn tools: live lawn calendar and soil temperature for Bedford, NY | Mow It Tall';
+const description =
+  'Free lawn care tools for Westchester and the Northeast: a custom lawn plan quiz, a live lawn calendar, and today’s soil temperature in Bedford, NY.';
+---
+<Base title={title} description={description} path="/toolshed/">
+  <main id="main">
+    <section class="page-head page-head-hub">
+      <h1>The toolshed</h1>
+      <p class="lede">Free tools that do the thinking for you. No account, no email, no gas blower.</p>
+    </section>
+
+    <section class="plan plan-mid" aria-labelledby="quiz-h">
+      <div class="window plan-card">
+        <h2 id="quiz-h">Your lawn plan</h2>
+        <p>Seven questions about your yard and how much effort you’ll honestly give. You get the few things that matter, in order, with phone reminders.</p>
+        <a class="btn" href="/plan/">Take the quiz</a>
+      </div>
+    </section>
+
+    <Calendar />
+
+    <SoilGauge />
+
+    <section class="workbench" aria-labelledby="bench-h">
+      <h2 id="bench-h">On the workbench</h2>
+      <p class="section-lede">Tools I’m building next.</p>
+      <ul class="bench-list">
+        <li><strong>Should I mow today?</strong> A straight yes or no for your ZIP, from rain and soil temperature.</li>
+        <li><strong>Measure your yard.</strong> Trace your lawn on a map, get square feet and how many bags to buy.</li>
+        <li><strong>Soil alerts.</strong> A heads-up when Bedford’s soil hits crabgrass-preventer temperature.</li>
+      </ul>
+    </section>
+  </main>
+</Base>

@@ -1,13 +1,14 @@
 ---
 import Base from '../layouts/Base.astro';
 import Calendar from '../components/Calendar.astro';
-import HeroLawn from '../components/HeroLawn.astro';
+import HeroMower from '../components/HeroMower.astro';
 import FlipCards from '../components/FlipCards.astro';
 import SoilGauge from '../components/SoilGauge.astro';
 import { PHOTOS } from '../data/photos.js';
 import { WEEDS } from '../data/weeds.js';
 import PixelIcon from '../components/PixelIcon.astro';
-const posts = Object.values(import.meta.glob('./clippings/[a-z]*.md', { eager: true }))
+import { changeCards } from '../data/changes.js';
+const posts = Object.values(import.meta.glob('./blog/[a-z]*.md', { eager: true }))
   .map((p) => ({ ...p.frontmatter, url: p.url }))
   .sort((a, b) => new Date(b.date) - new Date(a.date))
   .slice(0, 3);
@@ -17,139 +18,6 @@ const title = 'Mow It Tall: the easy guide to a better lawn';
 const description =
   'Small, easy changes for a better-looking lawn. Simple lawn care tips for beginners in Bedford, Westchester and the Northeast, from a neighbor with great stripes.';
 const site = 'https://mowittall.com';
-
-const icons = {
-  raise: [
-    '..a.........',
-    '.aaa........',
-    'aaaaa.......',
-    '..a...l..l..',
-    '..a..l.ll.l.',
-    '..a..l.gl.l.',
-    '..a.lg.gl.gl',
-    '....lg.gl.gl',
-    '....gg.gg.gg',
-    '....gg.gg.gg',
-    'llllgggggggg',
-    'gggggggggggg',
-  ],
-  clippings: [
-    '............',
-    '..l....l....',
-    '...l..l...l.',
-    '.l...l...l..',
-    '..l.l..l...l',
-    '.....l...l..',
-    '..l.....l...',
-    '............',
-    'llllllllllll',
-    'gglgglgglggl',
-    'gggggggggggg',
-    'tttttttttttt',
-  ],
-  water: [
-    '......b.....',
-    '.....bb.....',
-    '.....bbb....',
-    '....bbbb....',
-    '....bwbbb...',
-    '...bwbbbbb..',
-    '...bwbbbbb..',
-    '...bbbbbbb..',
-    '...bbbbbbb..',
-    '....bbbbb...',
-    '.....bbb....',
-    '............',
-  ],
-  blade: [
-    '............',
-    '..........y.',
-    '.........yyy',
-    '..........y.',
-    'sSSSSSSSSSS.',
-    'sssSSaaSSSSS',
-    'sssssaasssSS',
-    '.ssssssssss.',
-    '............',
-    '..y.........',
-    '.yyy........',
-    '..y.........',
-  ],
-  leaves: [
-    '........aa..',
-    '.......a....',
-    '....oooo....',
-    '...ooyooo...',
-    '..ooyoooo...',
-    '..oyoooo....',
-    '.oyoooo.....',
-    '.yoooo......',
-    'yooo........',
-    'y...........',
-    '............',
-    '............',
-  ],
-  seed: [
-    '............',
-    '.....ll.....',
-    '....lggl.ll.',
-    '....lgglgll.',
-    '.....gl.gl..',
-    '......g.g...',
-    '......gg....',
-    '......g.....',
-    '..tttttttt..',
-    '.tttttttttt.',
-    '.tttttttttt.',
-    '............',
-  ],
-};
-
-const changes = [
-  {
-    icon: icons.raise,
-    title: 'Raise your mower',
-    body: 'Set it to 3.5 to 4 inches. Tall grass shades out weeds and needs less water.',
-    effort: '10 seconds, once',
-  },
-  {
-    icon: icons.clippings,
-    title: 'Leave the clippings',
-    body: 'Skip the bag. Clippings break down in a few days and feed your lawn for free.',
-    effort: 'Less work than before',
-  },
-  {
-    icon: icons.water,
-    title: 'Water less often, but longer',
-    body: 'Once or twice a week, early morning, about an inch total. Deep watering grows deep roots.',
-    effort: 'Change one timer',
-  },
-  {
-    icon: icons.blade,
-    title: 'Sharpen the blade',
-    body: 'A dull blade tears the grass and leaves brown tips. Do it once a year, before spring.',
-    effort: '20 minutes a year',
-  },
-  {
-    icon: icons.leaves,
-    title: 'Mow over your leaves',
-    body: 'No blower needed. Chopped-up leaves sink into the lawn and turn into free fertilizer.',
-    effort: 'You were mowing anyway',
-  },
-  {
-    icon: icons.seed,
-    title: 'Seed in fall, not spring',
-    body: 'Late August through September is when new grass does best around here.',
-    effort: 'One weekend',
-  },
-];
-
-const changeCards = changes.map((c) => ({
-  icon: c.icon,
-  title: c.title,
-  sub: `Effort: ${c.effort}`,
-  back: [{ text: c.body }],
-}));
 
 const faqs = [
   {
@@ -205,7 +73,7 @@ const jsonLd = {
 ---
 <Base title={title} description={description} path="/" jsonLd={jsonLd}>
     <main id="main">
-      <HeroLawn />
+      <HeroMower />
 
       <section class="how" aria-labelledby="how-h">
         <h2 id="how-h">How it works</h2>
@@ -258,8 +126,8 @@ const jsonLd = {
 
       <section class="clips-teaser" aria-labelledby="clips-h">
         <div class="section-head">
-          <h2 id="clips-h">Clippings</h2>
-          <a class="more" href="/clippings/">All posts</a>
+          <h2 id="clips-h">From the blog</h2>
+          <a class="more" href="/blog/">All posts</a>
         </div>
         <p class="section-lede">Lawn takes. Some hot, all short.</p>
         <ul class="clip-list">
