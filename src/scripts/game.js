@@ -179,8 +179,8 @@ const LEVELS = [
   },
   {
     id: 'backyard', name: 'The backyard', short: 'Backyard', scene: 'shed', axes: [UP],
-    blurb: 'Two trees, a gnome and the neighbor’s dog. Only one of them will move for you.',
-    how: 'Straight stripes, but steer around the obstacles. Bumps cost points.',
+    blurb: 'Two trees, a gnome and the neighbor’s dog supervising.',
+    how: 'Straight stripes up and down. Mow around the trees and the gnome. The dog will get out of your way.',
     statics: [['tree', 0.32, 0.3, 9], ['tree', 0.7, 0.68, 10], ['gnome', 0.78, 0.2, 4]], movers: 'dog',
   },
   {
@@ -196,20 +196,20 @@ const LEVELS = [
   },
   {
     id: 'halloween', name: 'The haunted lawn', short: 'Halloween', scene: 'halloween', axes: [UP], layer: 'leaves',
-    blurb: 'Leaves everywhere, tombstones, and something floating around. Mow fast.',
-    how: 'Mow over each strip twice to chop the leaves. Dodge the ghost.',
+    blurb: 'Leaves everywhere, a few tombstones, and something floating around. Don’t mind it.',
+    how: 'Straight stripes up and down. Mow over each strip twice to chop the leaves into confetti.',
     statics: [['stone', 0.25, 0.35, 4], ['stone', 0.72, 0.55, 4], ['jack', 0.5, 0.78, 4]], movers: 'ghost',
   },
   {
     id: 'thanksgiving', name: 'The turkey trot', short: 'Thanksgiving', scene: 'autumn', side: 18, axes: [UP], layer: 'leaves',
     blurb: 'Fall leaves and three turkeys who refuse to leave. Gobble gobble.',
-    how: 'Mow over each strip twice to mulch the leaves. Don’t mow the turkeys.',
+    how: 'Straight stripes up and down. Mow over each strip twice to mulch the leaves. The turkeys will move.',
     movers: 'turkeys',
   },
   {
     id: 'christmas', name: 'The snow day', short: 'Christmas', scene: 'snowday', top: 48, axes: [UP], layer: 'snow',
     blurb: 'Nobody mows in December. You’re not nobody. Watch for the sleigh.',
-    how: 'Clear the snow in straight stripes. Steer around the snowman and Santa.',
+    how: 'Clear every bit of snow in straight stripes up and down. Mow around the snowman.',
     statics: [['snowman', 0.72, 0.4, 5]], movers: 'santa',
   },
 ];
@@ -783,13 +783,20 @@ export function initGame(root) {
         if (!moved) { moved = true; ui.push?.classList.remove('is-on'); }
         cutHere();
         strokePoint();
-        const hit = statics.find((o) => Math.hypot(mower.x - o.x, mower.y - o.y) < o.r + deck - 1)
-          || movers.find((o) => Math.hypot(mower.x - o.x, mower.y - o.y) < o.r + deck);
-        if (hit) {
-          const d = Math.hypot(mower.x - hit.x, mower.y - hit.y) || 1;
-          const msg = { tree: 'Bonk.', gnome: 'Sorry, gnome.', dog: 'The dog is fine. Your score isn’t.', turkey: 'Gobble!', ghost: 'Boo.', stone: 'Rest in peace, mower blade.', jack: 'Pumpkin down.', snowman: 'Frosty has notes.', sleigh: 'Santa saw that.' }[hit.kind] || 'Bonk.';
-          if (hit.wander) { hit.vx = (hit.x - mower.x) * 4; hit.vy = (hit.y - mower.y) * 4; }
-          bump(msg, [(mower.x - hit.x) / d, (mower.y - hit.y) / d]);
+        // trees, gnomes and the like just block the way: slide around them, no penalty
+        for (const o of statics) {
+          const d = Math.hypot(mower.x - o.x, mower.y - o.y);
+          const min = o.r + deck - 1;
+          if (d < min) {
+            const k = (min - d) / (d || 1);
+            mower.x += (mower.x - o.x) * k; mower.y += (mower.y - o.y) * k;
+            target = { x: mower.x + (target.x - mower.x), y: mower.y + (target.y - mower.y) };
+          }
+        }
+        // the animals and holiday guests step aside when you get close
+        for (const m of movers) {
+          const d = Math.hypot(m.x - mower.x, m.y - mower.y);
+          if (d < 16 && (m.wander || m.ghost)) { m.vx = (m.x - mower.x) * 3; m.vy = (m.y - mower.y) * 3; if (m.ghost) m.t += 0.05; }
         }
       }
     }
@@ -830,7 +837,7 @@ export function initGame(root) {
     const totalLen = strokes.reduce((a, s) => a + s.len, 0);
     const straight = totalLen ? strokes.reduce((a, s) => a + s.score * s.len, 0) / totalLen : 0;
     const timeBonus = coverage >= 0.85 ? Math.round(Math.max(0, timeLeft / timeLimit) * 100) : 0;
-    const total = Math.max(0, Math.round(straight * 6 + coverage * 300 + timeBonus - bumps * 15));
+    const total = Math.max(0, Math.round(straight * 6 + coverage * 300 + timeBonus));
     const key = `mit-best-${level.id}`;
     const prevBest = store.get(key);
     if (total > prevBest) store.set(key, total);
@@ -840,7 +847,7 @@ export function initGame(root) {
     ui.stars.innerHTML = [0, 1, 2].map((k) => `<span class="star${k < stars ? ' is-on' : ''}"></span>`).join('');
     ui.stars.setAttribute('aria-label', `${stars} of 3 stars`);
     const what = level.layer === 'leaves' ? 'Mowed and mulched' : level.layer === 'snow' ? 'Cleared' : level.both ? 'Checkerboarded' : 'Mowed';
-    ui.detail.textContent = `Straightness ${Math.round(straight)}. ${what} ${Math.round(coverage * 100)}%.${bumps ? ` Bumps: ${bumps}.` : ''} ${total > prevBest ? (prevBest ? `New best! Old best: ${prevBest}.` : 'First score on this yard.') : `Your best: ${prevBest}.`}`;
+    ui.detail.textContent = `Straightness ${Math.round(straight)}. ${what} ${Math.round(coverage * 100)}%. ${total > prevBest ? (prevBest ? `New best! Old best: ${prevBest}.` : 'First score on this yard.') : `Your best: ${prevBest}.`}`;
     ui.tip.textContent = TIPS[level.id];
     show(ui.result);
   }
