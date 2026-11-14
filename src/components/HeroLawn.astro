@@ -1,0 +1,44 @@
+---
+// Homepage hero: what this site is, the main call to action, and a strip of lawn to play with.
+---
+<section class="hero2" aria-labelledby="hero-h" data-hero>
+  <h1 id="hero-h">A better lawn, without becoming a lawn person.</h1>
+  <p class="hero-lede">
+    Small, easy changes, timed for Bedford and the rest of the Northeast. Take the two-minute
+    quiz and get a free lawn plan built for your yard and how much effort you actually want to give.
+  </p>
+  <div class="hero-cta">
+    <a class="btn btn-big" href="/plan/" data-hero-cta>Get my free lawn plan</a>
+    <span class="hero-cta-note">2 minutes. No email needed.</span>
+  </div>
+  <p class="hero-now" data-hero-now hidden>
+    <span class="hero-now-label">Right now in Bedford:</span> <strong data-now-title></strong>
+    <a href="#cal-h">See the live calendar</a>
+  </p>
+
+  <div class="hero-lawn" data-hero-lawn>
+    <canvas aria-label="A strip of lawn. Drag across it to mow stripes."></canvas>
+    <p class="hero-hint" data-hint aria-hidden="true">Drag your thumb across the grass</p>
+    <button type="button" class="hero-regrow" data-regrow hidden>Let it grow back</button>
+  </div>
+  <p class="hero-tag">You don’t need to be a <span class="nowrap">know-it-all.</span> Just mow it tall.</p>
+</section>
+
+<script>
+  import { initHeroLawn } from '../scripts/heroLawn.js';
+  import { TASKS, snapshot, fmt } from '../data/tasks.js';
+  const lawn = document.querySelector('[data-hero-lawn]');
+  if (lawn) initHeroLawn(lawn);
+  const now = document.querySelector('[data-hero-now]');
+  if (now) {
+    const snap = snapshot(TASKS.filter((t) => t.level <= 2), new Date());
+    const pick = snap.now[0];
+    if (pick) {
+      now.querySelector('[data-now-title]').textContent = `${pick.t.title} (through ${fmt(pick.t.end)})`;
+      now.hidden = false;
+    } else if (snap.next) {
+      now.querySelector('[data-now-title]').textContent = `Nothing urgent. Next up: ${snap.next.t.title}, ${fmt(snap.next.t.start)}`;
+      now.hidden = false;
+    }
+  }
+</script>

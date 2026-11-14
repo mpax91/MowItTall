@@ -1,7 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import Calendar from '../components/Calendar.astro';
-import StripeGame from '../components/StripeGame.astro';
+import HeroLawn from '../components/HeroLawn.astro';
 import FlipCards from '../components/FlipCards.astro';
 import SoilGauge from '../components/SoilGauge.astro';
 import { PHOTOS } from '../data/photos.js';
@@ -204,33 +204,35 @@ const jsonLd = {
 };
 ---
 <Base title={title} description={description} path="/" jsonLd={jsonLd}>
-    <StripeGame />
-
     <main id="main">
-      <section class="intro">
-        <h1 class="tagline">You don’t need to be a <span class="nowrap">know-it-all.</span> Just mow it tall.</h1>
-        <p class="lede">
-          The easy guide to a better lawn. No jargon, no 40-step programs. Just a few small
-          changes from a guy in Bedford, NY whose neighbors keep asking about his stripes.
-        </p>
-        <a class="btn" href="/plan/">Get your lawn game plan</a>
-      </section>
+      <HeroLawn />
 
-      <section class="changes" aria-labelledby="changes-h">
-        <h2 id="changes-h">Small changes, big lawn</h2>
-        <p class="section-lede">You don’t have to become a lawn person. Tap a card. Pick one. Next month, pick another.</p>
-        <FlipCards items={changeCards} layout="list" />
+      <section class="how" aria-labelledby="how-h">
+        <h2 id="how-h">How it works</h2>
+        <ol class="how-steps">
+          <li><strong>Take the quiz.</strong> Seven quick questions about your yard, your problems and how much effort you’ll honestly give. Couch Potato is a valid answer.</li>
+          <li><strong>Get your plan.</strong> Just the few things that matter for your lawn, in order, with the right timing for your area.</li>
+          <li><strong>Get reminded.</strong> Add it to your phone’s calendar, so it tells you when to do each thing. No app, no account.</li>
+        </ol>
+        <a class="btn" href="/plan/">Start the quiz</a>
       </section>
 
       <Calendar />
 
       <SoilGauge />
 
+      <section class="changes" aria-labelledby="changes-h">
+        <h2 id="changes-h">Small changes, big lawn</h2>
+        <p class="section-lede">You don’t need a 40-step program. Tap a card. Pick one. Next month, pick another.</p>
+        <FlipCards items={changeCards} layout="list" />
+      </section>
+
       <section class="yards-teaser" aria-labelledby="yards-h">
         <div class="section-head">
           <h2 id="yards-h">Proof it works</h2>
           <a class="more" href="/yards/">See the yards</a>
         </div>
+        <p class="section-lede">My yard in Bedford. Regular push mower, no lawn company, just these habits.</p>
         <div class="photo-strip">
           {PHOTOS.map((p) => (
             <figure class="photo">
@@ -243,6 +245,14 @@ const jsonLd = {
               <figcaption>{p.caption}</figcaption>
             </figure>
           ))}
+        </div>
+      </section>
+
+      <section class="plan plan-mid" aria-labelledby="plan-mid-h">
+        <div class="window plan-card">
+          <h2 id="plan-mid-h">Want this for your yard?</h2>
+          <p>Tell me about your lawn and how much time you’ve got. I’ll tell you exactly what to do and when.</p>
+          <a class="btn" href="/plan/">Get my free lawn plan</a>
         </div>
       </section>
 
@@ -279,20 +289,17 @@ const jsonLd = {
       </section>
 
       <section class="games-teaser" aria-labelledby="games-h">
-        <div class="window games-card">
-          <h2 id="games-h">Waste five minutes productively</h2>
-          <p>Whack-a-Weed: tap the dandelions, spare the bees, and whatever you do, don’t touch the gas blower.</p>
-          <a class="btn" href="/games/">Play the games</a>
+        <div class="games-card">
+          <h2 id="games-h">Think you can stripe?</h2>
+          <p>Eight yards to mow, from a starter home to a ballpark to a snowy Christmas lawn. Pull-start the mower and paint the straightest stripes you can. Plus Whack-a-Weed.</p>
+          <a class="btn btn-quiet" href="/games/">Play the games</a>
         </div>
       </section>
 
       <section class="plan" id="plan" aria-labelledby="plan-h">
         <h2 id="plan-h">Get your lawn game plan</h2>
-        <p>
-          Seven quick questions about your yard and how much effort you’re honestly willing to
-          give. You get a plan, plus reminders for your phone’s calendar.
-        </p>
-        <a class="btn" href="/plan/">Take the quiz</a>
+        <p>Seven questions. Two minutes. A plan for your yard, plus reminders on your phone’s calendar.</p>
+        <a class="btn btn-big" href="/plan/">Get my free lawn plan</a>
       </section>
 
       <section class="faq" aria-labelledby="faq-h">
@@ -305,4 +312,22 @@ const jsonLd = {
         ))}
       </section>
     </main>
+
+    <div class="sticky-cta" data-sticky hidden>
+      <a class="btn" href="/plan/">Get my free lawn plan</a>
+    </div>
+
+    <script>
+      // A slim "get your plan" bar appears once the hero button scrolls away,
+      // and gets out of the way near the other plan buttons.
+      const bar = document.querySelector('[data-sticky]');
+      const hero = document.querySelector('[data-hero-cta]');
+      const end = document.querySelector('#plan');
+      if (bar && hero && end) {
+        let heroOut = false, endIn = false;
+        const sync = () => { bar.hidden = !(heroOut && !endIn); };
+        new IntersectionObserver(([e]) => { heroOut = !e.isIntersecting && e.boundingClientRect.top < 0; sync(); }).observe(hero);
+        new IntersectionObserver(([e]) => { endIn = e.isIntersecting; sync(); }).observe(end);
+      }
+    </script>
 </Base>
