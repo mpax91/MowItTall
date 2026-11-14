@@ -1,0 +1,4 @@
+# Preview build: keep crawlers out until mowittall.com is connected.
+# At launch, replace with: User-agent: *  /  Allow: /  and add the sitemap line.
+User-agent: *
+Disallow: /

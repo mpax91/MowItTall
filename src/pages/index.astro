@@ -1,0 +1,365 @@
+---
+import '@fontsource/pixelify-sans/500.css';
+import '@fontsource/pixelify-sans/700.css';
+import '@fontsource/atkinson-hyperlegible-next/400.css';
+import '@fontsource/atkinson-hyperlegible-next/700.css';
+import '../styles/global.css';
+import PixelIcon from '../components/PixelIcon.astro';
+
+const title = 'Mow It Tall: the easy guide to a better lawn';
+const description =
+  'Small, easy changes for a better-looking lawn. Simple lawn care tips for beginners in Bedford, Westchester and the Northeast, from a neighbor with great stripes.';
+const site = 'https://mowittall.com';
+
+const icons = {
+  raise: [
+    '..a.........',
+    '.aaa........',
+    'aaaaa.......',
+    '..a...l..l..',
+    '..a..l.ll.l.',
+    '..a..l.gl.l.',
+    '..a.lg.gl.gl',
+    '....lg.gl.gl',
+    '....gg.gg.gg',
+    '....gg.gg.gg',
+    'llllgggggggg',
+    'gggggggggggg',
+  ],
+  clippings: [
+    '............',
+    '..l....l....',
+    '...l..l...l.',
+    '.l...l...l..',
+    '..l.l..l...l',
+    '.....l...l..',
+    '..l.....l...',
+    '............',
+    'llllllllllll',
+    'gglgglgglggl',
+    'gggggggggggg',
+    'tttttttttttt',
+  ],
+  water: [
+    '......b.....',
+    '.....bb.....',
+    '.....bbb....',
+    '....bbbb....',
+    '....bwbbb...',
+    '...bwbbbbb..',
+    '...bwbbbbb..',
+    '...bbbbbbb..',
+    '...bbbbbbb..',
+    '....bbbbb...',
+    '.....bbb....',
+    '............',
+  ],
+  blade: [
+    '............',
+    '..........y.',
+    '.........yyy',
+    '..........y.',
+    'sSSSSSSSSSS.',
+    'sssSSaaSSSSS',
+    'sssssaasssSS',
+    '.ssssssssss.',
+    '............',
+    '..y.........',
+    '.yyy........',
+    '..y.........',
+  ],
+  leaves: [
+    '........aa..',
+    '.......a....',
+    '....oooo....',
+    '...ooyooo...',
+    '..ooyoooo...',
+    '..oyoooo....',
+    '.oyoooo.....',
+    '.yoooo......',
+    'yooo........',
+    'y...........',
+    '............',
+    '............',
+  ],
+  seed: [
+    '............',
+    '.....ll.....',
+    '....lggl.ll.',
+    '....lgglgll.',
+    '.....gl.gl..',
+    '......g.g...',
+    '......gg....',
+    '......g.....',
+    '..tttttttt..',
+    '.tttttttttt.',
+    '.tttttttttt.',
+    '............',
+  ],
+};
+
+const changes = [
+  {
+    icon: icons.raise,
+    title: 'Raise your mower',
+    body: 'Set it to 3.5 to 4 inches. Tall grass shades out weeds and needs less water.',
+    effort: '10 seconds, once',
+  },
+  {
+    icon: icons.clippings,
+    title: 'Leave the clippings',
+    body: 'Skip the bag. Clippings break down in a few days and feed your lawn for free.',
+    effort: 'Less work than before',
+  },
+  {
+    icon: icons.water,
+    title: 'Water less often, but longer',
+    body: 'Once or twice a week, early morning, about an inch total. Deep watering grows deep roots.',
+    effort: 'Change one timer',
+  },
+  {
+    icon: icons.blade,
+    title: 'Sharpen the blade',
+    body: 'A dull blade tears the grass and leaves brown tips. Do it once a year, before spring.',
+    effort: '20 minutes a year',
+  },
+  {
+    icon: icons.leaves,
+    title: 'Mow over your leaves',
+    body: 'No blower needed. Chopped-up leaves sink into the lawn and turn into free fertilizer.',
+    effort: 'You were mowing anyway',
+  },
+  {
+    icon: icons.seed,
+    title: 'Seed in fall, not spring',
+    body: 'Late August through September is when new grass does best around here.',
+    effort: 'One weekend',
+  },
+];
+
+const faqs = [
+  {
+    q: 'How high should I mow my lawn?',
+    a: 'For most lawns in New York and the Northeast, 3.5 to 4 inches. Taller grass shades the soil so weed seeds can’t sprout, and it grows deeper roots so it stays green in summer.',
+  },
+  {
+    q: 'When should I put down crabgrass preventer in Westchester?',
+    a: 'When the soil warms to about 55°F, usually early to mid April around Bedford. A good clue: put it down when the forsythia bushes are blooming.',
+  },
+  {
+    q: 'Should I bag my grass clippings?',
+    a: 'No. Leave them on the lawn. They break down quickly and return nutrients to the soil. Bag only if the grass got very long and the clippings are clumping.',
+  },
+  {
+    q: 'When is the best time to seed a lawn in New York?',
+    a: 'Late August through September. The soil is still warm, the air is cooler, and there are fewer weeds competing with new grass.',
+  },
+  {
+    q: 'How often should I water my lawn?',
+    a: 'Once or twice a week, deeply, in the early morning. Aim for about an inch of water a week, counting rain. Short daily watering grows shallow roots.',
+  },
+];
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': `${site}/#website`,
+      url: site,
+      name: 'Mow It Tall',
+      description,
+      publisher: { '@id': `${site}/#mike` },
+    },
+    {
+      '@type': 'Person',
+      '@id': `${site}/#mike`,
+      name: 'Mike',
+      description: 'Bedford, NY homeowner known locally for his striped lawn.',
+      homeLocation: { '@type': 'Place', name: 'Bedford, New York' },
+    },
+    {
+      '@type': 'FAQPage',
+      mainEntity: faqs.map((f) => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    },
+  ],
+};
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <!-- Preview build: remove noindex at launch on mowittall.com -->
+    <meta name="robots" content="noindex" />
+    <link rel="canonical" href={site + '/'} />
+    <meta name="theme-color" content="#1f4a2b" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={site + '/'} />
+    <meta property="og:image" content={site + '/img/backyard-stripes-1400.webp'} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <script type="application/ld+json" set:html={JSON.stringify(jsonLd)} />
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip the mowing</a>
+
+    <header class="hero" data-lawn>
+      <canvas
+        tabindex="0"
+        aria-label="A lawn you can mow. Drag across it, or focus it and use the arrow keys."
+      ></canvas>
+
+      <div class="yard-sign">
+        <h1>
+          <span class="logo" aria-hidden="true">Mow it <span class="logo-tall">tall</span></span>
+          <span class="sr-only">Mow It Tall: the easy guide to a better lawn</span>
+        </h1>
+        <span class="stake stake-l" aria-hidden="true"></span>
+        <span class="stake stake-r" aria-hidden="true"></span>
+      </div>
+
+      <p class="hint" data-hint aria-hidden="true">Drag to mow</p>
+      <p class="hud" data-hud aria-live="off">0% mowed</p>
+      <p class="brap" data-brap aria-hidden="true">BRRRRAAAAP</p>
+
+      <div class="done" data-done hidden>
+        <p>Look at those stripes. Light stripes are grass bent away from you, dark ones toward you.</p>
+        <button type="button" class="btn btn-small" data-reset>Mow again</button>
+      </div>
+    </header>
+
+    <main id="main">
+      <section class="intro">
+        <p class="tagline">You don’t need to be a know-it-all. Just mow it tall.</p>
+        <p class="lede">
+          The easy guide to a better lawn. No jargon, no 40-step programs. Just a few small
+          changes from a guy in Bedford, NY whose neighbors keep asking about his stripes.
+        </p>
+        <a class="btn" href="#plan">Get your lawn game plan</a>
+      </section>
+
+      <section class="changes" aria-labelledby="changes-h">
+        <div class="panel">
+          <h2 id="changes-h">Small changes, big lawn</h2>
+          <p class="panel-lede">
+            You don’t have to become a lawn person. Pick one of these. Next month, pick another.
+          </p>
+          <ul class="change-list">
+            {changes.map((c) => (
+              <li class="change">
+                <PixelIcon map={c.icon} size={48} />
+                <div>
+                  <h3>{c.title}</h3>
+                  <p>{c.body}</p>
+                  <p class="effort">Effort: {c.effort}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <section class="proof" aria-labelledby="proof-h">
+        <h2 id="proof-h">Proof it works</h2>
+        <figure class="photo photo-main">
+          <img
+            src="/img/front-yard-may-800.webp"
+            srcset="/img/front-yard-may-800.webp 800w, /img/front-yard-may-1400.webp 1400w"
+            sizes="(min-width: 900px) 640px, 100vw"
+            width="1400"
+            height="1050"
+            loading="lazy"
+            decoding="async"
+            alt="Mike’s front lawn in Bedford with crisp diagonal mowing stripes, a blue Victorian house and pink rhododendrons in bloom"
+          />
+          <figcaption>My front yard in Bedford, late May.</figcaption>
+        </figure>
+        <figure class="photo photo-side">
+          <img
+            src="/img/spiral-pattern-800.webp"
+            srcset="/img/spiral-pattern-800.webp 800w, /img/spiral-pattern-1400.webp 1400w"
+            sizes="(min-width: 900px) 420px, 100vw"
+            width="1400"
+            height="788"
+            loading="lazy"
+            decoding="async"
+            alt="A backyard lawn mowed in a spiral pattern of light and dark rings, lit up at dusk"
+          />
+          <figcaption>And when I’m feeling fancy.</figcaption>
+        </figure>
+      </section>
+
+      <section class="soil" aria-labelledby="soil-h" data-soil>
+        <div class="soil-card">
+          <h2 id="soil-h">Bedford soil, right now</h2>
+          <p class="soil-value" data-soil-value>…</p>
+          <p class="soil-advice" data-soil-advice>Checking the ground…</p>
+          <div class="soil-bars" data-soil-bars role="img" aria-label="Soil temperature for the last week"></div>
+          <p class="soil-note">
+            Two inches down, updated hourly. Grass and weeds follow soil temperature, not the
+            calendar. That’s why timing matters more than products.
+          </p>
+        </div>
+      </section>
+
+      <section class="plan" id="plan" aria-labelledby="plan-h">
+        <h2 id="plan-h">Get your lawn game plan</h2>
+        <p>
+          Answer a few quick questions about your yard and how much time you actually want to
+          spend. Get a simple plan, and a calendar that reminds you when to do each thing.
+        </p>
+        <p class="soon">Coming this winter, in time for spring.</p>
+      </section>
+
+      <section class="faq" aria-labelledby="faq-h">
+        <h2 id="faq-h">Quick answers</h2>
+        {faqs.map((f) => (
+          <details>
+            <summary>{f.q}</summary>
+            <p>{f.a}</p>
+          </details>
+        ))}
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Made in Bedford, NY by Mike.</p>
+      <p>No gas leaf blowers were used in the making of this website.</p>
+    </footer>
+
+    <dialog class="ticket" data-ticket aria-labelledby="ticket-h">
+      <form method="dialog">
+        <p class="ticket-kicker">Totally unofficial</p>
+        <h2 id="ticket-h">Bedford Blower Patrol</h2>
+        <dl>
+          <dt>Citation</dt><dd>No. 000042</dd>
+          <dt>Offense</dt><dd>Operating a gas leaf blower within earshot of literally everyone.</dd>
+          <dt>Fine</dt><dd>One (1) rake, to be used immediately.</dd>
+        </dl>
+        <p class="ticket-tip">
+          Real tip: you don’t need either one. Mow right over the leaves. They chop up, sink in
+          and feed the lawn.
+        </p>
+        <button class="btn" value="ok">Pay with rake</button>
+      </form>
+    </dialog>
+
+    <script>
+      import { initLawn } from '../scripts/lawn.js';
+      import { initSoil } from '../scripts/soil.js';
+      const lawn = document.querySelector('[data-lawn]');
+      if (lawn) initLawn(lawn);
+      const soil = document.querySelector('[data-soil]');
+      if (soil) initSoil(soil);
+    </script>
+  </body>
+</html>
