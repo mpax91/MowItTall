@@ -1080,3 +1080,6 @@ main > section.page-head-hub + section { padding-top: 18px; }
   padding: 6px 10px; box-shadow: 0 2px 0 var(--win-edge); cursor: pointer;
 }
 .mow-done[hidden] { display: none; }
+.mow-stats small { font-size: 0.8rem; opacity: 0.8; }
+.mow-stats b.is-over { color: var(--sun); }
+.mow-pop.is-warn { background: var(--sun); color: var(--ink); }
