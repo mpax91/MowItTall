@@ -1481,3 +1481,23 @@ main > section.weed-sec { padding: 0; }
 .mc-party input:focus-visible + .mc-switch { outline: 3px solid var(--sun); outline-offset: 2px; }
 .mc-share { display: block; width: 100%; margin-top: 16px; text-align: center; font-size: 1rem; }
 .prose .mc h2 { margin: 0 0 2px; font-size: 1.55rem; }
+
+/* ---------- Is mowing a workout? ---------- */
+.mw-verdict { min-height: 0; }
+.mw-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 12px 0 0; }
+.mw-stats div { background: var(--paper); color: var(--ink); border-radius: 8px; padding: 8px 4px 7px; text-align: center; border: 2px solid var(--win-edge); }
+.mw-stats b { display: block; font-family: var(--display); font-weight: 800; font-size: 1.15rem; line-height: 1.1; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.mw-stats span { display: block; font-size: 0.75rem; font-weight: 700; color: #3c5a44; margin-top: 2px; }
+.mw-week { margin: 10px 0 0; font-size: 0.95rem; color: #e3efdc; font-weight: 700; }
+.mw-seg button { font-size: 0.88rem; line-height: 1.05; }
+.mw-inputs { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
+.mw-inputs label span { display: block; font-weight: 700; font-size: 0.9rem; color: #e3efdc; margin-bottom: 5px; }
+.mw-inputs input {
+  width: 100%; box-sizing: border-box; min-height: 46px; padding: 8px 12px; font: inherit; font-size: 1.1rem; font-weight: 700;
+  color: var(--ink); background: var(--paper); border: 2px solid var(--win-edge); border-radius: 8px;
+}
+.mw-src { margin: 6px 0 0; font-size: 0.9rem; color: var(--leaf); min-height: 1.2em; }
+.mw-src a { color: var(--sun); }
+.mw-season { margin: 12px 0 0; padding: 10px 12px; background: rgba(0, 0, 0, 0.22); border-radius: 8px; font-size: 0.98rem; }
+.mw-fine { margin: 10px 0 0; font-size: 0.8rem; color: #b9d8b4; }
+.prose .mw h2 { margin: 0 0 2px; font-size: 1.55rem; }

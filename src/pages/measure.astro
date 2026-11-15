@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import YardMeasure from '../components/YardMeasure.astro';
+import MowWorkout from '../components/MowWorkout.astro';
 
 const title = 'Lawn square footage calculator: measure your yard on a map | Mow It Tall';
 const description =
@@ -22,6 +23,10 @@ const faqs = [
   {
     q: 'Why does my lawn’s square footage matter?',
     a: 'Every bag of seed, fertilizer and lime says how many square feet it covers. Knowing your number means you buy the right amount and don’t overdo it.',
+  },
+  {
+    q: 'Does mowing the lawn count as exercise?',
+    a: 'Yes, if you walk behind the mower. Pushing a mower is moderate exercise, the same kind as a brisk walk, and it counts toward the 150 minutes a week the US activity guidelines recommend. A riding mower is light activity and doesn’t count. The workout calculator on this page estimates your time, steps and calories from your lawn size.',
   },
   {
     q: 'Does this save my address?',
@@ -74,6 +79,10 @@ const jsonLd = [
         <p>Every bag of seed, fertilizer and lime says how many square feet it covers. Divide your total by that number and round up. That’s how many bags to buy. My free plan tells you what to put down and when.</p>
         <a class="btn" href="/plan/">Get my free lawn plan</a>
       </div>
+    </section>
+
+    <section class="mw-sec" aria-label="Mowing workout calculator">
+      <MowWorkout />
     </section>
 
     <section class="faq" aria-labelledby="faq-h">

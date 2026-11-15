@@ -1,6 +1,7 @@
 ---
 import Base from './Base.astro';
 import MowCheck from '../components/MowCheck.astro';
+import MowWorkout from '../components/MowWorkout.astro';
 const { frontmatter, url } = Astro.props;
 const { title, description, tag, widget, faq } = frontmatter;
 const date = (frontmatter.date instanceof Date ? frontmatter.date.toISOString() : String(frontmatter.date)).slice(0, 10);
@@ -37,6 +38,9 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': faqLd ? [posting, f
     </article>
     {widget === 'mow-check' && (
       <div class="post-widget" data-widget="mow-check"><MowCheck /></div>
+    )}
+    {widget === 'mow-workout' && (
+      <div class="post-widget" data-widget="mow-workout"><MowWorkout measureHref="/measure/" /></div>
     )}
     {widget && (
       <script is:inline>

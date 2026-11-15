@@ -1,0 +1,52 @@
+---
+// "Is mowing a workout?" calculator. Logic in src/scripts/mowWorkout.js.
+// measureHref: link to the measure tool (leave empty on /measure/ itself).
+const { measureHref = '' } = Astro.props;
+---
+<section class="window mc mw" id="workout" aria-labelledby="mw-h" data-mow-workout data-measure-href={measureHref}>
+  <h2 id="mw-h">Is mowing a workout?</h2>
+  <p class="mc-sub">Put in your lawn and your mower. Get your stats. Show your doctor.</p>
+
+  <div class="mc-verdict mw-verdict" aria-live="polite">
+    <span class="mc-word" data-mw-word data-tone="yes">YES. THAT’S CARDIO.</span>
+    <p class="mc-line" data-mw-line></p>
+  </div>
+
+  <div class="mw-stats" aria-live="polite">
+    <div><b data-mw-out="time">–</b><span>Time</span></div>
+    <div><b data-mw-out="steps">–</b><span>Steps</span></div>
+    <div><b data-mw-out="cal">–</b><span>Calories</span></div>
+    <div><b data-mw-out="miles">–</b><span>Miles</span></div>
+  </div>
+  <p class="mw-week" data-mw-week></p>
+
+  <fieldset class="mc-group">
+    <legend>What are you mowing with?</legend>
+    <div class="mc-seg mc-seg-4 mw-seg">
+      <button type="button" data-mw-type="push" aria-pressed="true">Push</button>
+      <button type="button" data-mw-type="self" aria-pressed="false">Self-<br />propelled</button>
+      <button type="button" data-mw-type="reel" aria-pressed="false">Reel</button>
+      <button type="button" data-mw-type="riding" aria-pressed="false">Riding</button>
+    </div>
+  </fieldset>
+
+  <div class="mw-inputs">
+    <label>
+      <span>Lawn size (sq ft)</span>
+      <input type="text" inputmode="numeric" value="5000" data-mw-sqft autocomplete="off" />
+    </label>
+    <label>
+      <span>Your weight (lb)</span>
+      <input type="text" inputmode="numeric" value="170" data-mw-lbs autocomplete="off" />
+    </label>
+  </div>
+  <p class="mw-src" data-mw-src></p>
+
+  <p class="mw-season" data-mw-season></p>
+  <p class="mw-fine">Rough numbers for a 21-inch walk-behind (or a 42-inch rider) at a normal pace. Hills, thick grass and bagging make it harder. Calories use standard activity values, not a fitness tracker. Nothing stays anywhere but your phone.</p>
+</section>
+
+<script>
+  import { initMowWorkout } from '../scripts/mowWorkout.js';
+  document.querySelectorAll('[data-mow-workout]').forEach((el) => initMowWorkout(el as HTMLElement));
+</script>

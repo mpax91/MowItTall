@@ -727,6 +727,7 @@ export function initMeasure(root) {
         areas: areas.map((a) => ({ name: a.name, color: a.color, pts: a.pts.map((p) => [+p.lat.toFixed(7), +p.lng.toFixed(7)]) })),
       }));
     } catch { /* private mode */ }
+    window.dispatchEvent(new CustomEvent('mit:yard', { detail: { total: Math.round(total()) } }));
   }
 
   function load() {
