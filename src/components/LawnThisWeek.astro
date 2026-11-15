@@ -1,18 +1,19 @@
 ---
-// Homepage "Your lawn this week": a big ZIP box, then three glance cards for that ZIP
-// (what to do now, should I water, soil temperature). Bedford until the visitor changes it.
+// Homepage "Your lawn this week": ZIP box, then three glance cards (do it now, water, soil).
+// Cards show one big answer each; "More Details" opens a popup on this page (one shared <dialog>).
 const ZONES = [
-  { id: 'asleep', min: 25, max: 40, name: 'Asleep' },
-  { id: 'waking', min: 40, max: 50, name: 'Waking up / winding down' },
-  { id: 'go', min: 50, max: 56, name: 'Go time' },
-  { id: 'growing', min: 56, max: 68, name: 'Prime growing' },
-  { id: 'heat', min: 68, max: 85, name: 'Heat stress' },
+  { id: 'asleep', min: 25, max: 40, name: 'Asleep', what: 'Grass is dormant. Nothing to do but stay off it when it’s frozen.' },
+  { id: 'waking', min: 40, max: 50, name: 'Waking up', what: 'Roots are stirring (spring) or slowing down (fall). Light mowing only.' },
+  { id: 'go', min: 50, max: 56, name: 'Go time', what: 'Crabgrass starts sprouting around 55°F in spring. Preventer time.' },
+  { id: 'growing', min: 56, max: 68, name: 'Prime growing', what: 'The best weather for grass. Seed, feed and mow often.' },
+  { id: 'heat', min: 68, max: 85, name: 'Heat stress', what: 'Cool-season grass is struggling. Mow tall, water deep, skip fertilizer.' },
 ];
 const lo = 25, hi = 85;
+const zonesJson = JSON.stringify(ZONES);
 ---
-<section class="lw" id="local" aria-labelledby="lw-h" data-lw>
+<section class="lw" id="local" aria-labelledby="lw-h" data-lw data-zones={zonesJson}>
   <h2 id="lw-h">Your lawn this week</h2>
-  <p class="section-lede">Live for your ZIP code: what to do, whether to water and how warm the soil is.</p>
+  <p class="section-lede">Live for your ZIP code.</p>
 
   <form class="lw-zip" data-lw-form novalidate>
     <label for="lw-zip-in">Your ZIP code</label>
@@ -27,12 +28,15 @@ const lo = 25, hi = 85;
       </span>
       <button type="submit" class="btn lw-go" data-lw-go>Update</button>
     </div>
-    <p class="lw-zip-meta">
-      Showing <b data-lw-name>Bedford, NY</b>
-      <span aria-hidden="true">·</span>
-      <button type="button" class="link-btn" data-lw-gps>Use My Location</button>
-      <button type="button" class="link-btn" data-lw-home hidden>Back to Bedford</button>
-    </p>
+    <p class="lw-zip-meta">Showing <b data-lw-name>Bedford, NY</b></p>
+    <div class="lw-zip-alt">
+      <span class="lw-or">or</span>
+      <button type="button" class="lw-pill" data-lw-gps>
+        <svg viewBox="0 0 10 10" width="12" height="12" aria-hidden="true"><circle cx="5" cy="5" r="2" fill="currentColor"/><circle cx="5" cy="5" r="4" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
+        Use My Location
+      </button>
+      <button type="button" class="lw-pill" data-lw-home hidden>Back to Bedford</button>
+    </div>
     <p class="lw-msg" data-lw-msg role="status"></p>
     <p class="lw-note" data-lw-note hidden></p>
   </form>
@@ -41,39 +45,47 @@ const lo = 25, hi = 85;
     <article class="lw-card lw-todo">
       <p class="lw-label">Do it now</p>
       <h3 class="lw-big" data-now-title>…</h3>
-      <p class="lw-sub" data-now-when></p>
-      <p class="lw-next"><span class="lw-label">Next up</span> <b data-next-title></b> <span data-next-when></span></p>
-      <a class="lw-link" href="#cal-h">See the Whole Year</a>
+      <p class="lw-pills"><span class="lw-days" data-now-days></span><span class="lw-more-n" data-now-more hidden></span></p>
+      <p class="lw-next" data-next><span>Next:</span> <b data-next-title></b> <span data-next-when></span></p>
+      <button type="button" class="lw-detail" data-open="todo">More Details</button>
     </article>
 
     <article class="lw-card lw-water" data-lw-water>
-      <p class="lw-label">Should I water?</p>
-      <p class="lw-big"><span data-rain-val>…</span> <span class="lw-unit">of rain</span> <span class="water-badge" data-water-verdict data-tone="">Checking…</span></p>
-      <div class="lw-rain" role="img" aria-label="Rain this week compared with what the lawn used" data-rain-meter>
+      <p class="lw-label">Water?</p>
+      <p class="lw-answer"><span class="water-badge" data-water-verdict data-tone="">Checking…</span></p>
+      <div class="lw-rain" role="img" aria-label="Rain this week compared with what the lawn used">
         <div class="lw-rain-track"><span class="lw-rain-fill" data-rain-fill style="width:0"></span></div>
         <span class="lw-rain-need" data-rain-need hidden></span>
       </div>
-      <p class="lw-rain-key" data-rain-key>Last 7 days of rain vs. what your lawn used.</p>
-      <p class="lw-sub" data-water-why>Adding up the rain.</p>
-      <a class="lw-link" href="/resources/#water-h">See More Details</a>
+      <p class="lw-tiny" data-rain-key>Rain vs. what your lawn used</p>
+      <button type="button" class="lw-detail" data-open="water">More Details</button>
     </article>
 
     <article class="lw-card lw-soil" data-lw-soil data-lo={lo} data-hi={hi}>
-      <p class="lw-label">Soil temperature</p>
-      <p class="lw-big"><span data-soil-value>…</span> <span class="lw-zone" aria-live="polite">
-        {ZONES.map((z) => <span class="lw-zone-name" data-zone={z.id} data-min={z.min} data-max={z.max}>{z.name}</span>)}
-      </span></p>
+      <p class="lw-label">Soil</p>
+      <p class="lw-answer"><span class="lw-temp" data-soil-value>…</span></p>
       <div class="thermo lw-thermo" role="img" aria-label="Soil thermometer" data-thermo>
         <div class="thermo-track">
           {ZONES.map((z) => <span class={`thermo-zone zone-${z.id}`} style={`flex-grow:${z.max - z.min}`}></span>)}
         </div>
         <div class="thermo-marker" data-marker style="left:30%"></div>
       </div>
-      <p class="lw-sub" data-soil-advice>Checking the ground…</p>
-      <p class="lw-trend" data-soil-trend></p>
-      <a class="lw-link" href="/resources/#soil-h">See More Details</a>
+      <p class="lw-tiny lw-zone">
+        {ZONES.map((z) => <span class="lw-zone-name" data-zone={z.id} data-min={z.min} data-max={z.max}>{z.name}</span>)}
+      </p>
+      <!-- filled by soil.js, shown in the popup -->
+      <p hidden data-soil-advice></p><p hidden data-soil-trend></p>
+      <button type="button" class="lw-detail" data-open="soil">More Details</button>
     </article>
   </div>
+
+  <dialog class="lw-dialog" data-lw-dialog aria-labelledby="lw-dlg-h">
+    <div class="lw-dlg-head">
+      <h3 id="lw-dlg-h" data-dlg-title></h3>
+      <button type="button" class="mow-x" data-dlg-close aria-label="Close">&times;</button>
+    </div>
+    <div class="lw-dlg-body" data-dlg-body></div>
+  </dialog>
 </section>
 
 <script>
@@ -82,13 +94,16 @@ const lo = 25, hi = 85;
   import { initSoil } from '../scripts/soil.js';
   import { TASKS, snapshot, fmt } from '../data/tasks.js';
 
-  const root = document.querySelector('[data-lw]');
+  const root = document.querySelector<HTMLElement>('[data-lw]');
   if (root) {
-    const $ = (s) => root.querySelector(s);
-    const input = $('[data-lw-input]'), msg = $('[data-lw-msg]'), go = $('[data-lw-go]');
+    const $ = <T extends Element = HTMLElement>(s: string) => root.querySelector<T>(s)!;
+    const ZONES = JSON.parse(root.dataset.zones!);
+    const input = $<HTMLInputElement>('[data-lw-input]'), msg = $('[data-lw-msg]'), go = $<HTMLButtonElement>('[data-lw-go]');
+    const esc = (s: string) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+    const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : 's'}`;
 
     /* ---------------- ZIP box */
-    const paint = (p) => {
+    const paint = (p: any) => {
       $('[data-lw-name]').textContent = p.name;
       if (document.activeElement !== input) input.value = p.zip || '';
       $('[data-lw-home]').hidden = !!p.home;
@@ -113,51 +128,102 @@ const lo = 25, hi = 85;
     });
     $('[data-lw-home]').addEventListener('click', () => { resetPlace(); msg.textContent = ''; });
 
-    /* ---------------- Do it now / next up */
-    const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
-    const snap = snapshot(TASKS.filter((t) => t.level <= 2), new Date());
+    /* ---------------- Do it now */
+    const snap = snapshot(TASKS.filter((t: any) => t.level <= 2), new Date());
     if (snap.now.length) {
       const first = snap.now[0];
       $('[data-now-title]').textContent = first.t.title;
-      $('[data-now-when]').textContent = `Through ${fmt(first.t.end)}. ${plural(first.s.daysLeft, 'day')} left.` + (snap.now.length > 1 ? ` Plus ${snap.now.length - 1} more.` : '');
+      $('[data-now-days]').textContent = `${plural(first.s.daysLeft, 'day')} left`;
+      if (snap.now.length > 1) { $('[data-now-more]').hidden = false; $('[data-now-more]').textContent = `+${snap.now.length - 1} more`; }
     } else {
       $('[data-now-title]').textContent = 'Nothing. Enjoy it.';
-      $('[data-now-when]').textContent = 'Your lawn is between jobs.';
+      $('[data-now-days]').textContent = 'Lawn’s between jobs';
     }
     if (snap.next) {
       $('[data-next-title]').textContent = snap.next.t.title;
-      $('[data-next-when]').textContent = `${fmt(snap.next.t.start)} (in ${plural(snap.next.s.days, 'day')})`;
-    } else $('.lw-next').hidden = true;
+      $('[data-next-when]').textContent = `· ${fmt(snap.next.t.start)}`;
+    } else $('[data-next]').hidden = true;
 
     /* ---------------- Water */
     const water = $('[data-lw-water]');
-    let wseq = 0;
-    const runWater = async (place) => {
+    let wseq = 0, wv: any = null, wdays: any[] = [];
+    const inch = (n: number) => `${n < 0.005 ? '0' : n.toFixed(n < 1 ? 2 : 1)} in`;
+    const runWater = async (place: any) => {
       const mine = ++wseq;
-      const badge = water.querySelector('[data-water-verdict]'), why = water.querySelector('[data-water-why]');
+      const badge = water.querySelector<HTMLElement>('[data-water-verdict]')!;
       try {
-        const v = verdict(await fetchWater(place), getGauge());
+        const days = await fetchWater(place);
+        const v = verdict(days, getGauge());
         if (mine !== wseq) return;
-        badge.textContent = VERDICTS[v.key].label; badge.dataset.tone = VERDICTS[v.key].tone; why.textContent = v.line;
-        // meter: blue fill = rain this week, white tick = what the lawn used; scale is at least 1 inch
-        const inch = (n) => `${n < 0.005 ? '0' : n.toFixed(n < 1 ? 2 : 1)} in`;
+        wv = v; wdays = days;
+        badge.textContent = VERDICTS[v.key].label; badge.dataset.tone = VERDICTS[v.key].tone;
         const max = Math.max(1, v.rain, v.used) * 1.15;
-        water.querySelector('[data-rain-val]').textContent = inch(v.rain);
-        water.querySelector('[data-rain-fill]').style.width = `${Math.min(100, (v.rain / max) * 100)}%`;
-        const need = water.querySelector('[data-rain-need]');
+        water.querySelector<HTMLElement>('[data-rain-fill]')!.style.width = `${Math.min(100, (v.rain / max) * 100)}%`;
+        const need = water.querySelector<HTMLElement>('[data-rain-need]')!;
         need.style.left = `${Math.min(100, (v.used / max) * 100)}%`; need.hidden = false;
-        water.querySelector('[data-rain-key]').innerHTML = `<span><i class="k-rain"></i>Rain ${inch(v.rain)}</span> <span><i class="k-need"></i>Lawn used ${inch(v.used)}</span>`;
-        water.classList.add('is-live');
+        water.querySelector('[data-rain-key]')!.textContent = `${inch(v.rain)} rain · used ${inch(v.used)}`;
       } catch {
         if (mine !== wseq) return;
+        wv = null;
         badge.textContent = 'Can’t tell'; badge.dataset.tone = 'maybe';
-        water.querySelector('[data-rain-val]').textContent = '--';
-        why.textContent = 'Couldn’t reach the weather data. Rule of thumb: about an inch a week, rain included.';
+        water.querySelector('[data-rain-key]')!.textContent = 'Weather data is down';
       }
     };
 
-    /* ---------------- Soil (shared logic; this card shows only the current zone) */
+    /* ---------------- Soil (shared logic; the card shows the number + zone, the popup gets the advice) */
     initSoil($('[data-lw-soil]'));
+
+    /* ---------------- popup */
+    const dlg = $<HTMLDialogElement>('[data-lw-dialog]');
+    const open = (title: string, html: string) => {
+      $('[data-dlg-title]').textContent = title; $('[data-dlg-body]').innerHTML = html;
+      dlg.showModal(); dlg.querySelector<HTMLElement>('[data-dlg-close]')!.focus();
+    };
+    $('[data-dlg-close]').addEventListener('click', () => dlg.close());
+    dlg.addEventListener('click', (e) => {
+      if (e.target === dlg) dlg.close();                                         // tap outside closes
+      else if ((e.target as HTMLElement).closest('a[href^="#"]')) dlg.close();   // jump links close it too
+    });
+
+    const BODY: Record<string, () => [string, string]> = {
+      todo: () => {
+        const now = snap.now.map(({ t, s }: any) => `
+          <div class="lw-dlg-item"><p class="lw-dlg-k">${plural(s.daysLeft, 'day')} left · through ${fmt(t.end)}</p><h4>${esc(t.title)}</h4><p>${esc(t.short)}</p><p class="lw-dlg-why">${esc(t.why)}</p></div>`).join('');
+        const next = snap.next ? `
+          <div class="lw-dlg-item is-next"><p class="lw-dlg-k">Next up · starts ${fmt(snap.next.t.start)} (in ${plural(snap.next.s.days, 'day')})</p><h4>${esc(snap.next.t.title)}</h4><p>${esc(snap.next.t.short)}</p></div>` : '';
+        return ['Your lawn to-do list', `${now || '<p>Nothing on the list right now. Enjoy it.</p>'}${next}
+          <p class="lw-dlg-links"><a href="#cal-h">See the whole year</a><a href="/plan/">Get a plan for your yard</a></p>`];
+      },
+      water: () => {
+        if (!wv) return ['Should I water?', '<p>Couldn’t reach the weather data right now. Rule of thumb: about an inch a week, rain included, early in the morning.</p><p class="lw-dlg-links"><a href="/resources/#water-h">Open the rain meter</a></p>'];
+        const peak = Math.max(0.5, ...wdays.map((d: any) => d.rain));
+        const bars = wdays.slice(1).map((d: any) => {
+          const day = new Date(d.date + 'T12:00').toLocaleDateString('en-US', { weekday: 'narrow' });
+          return `<div class="lw-bar${d.future ? ' is-future' : ''}${d.today ? ' is-today' : ''}"><span style="height:${Math.max(3, (d.rain / peak) * 100)}%"></span><b>${day}</b></div>`;
+        }).join('');
+        return [`Water? ${VERDICTS[wv.key].label}`, `
+          <p class="lw-dlg-lead">${esc(wv.text)}</p>
+          <div class="lw-bars" role="img" aria-label="Daily rain: last 7 days and the next 3">${bars}</div>
+          <p class="lw-dlg-k lw-bars-key">Last 7 days · <span class="is-future-key">next 3 (forecast)</span></p>
+          <div class="lw-dlg-stats"><div><b>${inch(wv.rain)}</b><span>Rain, 7 days</span></div><div><b>${inch(wv.used)}</b><span>Lawn used</span></div><div><b>${inch(wv.comingRain)}</b><span>Coming, 3 days</span></div></div>
+          <p class="lw-dlg-why">Rain numbers come from a weather model and can miss pop-up storms. Got a rain gauge? Enter it on the rain meter.</p>
+          <p class="lw-dlg-links"><a href="/resources/#water-h">Open the full rain meter</a></p>`];
+      },
+      soil: () => {
+        const value = $('[data-soil-value]').textContent || '–';
+        const t = parseInt(value, 10);
+        const zone = ZONES.find((z: any) => t >= z.min && t < z.max) || (t >= 85 ? ZONES[4] : ZONES[0]);
+        const advice = $('[data-soil-advice]').textContent || '';
+        const trend = $('[data-soil-trend]').textContent || '';
+        return [`Soil: ${value}`, `
+          ${Number.isFinite(t) ? `<p class="lw-dlg-lead"><b>${esc(zone.name)}.</b> ${esc(advice)}</p>` : '<p>Couldn’t reach the weather data right now.</p>'}
+          ${trend ? `<p class="lw-dlg-why">${esc(trend)}</p>` : ''}
+          <ul class="lw-zones">${ZONES.map((z: any) => `<li class="${z === zone ? 'is-now' : ''}"><i class="zone-${z.id}"></i><b>${z.name}</b> <span>${z.min}–${z.max}°F</span><br>${esc(z.what)}</li>`).join('')}</ul>
+          <p class="lw-dlg-why">Measured about 2 inches down, where grass roots and weed seeds live. That’s what decides when seed sprouts and crabgrass shows up.</p>
+          <p class="lw-dlg-links"><a href="/resources/#soil-h">Open the soil thermometer</a></p>`];
+      },
+    };
+    root.querySelectorAll<HTMLButtonElement>('[data-open]').forEach((b) => b.addEventListener('click', () => { const [t, h] = BODY[b.dataset.open!](); open(t, h); }));
 
     paint(getPlace());
     runWater(getPlace());
