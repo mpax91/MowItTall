@@ -82,25 +82,66 @@ const H = headingLevel;
     fitAll();
     new ResizeObserver(fitAll).observe(list);
     document.fonts?.ready.then(fitAll);
-    // Photo sets: swipe sideways, arrows step, dots follow. A plain tap on a photo still flips the card.
+    // Photo sets. Phones won't scroll sideways inside a 3D-flipped card, so the swipe is done by hand:
+    // follow the finger with a transform, snap to the nearest photo, let up/down drags scroll the page.
     for (const ph of list.querySelectorAll('[data-photos]')) {
       const track = ph.querySelector('.flip-photos-track');
       const dots = [...ph.querySelectorAll('.flip-photos-dots i')];
       const prev = ph.querySelector('.prev'), next = ph.querySelector('.next');
       const n = track.children.length;
-      const update = () => {
-        const k = Math.round(track.scrollLeft / track.clientWidth);
+      let k = 0, x0 = 0, y0 = 0, dx = 0, mode = null, moved = false;
+      const go = (i, animate = true) => {
+        k = Math.max(0, Math.min(n - 1, i));
+        track.style.transition = animate ? 'transform 0.28s ease-out' : 'none';
+        track.style.transform = `translateX(${-k * 100}%)`;
         dots.forEach((d, j) => d.classList.toggle('on', j === k));
         if (prev) prev.hidden = k <= 0;
         if (next) next.hidden = k >= n - 1;
+        // load the next photo early so it's ready before the swipe lands
+        track.children[Math.min(n - 1, k + 1)]?.querySelector('img')?.setAttribute('loading', 'eager');
       };
-      track.addEventListener('scroll', () => requestAnimationFrame(update), { passive: true });
+      ph._go = go;
+      if (n > 1) {
+        track.addEventListener('pointerdown', (e) => {
+          if (e.pointerType === 'mouse' && e.button !== 0) return;
+          x0 = e.clientX; y0 = e.clientY; dx = 0; mode = null; moved = false;
+        });
+        track.addEventListener('pointermove', (e) => {
+          if (x0 === null) return;
+          const mx = e.clientX - x0, my = e.clientY - y0;
+          if (!mode && Math.hypot(mx, my) > 8) {
+            mode = Math.abs(mx) > Math.abs(my) ? 'x' : 'y';
+            if (mode === 'x') { track.setPointerCapture(e.pointerId); moved = true; }
+          }
+          if (mode !== 'x') return;
+          dx = mx;
+          const edge = (k === 0 && dx > 0) || (k === n - 1 && dx < 0) ? 0.3 : 1;   // rubber band at the ends
+          track.style.transition = 'none';
+          track.style.transform = `translateX(calc(${-k * 100}% + ${dx * edge}px))`;
+        });
+        const end = () => {
+          if (mode === 'x') {
+            const w = track.clientWidth;
+            go(k + (dx < -w * 0.18 ? 1 : dx > w * 0.18 ? -1 : 0));
+          }
+          x0 = null; mode = null;
+        };
+        track.addEventListener('pointerup', end);
+        track.addEventListener('pointercancel', end);
+        track.addEventListener('keydown', (e) => {
+          if (e.key === 'ArrowRight') { go(k + 1); e.preventDefault(); }
+          if (e.key === 'ArrowLeft') { go(k - 1); e.preventDefault(); }
+        });
+      }
+      x0 = null;
       ph.addEventListener('click', (e) => {
-        const nav = e.target.closest('.flip-photos-nav');
         e.stopPropagation();
-        if (nav) { track.scrollBy({ left: track.clientWidth * Number(nav.dataset.dir), behavior: 'smooth' }); return; }
+        if (moved) { moved = false; return; }   // a swipe isn't a tap
+        const nav = e.target.closest('.flip-photos-nav');
+        if (nav) { go(k + Number(nav.dataset.dir)); return; }
         ph.closest('.flip').querySelector('.flip-btn').click();
       });
+      go(0, false);
     }
     // On photo cards the button is keyboard-only, so taps anywhere else on the card flip it.
     for (const card of list.querySelectorAll('.flip.has-photos')) {
