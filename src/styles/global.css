@@ -1060,3 +1060,23 @@ main > section.page-head-hub { padding-top: 14px; padding-bottom: 0; }
 .mow-hold:disabled { opacity: 0.5; cursor: default; }
 .mow-hold:focus-visible { outline: 3px solid var(--paper); outline-offset: 3px; }
 main > section.page-head-hub + section { padding-top: 18px; }
+.mow-hint { text-align: center; }
+.mow-hint small { display: block; font-size: 0.82rem; font-weight: 600; opacity: 0.75; margin-top: 2px; }
+.mow-pop {
+  position: absolute; left: 50%; margin: 0; white-space: nowrap; pointer-events: none;
+  font-family: var(--display); font-weight: 800; font-size: 1rem;
+  padding: 5px 11px; border: 2px solid var(--win-edge); border-radius: 8px;
+  opacity: 0; transform: translate(-50%, 6px); transition: opacity 0.18s, transform 0.18s;
+}
+.mow-pop.at-top { top: 14%; }
+.mow-pop.at-bottom { bottom: 16%; }
+.mow-pop.is-on { opacity: 1; transform: translate(-50%, 0); }
+.mow-pop.is-good { background: var(--leaf); color: var(--ink); }
+.mow-pop.is-bad { background: var(--red); color: #fff; }
+.mow-done {
+  position: absolute; right: 8px; top: 8px;
+  font-family: var(--display); font-weight: 750; font-size: 0.9rem;
+  color: var(--ink); background: var(--paper); border: 2px solid var(--win-edge); border-radius: 8px;
+  padding: 6px 10px; box-shadow: 0 2px 0 var(--win-edge); cursor: pointer;
+}
+.mow-done[hidden] { display: none; }

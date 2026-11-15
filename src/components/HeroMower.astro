@@ -12,7 +12,9 @@
     </div>
     <div class="mow-lawn">
       <canvas aria-label="A small lawn with a push mower. Use the slider to line up the mower and hold the button to mow."></canvas>
-      <p class="mow-hint" data-hint aria-hidden="true">Slide to line up. Hold to mow.</p>
+      <p class="mow-hint" data-hint aria-hidden="true">Slide to line up. Hold to mow.<br /><small>Let go right before the edge.</small></p>
+      <p class="mow-pop" data-pop aria-live="polite"></p>
+      <button type="button" class="mow-done" data-done hidden>Call it done</button>
       <div class="mow-result" data-result hidden>
         <p class="mow-score"><b data-score>0</b><span>/100</span></p>
         <p class="mow-title" data-title></p>
