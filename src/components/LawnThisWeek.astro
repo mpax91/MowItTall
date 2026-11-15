@@ -35,7 +35,6 @@ const zonesJson = JSON.stringify(ZONES);
         <svg viewBox="0 0 10 10" width="12" height="12" aria-hidden="true"><circle cx="5" cy="5" r="2" fill="currentColor"/><circle cx="5" cy="5" r="4" fill="none" stroke="currentColor" stroke-width="1.2"/></svg>
         Use My Location
       </button>
-      <button type="button" class="lw-pill" data-lw-home hidden>Back to Bedford</button>
     </div>
     <p class="lw-msg" data-lw-msg role="status"></p>
     <p class="lw-note" data-lw-note hidden></p>
@@ -89,7 +88,7 @@ const zonesJson = JSON.stringify(ZONES);
 </section>
 
 <script>
-  import { getPlace, setZip, useMyLocation, resetPlace, adoptQuizZip, noteFor } from '../scripts/place.js';
+  import { getPlace, setZip, useMyLocation, adoptQuizZip, noteFor } from '../scripts/place.js';
   import { fetchWater, verdict, getGauge, VERDICTS } from '../scripts/water.js';
   import { initSoil } from '../scripts/soil.js';
   import { TASKS, snapshot, fmt } from '../data/tasks.js';
@@ -106,7 +105,6 @@ const zonesJson = JSON.stringify(ZONES);
     const paint = (p: any) => {
       $('[data-lw-name]').textContent = p.name;
       if (document.activeElement !== input) input.value = p.zip || '';
-      $('[data-lw-home]').hidden = !!p.home;
       const note = noteFor(p);
       $('[data-lw-note]').textContent = note;
       $('[data-lw-note]').hidden = !note;
@@ -126,7 +124,6 @@ const zonesJson = JSON.stringify(ZONES);
       const r = await useMyLocation();
       msg.textContent = r.error || '';
     });
-    $('[data-lw-home]').addEventListener('click', () => { resetPlace(); msg.textContent = ''; });
 
     /* ---------------- Do it now */
     const snap = snapshot(TASKS.filter((t: any) => t.level <= 2), new Date());

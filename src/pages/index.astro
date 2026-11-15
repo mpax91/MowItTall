@@ -95,10 +95,10 @@ const games = [
     </div>
 
     <script>
-      // A slim "get your plan" bar appears once the hero button scrolls away,
+      // A slim "get your plan" bar appears once the game's Hold button scrolls away,
       // and gets out of the way near the other plan buttons.
       const bar = document.querySelector('[data-sticky]');
-      const hero = document.querySelector('[data-hero-cta]');
+      const hero = document.querySelector('[data-hero-end]'); 
       const end = document.querySelector('#plan');
       if (bar && hero && end) {
         let heroOut = false, endIn = false;
