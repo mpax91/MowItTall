@@ -1881,7 +1881,7 @@ main > section.gp { margin-left: 16px; margin-right: 16px; }
 .calendar.is-compact .cal-track { align-items: stretch; }
 .calendar.is-compact .cal-month { display: flex; flex-direction: column; }
 .calendar.is-compact .cal-more { margin-top: auto; }
-@media (min-width: 520px) { .row-games .row-track { justify-content: center; } }
+
 
 /* Hero v3 (Nov 15 pm): 2-line headline, game above the fold on phones, lede + CTA after the game */
 .hero2 { padding-top: 2px; }
@@ -1974,3 +1974,21 @@ main > section.gp { margin-left: 16px; margin-right: 16px; }
 .lock-msg { min-height: 1.3em; margin: 8px 0 !important; font-size: 0.9rem; font-weight: 700; color: var(--red); text-align: left; }
 .lock-actions { display: flex; justify-content: flex-end; gap: 8px; }
 .lock-dialog .btn-quiet { color: var(--ink); border-color: var(--ink); }
+
+/* Homepage swipe rows (Nov 15, Mike's reference): title left, "View All" right, rule under, then cards */
+.row-sec, .calendar.is-compact .cal-head { text-align: left; }
+.row-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding-bottom: 12px; margin-bottom: 14px; border-bottom: 3px solid var(--paper);
+}
+.row-head h2 { margin: 0; line-height: 1.1; }
+.row-sec > .row-head { padding-inline: 0; margin-inline: var(--col); max-width: none; }
+.calendar.is-compact > .cal-head.row-head { margin-inline: var(--col); padding-inline: 0; }
+.row-all {
+  flex: none; white-space: nowrap; text-decoration: none;
+  font-family: var(--display); font-weight: 750; font-size: 0.98rem; letter-spacing: 0.02em; color: var(--paper);
+  padding: 8px 14px 9px; border: 2px solid var(--paper); border-radius: 9px;
+}
+.row-all:hover, .row-all:focus-visible { background: var(--paper); color: var(--ink); outline: none; }
+.row-sec .section-lede { margin: 0 0 14px; max-width: none; text-align: left; }
+.calendar.is-compact .cal-mini-h { font-size: clamp(1.35rem, 5.4vw, 1.7rem); margin: 0; }

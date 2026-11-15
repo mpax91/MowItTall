@@ -15,8 +15,9 @@ const months = MONTHS_LONG.map((name, i) => ({
 ---
 <section class:list={['calendar', { 'is-compact': compact }]} aria-labelledby="cal-h" data-calendar>
   {compact ? (
-  <div class="cal-head">
+  <div class="cal-head row-head">
     <h2 id="cal-h" class="cal-mini-h">The lawn year at a glance</h2>
+    <a class="row-all" href="/resources/#cal-h" aria-label="See the full calendar">View All</a>
   </div>
   ) : (<Fragment>
   <div class="cal-head">
@@ -68,9 +69,7 @@ const months = MONTHS_LONG.map((name, i) => ({
       </div>
     ))}
   </div>
-  {compact ? (
-  <p class="cal-cta cal-cta-mini"><a href="/resources/#cal-h">See the Full Calendar</a></p>
-  ) : (
+  {compact ? null : (
   <p class="cal-cta">
     This is the general plan. <a href="/plan/">Get your free lawn plan</a> for one built for your yard and your energy level.
   </p>
