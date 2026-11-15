@@ -1,0 +1,110 @@
+---
+// "Which grass should I plant?" 4-question picker. Data and logic live in src/data/grassPicker.js.
+// postHref: link to the full grass breakdown (leave empty on the post itself).
+const { postHref = '', id = 'gp' } = Astro.props;
+---
+<section class="window gp" aria-labelledby={`${id}-h`} data-grass-picker>
+  <h2 id={`${id}-h`}>Which grass should I plant?</h2>
+  <p class="gp-sub">Four questions. One answer. No botany degree.</p>
+
+  <div class="gp-quiz" data-gp-quiz>
+    <div class="gp-top">
+      <span class="gp-count" data-gp-count>Question 1 of 4</span>
+      <button type="button" class="gp-back" data-gp-back hidden>Back</button>
+    </div>
+    <div class="gp-bar"><span data-gp-bar></span></div>
+    <p class="gp-q" data-gp-q></p>
+    <p class="gp-hint" data-gp-hint></p>
+    <div class="gp-opts" data-gp-opts></div>
+  </div>
+
+  <div class="gp-result" data-gp-result hidden aria-live="polite">
+    <span class="gp-tag" data-gp-tag></span>
+    <p class="gp-name" data-gp-name></p>
+    <p class="gp-mix" data-gp-mix></p>
+    <ul class="gp-why" data-gp-why></ul>
+    <p class="gp-heads"><b>Heads-up:</b> <span data-gp-heads></span></p>
+    <p class="gp-rate" data-gp-rate></p>
+    <div class="gp-actions">
+      <button type="button" class="btn gp-again" data-gp-again>Start over</button>
+      {postHref && <a class="gp-more" href={postHref}>Compare all the grasses</a>}
+    </div>
+  </div>
+</section>
+
+<script>
+  import { QUESTIONS, RESULTS, pick } from '../data/grassPicker.js';
+  type Opt = { v: string; t: string; s: string };
+  type Q = { id: string; q: string; hint: string; options: Opt[] };
+  type R = { name: string; tag: string; mix: string; why: string[]; heads: string; rate: [number, number] | null };
+
+  document.querySelectorAll<HTMLElement>('[data-grass-picker]').forEach((root) => {
+    const $ = <T extends HTMLElement = HTMLElement>(s: string) => root.querySelector<T>(s)!;
+    const answers: Record<string, string> = {};
+    let step = 0;
+
+    function render() {
+      const q = (QUESTIONS as Q[])[step];
+      $('[data-gp-count]').textContent = `Question ${step + 1} of ${QUESTIONS.length}`;
+      $('[data-gp-bar]').style.width = `${(step / QUESTIONS.length) * 100}%`;
+      $('[data-gp-back]').hidden = step === 0;
+      $('[data-gp-q]').textContent = q.q;
+      $('[data-gp-hint]').textContent = q.hint;
+      const opts = $('[data-gp-opts]');
+      opts.innerHTML = '';
+      q.options.forEach((o) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'gp-opt';
+        b.setAttribute('aria-pressed', String(answers[q.id] === o.v));
+        b.innerHTML = `<b></b><span></span>`;
+        b.querySelector('b')!.textContent = o.t;
+        b.querySelector('span')!.textContent = o.s;
+        b.addEventListener('click', () => {
+          answers[q.id] = o.v;
+          if (step < QUESTIONS.length - 1) { step++; render(); } else show();
+        });
+        opts.appendChild(b);
+      });
+    }
+
+    function show() {
+      const r = (RESULTS as Record<string, R>)[pick(answers as any)];
+      $('[data-gp-quiz]').hidden = true;
+      $('[data-gp-result]').hidden = false;
+      $('[data-gp-tag]').textContent = r.tag;
+      $('[data-gp-name]').textContent = r.name;
+      $('[data-gp-mix]').textContent = r.mix;
+      const ul = $('[data-gp-why]');
+      ul.innerHTML = '';
+      r.why.forEach((w) => { const li = document.createElement('li'); li.textContent = w; ul.appendChild(li); });
+      $('[data-gp-heads]').textContent = r.heads;
+      const rate = $('[data-gp-rate]');
+      rate.hidden = !r.rate;
+      if (r.rate) {
+        let txt = `New lawn: about ${r.rate[0]} to ${r.rate[1]} lb of seed per 1,000 sq ft. Overseeding: about half. Check the bag.`;
+        try {
+          const yard = JSON.parse(localStorage.getItem('mit-yard') || 'null');
+          if (yard && yard.total > 0) {
+            const k = yard.total / 1000;
+            const lo = Math.max(1, Math.round((k * r.rate[0]) / 2));
+            const hi = Math.max(lo, Math.round((k * r.rate[1]) / 2));
+            txt = `For your ${Math.round(yard.total).toLocaleString()} sq ft: about ${lo} to ${hi} lb to overseed, double that for a new lawn. Check the bag.`;
+          }
+        } catch { /* private mode */ }
+        rate.textContent = txt;
+      }
+      $('[data-gp-result]').focus?.();
+    }
+
+    $('[data-gp-back]').addEventListener('click', () => { if (step > 0) { step--; render(); } });
+    $('[data-gp-again]').addEventListener('click', () => {
+      for (const k in answers) delete answers[k];
+      step = 0;
+      $('[data-gp-result]').hidden = true;
+      $('[data-gp-quiz]').hidden = false;
+      render();
+    });
+    render();
+  });
+</script>

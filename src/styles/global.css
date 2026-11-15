@@ -1592,3 +1592,43 @@ main > section.weed-sec { padding: 0; }
 .fs-note { display: block; font-size: 0.9rem; line-height: 1.35; color: #3d5a45; }
 .fs-ics { display: block; width: 100%; margin-top: 14px; text-align: center; }
 .prose .fs-foot, .fs-foot { margin: 10px 0 0; font-size: 0.88rem; color: #cfe3c6; }
+
+/* ---------- Grass picker (.gp-*) ---------- */
+.gp { padding: 18px 16px 16px; margin: 22px 0; scroll-margin-top: 16px; }
+.prose .gp h2, .gp h2 { margin: 0 0 2px; font-size: 1.5rem; letter-spacing: -0.02em; }
+.prose .gp-sub, .gp-sub { margin: 0 0 12px; font-size: 0.95rem; color: #cfe3c6; }
+.gp-top { display: flex; align-items: center; justify-content: space-between; min-height: 28px; }
+.gp-count { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--leaf); }
+.gp-back { background: none; border: 0; padding: 4px 0; font: inherit; font-size: 0.92rem; color: var(--leaf); text-decoration: underline; cursor: pointer; }
+.gp-back[hidden] { display: none; }
+.gp-bar { height: 8px; border-radius: 4px; background: rgba(0, 0, 0, 0.3); overflow: hidden; margin: 6px 0 12px; }
+.gp-bar span { display: block; height: 100%; width: 0; background: var(--sun); transition: width 0.25s ease; }
+.prose .gp-q, .gp-q { margin: 0; font-family: var(--display); font-weight: 800; font-size: 1.3rem; line-height: 1.2; color: #fff; }
+.prose .gp-hint, .gp-hint { margin: 4px 0 12px; font-size: 0.92rem; color: #cfe3c6; }
+.gp-opts { display: grid; gap: 8px; }
+.gp-opt { display: block; width: 100%; text-align: left; font: inherit; background: var(--paper); color: var(--ink); border: 3px solid var(--paper); border-radius: 10px; padding: 10px 14px; cursor: pointer; box-shadow: 0 3px 0 rgba(5, 20, 10, 0.4); }
+.gp-opt b { display: block; font-family: var(--display); font-weight: 800; font-size: 1.08rem; }
+.gp-opt span { display: block; font-size: 0.9rem; color: #3d5a45; }
+.gp-opt[aria-pressed='true'] { border-color: var(--sun); }
+.gp-opt:active { transform: translateY(2px); box-shadow: 0 1px 0 rgba(5, 20, 10, 0.4); }
+.gp-result { animation: mow-pop-in 0.25s ease; }
+.gp-result[hidden], .gp-quiz[hidden] { display: none; }
+.gp-tag { display: inline-block; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; background: var(--sun); color: var(--ink); padding: 3px 8px; border-radius: 4px; }
+.prose .gp-name, .gp-name { margin: 8px 0 2px; font-family: var(--display); font-weight: 800; font-size: 1.75rem; line-height: 1.1; color: #fff; letter-spacing: -0.02em; }
+.prose .gp-mix, .gp-mix { margin: 0 0 10px; font-weight: 700; color: var(--leaf); }
+.prose .gp-why, .gp-why { margin: 0 0 10px; padding-left: 1.2em; }
+.prose .gp-why li, .gp-why li { margin: 4px 0; font-size: 0.98rem; line-height: 1.4; }
+.prose .gp-heads, .gp-heads { margin: 0 0 8px; padding: 10px 12px; border-radius: 8px; background: rgba(0, 0, 0, 0.25); font-size: 0.95rem; line-height: 1.4; }
+.gp-heads b { color: var(--sun); }
+.prose .gp-rate, .gp-rate { margin: 0 0 12px; font-size: 0.9rem; color: #cfe3c6; }
+.gp-rate[hidden] { display: none; }
+.gp-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.prose .gp-more, .gp-more { color: var(--leaf); font-weight: 700; }
+main > section.gp { margin-left: 16px; margin-right: 16px; }
+
+/* Prose tables (grass cheat sheet) */
+.prose table { width: 100%; border-collapse: collapse; margin: 14px 0 18px; font-size: 0.9rem; background: var(--paper); color: var(--ink); border-radius: 10px; overflow: hidden; }
+.prose th, .prose td { padding: 8px 6px; text-align: left; vertical-align: top; border-bottom: 1px solid #c9dcc0; }
+.prose th { background: #2f6e47; color: #fff; font-family: var(--display); font-weight: 800; font-size: 0.82rem; }
+.prose td:first-child { font-weight: 700; }
+.prose tr:last-child td { border-bottom: 0; }

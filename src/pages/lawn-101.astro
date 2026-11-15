@@ -1,13 +1,14 @@
 ---
 import Base from '../layouts/Base.astro';
 import FlipCards from '../components/FlipCards.astro';
+import GrassPicker from '../components/GrassPicker.astro';
 import { changeCards } from '../data/changes.js';
 import { WEEDS } from '../data/weeds.js';
 import { PHOTOS } from '../data/photos.js';
 
 const title = 'Lawn care 101 for beginners in the Northeast | Mow It Tall';
 const description =
-  'The basics of a better lawn in Bedford, Westchester and the Northeast: six small habits, a guide to common weeds, and real photos from a beginner-friendly yard.';
+  'The basics of a better lawn in Bedford, Westchester and the Northeast: six small habits, which grass seed to buy, a guide to common weeds, and real photos from a beginner-friendly yard.';
 ---
 <Base title={title} description={description} path="/lawn-101/">
   <main id="main">
@@ -20,6 +21,15 @@ const description =
       <h2 id="changes-h">Six small changes</h2>
       <p class="section-lede">Tap a card. Pick one. Next month, pick another.</p>
       <FlipCards items={changeCards} layout="list" />
+    </section>
+
+    <section class="grass-sec" id="grass" aria-labelledby="grass-sec-h">
+      <div class="section-head">
+        <h2 id="grass-sec-h">Pick your grass</h2>
+        <a class="more" href="/blog/grass-types-northeast/">Grass guide</a>
+      </div>
+      <p class="section-lede">Seeding this fall? Four questions and I’ll tell you what to buy.</p>
+      <GrassPicker postHref="/blog/grass-types-northeast/" />
     </section>
 
     <section class="weeds-teaser" aria-labelledby="weeds-h">
