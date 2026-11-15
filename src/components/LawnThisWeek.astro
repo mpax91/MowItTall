@@ -240,12 +240,10 @@ const zonesJson = JSON.stringify(ZONES);
     const backFocus = () => {
       const el = $('[data-now-back]');
       if (!snap.now.length) { el.innerHTML = '<p class="lw-label">What to focus on now</p><p>Nothing pressing. A good week to clean and sharpen your gear.</p><span class="lw-tap" aria-hidden="true"></span>'; return; }
-      const t = snap.now[0].t, also = snap.now.slice(1).map(({ t }: any) => t.title);
+      const t = snap.now[0].t;
       el.innerHTML = `<p class="lw-label">${esc(t.title)}</p>
         <p><b>How:</b> ${esc(t.why)}</p>
         ${t.tip ? `<p><b>Tip:</b> ${esc(t.tip)}</p>` : ''}
-        ${also.length ? `<p class="lw-back-small"><b>Also this time of year:</b> ${also.map(esc).join(', ')}.</p>` : ''}
-        <p class="lw-back-links"><a href="#cal-h">See the whole year</a></p>
         <span class="lw-tap" aria-hidden="true"></span>`;
     };
     const backWater = () => {
