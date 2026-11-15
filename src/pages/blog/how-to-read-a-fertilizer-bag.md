@@ -2,6 +2,8 @@
 layout: ../../layouts/Post.astro
 title: "How to read a fertilizer bag without a chemistry degree"
 description: "What 24-0-6 actually means, what nitrogen, phosphorus and potassium each do, why the second number is lying to you, and whether the name brand is worth it. Plus a bag decoder."
+seoTitle: "How to Read a Fertilizer Bag (N-P-K Explained)"
+seoDescription: "What the three numbers on a fertilizer bag mean, how much to use, slow vs. fast release, and whether name brands are worth it. Plus a bag decoder."
 date: 2026-11-15
 minutes: 5
 tag: PSA

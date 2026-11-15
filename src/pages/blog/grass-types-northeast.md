@@ -2,6 +2,8 @@
 layout: ../../layouts/Post.astro
 title: "Every grass seed worth buying in the Northeast, ranked and roasted"
 description: "Kentucky bluegrass vs. perennial rye vs. tall fescue vs. fine fescue: how each one looks, feels, spreads, sprouts and handles sun, shade and no water. Plus a 4-question picker for your yard."
+seoTitle: "Best Grass Seed for the Northeast, Ranked"
+seoDescription: "Kentucky bluegrass, perennial rye, tall fescue and fine fescue compared for Northeast lawns: sun, shade, traffic, water. Plus a grass seed picker."
 date: 2026-11-15
 minutes: 5
 tag: Rankings

@@ -2,6 +2,7 @@
 layout: ../../layouts/Post.astro
 title: "Mowing the lawn is a workout. Tell your doctor."
 description: "Some people go to the gym. Big deal. You push a mower up a hill in July. Here’s the proof, plus a calculator for your time, steps and calories."
+seoTitle: "Is Mowing the Lawn Exercise? Calories and Steps"
 date: 2026-11-15
 minutes: 3
 tag: Hot take

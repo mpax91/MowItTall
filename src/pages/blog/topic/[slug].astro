@@ -11,9 +11,20 @@ const { topic } = Astro.props;
 const posts = allPosts(import.meta.glob('../[a-z]*.md', { eager: true })).filter((p) => (p.topics || []).includes(topic.slug));
 const title = `${topic.name}: lawn care posts | Mow It Tall`;
 const description = `${topic.blurb} Short, funny lawn care posts from Bedford, NY.`;
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    { '@type': 'CollectionPage', name: `${topic.name} lawn care posts`, url: `https://mowittall.com/blog/topic/${topic.slug}/`, description: topic.blurb,
+      mainEntity: { '@type': 'ItemList', itemListElement: posts.map((p, i) => ({ '@type': 'ListItem', position: i + 1, url: `https://mowittall.com${p.url}`, name: p.title })) } },
+    { '@type': 'BreadcrumbList', itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://mowittall.com/' },
+      { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://mowittall.com/blog/' },
+      { '@type': 'ListItem', position: 3, name: topic.name, item: `https://mowittall.com/blog/topic/${topic.slug}/` } ] },
+  ],
+};
 const others = TOPICS.filter((t) => t.slug !== topic.slug);
 ---
-<Base title={title} description={description} path={`/blog/topic/${topic.slug}/`}>
+<Base title={title} description={description} path={`/blog/topic/${topic.slug}/`} jsonLd={jsonLd}>
   <main id="main" class="page">
     <header class="page-head">
       <a class="post-back" href="/blog/" data-pagefind-ignore>Blog</a>

@@ -1,8 +1,10 @@
 import { defineConfig } from 'astro/config';
+import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
   site: 'https://mowittall.com',
   trailingSlash: 'ignore',
+  integrations: [sitemap({ filter: (page) => !page.includes('/404') && !page.includes('/clippings') })],
   // Old blog address (it used to be called Clippings)
   redirects: {
     '/clippings': '/blog/',

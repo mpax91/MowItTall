@@ -1,0 +1,43 @@
+---
+// Tick-off checklist saved on the phone (localStorage). items: [{ id, t, d }]. storeKey: localStorage key.
+interface Props { id: string; title: string; sub?: string; items: { id: string; t: string; d: string }[]; storeKey: string; fine?: string }
+const { id, title, sub = '', items, storeKey, fine = '' } = Astro.props;
+---
+<section class="window tool ck" id={id} aria-labelledby={`${id}-h`} data-checklist data-key={storeKey}>
+  <h2 id={`${id}-h`}>{title}</h2>
+  {sub && <p class="tool-sub">{sub}</p>}
+  <div class="ck-bar"><span data-ck-bar></span></div>
+  <p class="ck-count" aria-live="polite" data-ck-count></p>
+  <ul class="ck-list">
+    {items.map((it) => (
+      <li>
+        <label class="ck-item">
+          <input type="checkbox" data-ck={it.id} />
+          <span class="ck-box" aria-hidden="true"></span>
+          <span class="ck-text"><b>{it.t}</b><span set:html={it.d} /></span>
+        </label>
+      </li>
+    ))}
+  </ul>
+  <button type="button" class="linkish ck-reset" data-ck-reset>Start over</button>
+  {fine && <p class="tool-fine" set:html={fine} />}
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-checklist]').forEach((root) => {
+    const key = root.dataset.key!;
+    const boxes = [...root.querySelectorAll<HTMLInputElement>('[data-ck]')];
+    let saved: Record<string, boolean> = {};
+    try { saved = JSON.parse(localStorage.getItem(key) || '{}'); } catch { /* private mode */ }
+    boxes.forEach((b) => (b.checked = Boolean(saved[b.dataset.ck!])));
+    function update() {
+      const done = boxes.filter((b) => b.checked).length;
+      root.querySelector<HTMLElement>('[data-ck-bar]')!.style.width = `${(done / boxes.length) * 100}%`;
+      root.querySelector('[data-ck-count]')!.textContent = done === boxes.length ? 'All done. Your mower thanks you. Go mow.' : `${done} of ${boxes.length} done`;
+      try { localStorage.setItem(key, JSON.stringify(Object.fromEntries(boxes.map((b) => [b.dataset.ck, b.checked])))); } catch { /* */ }
+    }
+    boxes.forEach((b) => b.addEventListener('change', update));
+    root.querySelector('[data-ck-reset]')!.addEventListener('click', () => { boxes.forEach((b) => (b.checked = false)); update(); });
+    update();
+  });
+</script>

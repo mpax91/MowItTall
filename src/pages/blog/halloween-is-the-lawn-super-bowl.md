@@ -2,6 +2,7 @@
 layout: ../../layouts/Post.astro
 title: "Halloween is the Super Bowl of lawns. Act like it."
 description: "Late October is when your grass looks its best all year, and 60 people are about to walk right past it. We train all year for this night."
+seoTitle: "Halloween Is the Super Bowl of Lawns"
 date: 2026-11-15
 minutes: 3
 tag: Hot take

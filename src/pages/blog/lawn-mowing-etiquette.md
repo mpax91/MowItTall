@@ -2,6 +2,7 @@
 layout: ../../layouts/Post.astro
 title: "How early is too early to mow? The official rules of mowing etiquette"
 description: "8am on weekdays, 9 on Saturday, 10 on Sunday, and never during your neighbor’s party. Plus a machine that tells you if you can mow right now."
+seoTitle: "How Early Can You Mow? Mowing Etiquette Rules"
 date: 2026-11-15
 minutes: 3
 tag: Rules

@@ -2,6 +2,8 @@
 layout: ../../layouts/Post.astro
 title: "The holiday fertilizer schedule, fixed. You only need three."
 description: "When to fertilize your lawn in the Northeast: Memorial Day, Labor Day and Columbus Day, plus crabgrass preventer on Tax Day. The internet says six holidays. Your lawn says relax."
+seoTitle: "Holiday Lawn Fertilizer Schedule (Only 3 Needed)"
+seoDescription: "When to fertilize your lawn in the Northeast: an easy holiday schedule. Memorial Day, Labor Day and Columbus Day, plus Tax Day crabgrass preventer."
 date: 2026-11-15
 minutes: 4
 tag: Rules

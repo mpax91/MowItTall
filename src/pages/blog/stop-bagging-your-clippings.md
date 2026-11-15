@@ -2,6 +2,7 @@
 layout: ../../layouts/Post.astro
 title: "Stop bagging your clippings. Seriously, stop."
 description: "You’re doing extra work to throw away free fertilizer. Here’s the 30-second case for leaving them on the lawn."
+seoTitle: "Should You Bag Grass Clippings? No."
 date: 2026-11-02
 minutes: 2
 tag: PSA

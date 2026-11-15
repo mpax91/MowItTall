@@ -2,6 +2,8 @@
 layout: ../../layouts/Post.astro
 title: "Your lawn has visitors. Here’s what they’re trying to tell you."
 description: "Skunks, moles, raccoons, bees, rabbits, deer, geese and more: what each animal in your yard says about your lawn, and what to do about it. Spoiler: some of it is good news."
+seoTitle: "What Animals in Your Lawn Mean: Skunks, Moles, Geese"
+seoDescription: "Skunk holes, mole tunnels, geese, bees and deer: what each animal in your yard says about your lawn and what to do about it."
 date: 2026-11-15
 minutes: 3
 tag: PSA

@@ -8,7 +8,7 @@ import { PHOTOS } from '../data/photos.js';
 
 const title = 'Lawn care 101 for beginners in the Northeast | Mow It Tall';
 const description =
-  'The basics of a better lawn in Bedford, Westchester and the Northeast: six small habits, which grass seed to buy, a guide to common weeds, and real photos from a beginner-friendly yard.';
+  'Lawn care basics for beginners in Westchester and the Northeast: six small habits, which grass seed to buy, common weeds and real yard photos.';
 ---
 <Base title={title} description={description} path="/lawn-101/">
   <main id="main">
@@ -63,6 +63,14 @@ const description =
             <figcaption>{p.caption}</figcaption>
           </figure>
         ))}
+      </div>
+    </section>
+
+    <section class="plan plan-mid" aria-labelledby="dx-card-h">
+      <div class="window plan-card">
+        <h2 id="dx-card-h">Something look wrong?</h2>
+        <p>Brown spots, seed that won’t come up, mushrooms, moss? Tap what you see and get the cause and the fix. Or get any job’s steps in the right order.</p>
+        <p class="shed-jump"><a class="btn" href="/toolshed/#dx">What’s wrong with my lawn?</a> <a class="bf-chip" href="/toolshed/#ops">Order of operations</a></p>
       </div>
     </section>
 

@@ -2,6 +2,8 @@
 layout: ../../layouts/Post.astro
 title: "Walk-behind vs. riding vs. zero-turn (and robots). Pick a mower without lying to yourself."
 description: "Push, self-propelled, riding mower, zero-turn, battery or robot: the honest pros and cons of each, which size yard each one fits, what to look for when you buy, and a letter generator to convince your spouse."
+seoTitle: "Walk-Behind vs. Riding vs. Zero-Turn Mower"
+seoDescription: "Push, self-propelled, riding, zero-turn, battery or robot mower: pros, cons, which yard size fits each, and what to look for when buying."
 date: 2026-11-15
 minutes: 5
 tag: Rankings

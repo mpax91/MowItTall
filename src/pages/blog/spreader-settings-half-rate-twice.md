@@ -2,6 +2,8 @@
 layout: ../../layouts/Post.astro
 title: "Half the setting, twice the passes. The only way I spread anything."
 description: "How to use a lawn spreader without leaving stripes: set it to half of what the bag says, go back and forth, then go again side to side. Same amount of product, way better coverage. Plus what the spreader number means."
+seoTitle: "Spreader Settings: Half Rate, Two Directions"
+seoDescription: "How to use a fertilizer spreader without stripes: set it to half the bag setting and go over the lawn twice in two directions. Plus a calculator."
 date: 2026-11-15
 minutes: 3
 tag: Rules

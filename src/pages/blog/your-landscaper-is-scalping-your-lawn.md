@@ -2,6 +2,7 @@
 layout: ../../layouts/Post.astro
 title: "Your landscaper is scalping your lawn. You’re paying for it."
 description: "Drive around Bedford in July and count the brown lawns. Then count how many get mowed at two inches. Same lawns."
+seoTitle: "Is Your Landscaper Mowing Too Short?"
 date: 2026-11-13
 minutes: 2
 tag: Hot take

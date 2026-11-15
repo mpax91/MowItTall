@@ -2,6 +2,8 @@
 layout: ../../layouts/Post.astro
 title: "Do you actually need it? A brutally honest list of lawn stuff your neighbor bought"
 description: "Aeration, aeration sneakers, dethatchers, mulching blades, lawn stripers, lime, iron, top dressing, irrigation and more: what’s worth it, what’s a maybe, and what’s a scam, from a guy who bought most of it."
+seoTitle: "Lawn Gear You Don’t Need (and What You Do)"
+seoDescription: "Do you need aeration, aerator shoes, a dethatcher, mulching blades, lime, iron, top dressing or irrigation? Honest verdicts from a guy who bought it."
 date: 2026-11-15
 minutes: 3
 tag: Rankings

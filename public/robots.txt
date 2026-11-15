@@ -2,3 +2,5 @@
 # At launch, replace with: User-agent: *  /  Allow: /  and add the sitemap line.
 User-agent: *
 Disallow: /
+
+Sitemap: https://mowittall.com/sitemap-index.xml

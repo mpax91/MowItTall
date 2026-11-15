@@ -2,6 +2,8 @@
 layout: ../../layouts/Post.astro
 title: "Let the dog pee. Rent the bouncy house. Your lawn is not a museum."
 description: "Dog pee spots, poop, the neighbor’s dog, kids, kiddie pools and bouncy houses: what each one actually does to your grass, how to fix it, and why you should stop worrying and use your lawn."
+seoTitle: "How to Fix Dog Pee Spots (and Bouncy House Damage)"
+seoDescription: "Why dog pee kills grass, male vs. female dogs, do pee rocks work, and how to fix spots from dogs, kids and bouncy houses. Your lawn is not a museum."
 date: 2026-11-15
 minutes: 4
 tag: Hot take

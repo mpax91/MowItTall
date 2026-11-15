@@ -2,6 +2,8 @@
 layout: ../../layouts/Post.astro
 title: "Kids, dogs and lawn chemicals: what’s safe, what’s not, and what to do instead"
 description: "Which lawn products are low-worry with kids and pets, which ones need real care, and six ways to beat weeds, including zero-chemical options with honest pros and cons."
+seoTitle: "Is Lawn Care Safe for Kids and Pets?"
+seoDescription: "Which lawn products are low-worry with kids and dogs, which need care, and six ways to beat weeds, including zero-chemical options."
 date: 2026-11-15
 minutes: 5
 tag: PSA

@@ -2,6 +2,8 @@
 layout: ../../layouts/Post.astro
 title: "A soil test is blood work for your lawn. Get one."
 description: "Why a soil test is the cheapest lawn upgrade there is, how often to do one, how to take the sample, how to read the report, and exactly what to do when the numbers come back low or high."
+seoTitle: "Lawn Soil Test: How to Do It and Read It"
+seoDescription: "Why to test your lawn soil, how often, how to take a sample, and how to read pH, phosphorus and potassium. Plus a soil test translator."
 date: 2026-11-15
 minutes: 6
 tag: PSA

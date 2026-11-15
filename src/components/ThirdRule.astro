@@ -1,0 +1,54 @@
+---
+// 1/3 rule calculator: grass height now + target height → can I mow straight down, or step it down?
+const { id = 'third' } = Astro.props;
+---
+<section class="window tool tr" id={id} aria-labelledby={`${id}-h`} data-third-rule>
+  <h2 id={`${id}-h`}>Can I cut it that short?</h2>
+  <p class="tool-sub">How tall is the grass now, and where do you want it? I’ll tell you if it breaks the 1/3 rule.</p>
+  <div class="mc-verdict tr-out" aria-live="polite">
+    <span class="mc-word" data-tone="yes" data-tr-word>GO FOR IT</span>
+    <p class="mc-line" data-tr-line></p>
+  </div>
+  <ol class="tr-steps" data-tr-steps></ol>
+  <div class="tr-sliders">
+    <label><span>Grass now: <b data-tr-nowv>6 in</b></span><input type="range" min="2" max="14" step="0.5" value="6" class="mc-slider tr-slider" data-tr-now /></label>
+    <label><span>Where you want it: <b data-tr-goalv>4 in</b></span><input type="range" min="2" max="5" step="0.5" value="4" class="mc-slider tr-slider" data-tr-goal /></label>
+  </div>
+  <p class="tool-fine">Around here, keep cool-season grass at 3.5 to 4 inches. Measure from the ground to the tips with a ruler, not your eyes.</p>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-third-rule]').forEach((root) => {
+    const $ = <T extends HTMLElement = HTMLElement>(s: string) => root.querySelector<T>(s)!;
+    const now = $<HTMLInputElement>('[data-tr-now]'), goal = $<HTMLInputElement>('[data-tr-goal]');
+    const f = (n: number) => `${Math.round(n * 2) / 2} in`.replace('.5 in', '½ in');
+    function update() {
+      const h = Number(now.value), g = Number(goal.value);
+      $('[data-tr-nowv]').textContent = f(h);
+      $('[data-tr-goalv]').textContent = f(g);
+      const w = $('[data-tr-word]'), line = $('[data-tr-line]'), steps = $('[data-tr-steps]');
+      steps.innerHTML = '';
+      if (h <= g) {
+        w.textContent = 'NOT YET'; w.dataset.tone = 'close';
+        line.textContent = `It’s not even ${f(g)} yet. Go inside. Mow when it’s about ${f(g * 1.5)}.`;
+        return;
+      }
+      const cut = (h - g) / h;
+      if (cut <= 0.34) {
+        w.textContent = 'GO FOR IT'; w.dataset.tone = 'yes';
+        line.textContent = `Cutting ${f(h - g)} off ${f(h)} is ${Math.round(cut * 100)}%. Under a third. Mow it.`;
+        return;
+      }
+      // Step down a third at a time
+      const plan: number[] = [];
+      let cur = h;
+      while (cur * (2 / 3) > g + 0.01 && plan.length < 6) { cur = Math.max(g, Math.round(cur * (2 / 3) * 2) / 2); plan.push(cur); }
+      if (plan[plan.length - 1] !== g) plan.push(g);
+      w.textContent = cut > 0.6 ? 'WHOA. STEP IT DOWN.' : 'STEP IT DOWN'; w.dataset.tone = cut > 0.6 ? 'never' : 'no';
+      line.textContent = `That’s ${Math.round(cut * 100)}% in one shot. Grass goes into shock and turns brown. Do it in ${plan.length} mows instead:`;
+      plan.forEach((p, i) => { const li = document.createElement('li'); li.textContent = i === 0 ? `Today: mow at ${f(p)}` : `${i * 3} days later: ${f(p)}`; steps.appendChild(li); });
+    }
+    [now, goal].forEach((i) => i.addEventListener('input', update));
+    update();
+  });
+</script>

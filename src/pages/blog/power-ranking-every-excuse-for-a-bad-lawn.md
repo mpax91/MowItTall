@@ -2,6 +2,7 @@
 layout: ../../layouts/Post.astro
 title: "Power ranking every excuse for a bad lawn"
 description: "From \"it’s the shade\" to \"the dog,\" we ranked them all. Only one is actually legit."
+seoTitle: "Every Excuse for a Bad Lawn, Ranked"
 date: 2026-11-10
 minutes: 3
 tag: Rankings

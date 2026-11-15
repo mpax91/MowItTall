@@ -2,6 +2,8 @@
 layout: ../../layouts/Post.astro
 title: "Granules vs. spray: I hate spraying, and I’m not sorry"
 description: "Granular or liquid for fertilizer, crabgrass preventer and weed killer? The honest pros and cons of each, what happened when I tried spray dye and surfactants, and when spraying actually wins."
+seoTitle: "Granular vs. Liquid Fertilizer and Weed Killer"
+seoDescription: "Granular vs. liquid lawn products: honest pros and cons for fertilizer, crabgrass preventer and weed killer, and when spraying actually wins."
 date: 2026-11-15
 minutes: 3
 tag: Hot take

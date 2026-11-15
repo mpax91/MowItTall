@@ -1,0 +1,41 @@
+---
+// "Is my blade dull?" for the sharpening post. Rule of thumb: sharpen every ~20–25 hours of mowing, or after hitting rocks/roots.
+const { id = 'blade' } = Astro.props;
+---
+<section class="window tool bc" id={id} aria-labelledby={`${id}-h`} data-blade>
+  <h2 id={`${id}-h`}>Is my blade dull?</h2>
+  <p class="tool-sub">Be honest. Your grass already knows.</p>
+  <div class="mc-verdict bc-out" aria-live="polite">
+    <span class="mc-word" data-tone="yes" data-bc-word>SHARP</span>
+    <p class="mc-line" data-bc-line></p>
+  </div>
+  <div class="tr-sliders">
+    <label><span>Mows since it was sharpened: <b data-bc-mowsv>8</b></span><input type="range" min="0" max="40" value="8" class="mc-slider tr-slider" data-bc-mows /></label>
+    <label><span>Minutes per mow: <b data-bc-minv>45</b></span><input type="range" min="10" max="180" step="5" value="45" class="mc-slider tr-slider" data-bc-min /></label>
+  </div>
+  <label class="mc-party bc-hit"><input type="checkbox" data-bc-hit /><span class="mc-switch"></span> I hit a rock, root or sprinkler head</label>
+  <label class="mc-party bc-hit"><input type="checkbox" data-bc-tips /><span class="mc-switch"></span> Grass tips look white or shredded</label>
+  <p class="tool-fine">Rule of thumb: sharpen every 20 to 25 hours of mowing, at least once a season, and any time you hit something hard.</p>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-blade]').forEach((root) => {
+    const $ = <T extends HTMLElement = HTMLElement>(s: string) => root.querySelector<T>(s)!;
+    const mows = $<HTMLInputElement>('[data-bc-mows]'), min = $<HTMLInputElement>('[data-bc-min]');
+    const hit = $<HTMLInputElement>('[data-bc-hit]'), tips = $<HTMLInputElement>('[data-bc-tips]');
+    function update() {
+      const m = Number(mows.value), mi = Number(min.value);
+      $('[data-bc-mowsv]').textContent = String(m);
+      $('[data-bc-minv]').textContent = String(mi);
+      const hrs = (m * mi) / 60;
+      const h = Math.round(hrs * 10) / 10;
+      const w = $('[data-bc-word]'), line = $('[data-bc-line]');
+      if (hit.checked) { w.textContent = 'CHECK IT NOW'; w.dataset.tone = 'never'; line.textContent = 'Rocks and roots nick and bend blades. Unplug the spark plug wire, flip it over and look. Bent? Replace it. Nicked? Sharpen it.'; }
+      else if (tips.checked || hrs >= 25) { w.textContent = 'DULL. SWAP IT.'; w.dataset.tone = 'no'; line.textContent = `${tips.checked ? 'White, shredded tips are a dull blade’s fingerprint.' : `About ${h} hours of mowing on that edge.`} Swap in the spare and get this one sharpened.`; }
+      else if (hrs >= 15) { w.textContent = 'GETTING THERE'; w.dataset.tone = 'close'; line.textContent = `About ${h} hours. Plan a swap in the next few weeks.`; }
+      else { w.textContent = 'SHARP ENOUGH'; w.dataset.tone = 'yes'; line.textContent = `About ${h} hours on it. You’re fine. Keep mowing.`; }
+    }
+    [mows, min, hit, tips].forEach((i) => i.addEventListener('input', update));
+    update();
+  });
+</script>

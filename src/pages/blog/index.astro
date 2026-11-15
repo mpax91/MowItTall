@@ -5,10 +5,19 @@ import { TOPICS } from '../../data/topics.js';
 import { allPosts } from '../../data/posts.js';
 const posts = allPosts(import.meta.glob('./[a-z]*.md', { eager: true }));
 const counts = Object.fromEntries(TOPICS.map((t) => [t.slug, posts.filter((p) => (p.topics || []).includes(t.slug)).length]));
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    { '@type': 'Blog', '@id': 'https://mowittall.com/blog/#blog', name: 'The Mow It Tall blog', url: 'https://mowittall.com/blog/', publisher: { '@id': 'https://mowittall.com/#mike' },
+      blogPost: posts.slice(0, 30).map((p) => ({ '@type': 'BlogPosting', headline: p.title, url: `https://mowittall.com${p.url}`, datePublished: String(p.date instanceof Date ? p.date.toISOString() : p.date).slice(0, 10) })) },
+    { '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Home', item: 'https://mowittall.com/' }, { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://mowittall.com/blog/' }] },
+  ],
+};
 const title = 'The Mow It Tall blog: lawn takes, some hot, all short';
-const description = 'Opinionated, short, occasionally petty lawn care takes from Bedford, NY. Search every post or browse by topic: mowing, fertilizer, seed, weeds, soil, dogs and kids, gear.';
+const description =
+  'Short, funny lawn care posts from Bedford, NY. Search every post or browse by topic: mowing, fertilizer, seed, weeds, soil, dogs and kids, gear.';
 ---
-<Base title={title} description={description} path="/blog/">
+<Base title={title} description={description} path="/blog/" jsonLd={jsonLd}>
   <main id="main" class="page">
     <header class="page-head">
       <h1>The blog</h1>

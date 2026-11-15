@@ -2,6 +2,7 @@
 layout: ../../layouts/Post.astro
 title: "The official mowing playlist. Nearly two hours, zero skips."
 description: "29 songs about grass, stripes, standing tall and not mowing at 7am. Built for a full Saturday mow, in order, with a reason for every track."
+seoTitle: "The Best Lawn Mowing Playlist"
 date: 2026-11-15
 minutes: 4
 tag: Rankings

@@ -19,18 +19,42 @@ import MowerLetter from '../components/MowerLetter.astro';
 import { SPOTS, SPOT_GROUPS } from '../data/spotFixer.js';
 import { NEEDS, NEED_GROUPS } from '../data/doINeed.js';
 import { GS } from '../data/granSpray.js';
+import ThirdRule from '../components/ThirdRule.astro';
+import PartyCountdown from '../components/PartyCountdown.astro';
+import BladeCheck from '../components/BladeCheck.astro';
+import Checklist from '../components/Checklist.astro';
+import { WAITS, PREPOST, MULCHBAG, COMPLIMENTS, TRAINING } from '../data/pickers2.js';
+import { TUNEUP } from '../data/tuneup.js';
 const { frontmatter, url } = Astro.props;
 const { title, description, tag, widget, extra, faq } = frontmatter;
+const path = new URL(url || Astro.url.pathname, 'https://mowittall.com').pathname;
 const topics = (frontmatter.topics || []).filter((t) => topicBySlug[t]);
+const metaTitle = frontmatter.seoTitle ? (frontmatter.seoTitle.length + 14 <= 65 ? `${frontmatter.seoTitle} | Mow It Tall` : frontmatter.seoTitle) : `${title} | Mow It Tall`;
+const metaDesc = frontmatter.seoDescription || description;
+const modified = frontmatter.updated ? (frontmatter.updated instanceof Date ? frontmatter.updated.toISOString() : String(frontmatter.updated)).slice(0, 10) : '';
+// Related posts: most shared topics, then newest.
+const all = Object.entries(import.meta.glob('../pages/blog/[a-z]*.md', { eager: true, import: 'frontmatter' }));
+const related = all
+  .map(([k, fm]) => ({ ...fm, url: '/blog/' + k.split('/').pop().replace(/\.md$/, '') + '/' }))
+  .filter((p) => p.url !== (path.endsWith('/') ? path : path + '/'))
+  .map((p) => ({ ...p, score: (p.topics || []).filter((t) => topics.includes(t)).length }))
+  .filter((p) => p.score > 0)
+  .sort((a, b) => b.score - a.score || new Date(b.date) - new Date(a.date))
+  .slice(0, 3);
 const date = (frontmatter.date instanceof Date ? frontmatter.date.toISOString() : String(frontmatter.date)).slice(0, 10);
 const minutes = frontmatter.minutes || 2;
 const pretty = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-const path = new URL(url || Astro.url.pathname, 'https://mowittall.com').pathname;
 const posting = {
   '@type': 'BlogPosting',
   headline: title,
   description,
   datePublished: date,
+  dateModified: modified || date,
+  inLanguage: 'en-US',
+  articleSection: tag,
+  keywords: topics.map((t) => topicBySlug[t].name).join(', '),
+  image: 'https://mowittall.com/img/backyard-stripes-1400.webp',
+  isPartOf: { '@type': 'Blog', '@id': 'https://mowittall.com/blog/#blog', name: 'The Mow It Tall blog', url: 'https://mowittall.com/blog/' },
   author: { '@type': 'Person', name: 'Mike', '@id': 'https://mowittall.com/#mike' },
   publisher: { '@id': 'https://mowittall.com/#website' },
   mainEntityOfPage: `https://mowittall.com${path}`,
@@ -40,12 +64,21 @@ const faqLd = Array.isArray(faq) && faq.length ? {
   '@type': 'FAQPage',
   mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
 } : null;
-const jsonLd = { '@context': 'https://schema.org', '@graph': faqLd ? [posting, faqLd] : [posting] };
+const crumbs = {
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://mowittall.com/' },
+    { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://mowittall.com/blog/' },
+    ...(topics[0] ? [{ '@type': 'ListItem', position: 3, name: topicBySlug[topics[0]].name, item: `https://mowittall.com/blog/topic/${topics[0]}/` }] : []),
+    { '@type': 'ListItem', position: topics[0] ? 4 : 3, name: title, item: `https://mowittall.com${path}` },
+  ],
+};
+const jsonLd = { '@context': 'https://schema.org', '@graph': [posting, crumbs, ...(faqLd ? [faqLd] : [])] };
 ---
-<Base title={`${title} | Mow It Tall`} description={description} path={path} jsonLd={jsonLd}>
+<Base title={metaTitle} description={metaDesc} path={path} jsonLd={jsonLd} type="article" published={date} modified={modified || undefined}>
   <main id="main" class="post">
     <header class="post-head">
-      <a class="post-back" href="/blog/" data-pagefind-ignore>Blog</a>
+      <nav class="crumbs" aria-label="Breadcrumb" data-pagefind-ignore><a href="/blog/">Blog</a>{topics[0] && <> <span aria-hidden="true">›</span> <a href={`/blog/topic/${topics[0]}/`}>{topicBySlug[topics[0]].name}</a></>}</nav>
       <span class="clip-tag">{tag}</span>
       <h1>{title}</h1>
       <p class="post-dek">{description}</p>
@@ -99,6 +132,33 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': faqLd ? [posting, f
     {widget === 'do-i-need' && (
       <div class="post-widget" data-widget="do-i-need"><ChipPicker id="need" title="Do I need this?" sub="Tap the thing your neighbor bought. Get my verdict." items={NEEDS} groups={NEED_GROUPS} prompt="Tap something." /></div>
     )}
+    {widget === 'seed-waits' && (
+      <div class="post-widget" data-widget="seed-waits"><ChipPicker id="wait" title="How long until I can seed?" sub="Tap what you put down (or want to). Labels win, always." items={WAITS} prompt="Tap a product type." /></div>
+    )}
+    {widget === 'pre-post' && (
+      <div class="post-widget" data-widget="pre-post"><ChipPicker id="pp" title="Pre or post?" sub="Tap your situation." items={PREPOST} prompt="Tap one." /></div>
+    )}
+    {widget === 'third-rule' && (
+      <div class="post-widget" data-widget="third-rule"><ThirdRule /></div>
+    )}
+    {widget === 'mulch-bag' && (
+      <div class="post-widget" data-widget="mulch-bag"><ChipPicker id="mb" title="Mulch or bag today?" sub="Tap what today’s mow looks like." items={MULCHBAG} prompt="Tap one." /></div>
+    )}
+    {widget === 'party' && (
+      <div class="post-widget" data-widget="party"><PartyCountdown /></div>
+    )}
+    {widget === 'tuneup' && (
+      <div class="post-widget" data-widget="tuneup"><Checklist id="tuneup" title="The DIY tune-up" sub="Tick them off. Your progress saves on your phone." items={TUNEUP} storeKey="mit-tuneup" fine="Check your mower’s manual for oil type and amounts. Anything with a big repair bill (engine, transmission) goes to a shop." /></div>
+    )}
+    {widget === 'blade-check' && (
+      <div class="post-widget" data-widget="blade-check"><BladeCheck /></div>
+    )}
+    {widget === 'compliments' && (
+      <div class="post-widget" data-widget="compliments"><ChipPicker id="cmp" title="They said / you say" sub="Tap what they said. I’ve got your line." items={COMPLIMENTS} prompt="Tap one." /></div>
+    )}
+    {widget === 'training' && (
+      <div class="post-widget" data-widget="training"><ChipPicker id="train" title="The off-season program" sub="December through March. Tap a drill." items={TRAINING} prompt="Tap a drill." /></div>
+    )}
     {extra === 'soil-report' && (
       <div class="post-widget" data-widget="soil-report"><SoilReportCard /></div>
     )}
@@ -117,6 +177,16 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': faqLd ? [posting, f
       <nav class="post-topics" aria-label="More on these topics" data-pagefind-ignore>
         <span>More on:</span>
         {topics.map((t) => <a class="bf-chip" href={`/blog/topic/${t}/`}>{topicBySlug[t].name}</a>)}
+      </nav>
+    )}
+    {related.length > 0 && (
+      <nav class="related" aria-labelledby="related-h" data-pagefind-ignore>
+        <h2 id="related-h">Read these next</h2>
+        <ul class="clip-list">
+          {related.map((r) => (
+            <li><a class="clip" href={r.url}><span class="clip-tag">{r.tag}</span><span class="clip-title">{r.title}</span></a></li>
+          ))}
+        </ul>
       </nav>
     )}
     <BeerCallout />

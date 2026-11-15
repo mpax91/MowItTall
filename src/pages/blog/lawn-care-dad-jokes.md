@@ -2,6 +2,7 @@
 layout: ../../layouts/Post.astro
 title: "10 lawn dad jokes, ranked by how hard you’ll groan"
 description: "The worst lawn jokes I know, from mild groan to dad leaves the room. Robot mowers, overseeding, Father’s Day wishes and one very serious accusation."
+seoTitle: "10 Lawn Care Dad Jokes, Ranked by Groan"
 date: 2026-11-15
 minutes: 2
 tag: Rankings

@@ -1,0 +1,63 @@
+---
+// Party prep for the nitrogen/iron "PED" post: how many days out → what to do and when.
+const { id = 'party' } = Astro.props;
+const opts = [
+  { v: '14', t: '2+ weeks' }, { v: '7', t: '1 week' }, { v: '3', t: '3–6 days' }, { v: '1', t: '1–2 days' },
+];
+---
+<section class="window tool pc" id={id} aria-labelledby={`${id}-h`} data-party>
+  <h2 id={`${id}-h`}>The pre-party cycle</h2>
+  <p class="tool-sub">When’s the party? Here’s the program.</p>
+  <div class="mc-seg mc-seg-4" role="group" aria-label="Days until the party">
+    {opts.map((o, i) => <button type="button" data-pc={o.v} aria-pressed={i === 0 ? 'true' : 'false'}>{o.t}</button>)}
+  </div>
+  <div class="mc-verdict pc-out" aria-live="polite">
+    <span class="mc-word" data-tone="yes" data-pc-word>FULL CYCLE</span>
+    <p class="mc-line" data-pc-line></p>
+  </div>
+  <ol class="tr-steps pc-steps" data-pc-steps></ol>
+  <p class="tool-fine">Light doses only: about a quarter to half a pound of nitrogen per 1,000 sq ft. In a summer heat wave, skip the nitrogen and just use iron. Sweep every granule off the pavement.</p>
+</section>
+
+<script>
+  const PLANS: Record<string, { word: string; tone: string; line: string; steps: string[] }> = {
+    '14': { word: 'FULL CYCLE', tone: 'yes', line: 'You have time to do it right. This is the peak-week program.', steps: [
+      '10 to 14 days out: a light feeding of fast-acting nitrogen. Water it in.',
+      'Mow on your normal schedule. It’s going to grow. That’s the point.',
+      '3 to 5 days out: iron for the deep green.',
+      '1 to 2 days out: mow, edge, sharpen your stripes.',
+      'Party day: let people walk on it. That’s what it’s for.',
+    ] },
+    '7': { word: 'STILL TIME', tone: 'yes', line: 'Nitrogen today still shows up. Iron finishes the job.', steps: [
+      'Today: light fast-acting nitrogen, watered in.',
+      '3 to 4 days out: iron.',
+      '1 to 2 days out: mow and stripe.',
+    ] },
+    '3': { word: 'IRON ONLY', tone: 'close', line: 'Too late for nitrogen to do much. Iron greens up in days.', steps: [
+      'Today: iron. Liquid works fastest.',
+      'Day before: mow, edge, stripe.',
+      'Pick up the dog poop. Seriously.',
+    ] },
+    '1': { word: 'COSMETICS', tone: 'close', line: 'No drugs in time. Win on presentation.', steps: [
+      'Mow with a sharp blade. Clean stripes.',
+      'Edge the driveway and walk. Edges make a lawn look expensive.',
+      'Water the morning of so it’s fresh, not soggy.',
+      'Put the hose away. Hide the bags.',
+    ] },
+  };
+  document.querySelectorAll<HTMLElement>('[data-party]').forEach((root) => {
+    const btns = [...root.querySelectorAll<HTMLButtonElement>('[data-pc]')];
+    function show(k: string) {
+      const p = PLANS[k];
+      btns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.pc === k)));
+      const w = root.querySelector<HTMLElement>('[data-pc-word]')!;
+      w.textContent = p.word; w.dataset.tone = p.tone;
+      root.querySelector('[data-pc-line]')!.textContent = p.line;
+      const ol = root.querySelector('[data-pc-steps]')!;
+      ol.innerHTML = '';
+      p.steps.forEach((s) => { const li = document.createElement('li'); li.textContent = s; ol.appendChild(li); });
+    }
+    btns.forEach((b) => b.addEventListener('click', () => show(b.dataset.pc!)));
+    show('14');
+  });
+</script>

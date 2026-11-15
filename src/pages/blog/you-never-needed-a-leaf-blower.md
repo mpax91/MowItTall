@@ -2,6 +2,7 @@
 layout: ../../layouts/Post.astro
 title: "You never needed a leaf blower"
 description: "In Bedford, gas leaf blowers are banned and people still have feelings about it. Good news for your lawn: you can skip the blower and the rake."
+seoTitle: "You Don’t Need a Leaf Blower: Mulch Leaves"
 date: 2026-11-06
 minutes: 2
 tag: Bedford
