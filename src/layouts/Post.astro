@@ -6,6 +6,7 @@ import Playlist from '../components/Playlist.astro';
 import DadJokes from '../components/DadJokes.astro';
 import FeedSchedule from '../components/FeedSchedule.astro';
 import GrassPicker from '../components/GrassPicker.astro';
+import BagDecoder from '../components/BagDecoder.astro';
 const { frontmatter, url } = Astro.props;
 const { title, description, tag, widget, faq } = frontmatter;
 const date = (frontmatter.date instanceof Date ? frontmatter.date.toISOString() : String(frontmatter.date)).slice(0, 10);
@@ -48,6 +49,9 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': faqLd ? [posting, f
     )}
     {widget === 'playlist' && (
       <div class="post-widget" data-widget="playlist"><Playlist /></div>
+    )}
+    {widget === 'bag-decoder' && (
+      <div class="post-widget" data-widget="bag-decoder"><BagDecoder /></div>
     )}
     {widget === 'grass-picker' && (
       <div class="post-widget" data-widget="grass-picker"><GrassPicker id="gp-post" /></div>

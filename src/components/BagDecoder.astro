@@ -1,0 +1,135 @@
+---
+// "Bag decoder": type the three numbers and the bag weight, see what's really inside.
+// Reuses the workout calculator's panel styles (.mc, .mc-verdict, .mc-word, .mw-stats, .mw-inputs).
+const PRESETS = [
+  { label: 'Lawn food', n: 24, p: 0, k: 6 },
+  { label: 'Starter', n: 24, p: 25, k: 4 },
+  { label: 'Fall feed', n: 22, p: 0, k: 14 },
+  { label: 'Garden 10-10-10', n: 10, p: 10, k: 10 },
+  { label: 'Organic', n: 6, p: 2, k: 0 },
+];
+---
+<section class="window mc bd" aria-labelledby="bd-h" data-bag-decoder>
+  <h2 id="bd-h">The bag decoder</h2>
+  <p class="mc-sub">Type the three big numbers and the bag size. I’ll tell you what’s really in there.</p>
+
+  <div class="bd-npk" role="group" aria-label="The three numbers on the bag">
+    <label><input type="text" inputmode="decimal" value="24" data-bd="n" aria-label="First number, nitrogen" /><span>N</span></label>
+    <b aria-hidden="true">–</b>
+    <label><input type="text" inputmode="decimal" value="0" data-bd="p" aria-label="Second number, phosphate" /><span>P</span></label>
+    <b aria-hidden="true">–</b>
+    <label><input type="text" inputmode="decimal" value="6" data-bd="k" aria-label="Third number, potash" /><span>K</span></label>
+  </div>
+  <div class="bd-presets" aria-label="Examples">
+    {PRESETS.map((p) => <button type="button" data-bd-preset={`${p.n},${p.p},${p.k}`}>{p.label}</button>)}
+  </div>
+
+  <div class="mw-inputs">
+    <label><span>Bag size (lb)</span><input type="text" inputmode="decimal" value="50" data-bd="bag" /></label>
+    <label><span>Price ($, optional)</span><input type="text" inputmode="decimal" placeholder="45" data-bd="price" /></label>
+  </div>
+  <div class="mw-inputs bd-slow">
+    <label><span>Slow-release N on label (%, optional)</span><input type="text" inputmode="decimal" placeholder="e.g. 8" data-bd="slow" /></label>
+  </div>
+
+  <div class="mc-verdict bd-verdict" aria-live="polite">
+    <span class="mc-word" data-bd-word data-tone="yes">LAWN FOOD</span>
+    <p class="mc-line" data-bd-line></p>
+  </div>
+
+  <div class="mw-stats bd-stats" aria-live="polite">
+    <div><b data-bd-out="n">–</b><span>Nitrogen</span></div>
+    <div><b data-bd-out="p">–</b><span>Real P</span></div>
+    <div><b data-bd-out="k">–</b><span>Real K</span></div>
+    <div><b data-bd-out="rest">–</b><span>The rest</span></div>
+  </div>
+  <ul class="bd-facts" data-bd-facts></ul>
+  <p class="mw-fine">Coverage assumes about 1 lb of nitrogen per 1,000 sq ft, the most you want in one feeding. Your bag’s spreader settings win.</p>
+</section>
+
+<script>
+  const $num = (el: HTMLInputElement | null) => {
+    const v = parseFloat((el?.value || '').replace(/[^0-9.]/g, ''));
+    return Number.isFinite(v) ? v : NaN;
+  };
+  const lb = (x: number) => (x >= 10 ? Math.round(x).toString() : (Math.round(x * 10) / 10).toString()) + ' lb';
+  const comma = (x: number) => Math.round(x).toLocaleString();
+
+  document.querySelectorAll<HTMLElement>('[data-bag-decoder]').forEach((root) => {
+    const inp = (k: string) => root.querySelector<HTMLInputElement>(`[data-bd="${k}"]`);
+    const out = (k: string) => root.querySelector<HTMLElement>(`[data-bd-out="${k}"]`)!;
+    const word = root.querySelector<HTMLElement>('[data-bd-word]')!;
+    const line = root.querySelector<HTMLElement>('[data-bd-line]')!;
+    const facts = root.querySelector<HTMLElement>('[data-bd-facts]')!;
+
+    let yard = 0;
+    try { yard = Number(JSON.parse(localStorage.getItem('mit-yard') || 'null')?.total) || 0; } catch { /* private mode */ }
+
+    function verdict(n: number, p: number, k: number) {
+      if (n <= 0) return ['NOT LAWN FOOD', 'no', 'No nitrogen. Your grass wants the first number most of all.'];
+      if (p >= n * 0.75 && k >= n * 0.75) return ['GARDEN STUFF', 'close', 'Equal numbers are for tomatoes. Your lawn wants mostly nitrogen.'];
+      if (p >= n * 0.6) return ['STARTER', 'close', 'Big middle number. This is for new seed, not a lawn that’s already there.'];
+      if (n <= 10) return ['GENTLE', 'yes', 'Low numbers, usually organic. Slower and gentler. You’ll spread more of it.'];
+      if (k >= n * 0.5) return ['FALL FEED', 'yes', 'Extra potassium to toughen grass up for winter.'];
+      return ['LAWN FOOD', 'yes', 'Big first number, small middle, small last. This is what your lawn wants.'];
+    }
+
+    function update() {
+      const n = $num(inp('n')), p = $num(inp('p')), k = $num(inp('k')), bag = $num(inp('bag'));
+      const price = $num(inp('price')), slow = $num(inp('slow'));
+      root.querySelectorAll<HTMLButtonElement>('[data-bd-preset]').forEach((b) => {
+        b.setAttribute('aria-pressed', String(b.dataset.bdPreset === `${n},${p},${k}`));
+      });
+      if (![n, p, k, bag].every((x) => Number.isFinite(x)) || bag <= 0 || n + p + k > 100) {
+        word.textContent = 'HMM'; word.dataset.tone = 'close';
+        line.textContent = 'Check the numbers. All three together can’t be more than 100.';
+        ['n', 'p', 'k', 'rest'].forEach((x) => (out(x).textContent = '–'));
+        facts.innerHTML = '';
+        return;
+      }
+      const nLb = bag * n / 100, p2o5 = bag * p / 100, k2o = bag * k / 100;
+      const realP = p2o5 * 0.44, realK = k2o * 0.83;
+      const rest = bag - nLb - p2o5 - k2o;
+      out('n').textContent = lb(nLb);
+      out('p').textContent = lb(realP);
+      out('k').textContent = lb(realK);
+      out('rest').textContent = lb(rest);
+      const [w, tone, msg] = verdict(n, p, k);
+      word.textContent = w; word.dataset.tone = tone;
+      line.textContent = msg;
+
+      const list: string[] = [];
+      const pct = Math.round((rest / bag) * 100);
+      list.push(`<b>${pct}% of the bag</b> is the stuff that carries the nutrients so you can spread them evenly. Not a scam. Just physics.`);
+      if (nLb > 0) {
+        const cover = nLb * 1000;
+        let c = `<b>Covers about ${comma(cover)} sq ft</b> per feeding (${comma(nLb * 1000 / 0.75)} sq ft for a light one).`;
+        if (yard > 0) {
+          const r = Math.round((yard / cover) * 10) / 10;
+          const bags = r < 1 ? `about ${Math.max(10, Math.round((yard / cover) * 100))}% of a bag` : `about ${r} bag${r === 1 ? '' : 's'}`;
+          c += ` Your lawn is ${comma(yard)} sq ft, so that’s <b>${bags}</b> per feeding.`;
+        }
+        list.push(c);
+      }
+      if (p > 0) list.push(`The second number says ${p}%, but only ${Math.round(p * 0.44 * 10) / 10}% is real phosphorus. The rest is oxygen along for the ride.`);
+      if (Number.isFinite(slow) && slow > 0 && n > 0) {
+        const share = Math.min(100, Math.round((slow / n) * 100));
+        list.push(share >= 50
+          ? `<b>${share}% slow-release.</b> Over half, so it feeds for weeks instead of days. Good.`
+          : `<b>${share}% slow-release.</b> Mostly fast stuff: quick green, gone sooner. Don’t overdo it in the heat.`);
+      }
+      if (Number.isFinite(price) && price > 0 && nLb > 0) {
+        list.push(`<b>$${(price / nLb).toFixed(2)} per pound of nitrogen.</b> Use this to compare bags. The cheaper number wins if the slow-release is close.`);
+      }
+      facts.innerHTML = list.map((t) => `<li>${t}</li>`).join('');
+    }
+
+    root.querySelectorAll('input').forEach((i) => i.addEventListener('input', update));
+    root.querySelectorAll<HTMLButtonElement>('[data-bd-preset]').forEach((b) => b.addEventListener('click', () => {
+      const [n, p, k] = b.dataset.bdPreset!.split(',');
+      inp('n')!.value = n; inp('p')!.value = p; inp('k')!.value = k;
+      update();
+    }));
+    update();
+  });
+</script>
