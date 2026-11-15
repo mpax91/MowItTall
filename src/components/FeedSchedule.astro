@@ -14,7 +14,7 @@ const LEVELS = ['Couch Potato', 'Coffee & Cruise', 'Curb Appeal Hunter', 'Lawn P
 const SHORT = ['Couch Potato', 'Coffee & Cruise', 'Curb Appeal', 'Lawn Psycho'];
 ---
 <section class="window fs" aria-labelledby="fs-h" data-feed-schedule>
-  <h2 id="fs-h">Your holiday schedule</h2>
+  <h2 id="fs-h">Your Holiday Schedule</h2>
   <p class="fs-sub">How much effort are we talking?</p>
   <div class="mc-seg fs-seg" role="group" aria-label="Effort level">
     {SHORT.map((l, i) => <button type="button" data-fs-level={i} aria-pressed={i === 2 ? 'true' : 'false'} aria-label={LEVELS[i]}>{l}</button>)}

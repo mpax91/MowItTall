@@ -6,7 +6,7 @@ const opts = [
 ];
 ---
 <section class="window tool pc" id={id} aria-labelledby={`${id}-h`} data-party>
-  <h2 id={`${id}-h`}>The pre-party cycle</h2>
+  <h2 id={`${id}-h`}>The Pre-Party Cycle</h2>
   <p class="tool-sub">When’s the party? Here’s the program.</p>
   <div class="mc-seg mc-seg-4" role="group" aria-label="Days until the party">
     {opts.map((o, i) => <button type="button" data-pc={o.v} aria-pressed={i === 0 ? 'true' : 'false'}>{o.t}</button>)}

@@ -33,7 +33,7 @@ const others = TOPICS.filter((t) => t.slug !== topic.slug);
     </header>
     {posts.length ? <PostList posts={posts} /> : <p class="lede">Nothing here yet. Soon.</p>}
     <nav class="topic-more" aria-label="Other topics">
-      <h2>Other topics</h2>
+      <h2>Other Topics</h2>
       <div class="bf-chips">
         {others.map((t) => <a class="bf-chip" href={`/blog/topic/${t.slug}/`}>{t.name}</a>)}
       </div>

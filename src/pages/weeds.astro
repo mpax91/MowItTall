@@ -34,7 +34,7 @@ const groups = WEED_GROUPS.map((g) => ({ ...g, items: WEEDS.filter((w) => w.grou
 <Base title={title} description={description} path="/weeds/" jsonLd={jsonLd}>
   <main id="main" class="page">
     <header class="page-head">
-      <h1>The weed board</h1>
+      <h1>The Weed Board</h1>
       <p class="lede">The weeds you’ll actually see around Bedford and the rest of the Northeast. Swipe the photos to find the one that looks like yours, then tap it for the fix.</p>
       <nav class="weed-jump" aria-label="Weed types">
         {WEED_GROUPS.map((g) => <a class="weed-chip" href={`#group-${g.id}`}>{g.title}</a>)}
@@ -52,7 +52,7 @@ const groups = WEED_GROUPS.map((g) => ({ ...g, items: WEEDS.filter((w) => w.grou
       filling in where grass is thin. Always follow the product label.
     </p>
     <section class="weed-sec photo-credits" aria-labelledby="credits-h">
-      <h2 id="credits-h">Photo credits</h2>
+      <h2 id="credits-h">Photo Credits</h2>
       <p>All photos are used under free licenses, cropped and resized.</p>
       <ul>
         {WEEDS.map((w) => (

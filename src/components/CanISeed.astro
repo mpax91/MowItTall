@@ -4,7 +4,7 @@ import PlaceChip from './PlaceChip.astro';
 const { id = 'seed' } = Astro.props;
 ---
 <section class="window tool sn" id={id} aria-labelledby={`${id}-h`} data-seed-now>
-  <h2 id={`${id}-h`}>Can I seed now?</h2>
+  <h2 id={`${id}-h`}>Can I Seed Now?</h2>
   <div class="soil-where sn-where"><span>Checking</span> <PlaceChip id={`${id}-place`} /></div>
   <p class="soil-note" data-sn-note hidden></p>
   <div class="mc-verdict sn-out" aria-live="polite">

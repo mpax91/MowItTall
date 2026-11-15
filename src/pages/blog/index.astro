@@ -20,7 +20,7 @@ const description =
 <Base title={title} description={description} path="/blog/" jsonLd={jsonLd}>
   <main id="main" class="page">
     <header class="page-head">
-      <h1>The blog</h1>
+      <h1>The Blog</h1>
       <p class="lede">Lawn takes. Some hot, all short. If a post takes longer to read than it takes to mow your front yard, I failed.</p>
     </header>
 
@@ -46,7 +46,7 @@ const description =
     </div>
 
     <nav class="topic-index" aria-labelledby="topics-h">
-      <h2 id="topics-h">Browse by topic</h2>
+      <h2 id="topics-h">Browse by Topic</h2>
       <ul>
         {TOPICS.filter((t) => counts[t.slug]).map((t) => (
           <li><a href={`/blog/topic/${t.slug}/`}><b>{t.name}</b><span>{t.blurb}</span></a></li>

@@ -12,7 +12,7 @@ const lo = 25, hi = 85;
 const zonesJson = JSON.stringify(ZONES);
 ---
 <section class="lw" id="local" aria-labelledby="lw-h" data-lw data-zones={zonesJson}>
-  <h2 id="lw-h">Your lawn this week</h2>
+  <h2 id="lw-h">Your Lawn This Week</h2>
   <p class="section-lede">Live for your ZIP code.</p>
 
   <form class="lw-zip" data-lw-form novalidate>
@@ -137,7 +137,7 @@ const zonesJson = JSON.stringify(ZONES);
     const fallish = new Date().getMonth() >= 6;
     if (fallish) ZONES.forEach((z: any) => { if (z.fallName) { z.name = z.fallName; z.what = z.fallWhat; } });
     root.querySelectorAll<HTMLElement>('.lw-zone-name').forEach((el) => { const z = ZONES.find((x: any) => x.id === el.dataset.zone); if (z) el.textContent = z.name; });
-    const MONTHS = ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];   // short so the pill fits on one line
+    const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     const part = (d: number) => (d <= 10 ? 'early' : d <= 20 ? 'mid' : 'late');
     // approximate window, e.g. "Mid-October to late November" (windows shift with the weather, so no exact countdown)
     const approx = (t: any) => {
@@ -149,11 +149,12 @@ const zonesJson = JSON.stringify(ZONES);
     const snap = snapshot(TASKS.filter((t: any) => t.level <= 2), new Date());
     if (snap.now.length) {
       const first = snap.now[0];
-      $('[data-now-title]').textContent = first.t.title;
+      const SMALL = new Set(['a', 'an', 'the', 'and', 'or', 'of', 'to', 'in', 'on', 'at', 'by', 'for', 'up', 'as']);
+      $('[data-now-title]').textContent = first.t.title.split(' ').map((w: string, i: number, a: string[]) => (i && i < a.length - 1 && SMALL.has(w.toLowerCase()) ? w.toLowerCase() : w.charAt(0).toUpperCase() + w.slice(1))).join(' ');
       $('[data-now-days]').textContent = `Usually ${approx(first.t).replace(/^./, (c) => c.toLowerCase())}`;
       $('[data-now-why]').textContent = first.t.short;
     } else {
-      $('[data-now-title]').textContent = 'Nothing pressing right now';
+      $('[data-now-title]').textContent = 'Nothing Pressing Right Now';
       $('[data-now-days]').textContent = 'Enjoy the break';
       $('[data-now-why]').textContent = 'Your lawn is between jobs. Check back in a week or two.';
     }

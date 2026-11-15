@@ -7,12 +7,12 @@ const description = 'Know a lawn that needs help? Send your neighbor a free lawn
 <Base title={title} description={description} path="/neighbor/">
   <main id="main" class="page nb-page">
     <header class="page-head nb-head">
-      <h1>Send this to a neighbor</h1>
+      <h1>Send This to a Neighbor</h1>
       <p class="lede">Know a lawn that’s crying for help? Pick a message. Print it and tuck it in their door, or text it. They never have to know it was you.</p>
     </header>
 
     <section class="window tool nb" aria-labelledby="nb-h" data-neighbor>
-      <h2 id="nb-h" class="sr-only">Pick a message</h2>
+      <h2 id="nb-h" class="sr-only">Pick a Message</h2>
       <div class="cp-chips nb-picks" role="group" aria-label="Message">
         {NOTES.map((n, i) => <button type="button" class="cp-chip" data-nb={n.id} aria-pressed={i === 0 ? 'true' : 'false'}>{n.label}</button>)}
       </div>
@@ -40,7 +40,7 @@ const description = 'Know a lawn that needs help? Send your neighbor a free lawn
     </section>
 
     <section class="nb-rules">
-      <h2>The rules</h2>
+      <h2>The Rules</h2>
       <ul>
         <li>Be funny, not mean. The goal is a better lawn on your street, not a feud.</li>
         <li>One note per lawn per season. After that it’s harassment and also sad.</li>

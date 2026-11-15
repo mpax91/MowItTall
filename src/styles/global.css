@@ -2127,3 +2127,16 @@ main > section.gp { margin-left: 16px; margin-right: 16px; }
 .lw-flipcard:hover .lw-face, .lw-flipcard:active .lw-face { --fold: 38px; }
 .lw-tap, .lw-front .lw-tap { min-height: 14px; margin-top: auto; }
 @property --fold { syntax: '<length>'; inherits: true; initial-value: 30px; }
+/* "Tap" printed on the fold (Mike, Nov 15): bigger fold so the word fits in the triangle */
+.lw-face { --fold: 40px; }
+.lw-flipcard:hover .lw-face, .lw-flipcard:active .lw-face { --fold: 46px; }
+@property --fold { syntax: '<length>'; inherits: true; initial-value: 40px; }
+.lw-face::after {
+  content: 'Tap'; box-sizing: border-box; padding: 6px 0 0 5px;
+  font-family: var(--display); font-size: 0.66rem; font-weight: 800; line-height: 1; letter-spacing: 0.02em; text-align: left;
+  color: var(--ink);
+  background: linear-gradient(to top left, transparent 50%, #dfe9d5 50%, var(--paper) 100%);
+}
+.lw-back::after { color: var(--paper); background: linear-gradient(to top left, transparent 50%, #2f6e47 50%, #3a7d52 100%); }
+.lw-tap, .lw-front .lw-tap { min-height: 22px; }
+@media (max-width: 340px) { .lw-days { white-space: normal; } }
