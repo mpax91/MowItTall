@@ -2153,4 +2153,4 @@ main > section.gp { margin-left: 16px; margin-right: 16px; }
 .lw-thirst-zones span { flex-basis: 0; text-align: center; white-space: nowrap; }
 .lw-thirst-zones span:first-child { text-align: left; }
 .lw-thirst-zones span:last-child { text-align: right; }
-.lw-back .lw-back-take { font-weight: 700; }
+.lw-back .lw-bar.is-today b { color: #fff; background: #2f7fc0; border-radius: 4px; padding: 0 4px; }

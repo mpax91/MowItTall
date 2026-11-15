@@ -82,7 +82,7 @@ const zonesJson = JSON.stringify(ZONES);
     <article class="lw-flipcard lw-soil" data-flip data-lw-soil data-lo={lo} data-hi={hi} tabindex="0" role="button" aria-pressed="false" aria-label="Soil temperature. Tap for more.">
       <div class="lw-flip">
         <div class="lw-face lw-front">
-          <p class="lw-label">Soil</p>
+          <p class="lw-label">Soil Temperature</p>
           <p class="lw-answer"><span class="lw-temp" data-soil-value>…</span> <span class="lw-zone">
             {ZONES.map((z) => <span class="lw-zone-name" data-zone={z.id} data-min={z.min} data-max={z.max}>{z.name}</span>)}
           </span></p>
