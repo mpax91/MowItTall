@@ -9,6 +9,7 @@ import GrassPicker from '../components/GrassPicker.astro';
 import BagDecoder from '../components/BagDecoder.astro';
 import SoilTranslator from '../components/SoilTranslator.astro';
 import SoilReportCard from '../components/SoilReportCard.astro';
+import CritterCards from '../components/CritterCards.astro';
 const { frontmatter, url } = Astro.props;
 const { title, description, tag, widget, extra, faq } = frontmatter;
 const date = (frontmatter.date instanceof Date ? frontmatter.date.toISOString() : String(frontmatter.date)).slice(0, 10);
@@ -66,6 +67,9 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': faqLd ? [posting, f
     )}
     {widget === 'dad-jokes' && (
       <div class="post-widget" data-widget="dad-jokes"><DadJokes /></div>
+    )}
+    {widget === 'critters' && (
+      <div class="post-widget" data-widget="critters"><CritterCards /></div>
     )}
     {extra === 'soil-report' && (
       <div class="post-widget" data-widget="soil-report"><SoilReportCard /></div>

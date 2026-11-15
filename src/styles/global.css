@@ -1697,3 +1697,11 @@ main > section.gp { margin-left: 16px; margin-right: 16px; }
 .prose .sr-verdict ol, .sr-verdict ol { margin: 0; padding-left: 1.3em; }
 .prose .sr-verdict li, .sr-verdict li { margin: 6px 0; font-size: 0.95rem; line-height: 1.4; }
 .sr-verdict li b { color: var(--sun); }
+
+/* ---------- Critter suspect lineup (.crit; uses FlipCards) ---------- */
+.crit { padding: 18px 12px 14px; margin: 22px 0; }
+.prose .crit h2, .crit h2 { margin: 0 4px 2px; font-size: 1.5rem; letter-spacing: -0.02em; }
+.prose .crit-sub, .crit-sub { margin: 0 4px 12px; font-size: 0.95rem; color: #cfe3c6; }
+.prose .crit ul, .crit ul { padding-left: 0; margin: 0; }
+.prose .crit li::before { content: none; }
+.prose .crit .flip-back-row strong, .crit .flip-back-row strong { display: block; color: var(--leaf); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 2px; }
