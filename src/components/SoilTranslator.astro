@@ -1,4 +1,6 @@
 ---
+import { SAMPLE_SOIL } from '../data/sampleSoil.js';
+const example = JSON.stringify(SAMPLE_SOIL.translator);
 // "Soil test translator": enter pH and Low/OK/High ratings from a soil report, get a short game plan.
 // Reuses .mc panel styles (.mc-verdict, .mc-word, .mc-seg, .mc-group).
 const ROWS = [
@@ -8,9 +10,10 @@ const ROWS = [
   { id: 'om', label: 'Organic matter' },
 ];
 ---
-<section class="window mc st" aria-labelledby="st-h" data-soil-translator>
+<section class="window mc st" aria-labelledby="st-h" data-soil-translator data-example={example}>
   <h2 id="st-h">The soil test translator</h2>
   <p class="mc-sub">Got your report? Put in your pH and tap what it says for each one. I’ll tell you what to do.</p>
+  <button type="button" class="st-example" data-st-example>No report yet? Try my buddy’s</button>
 
   <div class="st-ph">
     <label for="st-ph">Your pH</label>
@@ -116,6 +119,15 @@ const ROWS = [
       update();
     }));
     phIn.addEventListener('input', update);
+    root.querySelector('[data-st-example]')?.addEventListener('click', () => {
+      const ex = JSON.parse(root.dataset.example || '{}');
+      phIn.value = ex.ph;
+      ['p', 'k', 'mg', 'om'].forEach((id) => {
+        ans[id] = ex[id];
+        root.querySelectorAll<HTMLButtonElement>(`[data-st="${id}"]`).forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.v === ex[id])));
+      });
+      update();
+    });
     update();
   });
 </script>

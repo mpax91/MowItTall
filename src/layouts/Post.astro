@@ -8,8 +8,9 @@ import FeedSchedule from '../components/FeedSchedule.astro';
 import GrassPicker from '../components/GrassPicker.astro';
 import BagDecoder from '../components/BagDecoder.astro';
 import SoilTranslator from '../components/SoilTranslator.astro';
+import SoilReportCard from '../components/SoilReportCard.astro';
 const { frontmatter, url } = Astro.props;
-const { title, description, tag, widget, faq } = frontmatter;
+const { title, description, tag, widget, extra, faq } = frontmatter;
 const date = (frontmatter.date instanceof Date ? frontmatter.date.toISOString() : String(frontmatter.date)).slice(0, 10);
 const minutes = frontmatter.minutes || 2;
 const pretty = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -66,13 +67,17 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': faqLd ? [posting, f
     {widget === 'dad-jokes' && (
       <div class="post-widget" data-widget="dad-jokes"><DadJokes /></div>
     )}
-    {widget && (
+    {extra === 'soil-report' && (
+      <div class="post-widget" data-widget="soil-report"><SoilReportCard /></div>
+    )}
+    {(widget || extra) && (
       <script is:inline>
-        // Move the post's interactive widget to the spot the post marks with data-widget-slot
+        // Move each widget into its slot: <div data-widget-slot="name"> if the post has one, else the plain <div data-widget-slot>
         (function () {
-          var w = document.querySelector('[data-widget]');
-          var slot = w && document.querySelector('[data-widget-slot]');
-          if (slot) slot.replaceWith(w);
+          document.querySelectorAll('[data-widget]').forEach(function (w) {
+            var slot = document.querySelector('[data-widget-slot="' + w.getAttribute('data-widget') + '"]') || document.querySelector('[data-widget-slot=""]');
+            if (slot) slot.replaceWith(w);
+          });
         })();
       </script>
     )}

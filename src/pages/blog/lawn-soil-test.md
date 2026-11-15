@@ -6,6 +6,7 @@ date: 2026-11-15
 minutes: 6
 tag: PSA
 widget: soil-translator
+extra: soil-report
 faq:
   - q: "How often should I test my lawn soil?"
     a: "Once when you’re starting out, so you know what you’re working with. After that, every 3 years or so is plenty for most lawns. If you’re adding lime to fix low pH, test again about a year later to see if it worked."
@@ -78,6 +79,16 @@ Some reports also list a **buffer pH.** That’s how stubborn your soil is about
 **And the nitrogen number?** Mostly ignore it. Nitrogen moves around and changes week to week. Your lawn needs it every year no matter what the test says. That’s what the [holiday schedule](/blog/holiday-lawn-fertilizer-schedule/) is for.
 
 **One more thing:** results come in parts per million (ppm) or pounds per acre, and every lab uses its own ranges. Compare your numbers to **your** lab’s “optimal” range, not something you saw on a forum.
+
+## A real report, decoded
+
+Enough theory. A buddy of mine let me share his report. I scrubbed his name and address and redrew it so it’s easier to read. He’s being a good sport about it. Mostly.
+
+<div data-widget-slot="soil-report"></div>
+
+See the pattern? Almost everything is “overachiever” except the pH. That’s super common around here. The soil isn’t starving. It’s locked. He doesn’t need a cart full of products. He needs lime and some patience.
+
+Want to see what the translator says about it? Scroll back up and tap **“Try my buddy’s.”**
 
 ## What to do about it
 
