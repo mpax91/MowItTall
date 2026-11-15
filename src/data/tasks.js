@@ -112,9 +112,9 @@ export const TASKS = [
   },
   {
     id: 'leaves',
-    title: 'Mow over your leaves',
-    short: 'No raking, no blower. Chopped leaves feed the lawn for free.',
-    why: 'Mow when they’re dry, a few times through fall. Rake only if they pile up deep.',
+    title: 'Stay on top of fallen leaves',
+    short: 'A thick layer of leaves blocks sunlight and traps moisture, which can smother the grass and invite snow mold.',
+    why: 'Light layer? Mow over it and the chopped bits feed the lawn. Piling up? Rake or blow them off. Aim to see grass, not leaves.',
     start: [10, 15], end: [11, 30], level: 0, minutes: 0,
   },
   {

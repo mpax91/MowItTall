@@ -42,10 +42,10 @@ const zonesJson = JSON.stringify(ZONES);
 
   <div class="lw-grid">
     <article class="lw-card lw-todo">
-      <p class="lw-label">Do it now</p>
+      <p class="lw-label">What to focus on now</p>
       <h3 class="lw-big" data-now-title>…</h3>
       <p class="lw-pills"><span class="lw-days" data-now-days></span><span class="lw-more-n" data-now-more hidden></span></p>
-      <p class="lw-next" data-next><span>Next:</span> <b data-next-title></b> <span data-next-when></span></p>
+      <p class="lw-why" data-now-why></p>
       <button type="button" class="lw-detail" data-open="todo">More Details</button>
     </article>
 
@@ -125,21 +125,28 @@ const zonesJson = JSON.stringify(ZONES);
       msg.textContent = r.error || '';
     });
 
-    /* ---------------- Do it now */
+    /* ---------------- What to focus on now (recomputed from today's date on every visit, so it moves on by itself) */
+    const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const part = (d: number) => (d <= 10 ? 'early' : d <= 20 ? 'mid' : 'late');
+    // approximate window, e.g. "Mid-October to late November" (windows shift with the weather, so no exact countdown)
+    const approx = (t: any) => {
+      const [sm, sd] = t.start, [em, ed] = t.end;
+      if (sm === em) return sd <= 3 && ed >= 28 ? `All of ${MONTHS[sm - 1]}` : `${part(sd)} to ${part(ed)} ${MONTHS[sm - 1]}`.replace(/^./, (c) => c.toUpperCase());
+      const a = `${part(sd)}-${MONTHS[sm - 1]}`.replace(/^./, (c) => c.toUpperCase()).replace('Early-', 'Early ').replace('Late-', 'Late ');
+      return `${a} to ${part(ed)} ${MONTHS[em - 1]}`;
+    };
     const snap = snapshot(TASKS.filter((t: any) => t.level <= 2), new Date());
     if (snap.now.length) {
       const first = snap.now[0];
       $('[data-now-title]').textContent = first.t.title;
-      $('[data-now-days]').textContent = `${plural(first.s.daysLeft, 'day')} left`;
+      $('[data-now-days]').textContent = `Usually ${approx(first.t).replace(/^./, (c) => c.toLowerCase())}`;
+      $('[data-now-why]').textContent = first.t.short;
       if (snap.now.length > 1) { $('[data-now-more]').hidden = false; $('[data-now-more]').textContent = `+${snap.now.length - 1} more`; }
     } else {
-      $('[data-now-title]').textContent = 'Nothing. Enjoy it.';
-      $('[data-now-days]').textContent = 'Lawn’s between jobs';
+      $('[data-now-title]').textContent = 'Nothing pressing right now';
+      $('[data-now-days]').textContent = 'Enjoy the break';
+      $('[data-now-why]').textContent = 'Your lawn is between jobs. Check back in a week or two.';
     }
-    if (snap.next) {
-      $('[data-next-title]').textContent = snap.next.t.title;
-      $('[data-next-when]').textContent = `· ${fmt(snap.next.t.start)}`;
-    } else $('[data-next]').hidden = true;
 
     /* ---------------- Water */
     const water = $('[data-lw-water]');
@@ -184,11 +191,10 @@ const zonesJson = JSON.stringify(ZONES);
 
     const BODY: Record<string, () => [string, string]> = {
       todo: () => {
-        const now = snap.now.map(({ t, s }: any) => `
-          <div class="lw-dlg-item"><p class="lw-dlg-k">${plural(s.daysLeft, 'day')} left · through ${fmt(t.end)}</p><h4>${esc(t.title)}</h4><p>${esc(t.short)}</p><p class="lw-dlg-why">${esc(t.why)}</p></div>`).join('');
-        const next = snap.next ? `
-          <div class="lw-dlg-item is-next"><p class="lw-dlg-k">Next up · starts ${fmt(snap.next.t.start)} (in ${plural(snap.next.s.days, 'day')})</p><h4>${esc(snap.next.t.title)}</h4><p>${esc(snap.next.t.short)}</p></div>` : '';
-        return ['Your lawn to-do list', `${now || '<p>Nothing on the list right now. Enjoy it.</p>'}${next}
+        const now = snap.now.map(({ t }: any) => `
+          <div class="lw-dlg-item"><p class="lw-dlg-k">Usually ${approx(t).replace(/^./, (c: string) => c.toLowerCase())}</p><h4>${esc(t.title)}</h4><p>${esc(t.short)}</p><p class="lw-dlg-why">${esc(t.why)}</p></div>`).join('');
+        return ['What to focus on now', `${now || '<p>Nothing pressing right now. Enjoy the break.</p>'}
+          <p class="lw-dlg-why">Timing is typical for Westchester and the Lower Hudson Valley. Weather shifts it a week or two either way.</p>
           <p class="lw-dlg-links"><a href="#cal-h">See the whole year</a><a href="/plan/">Get a plan for your yard</a></p>`];
       },
       water: () => {
