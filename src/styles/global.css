@@ -1898,3 +1898,19 @@ main > section.gp { margin-left: 16px; margin-right: 16px; }
 .hero2 .hero-after .hero-cta { margin-bottom: 0; }
 @media (min-width: 700px) { .mow-box { max-width: 460px; margin-inline: auto; } .hero2 h1 { font-size: 2.6rem; margin-bottom: 20px; } }
 @media (max-width: 340px) { .top-cta { padding-inline: 10px; font-size: 0.92rem; } .top-right { gap: 6px; } }
+
+/* Nov 15: never wrap the wordmark ("Mow it" broke onto 2 lines on a 360px Galaxy S24) */
+.wordmark { white-space: nowrap; flex: none; }
+@media (max-width: 400px) {
+  .wordmark { font-size: clamp(1.45rem, 7.2vw, 1.9rem); }
+  .top-bar { gap: 8px; }
+  .top-right { gap: 8px; }
+  .top-cta { padding-inline: 12px; }
+}
+/* hero game stats: label on line 1, value on line 2 */
+.mow-stats { align-items: flex-start; line-height: 1.2; }
+.mow-stats > span { display: flex; flex-direction: column; gap: 1px; }
+.mow-stats > span:nth-child(2) { align-items: center; text-align: center; }
+.mow-stats > span:last-child { align-items: flex-end; text-align: right; }
+.mow-stats b { margin-left: 0; font-size: 1.05rem; }
+.mow-stat-v { white-space: nowrap; }
