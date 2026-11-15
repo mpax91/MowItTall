@@ -2070,3 +2070,5 @@ main > section.gp { margin-left: 16px; margin-right: 16px; }
 .hero2 { padding-bottom: 8px; }
 .lw-why { font-size: 0.93rem; line-height: 1.4; color: var(--paper-dim); }
 .lw-days { background: rgba(159, 211, 106, 0.18); color: var(--leaf); border: 1px solid rgba(159, 211, 106, 0.5); }
+/* card titles wrap normally (balance split "Stay on top of / fallen leaves" mid-card on phones) */
+.lw-card .lw-big { text-wrap: wrap; }

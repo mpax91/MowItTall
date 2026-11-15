@@ -44,9 +44,8 @@ const zonesJson = JSON.stringify(ZONES);
     <article class="lw-card lw-todo">
       <p class="lw-label">What to focus on now</p>
       <h3 class="lw-big" data-now-title>…</h3>
-      <p class="lw-pills"><span class="lw-days" data-now-days></span><span class="lw-more-n" data-now-more hidden></span></p>
+      <p class="lw-pills"><span class="lw-days" data-now-days></span></p>
       <p class="lw-why" data-now-why></p>
-      <button type="button" class="lw-detail" data-open="todo">More Details</button>
     </article>
 
     <article class="lw-card lw-water" data-lw-water>
@@ -141,7 +140,6 @@ const zonesJson = JSON.stringify(ZONES);
       $('[data-now-title]').textContent = first.t.title;
       $('[data-now-days]').textContent = `Usually ${approx(first.t).replace(/^./, (c) => c.toLowerCase())}`;
       $('[data-now-why]').textContent = first.t.short;
-      if (snap.now.length > 1) { $('[data-now-more]').hidden = false; $('[data-now-more]').textContent = `+${snap.now.length - 1} more`; }
     } else {
       $('[data-now-title]').textContent = 'Nothing pressing right now';
       $('[data-now-days]').textContent = 'Enjoy the break';
@@ -190,13 +188,6 @@ const zonesJson = JSON.stringify(ZONES);
     });
 
     const BODY: Record<string, () => [string, string]> = {
-      todo: () => {
-        const now = snap.now.map(({ t }: any) => `
-          <div class="lw-dlg-item"><p class="lw-dlg-k">Usually ${approx(t).replace(/^./, (c: string) => c.toLowerCase())}</p><h4>${esc(t.title)}</h4><p>${esc(t.short)}</p><p class="lw-dlg-why">${esc(t.why)}</p></div>`).join('');
-        return ['What to focus on now', `${now || '<p>Nothing pressing right now. Enjoy the break.</p>'}
-          <p class="lw-dlg-why">Timing is typical for Westchester and the Lower Hudson Valley. Weather shifts it a week or two either way.</p>
-          <p class="lw-dlg-links"><a href="#cal-h">See the whole year</a><a href="/plan/">Get a plan for your yard</a></p>`];
-      },
       water: () => {
         if (!wv) return ['Should I water?', '<p>Couldn’t reach the weather data right now. Rule of thumb: about an inch a week, rain included, early in the morning.</p><p class="lw-dlg-links"><a href="/resources/#water-h">Open the rain meter</a></p>'];
         const peak = Math.max(0.5, ...wdays.map((d: any) => d.rain));
