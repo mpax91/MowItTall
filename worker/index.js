@@ -27,6 +27,9 @@ async function init(db) {
           post_id TEXT NOT NULL, device TEXT NOT NULL, value INTEGER NOT NULL, at INTEGER NOT NULL,
           PRIMARY KEY (post_id, device))`),
         db.prepare(`CREATE INDEX IF NOT EXISTS posts_board ON posts (board, status)`),
+        // dashboard: when each piece of social copy was last posted, per platform
+        db.prepare(`CREATE TABLE IF NOT EXISTS social_log (
+          id INTEGER PRIMARY KEY AUTOINCREMENT, item TEXT NOT NULL, platform TEXT NOT NULL, at INTEGER NOT NULL)`),
       ]);
       const now = Date.now();
       await db.batch(SEED.map(([id, board, caption, name, town, url, w, h], i) =>
@@ -155,6 +158,45 @@ async function admin(env, req, url) {
   return json({ ok: true });
 }
 
+/* ---------- admin dashboard (/admin/) */
+const PLATFORMS = ['instagram', 'facebook', 'nextdoor', 'x'];
+async function dash(env, req, url) {
+  if (!env.ADMIN_KEY) return bad('Set the ADMIN_KEY secret in Cloudflare first.', 503);
+  const key = req.headers.get('x-admin-key') || url.searchParams.get('key');
+  if (!isAdmin(env, key)) return bad('Wrong key.', 401);
+  const p = url.pathname;
+  if (p === '/api/admin/overview') {
+    const week = Date.now() - 7 * 86400000;
+    const [posts, votes, uploads, posted] = await env.DB.batch([
+      env.DB.prepare('SELECT status, board, COUNT(*) n FROM posts GROUP BY status, board'),
+      env.DB.prepare('SELECT COUNT(*) n, COUNT(DISTINCT device) voters FROM votes'),
+      env.DB.prepare('SELECT COUNT(*) n FROM posts WHERE created > ? AND device IS NOT NULL').bind(week),
+      env.DB.prepare('SELECT COUNT(*) n FROM social_log WHERE at > ?').bind(week),
+    ]);
+    return json({
+      photos: posts.results, votes: votes.results[0], uploadsThisWeek: uploads.results[0].n, postedThisWeek: posted.results[0].n,
+      // which outside services are hooked up (secrets set in the Cloudflare dashboard)
+      connected: {
+        gsc: !!env.GSC_SERVICE_ACCOUNT, ga4: !!(env.GA4_PROPERTY_ID && env.GSC_SERVICE_ACCOUNT), bing: !!env.BING_API_KEY,
+        stripe: !!env.STRIPE_KEY, email: !!env.EMAIL_API_KEY,
+      },
+    });
+  }
+  if (p === '/api/admin/social' && req.method === 'GET') {
+    const { results } = await env.DB.prepare('SELECT id, item, platform, at FROM social_log ORDER BY at DESC LIMIT 2000').all();
+    return json({ log: results });
+  }
+  if (p === '/api/admin/social' && req.method === 'POST') {
+    const { item, platform, action, id } = await req.json().catch(() => ({}));
+    if (action === 'undo') { await env.DB.prepare('DELETE FROM social_log WHERE id = ?').bind(Number(id)).run(); return json({ ok: true }); }
+    if (!PLATFORMS.includes(platform) || typeof item !== 'string' || !item || item.length > 120) return bad('Bad item.');
+    const at = Date.now();
+    const r = await env.DB.prepare('INSERT INTO social_log (item, platform, at) VALUES (?, ?, ?)').bind(item, platform, at).run();
+    return json({ ok: true, id: r.meta.last_row_id, at });
+  }
+  return bad('Not found.', 404);
+}
+
 export default {
   async fetch(req, env) {
     const url = new URL(req.url);
@@ -167,6 +209,7 @@ export default {
       if (p === '/api/hall/submit' && req.method === 'POST') return await submit(env, req);
       if (p.startsWith('/api/hall/img/') && req.method === 'GET') return await image(env, p.split('/').pop(), url);
       if (p === '/api/hall/admin') return await admin(env, req, url);
+      if (p.startsWith('/api/admin/')) return await dash(env, req, url);
       return bad('Not found.', 404);
     } catch (e) {
       return json({ error: 'Something broke on our end. Try again in a minute.' }, 500);

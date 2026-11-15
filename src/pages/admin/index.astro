@@ -1,0 +1,350 @@
+---
+// Mow It Tall HQ: Mike's private dashboard. The page is static; everything private comes from /api/admin/*
+// and /api/hall/admin with the ADMIN_KEY secret. Tabs: This week, Social, Photos, SEO & traffic, Tips & payments, Members & email.
+import Base from '../../layouts/Base.astro';
+import { allPosts } from '../../data/posts.js';
+import { SOCIAL, BASE_TAGS, TOPIC_TAGS } from '../../data/social.js';
+
+const posts = allPosts(import.meta.glob('../blog/[a-z]*.md', { eager: true }));
+const items = [
+  ...posts.map((p: any) => {
+    const slug = p.url.replace(/\/$/, '').split('/').pop();
+    const s: any = (SOCIAL as any)[slug] || {};
+    return {
+      id: slug, kind: 'post', title: p.title, path: `/blog/${slug}/`, date: p.date, topics: p.topics || [],
+      hook: s.hook || p.title, take: s.take || p.description, photo: s.photo || '', months: s.months || [],
+      nd: s.nd === null ? null : s.nd || '', needsCopy: !s.hook,
+    };
+  }),
+  ...Object.entries(SOCIAL).filter(([k]) => k.startsWith('tool-')).map(([id, s]: any) => ({
+    id, kind: 'tool', title: s.title, path: s.path, date: null, topics: [], hook: s.hook, take: s.take,
+    photo: s.photo || '', months: s.months || [], nd: s.nd === null ? null : s.nd || '', needsCopy: false,
+  })),
+];
+const data = JSON.stringify({ items, baseTags: BASE_TAGS, topicTags: TOPIC_TAGS });
+const TABS = [
+  ['week', 'This Week'], ['social', 'Social'], ['photos', 'Photos'], ['seo', 'SEO & Traffic'], ['money', 'Tips & Payments'], ['members', 'Members & Email'],
+];
+---
+<Base title="HQ | Mow It Tall" description="Mow It Tall dashboard" path="/admin/">
+  <main id="main" class="page dash" data-dash data-items={data}>
+    <header class="page-head">
+      <h1>Mow It Tall HQ</h1>
+      <p class="lede">Your weekly stop: approve photos, grab this week’s posts, and check how the site’s doing.</p>
+    </header>
+
+    <form class="window tool ha-key" data-key-form>
+      <label class="hall-field"><span>Admin key</span><input type="password" autocomplete="current-password" data-key /></label>
+      <button type="submit" class="btn btn-small">Log In</button>
+      <p class="hall-status" data-msg role="status"></p>
+    </form>
+
+    <div data-app hidden>
+      <nav class="dash-tabs" aria-label="Dashboard sections">
+        {TABS.map(([id, t]) => <button type="button" class="cp-chip" data-tab={id} aria-pressed="false">{t} <span data-badge={id}></span></button>)}
+      </nav>
+
+      <!-- ===== This week ===== -->
+      <section class="dash-panel" data-panel="week" hidden>
+        <div class="dash-tiles">
+          <div><b data-stat="pending">–</b><span>Photos waiting</span></div>
+          <div><b data-stat="live">–</b><span>Photos live</span></div>
+          <div><b data-stat="votes">–</b><span>Votes cast</span></div>
+          <div><b data-stat="posted">–</b><span>Posts this week</span></div>
+        </div>
+        <h2 class="dash-h">This week’s checklist</h2>
+        <ol class="dash-check" data-check></ol>
+        <p class="dash-fine">Tip: do this every Monday morning. Approve photos, copy this week’s posts into your scheduler, mark them posted.</p>
+      </section>
+
+      <!-- ===== Social ===== -->
+      <section class="dash-panel" data-panel="social" hidden>
+        <div class="dash-plat" role="group" aria-label="Platform">
+          <button type="button" class="hall-tab" data-plat="instagram" aria-selected="true">Instagram</button>
+          <button type="button" class="hall-tab" data-plat="facebook" aria-selected="false">Facebook</button>
+          <button type="button" class="hall-tab" data-plat="nextdoor" aria-selected="false">Nextdoor</button>
+          <button type="button" class="hall-tab" data-plat="x" aria-selected="false">X / Threads</button>
+        </div>
+        <p class="dash-note" data-plat-note></p>
+        <h2 class="dash-h">This week’s queue</h2>
+        <ol class="dash-queue" data-queue></ol>
+        <details class="dash-more">
+          <summary>All content <span data-all-count></span></summary>
+          <input type="search" class="dash-search" placeholder="Search posts and tools" data-search />
+          <ol class="dash-queue" data-all></ol>
+        </details>
+        <details class="dash-more">
+          <summary>Recently posted</summary>
+          <ol class="dash-log" data-log></ol>
+        </details>
+        <details class="dash-more">
+          <summary>Link settings</summary>
+          <label class="hall-field"><span>Site address used in links</span><input type="url" data-base /></label>
+          <p class="dash-fine">Uses the preview address until launch. Switch it to https://mowittall.com when the domain is live. Links include tags (utm) so Google Analytics can tell which platform sent the visit.</p>
+        </details>
+      </section>
+
+      <!-- ===== Photos ===== -->
+      <section class="dash-panel" data-panel="photos" hidden>
+        <div class="hall-sort" role="group" aria-label="Show">
+          <button type="button" class="cp-chip" data-status="pending" aria-pressed="true">Waiting <span data-n="pending"></span></button>
+          <button type="button" class="cp-chip" data-status="approved" aria-pressed="false">Live <span data-n="approved"></span></button>
+          <button type="button" class="cp-chip" data-status="rejected" aria-pressed="false">Rejected <span data-n="rejected"></span></button>
+        </div>
+        <ol class="hall-feed" data-photos></ol>
+        <p class="dash-fine"><a href="/hall/">See the public Hall</a></p>
+      </section>
+
+      <!-- ===== SEO & traffic ===== -->
+      <section class="dash-panel" data-panel="seo" hidden>
+        <p class="dash-note">These light up at launch, once the site is on mowittall.com and open to search engines. The panels are ready; each one needs a one-time connection.</p>
+        <div class="dash-cards">
+          <article class="dash-card">
+            <h3>Google Search Console <span class="dash-pill" data-conn="gsc">Not connected</span></h3>
+            <p><b>Will show:</b> searches you rank for, your position, clicks and impressions, top pages, and which posts are climbing or slipping.</p>
+            <ol><li>Buy the domain and remove the “hide from search” settings (launch checklist).</li><li>Add mowittall.com in Search Console and verify it (Cloudflare does this in a click).</li><li>Create a Google Cloud service account, add its email as a user in Search Console, and save its key in Cloudflare as <code>GSC_SERVICE_ACCOUNT</code>.</li></ol>
+          </article>
+          <article class="dash-card">
+            <h3>Google Analytics <span class="dash-pill" data-conn="ga4">Not connected</span></h3>
+            <p><b>Will show:</b> visitors, entry pages, where people come from (including which social platform), quiz starts vs. finished plans (your conversion rate), calendar downloads and Hall uploads.</p>
+            <ol><li>Create a GA4 property and send me the Measurement ID (G-…). I add it to the site with the conversion events.</li><li>Add the same service account to GA4 as a Viewer and save the property ID in Cloudflare as <code>GA4_PROPERTY_ID</code>.</li></ol>
+          </article>
+          <article class="dash-card">
+            <h3>Bing Webmaster Tools <span class="dash-pill" data-conn="bing">Not connected</span></h3>
+            <p><b>Will show:</b> Bing and DuckDuckGo searches, clicks and crawl problems. Bing also feeds some AI search tools.</p>
+            <ol><li>Import the site from Search Console (one click).</li><li>Create an API key in Bing’s settings and save it in Cloudflare as <code>BING_API_KEY</code>.</li></ol>
+          </article>
+        </div>
+      </section>
+
+      <!-- ===== Tips & payments ===== -->
+      <section class="dash-panel" data-panel="money" hidden>
+        <p class="dash-note">“Buy me a beer” tips now, merch later. I recommend Stripe: no monthly fee, you pay a small cut per payment, and tips work without any code.</p>
+        <div class="dash-cards">
+          <article class="dash-card">
+            <h3>Stripe <span class="dash-pill" data-conn="stripe">Not connected</span></h3>
+            <p><b>Will show:</b> tips and payments this week and all-time, each payment with the note people leave, refunds, and payouts to your bank.</p>
+            <ol><li>Create a Stripe account (as yourself or a business).</li><li>Make a Payment Link for tips (“Buy Mike a beer”, customer chooses the amount) and send me the link. I put it in every “Buy me a beer” box on the site.</li><li>Create a restricted, read-only API key and save it in Cloudflare as <code>STRIPE_KEY</code>. The dashboard can see payments; it can’t move money.</li></ol>
+          </article>
+          <article class="dash-card">
+            <h3>Later: merch and paid stuff</h3>
+            <p>Merch, a paid course or a premium plan can all run through the same Stripe account, and show up here.</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ===== Members & email ===== -->
+      <section class="dash-panel" data-panel="members" hidden>
+        <p class="dash-note">For when you’re ready to go live with email. The plan is in the project notes (accounts, CRM and email plan); here’s the order I’d build it.</p>
+        <div class="dash-cards">
+          <article class="dash-card"><h3>1. Email sign-ups + reminders</h3><p>“Email me my plan and reminders” on the quiz results. Holiday feeding, crabgrass and seeding reminders go out automatically. Members list here with sign-up date, ZIP and opt-in status. Needs an email service (you pick) and a mailing address for the footer.</p></article>
+          <article class="dash-card"><h3>2. Accounts</h3><p>Sign in with a magic link (no passwords). Saves their plan, yard map, done list and progress photos. Here: member list, search, delete an account.</p></article>
+          <article class="dash-card"><h3>3. Newsletters and courses</h3><p>Write a newsletter here, preview it, send it to everyone or a group (by town, effort level, grass type). Drip courses (like a 6-week “first lawn” email course) run on their own.</p></article>
+          <article class="dash-card"><h3>4. Alerts</h3><p>Weekly “water or skip”, “soil hit 55°F: crabgrass preventer this weekend”, “Labor Day is Monday: feed”. Built from the tools the site already has.</p></article>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const root = document.querySelector<HTMLElement>('[data-dash]');
+    if (root) {
+      const $ = <T extends Element = HTMLElement>(s: string) => root.querySelector<T>(s)!;
+      const D = JSON.parse(root.dataset.items!);
+      const esc = (s: string) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+      let key = ''; try { key = localStorage.getItem('mit-admin') || ''; } catch {}
+      const api = async (path: string, opts: RequestInit = {}) => {
+        const r = await fetch(path, { ...opts, headers: { 'x-admin-key': key, 'content-type': 'application/json', ...(opts.headers || {}) } });
+        const j = await r.json().catch(() => ({ error: 'Something broke.' }));
+        if (!r.ok) throw Object.assign(new Error(j.error), { status: r.status });
+        return j;
+      };
+      const DAY = 86400000, WEEK = 7 * DAY;
+      const ago = (t: number) => { const d = Math.floor((Date.now() - t) / DAY); return d < 1 ? 'today' : d === 1 ? 'yesterday' : d < 14 ? `${d} days ago` : `${Math.round(d / 7)} weeks ago`; };
+
+      /* ---------- tabs */
+      let tab = (location.hash.slice(1) || 'week');
+      function show(t: string) {
+        tab = root!.querySelector(`[data-panel="${t}"]`) ? t : 'week';
+        root!.querySelectorAll<HTMLElement>('[data-panel]').forEach((p) => (p.hidden = p.dataset.panel !== tab));
+        root!.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tab === tab)));
+        history.replaceState(null, '', `#${tab}`);
+        if (tab === 'photos') loadPhotos();
+        if (tab === 'social') renderSocial();
+      }
+      root.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((b) => b.addEventListener('click', () => show(b.dataset.tab!)));
+
+      /* ---------- social */
+      let plat = 'instagram', log: any[] = [];
+      let base = ''; try { base = localStorage.getItem('mit-dash-base') || ''; } catch {}
+      if (!base) base = location.origin;
+      $<HTMLInputElement>('[data-base]').value = base;
+      $<HTMLInputElement>('[data-base]').addEventListener('change', (e) => { base = (e.target as HTMLInputElement).value.replace(/\/$/, '') || location.origin; try { localStorage.setItem('mit-dash-base', base); } catch {} renderSocial(); });
+      const NOTES: Record<string, string> = {
+        instagram: 'Post a photo or short video with the caption. Links don’t work in captions, so put the link in your bio.',
+        facebook: 'Page post with the link. Facebook pulls in the preview card automatically.',
+        nextdoor: 'Keep it neighborly: a tip first, the link second. Nextdoor frowns on ads in the main feed.',
+        x: 'Short version for X and Threads. Same text works on both.',
+      };
+      // link with utm tags so Google Analytics can tell which platform sent the visit
+      const link = (it: any, src: string) => {
+        const [path, hash] = it.path.split('#');
+        return `${base}${path}${path.includes('?') ? '&' : '?'}utm_source=${src}&utm_medium=social&utm_campaign=weekly${hash ? `#${hash}` : ''}`;
+      };
+      function copyFor(it: any, p: string) {
+        if (p === 'instagram') {
+          const tags = [...new Set([...D.baseTags, ...it.topics.flatMap((t: string) => D.topicTags[t] || [])])].slice(0, 8).join(' ');
+          return `${it.hook}\n\n${it.take}\n\nLink in bio.\n\n${tags}`;
+        }
+        if (p === 'facebook') return `${it.hook}\n\n${it.take}\n\n${link(it, 'facebook')}`;
+        if (p === 'nextdoor') return `Hi neighbors! ${it.nd || `${it.hook} ${it.take}`}\n\nI wrote it all up here, free, no sign-up: ${link(it, 'nextdoor')}`;
+        const short = `${it.hook} ${link(it, 'x')}`;
+        return short;
+      }
+      const lastFor = (id: string, p: string) => log.find((l) => l.item === id && l.platform === p);
+      function rankItems(p: string) {
+        const m = new Date().getMonth() + 1, now = Date.now();
+        return D.items
+          .filter((it: any) => !(p === 'nextdoor' && it.nd === null))
+          .map((it: any) => {
+            const last = lastFor(it.id, p);
+            const fresh = it.date && now - new Date(it.date).getTime() < 14 * DAY;
+            const inSeason = it.months.includes(m);
+            let score = last ? Math.min(52, (now - last.at) / WEEK) * 10 : 1000;
+            if (last && now - last.at < 8 * WEEK) score -= 2000;          // posted in the last 8 weeks: rest it
+            if (inSeason) score += 300;
+            if (fresh) score += 200;
+            if (it.months.length && !inSeason) score -= 150;                 // seasonal, but not now
+            return { it, last, score, inSeason, fresh };
+          })
+          .sort((a: any, b: any) => b.score - a.score);
+      }
+      function card(r: any) {
+        const it = r.it, text = copyFor(it, plat);
+        const chips = [r.fresh && 'New', r.inSeason && 'In season', it.needsCopy && 'Needs copy'].filter(Boolean).map((c) => `<span class="dash-pill">${c}</span>`).join('');
+        return `<li class="dash-item" data-item="${it.id}">
+          <div class="dash-item-head"><a href="${it.path}" target="_blank" rel="noopener">${esc(it.title)}</a>${chips}</div>
+          <p class="dash-last">${r.last ? `Last posted here ${ago(r.last.at)}` : 'Never posted here'}${it.photo && plat !== 'x' ? ` · <b>Photo:</b> ${esc(it.photo)}` : ''}</p>
+          <textarea rows="${plat === 'x' ? 3 : 7}" data-text>${esc(text)}</textarea>
+          <p class="dash-item-actions">
+            <button type="button" class="btn btn-small" data-copy>Copy</button>
+            <button type="button" class="btn btn-small btn-quiet" data-posted>Mark Posted</button>
+            <span class="dash-count" data-count>${plat === 'x' ? `${text.replace(/https?:\/\/\S+/g, 'x'.repeat(23)).length}/280` : ''}</span>
+          </p>
+        </li>`;
+      }
+      function renderSocial() {
+        root!.querySelectorAll<HTMLButtonElement>('[data-plat]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.plat === plat)));
+        $('[data-plat-note]').textContent = NOTES[plat];
+        const ranked = rankItems(plat);
+        const due = ranked.filter((r: any) => r.score > 0).slice(0, 3);
+        $('[data-queue]').innerHTML = due.length ? due.map(card).join('') : '<li class="hall-msg">You’re caught up on this platform. Nice.</li>';
+        const q = ($<HTMLInputElement>('[data-search]').value || '').toLowerCase();
+        const all = ranked.filter((r: any) => !q || `${r.it.title} ${r.it.hook}`.toLowerCase().includes(q));
+        $('[data-all-count]').textContent = `(${ranked.length})`;
+        $('[data-all]').innerHTML = all.map(card).join('');
+        $('[data-log]').innerHTML = log.slice(0, 25).map((l) => {
+          const it = D.items.find((x: any) => x.id === l.item);
+          return `<li><span>${esc(it ? it.title : l.item)}</span> <small>${l.platform} · ${ago(l.at)}</small> <button type="button" class="linkish" data-undo="${l.id}">Undo</button></li>`;
+        }).join('') || '<li class="hall-msg">Nothing posted yet.</li>';
+        const left = ['instagram', 'facebook', 'nextdoor', 'x'].reduce((n, p) => n + rankItems(p).filter((r: any) => r.score > 0).slice(0, 3).length, 0);
+        $('[data-badge="social"]').textContent = left ? `(${left})` : '';
+      }
+      root.querySelectorAll<HTMLButtonElement>('[data-plat]').forEach((b) => b.addEventListener('click', () => { plat = b.dataset.plat!; renderSocial(); }));
+      $('[data-search]').addEventListener('input', renderSocial);
+      root.addEventListener('click', async (e) => {
+        const t = e.target as HTMLElement;
+        const li = t.closest<HTMLElement>('[data-item]');
+        if (t.matches('[data-copy]') && li) {
+          const text = li.querySelector<HTMLTextAreaElement>('[data-text]')!.value;
+          try { await navigator.clipboard.writeText(text); } catch { li.querySelector<HTMLTextAreaElement>('[data-text]')!.select(); document.execCommand('copy'); }
+          t.textContent = 'Copied!'; setTimeout(() => (t.textContent = 'Copy'), 1500);
+        }
+        if (t.matches('[data-posted]') && li) {
+          (t as HTMLButtonElement).disabled = true;
+          try { const r = await api('/api/admin/social', { method: 'POST', body: JSON.stringify({ item: li.dataset.item, platform: plat, action: 'posted' }) }); log.unshift({ id: r.id, item: li.dataset.item, platform: plat, at: r.at }); renderSocial(); loadOverview(); }
+          catch { (t as HTMLButtonElement).disabled = false; }
+        }
+        if (t.matches('[data-undo]')) {
+          await api('/api/admin/social', { method: 'POST', body: JSON.stringify({ action: 'undo', id: t.dataset.undo }) });
+          log = log.filter((l) => String(l.id) !== t.dataset.undo); renderSocial(); loadOverview();
+        }
+      });
+      root.addEventListener('input', (e) => {
+        const ta = e.target as HTMLTextAreaElement;
+        if (ta.matches('[data-text]') && plat === 'x') ta.closest('[data-item]')!.querySelector('[data-count]')!.textContent = `${ta.value.replace(/https?:\/\/\S+/g, 'x'.repeat(23)).length}/280`;
+      });
+
+      /* ---------- photos (same queue as before) */
+      let pstatus = 'pending';
+      async function loadPhotos() {
+        try {
+          const r = await fetch(`/api/hall/admin?key=${encodeURIComponent(key)}&status=${pstatus}`); const j = await r.json();
+          root!.querySelectorAll<HTMLButtonElement>('[data-status]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.status === pstatus)));
+          for (const k of ['pending', 'approved', 'rejected']) $(`[data-n="${k}"]`).textContent = j.counts?.[k] ? `(${j.counts[k]})` : '';
+          $('[data-photos]').innerHTML = j.posts.length ? j.posts.map((p: any) => `
+            <li class="hall-card" data-id="${p.id}" data-board="${p.board}">
+              <img src="${p.img.startsWith('/api/') ? `${p.img}?key=${encodeURIComponent(key)}` : p.img}" alt="" width="${p.w}" height="${p.h}" loading="lazy" />
+              <div class="hall-text ha-text">
+                <p class="hall-caption"><b>${p.board === 'shame' ? 'Hall of Shame' : 'Hall of Fame'}</b>${p.caption ? ` · ${esc(p.caption)}` : ''}</p>
+                <p class="hall-meta">${[p.name, p.town].filter(Boolean).map(esc).join(' · ') || 'No name'} · ${new Date(p.created).toLocaleString()} · score ${p.score}</p>
+                <p class="ha-actions">
+                  ${p.status !== 'approved' ? '<button type="button" class="btn btn-small" data-act="approve">Approve</button>' : ''}
+                  ${p.status !== 'rejected' ? '<button type="button" class="btn btn-small btn-quiet" data-act="reject">Reject</button>' : ''}
+                  <button type="button" class="btn btn-small btn-quiet" data-act="move">Move to ${p.board === 'shame' ? 'Fame' : 'Shame'}</button>
+                  <button type="button" class="btn btn-small btn-quiet" data-act="delete">Delete</button>
+                </p>
+              </div>
+            </li>`).join('') : '<li class="hall-msg">Nothing here.</li>';
+        } catch { $('[data-photos]').innerHTML = '<li class="hall-msg">Couldn’t load photos.</li>'; }
+      }
+      root.querySelectorAll<HTMLButtonElement>('[data-status]').forEach((b) => b.addEventListener('click', () => { pstatus = b.dataset.status!; loadPhotos(); }));
+      $('[data-photos]').addEventListener('click', async (e) => {
+        const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-act]'); if (!b) return;
+        const li = b.closest<HTMLElement>('[data-id]')!;
+        if (b.dataset.act === 'delete' && !confirm('Delete this photo for good?')) return;
+        b.disabled = true;
+        await fetch('/api/hall/admin', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key, id: li.dataset.id, action: b.dataset.act, board: li.dataset.board === 'shame' ? 'fame' : 'shame' }) });
+        loadPhotos(); loadOverview();
+      });
+
+      /* ---------- overview */
+      async function loadOverview() {
+        const o = await api('/api/admin/overview');
+        const n = (status: string) => o.photos.filter((r: any) => r.status === status).reduce((a: number, r: any) => a + r.n, 0);
+        $('[data-stat="pending"]').textContent = String(n('pending'));
+        $('[data-stat="live"]').textContent = String(n('approved'));
+        $('[data-stat="votes"]').textContent = String(o.votes.n);
+        $('[data-stat="posted"]').textContent = String(o.postedThisWeek);
+        $('[data-badge="photos"]').textContent = n('pending') ? `(${n('pending')})` : '';
+        for (const [k, v] of Object.entries(o.connected)) {
+          const el = root!.querySelector(`[data-conn="${k}"]`);
+          if (el) { el.textContent = v ? 'Connected' : 'Not connected'; el.classList.toggle('is-on', !!v); }
+        }
+        const socialLeft = Number(($('[data-badge="social"]').textContent || '0').replace(/\D/g, '')) || 0;
+        const check = [
+          [n('pending') > 0, `Review ${n('pending')} photo${n('pending') === 1 ? '' : 's'} waiting for the Hall`, 'photos'],
+          [socialLeft > 0, `Copy this week’s social posts (${socialLeft} in the queue) and mark them posted`, 'social'],
+          [!o.connected.gsc, 'At launch: connect Search Console, Google Analytics and Bing', 'seo'],
+          [!o.connected.stripe, 'When ready: set up Stripe for tips', 'money'],
+        ].filter((c) => c[0]);
+        $('[data-check]').innerHTML = check.length
+          ? check.map((c) => `<li><button type="button" class="linkish" data-go="${c[2]}">${c[1]}</button></li>`).join('')
+          : '<li>All done. Go mow something.</li>';
+      }
+      $('[data-check]').addEventListener('click', (e) => { const b = (e.target as HTMLElement).closest<HTMLElement>('[data-go]'); if (b) show(b.dataset.go!); });
+
+      /* ---------- log in */
+      async function start() {
+        try {
+          const s = await api('/api/admin/social'); log = s.log;
+          try { localStorage.setItem('mit-admin', key); } catch {}
+          $('[data-msg]').textContent = ''; $('[data-key-form]').hidden = true; $('[data-app]').hidden = false;
+          renderSocial(); await loadOverview(); show(tab);
+        } catch (err: any) { $('[data-msg]').textContent = err.message; }
+      }
+      $('[data-key-form]').addEventListener('submit', (e) => { e.preventDefault(); key = $<HTMLInputElement>('[data-key]').value.trim(); start(); });
+      if (key) start();
+    }
+  </script>
+</Base>

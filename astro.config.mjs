@@ -4,10 +4,11 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
   site: 'https://mowittall.com',
   trailingSlash: 'ignore',
-  integrations: [sitemap({ filter: (page) => !page.includes('/404') && !page.includes('/clippings') && !page.includes('/hall/admin') })],
+  integrations: [sitemap({ filter: (page) => !page.includes('/404') && !page.includes('/clippings') && !page.includes('/admin') })],
   // Old blog address (it used to be called Clippings)
   redirects: {
     '/toolshed': '/resources/',
+    '/hall/admin': '/admin/',
     '/clippings': '/blog/',
     '/clippings/power-ranking-every-excuse-for-a-bad-lawn': '/blog/power-ranking-every-excuse-for-a-bad-lawn/',
     '/clippings/stop-bagging-your-clippings': '/blog/stop-bagging-your-clippings/',
