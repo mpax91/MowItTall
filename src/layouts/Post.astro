@@ -1,13 +1,13 @@
 ---
 import Base from './Base.astro';
+import MowCheck from '../components/MowCheck.astro';
 const { frontmatter, url } = Astro.props;
-const { title, description, tag } = frontmatter;
+const { title, description, tag, widget, faq } = frontmatter;
 const date = (frontmatter.date instanceof Date ? frontmatter.date.toISOString() : String(frontmatter.date)).slice(0, 10);
 const minutes = frontmatter.minutes || 2;
 const pretty = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 const path = new URL(url || Astro.url.pathname, 'https://mowittall.com').pathname;
-const jsonLd = {
-  '@context': 'https://schema.org',
+const posting = {
   '@type': 'BlogPosting',
   headline: title,
   description,
@@ -16,6 +16,12 @@ const jsonLd = {
   publisher: { '@id': 'https://mowittall.com/#website' },
   mainEntityOfPage: `https://mowittall.com${path}`,
 };
+// Posts can list `faq:` (q/a pairs) in frontmatter for FAQPage structured data
+const faqLd = Array.isArray(faq) && faq.length ? {
+  '@type': 'FAQPage',
+  mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+} : null;
+const jsonLd = { '@context': 'https://schema.org', '@graph': faqLd ? [posting, faqLd] : [posting] };
 ---
 <Base title={`${title} | Mow It Tall`} description={description} path={path} jsonLd={jsonLd}>
   <main id="main" class="post">
@@ -29,6 +35,19 @@ const jsonLd = {
     <article class="prose">
       <slot />
     </article>
+    {widget === 'mow-check' && (
+      <div class="post-widget" data-widget="mow-check"><MowCheck /></div>
+    )}
+    {widget && (
+      <script is:inline>
+        // Move the post's interactive widget to the spot the post marks with data-widget-slot
+        (function () {
+          var w = document.querySelector('[data-widget]');
+          var slot = w && document.querySelector('[data-widget-slot]');
+          if (slot) slot.replaceWith(w);
+        })();
+      </script>
+    )}
     <aside class="window post-cta">
       <h2>Want the short version for your yard?</h2>
       <p>Seven questions, two minutes, one plan.</p>

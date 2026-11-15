@@ -1,0 +1,56 @@
+---
+// "Can I mow right now?" etiquette checker. Logic lives in src/scripts/mowCheck.js.
+---
+<section class="window mc" aria-labelledby="mc-h" data-mow-check data-tone="yes">
+  <h2 id="mc-h">Can I mow right now?</h2>
+  <p class="mc-sub">It starts on right now. Change anything to check another time.</p>
+
+  <div class="mc-verdict" aria-live="polite">
+    <span class="mc-word" data-mc-word data-tone="yes">YES</span>
+    <p class="mc-line" data-mc-line>Go mow. Nobody can say a word to you.</p>
+  </div>
+
+  <p class="mc-note" data-mc-note hidden></p>
+
+  <fieldset class="mc-group">
+    <legend>What day?</legend>
+    <div class="mc-seg mc-seg-4">
+      <button type="button" data-mc-day="weekday" aria-pressed="true">Weekday</button>
+      <button type="button" data-mc-day="sat" aria-pressed="false">Saturday</button>
+      <button type="button" data-mc-day="sun" aria-pressed="false">Sunday</button>
+      <button type="button" data-mc-day="holiday" aria-pressed="false">Holiday</button>
+    </div>
+  </fieldset>
+
+  <div class="mc-group">
+    <div class="mc-time-row">
+      <label for="mc-time">What time?</label>
+      <output class="mc-time" data-mc-time-out for="mc-time">12pm</output>
+      <button type="button" class="linkish mc-now" data-mc-now hidden>Back to now</button>
+    </div>
+    <input id="mc-time" class="mc-slider" type="range" min="0" max="1425" step="15" value="720" data-mc-time />
+    <div class="mc-ticks" aria-hidden="true"><span>Midnight</span><span>6am</span><span>Noon</span><span>6pm</span><span>11:45pm</span></div>
+  </div>
+
+  <fieldset class="mc-group">
+    <legend>What are you mowing with?</legend>
+    <div class="mc-seg mc-seg-3">
+      <button type="button" data-mc-mower="gas" aria-pressed="true">Gas</button>
+      <button type="button" data-mc-mower="quiet" aria-pressed="false">Battery</button>
+      <button type="button" data-mc-mower="robot" aria-pressed="false">Robot</button>
+    </div>
+  </fieldset>
+
+  <label class="mc-party">
+    <input type="checkbox" data-mc-party />
+    <span class="mc-switch" aria-hidden="true"></span>
+    <span>Neighbors have people over</span>
+  </label>
+
+  <button type="button" class="btn btn-small mc-share" data-mc-share>Send this to your neighbor</button>
+</section>
+
+<script>
+  import { initMowCheck } from '../scripts/mowCheck.js';
+  document.querySelectorAll('[data-mow-check]').forEach((el) => initMowCheck(el));
+</script>
