@@ -2141,3 +2141,8 @@ main > section.gp { margin-left: 16px; margin-right: 16px; }
 @media (hover: hover) { .lw-flipcard:hover .lw-front { --fold: 46px; } }
 @keyframes lw-jiggle { 0%, 100% { --fold: 40px; } 20% { --fold: 54px; } 40% { --fold: 36px; } 60% { --fold: 48px; } 80% { --fold: 39px; } }
 .lw-flipcard.lw-jiggle .lw-front { animation: lw-jiggle 0.8s ease-in-out; }
+/* Water card bar = progress bar (Nov 15): head line in plain English, labels at both ends */
+.lw-rain-head { font-size: 0.92rem; color: var(--paper); }
+.lw-rain-head b { color: #8fcaf3; font-weight: 800; }
+.lw-rain-ends { display: flex; justify-content: space-between; gap: 8px; margin-top: -2px !important; font-size: 0.8rem; color: var(--paper-dim); }
+.lw-rain-ends span:first-child { color: #8fcaf3; }

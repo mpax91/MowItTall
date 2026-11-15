@@ -60,11 +60,11 @@ const zonesJson = JSON.stringify(ZONES);
         <div class="lw-face lw-front">
           <p class="lw-label">Water?</p>
           <p class="lw-answer"><span class="water-badge" data-water-verdict data-tone="">Checking…</span></p>
-          <div class="lw-rain" role="img" aria-label="Rain this week compared with what the lawn used">
+          <p class="lw-rain-head" data-rain-head>How much of your lawn’s water came from rain</p>
+          <div class="lw-rain" role="img" aria-label="Share of the lawn's water this week that came from rain" data-rain-bar>
             <div class="lw-rain-track"><span class="lw-rain-fill" data-rain-fill style="width:0"></span></div>
-            <span class="lw-rain-need" data-rain-need hidden></span>
           </div>
-          <p class="lw-tiny" data-rain-key>Rain vs. what your lawn used</p>
+          <p class="lw-rain-ends"><span data-rain-a>Rain: …</span><span data-rain-b>Lawn drank: …</span></p>
           <p class="lw-why" data-water-why>Adding up the rain.</p>
           <span class="lw-tap" aria-hidden="true"></span>
         </div>
@@ -172,19 +172,32 @@ const zonesJson = JSON.stringify(ZONES);
         if (mine !== wseq) return;
         wv = v; wdays = days;
         badge.textContent = VERDICTS[v.key].label; badge.dataset.tone = VERDICTS[v.key].tone;
-        const max = Math.max(1, v.rain, v.used) * 1.15;
-        water.querySelector<HTMLElement>('[data-rain-fill]')!.style.width = `${Math.min(100, (v.rain / max) * 100)}%`;
-        const need = water.querySelector<HTMLElement>('[data-rain-need]')!;
-        need.style.left = `${Math.min(100, (v.used / max) * 100)}%`; need.hidden = false;
-        water.querySelector('[data-rain-key]')!.textContent = `${inch(v.rain)} rain · used ${inch(v.used)}`;
+        // progress bar: full width = what the lawn drank this week, blue = the part rain covered
+        const pct = v.used < 0.02 ? 100 : Math.round((v.rain / v.used) * 100);
+        water.querySelector<HTMLElement>('[data-rain-fill]')!.style.width = `${Math.min(100, pct)}%`;
+        water.querySelector('[data-rain-head]')!.innerHTML = v.used < 0.02 ? 'Your lawn barely drank anything this week'
+          : pct >= 100 ? '<b>Rain covered it all</b> this week' + (pct >= 150 ? ' (and then some)' : '')
+          : v.rain < 0.02 ? '<b>No rain</b> this week' : pct < 5 ? '<b>Almost no rain</b> this week'
+          : `Rain covered <b>${pct}%</b> of what your lawn drank`;
+        water.querySelector('[data-rain-a]')!.textContent = `Rain: ${inch(v.rain)}`;
+        water.querySelector('[data-rain-b]')!.textContent = `Lawn drank: ${inch(v.used)}`;
+        water.querySelector('[data-rain-bar]')!.setAttribute('aria-label', `Last 7 days: ${inch(v.rain)} of rain, and the lawn used ${inch(v.used)}`);
         // short description: the first sentence of the full explanation
-        water.querySelector('[data-water-why]')!.textContent = (v.text.match(/^.*?[.!?](\s|$)/) || [v.text])[0].trim();
+        // card reason: why this verdict, without repeating the numbers the bar already shows
+        const WHY: Record<string, string> = {
+          asleep: 'The grass is resting. No watering until it greens up in spring.',
+          skip: v.rain >= v.used ? 'Rain did the job. Put the hose away.' : 'Close enough. Put the hose away.',
+          wait: `A little dry, but ${v.line.replace(/^Rain/, 'rain')} Let the sky do it.`,
+          water: (v.text.match(/Give it one deep soak.*?morning\./) || ['Give it one deep soak, early in the morning.'])[0],
+          maybe: 'One good watering, about half an inch, keeps it happy.',
+        };
+        water.querySelector('[data-water-why]')!.textContent = WHY[v.key] || v.line;
         backWater(); fitAll();
       } catch {
         if (mine !== wseq) return;
         wv = null;
         badge.textContent = 'Can’t tell'; badge.dataset.tone = 'maybe';
-        water.querySelector('[data-rain-key]')!.textContent = 'Weather data is down';
+        water.querySelector('[data-rain-head]')!.textContent = 'Weather data is down right now'; water.querySelector<HTMLElement>('.lw-rain-ends')!.hidden = true;
         water.querySelector('[data-water-why]')!.textContent = 'Rule of thumb: about an inch a week, rain included.';
         backWater(); fitAll();
       }
