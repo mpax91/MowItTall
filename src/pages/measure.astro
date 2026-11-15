@@ -1,0 +1,89 @@
+---
+import Base from '../layouts/Base.astro';
+import YardMeasure from '../components/YardMeasure.astro';
+
+const title = 'Lawn square footage calculator: measure your yard on a map | Mow It Tall';
+const description =
+  'Free lawn measuring tool. Trace your grass on a satellite map and get the square feet of each part of your yard, written right on the map, plus a total. Save it as an image.';
+
+const faqs = [
+  {
+    q: 'How do I figure out my lawn’s square footage?',
+    a: 'Trace each grassy part of your yard on a satellite map and add them up. That’s what this tool does: find your house, tap the corners of your grass, and it writes the square feet inside each area plus a total.',
+  },
+  {
+    q: 'Should I measure my whole property?',
+    a: 'No. Measure just the grass. Your lot size includes the house, driveway and garden beds, and none of those get seed or fertilizer. Measure the front, back and side as separate areas and skip the rest.',
+  },
+  {
+    q: 'How accurate is it?',
+    a: 'Close enough to buy the right number of bags, as long as you tap right on the edges of the grass. Trees hanging over the lawn are the biggest problem. Guess where the grass edge is under them. Zoom in before you tap for the best result.',
+  },
+  {
+    q: 'Why does my lawn’s square footage matter?',
+    a: 'Every bag of seed, fertilizer and lime says how many square feet it covers. Knowing your number means you buy the right amount and don’t overdo it.',
+  },
+  {
+    q: 'Does this save my address?',
+    a: 'Your shapes are saved on your phone only. If you search an address, it goes to the map company to find the spot. I never see it.',
+  },
+];
+
+const jsonLd = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'WebApplication',
+    name: 'Mow It Tall lawn measuring tool',
+    url: 'https://mowittall.com/measure/',
+    applicationCategory: 'UtilitiesApplication',
+    operatingSystem: 'Any',
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+    description,
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+  },
+];
+---
+<Base title={title} description={description} path="/measure/" jsonLd={jsonLd}>
+  <main id="main">
+    <section class="page-head page-head-hub">
+      <h1>How big is my lawn?</h1>
+      <p class="lede">Trace your grass on a satellite map. Each part gets its square feet written right inside it, plus a total. Takes about two minutes.</p>
+    </section>
+
+    <section aria-label="Lawn measuring tool">
+      <YardMeasure />
+    </section>
+
+    <section aria-labelledby="how-h">
+      <h2 id="how-h">How it works</h2>
+      <p class="section-lede">Three steps. No account.</p>
+      <ol class="measure-steps">
+        <li><strong>Find your house.</strong> <span>Type your address or tap “Use my location.”</span></li>
+        <li><strong>Tap the corners of your grass.</strong> <span>Go around the edge. Tap the yellow dot to close it. Do the front, back and sides as separate areas.</span></li>
+        <li><strong>Save the picture.</strong> <span>Every area is labeled with its square feet. Keep it for the store, or text it to whoever mows.</span></li>
+      </ol>
+    </section>
+
+    <section class="plan plan-mid" aria-labelledby="use-h">
+      <div class="window tool-card">
+        <h2 id="use-h">Got your number? Now what.</h2>
+        <p>Every bag of seed, fertilizer and lime says how many square feet it covers. Divide your total by that number and round up. That’s how many bags to buy. My free plan tells you what to put down and when.</p>
+        <a class="btn" href="/plan/">Get my free lawn plan</a>
+      </div>
+    </section>
+
+    <section class="faq" aria-labelledby="faq-h">
+      <h2 id="faq-h">Quick answers</h2>
+      {faqs.map((f) => (
+        <details>
+          <summary>{f.q}</summary>
+          <p>{f.a}</p>
+        </details>
+      ))}
+    </section>
+  </main>
+</Base>
