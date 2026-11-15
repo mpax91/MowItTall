@@ -2189,3 +2189,5 @@ main > section.gp { margin-left: 16px; margin-right: 16px; }
 .calendar.is-compact .cal-flipcard[data-state='past'] .cal-front { opacity: 0.62; }
 .cal-task.is-cont .cal-window { font-style: italic; }
 @media (prefers-reduced-motion: reduce) { .cal-flip, .cal-flipcard { transition: none; } }
+/* calendar: room for last month to peek in, built into the snap spacing (no snap toggling, which ate the first vertical swipe) */
+.cal-track { scroll-padding-inline: calc(var(--col) + 40px) var(--col); }
