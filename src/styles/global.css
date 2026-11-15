@@ -1501,3 +1501,34 @@ main > section.weed-sec { padding: 0; }
 .mw-season { margin: 12px 0 0; padding: 10px 12px; background: rgba(0, 0, 0, 0.22); border-radius: 8px; font-size: 0.98rem; }
 .mw-fine { margin: 10px 0 0; font-size: 0.8rem; color: #b9d8b4; }
 .prose .mw h2 { margin: 0 0 2px; font-size: 1.55rem; }
+
+/* ---------- Mowing playlist (.pl-*) ---------- */
+.pl { margin: 6px 0 28px; }
+.pl-top { padding: 18px 16px 16px; }
+.pl-top h2 { margin: 0 0 12px; font-size: 1.5rem; letter-spacing: -0.02em; }
+.pl-stats { display: grid; grid-template-columns: 1fr 1.6fr 1fr; gap: 6px; margin-bottom: 14px; }
+.pl-stats div { background: rgba(0, 0, 0, 0.25); border: 2px solid rgba(238, 245, 230, 0.25); border-radius: 8px; padding: 8px 6px; text-align: center; }
+.pl-stats b { display: block; font-family: var(--display); font-weight: 800; font-size: 1.3rem; color: var(--sun); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pl-stats span { font-size: 0.8rem; color: #cfe3c6; text-transform: uppercase; letter-spacing: 0.06em; }
+.pl-embed { display: block; width: 100%; border: 0; border-radius: 12px; margin-bottom: 12px; background: #0a2414; }
+.pl-btn { display: block; text-align: center; }
+.pl-soon { margin: 0; padding: 10px 12px; border-radius: 8px; background: rgba(0, 0, 0, 0.25); border: 2px dashed rgba(238, 245, 230, 0.4); font-size: 0.98rem; }
+.pl-soon span { font-weight: 700; color: var(--leaf); }
+.pl-jump { list-style: none; display: flex; flex-wrap: wrap; gap: 6px; margin: 14px 0 0; padding: 0; }
+.pl-jump a { display: inline-block; padding: 6px 10px; border-radius: 999px; background: var(--paper); color: var(--ink); font-weight: 700; font-size: 0.88rem; text-decoration: none; }
+.pl-set { margin-top: 26px; scroll-margin-top: 16px; }
+.pl-set h3 { margin: 0; font-family: var(--display); font-size: 1.35rem; letter-spacing: -0.02em; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 8px; }
+.pl-setnum { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--ink); background: var(--sun); padding: 2px 7px; border-radius: 4px; }
+.pl-set h3 small { font-family: var(--body); font-size: 0.85rem; font-weight: 400; color: #b9d8b4; }
+.pl-setnote { margin: 4px 0 10px; color: #cfe3c6; font-size: 0.98rem; }
+.pl-songs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.pl-song { display: flex; gap: 12px; background: var(--paper); color: var(--ink); border-radius: 10px; padding: 12px 14px; box-shadow: 0 4px 0 rgba(5, 20, 10, 0.35); }
+.pl-n { flex: none; font-family: var(--display); font-weight: 800; font-size: 1.25rem; color: #2f6e47; line-height: 1.2; min-width: 1.6em; }
+.pl-body { min-width: 0; }
+.prose .pl-title, .pl-title { display: inline; font-family: var(--display); font-weight: 800; font-size: 1.12rem; color: var(--ink); text-decoration: underline; text-decoration-color: #9fd36a; text-decoration-thickness: 3px; text-underline-offset: 3px; }
+.pl-artist { display: block; font-size: 0.9rem; color: #3d5a45; margin-top: 2px; }
+.prose .pl-why, .pl-why { margin: 6px 0 0; font-size: 1rem; line-height: 1.45; color: var(--ink); }
+.prose .pl-why a, .pl-why a { color: var(--red); font-weight: 700; }
+.prose .pl li { margin-bottom: 0; }
+.prose .pl h2 { margin: 0 0 12px; }
+.prose .pl-jump a { color: var(--ink); }

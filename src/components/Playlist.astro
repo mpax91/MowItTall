@@ -1,0 +1,49 @@
+---
+// The official mowing playlist. Songs and the Spotify link live in src/data/playlist.js.
+import { SETS, SPOTIFY_URL, SONG_COUNT, TOTAL_MIN, setMinutes, spotifySearch, spotifyEmbed } from '../data/playlist.js';
+const embed = spotifyEmbed(SPOTIFY_URL);
+const runtime = `${Math.floor(TOTAL_MIN / 60)} hr ${TOTAL_MIN % 60} min`;
+let n = 0;
+const sets = SETS.map((set) => ({ ...set, mins: setMinutes(set), songs: set.songs.map((s) => ({ ...s, n: ++n, search: spotifySearch(s) })) }));
+---
+<section class="pl" aria-labelledby="pl-h">
+  <div class="window pl-top">
+    <h2 id="pl-h">The Mow It Tall Mixtape</h2>
+    <div class="pl-stats">
+      <div><b>{SONG_COUNT}</b><span>Songs</span></div>
+      <div><b>{runtime}</b><span>About</span></div>
+      <div><b>0</b><span>Skips</span></div>
+    </div>
+    {embed ? (
+      <>
+        <iframe class="pl-embed" title="Mow It Tall mowing playlist on Spotify" src={embed} height="352" loading="lazy"
+          allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+        <a class="btn pl-btn" href={SPOTIFY_URL} target="_blank" rel="noopener">Open in Spotify</a>
+      </>
+    ) : (
+      <p class="pl-soon"><span>Spotify playlist</span> dropping soon. For now, tap any song to find it.</p>
+    )}
+    <ol class="pl-jump" aria-label="Jump to a set">
+      {sets.map((set, i) => <li><a href={`#pl-set-${i + 1}`}>{set.name}</a></li>)}
+    </ol>
+  </div>
+
+  {sets.map((set, i) => (
+    <div class="pl-set" id={`pl-set-${i + 1}`}>
+      <h3><span class="pl-setnum">Set {i + 1}</span> {set.name} <small>~{set.mins} min</small></h3>
+      <p class="pl-setnote">{set.note}</p>
+      <ol class="pl-songs" start={set.songs[0].n}>
+        {set.songs.map((s) => (
+          <li class="pl-song">
+            <span class="pl-n" aria-hidden="true">{String(s.n).padStart(2, '0')}</span>
+            <div class="pl-body">
+              <a class="pl-title" href={s.search} target="_blank" rel="noopener">{s.title}</a>
+              <span class="pl-artist">{s.artist} · {s.year}</span>
+              <p class="pl-why">{s.why}{s.link && <> <a href={s.link}>More</a></>}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  ))}
+</section>
