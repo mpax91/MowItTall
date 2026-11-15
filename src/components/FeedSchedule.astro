@@ -1,0 +1,139 @@
+---
+// Holiday fertilizer schedule: pick an effort level, see your holidays with this year's dates.
+// Tasks come from src/data/tasks.js (the ones marked holiday: true, plus Tax Day crabgrass).
+import { TASKS } from '../data/tasks.js';
+const HOLIDAYS = [
+  { id: 'crabgrass', name: 'Tax Day', what: 'Crabgrass preventer', note: 'Not a feeding. Go when the soil hits about 55°F.', rule: 'tax' },
+  { id: 'spring-feed', name: 'Memorial Day', what: 'Light feeding', note: 'Slow-release. Go light.', rule: 'memorial' },
+  { id: 'july4-feed', name: 'July 4th', what: 'Half dose', note: 'Only if you water. Never in a heat wave.', rule: 'july4' },
+  { id: 'fall-feed', name: 'Labor Day', what: 'The big one', note: 'If you only do one, do this one.', rule: 'labor' },
+  { id: 'columbus-feed', name: 'Columbus Day', what: 'Pre-game feed', note: 'Two weeks later, it peaks for Halloween.', rule: 'columbus' },
+  { id: 'thanksgiving-feed', name: 'Thanksgiving', what: 'Last call', note: 'Grass stopped growing but still green. Before Dec 1.', rule: 'thanks' },
+].map((h) => ({ ...h, level: TASKS.find((t) => t.id === h.id)?.level ?? 0 }));
+const LEVELS = ['Couch Potato', 'Coffee & Cruise', 'Curb Appeal Hunter', 'Lawn Psycho'];
+const SHORT = ['Couch Potato', 'Coffee & Cruise', 'Curb Appeal', 'Lawn Psycho'];
+---
+<section class="window fs" aria-labelledby="fs-h" data-feed-schedule>
+  <h2 id="fs-h">Your holiday schedule</h2>
+  <p class="fs-sub">How much effort are we talking?</p>
+  <div class="mc-seg fs-seg" role="group" aria-label="Effort level">
+    {SHORT.map((l, i) => <button type="button" data-fs-level={i} aria-pressed={i === 2 ? 'true' : 'false'} aria-label={LEVELS[i]}>{l}</button>)}
+  </div>
+  <p class="fs-count" aria-live="polite"><b data-fs-n>4</b> <span data-fs-days>days a year</span>. <span data-fs-next></span></p>
+  <ol class="fs-list">
+    {HOLIDAYS.map((h) => (
+      <li class="fs-item" data-fs-item data-level={h.level} data-rule={h.rule} data-id={h.id}>
+        <div class="fs-date"><b data-fs-mon></b><span data-fs-day></span></div>
+        <div class="fs-body">
+          <span class="fs-name">{h.name}{h.level === 3 && <em class="fs-psycho">Psycho</em>}</span>
+          <span class="fs-what">{h.what}</span>
+          <span class="fs-note">{h.note}</span>
+        </div>
+      </li>
+    ))}
+  </ol>
+  <button type="button" class="btn fs-ics" data-fs-ics>Add these to my calendar</button>
+  <p class="fs-foot">Not on your list: Easter (too early) and Halloween (you don’t practice during the Super Bowl).</p>
+</section>
+
+<script>
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const LEVELS = ['Couch Potato', 'Coffee & Cruise', 'Curb Appeal Hunter', 'Lawn Psycho'];
+  // nth weekday (0 = Sunday) of a month; n = -1 means the last one
+  function nth(y: number, m: number, dow: number, n: number) {
+    if (n < 0) {
+      const d = new Date(y, m + 1, 0);
+      while (d.getDay() !== dow) d.setDate(d.getDate() - 1);
+      return d;
+    }
+    const d = new Date(y, m, 1);
+    while (d.getDay() !== dow) d.setDate(d.getDate() + 1);
+    d.setDate(d.getDate() + 7 * (n - 1));
+    return d;
+  }
+  const RULES: Record<string, (y: number) => Date> = {
+    tax: (y) => new Date(y, 3, 15),
+    memorial: (y) => nth(y, 4, 1, -1),
+    july4: (y) => new Date(y, 6, 4),
+    labor: (y) => nth(y, 8, 1, 1),
+    columbus: (y) => nth(y, 9, 1, 2),
+    thanks: (y) => nth(y, 10, 4, 4),
+  };
+  // yearly repeat rules for the calendar file (floating holidays use BYDAY)
+  const RRULES: Record<string, string> = {
+    tax: 'FREQ=YEARLY', july4: 'FREQ=YEARLY',
+    memorial: 'FREQ=YEARLY;BYMONTH=5;BYDAY=-1MO',
+    labor: 'FREQ=YEARLY;BYMONTH=9;BYDAY=1MO',
+    columbus: 'FREQ=YEARLY;BYMONTH=10;BYDAY=2MO',
+    thanks: 'FREQ=YEARLY;BYMONTH=11;BYDAY=4TH',
+  };
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  // the next time this holiday comes around (today counts)
+  const nextDate = (rule: string) => {
+    const d = RULES[rule](today.getFullYear());
+    return d < today ? RULES[rule](today.getFullYear() + 1) : d;
+  };
+
+  document.querySelectorAll<HTMLElement>('[data-feed-schedule]').forEach((root) => {
+    const buttons = [...root.querySelectorAll<HTMLButtonElement>('[data-fs-level]')];
+    const items = [...root.querySelectorAll<HTMLElement>('[data-fs-item]')];
+    let level = 2;
+    try {
+      const q = JSON.parse(localStorage.getItem('mit-quiz') || '{}');
+      if (q && q.effort != null) level = Math.min(3, Math.max(0, Number(q.effort)));
+    } catch { /* private mode */ }
+
+    items.forEach((li) => {
+      const d = nextDate(li.dataset.rule!);
+      (li as any)._date = d;
+      li.querySelector('[data-fs-mon]')!.textContent = MONTHS[d.getMonth()];
+      li.querySelector('[data-fs-day]')!.textContent = String(d.getDate());
+    });
+
+    const shown = () => items.filter((li) => Number(li.dataset.level) <= level);
+    function render() {
+      buttons.forEach((b, i) => b.setAttribute('aria-pressed', String(i === level)));
+      items.forEach((li) => { li.hidden = Number(li.dataset.level) > level; li.classList.remove('is-next'); });
+      const list = shown();
+      root.querySelector('[data-fs-n]')!.textContent = String(list.length);
+      root.querySelector('[data-fs-days]')!.textContent = list.length === 1 ? 'day a year' : 'days a year';
+      const next = [...list].sort((a, b) => (a as any)._date - (b as any)._date)[0];
+      const nextEl = root.querySelector('[data-fs-next]')!;
+      if (next) {
+        next.classList.add('is-next');
+        const days = Math.round(((next as any)._date - +today) / 86400000);
+        const name = next.querySelector('.fs-name')!.firstChild!.textContent;
+        nextEl.textContent = days === 0 ? `${name} is today. Go.` : `Next up: ${name}, in ${days} day${days === 1 ? '' : 's'}.`;
+      }
+    }
+    buttons.forEach((b) => b.addEventListener('click', () => { level = Number(b.dataset.fsLevel); render(); }));
+    render();
+
+    root.querySelector('[data-fs-ics]')!.addEventListener('click', () => {
+      const pad = (n: number) => String(n).padStart(2, '0');
+      const ymd = (d: Date) => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
+      const esc = (s: string) => s.replace(/[\\;,]/g, (m) => `\\${m}`);
+      const stamp = new Date().toISOString().replace(/[-:]/g, '').replace(/\.\d+/, '');
+      const events = shown().map((li) => {
+        const name = li.querySelector('.fs-name')!.firstChild!.textContent!;
+        const what = li.querySelector('.fs-what')!.textContent!;
+        const note = li.querySelector('.fs-note')!.textContent!;
+        const d = (li as any)._date as Date;
+        const end = new Date(d.getTime() + 86400000);
+        return ['BEGIN:VEVENT', `UID:${li.dataset.id}-${ymd(d)}@mowittall.com`, `DTSTAMP:${stamp}`,
+          `DTSTART;VALUE=DATE:${ymd(d)}`, `DTEND;VALUE=DATE:${ymd(end)}`,
+          `SUMMARY:${esc(`Lawn: ${name} (${what})`)}`,
+          `DESCRIPTION:${esc(`${note} Mow It Tall holiday schedule (${LEVELS[level]}). mowittall.com/blog/holiday-lawn-fertilizer-schedule/`)}`,
+          `RRULE:${RRULES[li.dataset.rule!]};COUNT=5`,
+          'BEGIN:VALARM', 'ACTION:DISPLAY', 'TRIGGER:-P2D', `DESCRIPTION:${esc(`${name} is in 2 days: ${what}`)}`, 'END:VALARM',
+          'END:VEVENT'].join('\r\n');
+      });
+      const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Mow It Tall//Holiday schedule//EN', 'CALSCALE:GREGORIAN', ...events, 'END:VCALENDAR'].join('\r\n');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }));
+      a.download = 'mow-it-tall-holiday-schedule.ics';
+      document.body.appendChild(a); a.click();
+      setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    });
+  });
+</script>

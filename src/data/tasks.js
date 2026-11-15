@@ -28,17 +28,17 @@ export const TASKS = [
   },
   {
     id: 'crabgrass',
-    title: 'Put down crabgrass preventer',
-    short: 'Stops crabgrass seeds before they sprout. Timing is everything.',
-    why: 'Go when soil hits about 55°F, usually when the forsythia is blooming.',
+    title: 'Tax Day: crabgrass preventer',
+    short: 'Pay the IRS, then stop the crabgrass. It keeps seeds from sprouting.',
+    why: 'Tax Day is the reminder. The real trigger is soil at about 55°F, usually when the forsythia blooms.',
     start: [4, 1], end: [4, 30], level: 1, minutes: 30, when: ['crabgrass'],
   },
   {
     id: 'spring-feed',
-    title: 'Light spring feeding',
-    short: 'A small dose of slow-release fertilizer as the lawn greens up.',
+    title: 'Memorial Day feeding',
+    short: 'A light feeding of slow-release fertilizer before summer hits.',
     why: 'Go light. Too much spring fertilizer means more mowing and more disease.',
-    start: [5, 1], end: [5, 31], level: 2, minutes: 30,
+    start: [5, 18], end: [6, 5], level: 2, minutes: 30, holiday: true,
   },
   {
     id: 'spot-weeds',
@@ -53,6 +53,13 @@ export const TASKS = [
     short: 'Grubs eat roots in late summer. A preventer now stops them.',
     why: 'Only worth it if you’ve had grub damage before, or you’re going all in.',
     start: [6, 1], end: [7, 15], level: 3, minutes: 30, when: ['grubs'],
+  },
+  {
+    id: 'july4-feed',
+    title: 'July 4th feeding (Lawn Psycho only)',
+    short: 'Half a dose of slow-release fertilizer. Only if you water.',
+    why: 'Skip it in a heat wave or a dry spell. Stressed grass can’t use it.',
+    start: [7, 1], end: [7, 10], level: 3, minutes: 30, holiday: true,
   },
   {
     id: 'summer',
@@ -84,10 +91,10 @@ export const TASKS = [
   },
   {
     id: 'fall-feed',
-    title: 'Fall feeding',
-    short: 'If you only fertilize once a year, this is the one.',
-    why: 'Feeds the roots going into winter so the lawn comes back thick in spring.',
-    start: [9, 1], end: [10, 10], level: 0, minutes: 30,
+    title: 'Labor Day feeding',
+    short: 'The big one. If you only fertilize once a year, this is it.',
+    why: 'Grass grows most of its roots in fall. This feeds them so the lawn comes back thick.',
+    start: [8, 29], end: [9, 15], level: 0, minutes: 30, holiday: true,
   },
   {
     id: 'fall-weeds',
@@ -95,6 +102,13 @@ export const TASKS = [
     short: 'Weeds pull spray down to their roots in fall. It works better now than spring.',
     why: 'One pass on a mild day takes out most of what bugged you all summer.',
     start: [9, 20], end: [10, 20], level: 2, minutes: 30, when: ['weeds'],
+  },
+  {
+    id: 'columbus-feed',
+    title: 'Columbus Day feeding',
+    short: 'The pre-game feed. Two weeks later, your lawn peaks for Halloween.',
+    why: 'Fertilizer takes a couple of weeks to show. Feed now and it’s at its greenest when the trick-or-treaters show up.',
+    start: [10, 6], end: [10, 18], level: 1, minutes: 30, holiday: true,
   },
   {
     id: 'leaves',
@@ -109,6 +123,13 @@ export const TASKS = [
     short: 'Lots of Northeast soil is acidic. Lime fixes it slowly over winter.',
     why: 'Only if your test shows low pH. Spread it any time the ground isn’t frozen.',
     start: [10, 15], end: [11, 30], level: 3, minutes: 30,
+  },
+  {
+    id: 'thanksgiving-feed',
+    title: 'Thanksgiving feeding (Lawn Psycho only)',
+    short: 'One last feeding after the grass stops growing but is still green.',
+    why: 'Do it before the ground freezes. New York says no lawn fertilizer from December 1 to April 1.',
+    start: [11, 15], end: [11, 30], level: 3, minutes: 30, holiday: true,
   },
   {
     id: 'last-mow',
