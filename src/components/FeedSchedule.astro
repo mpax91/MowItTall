@@ -8,7 +8,7 @@ const HOLIDAYS = [
   { id: 'july4-feed', name: 'July 4th', what: 'Half dose', note: 'Only if you water. Never in a heat wave.', rule: 'july4' },
   { id: 'fall-feed', name: 'Labor Day', what: 'The big one', note: 'If you only do one, do this one.', rule: 'labor' },
   { id: 'columbus-feed', name: 'Columbus Day', what: 'Pre-game feed', note: 'Two weeks later, it peaks for Halloween.', rule: 'columbus' },
-  { id: 'thanksgiving-feed', name: 'Thanksgiving', what: 'Last call', note: 'Grass stopped growing but still green. Before Dec 1.', rule: 'thanks' },
+  { id: 'thanksgiving-feed', name: 'Thanksgiving', what: 'Last call', note: 'Grass stopped growing but still green. Before the freeze.', rule: 'thanks' },
 ].map((h) => ({ ...h, level: TASKS.find((t) => t.id === h.id)?.level ?? 0 }));
 const LEVELS = ['Couch Potato', 'Coffee & Cruise', 'Curb Appeal Hunter', 'Lawn Psycho'];
 const SHORT = ['Couch Potato', 'Coffee & Cruise', 'Curb Appeal', 'Lawn Psycho'];

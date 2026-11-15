@@ -128,7 +128,7 @@ export const TASKS = [
     id: 'thanksgiving-feed',
     title: 'Thanksgiving feeding (Lawn Psycho only)',
     short: 'One last feeding after the grass stops growing but is still green.',
-    why: 'Do it before the ground freezes. New York says no lawn fertilizer from December 1 to April 1.',
+    why: 'Do it before the ground freezes. Then put the spreader away until spring.',
     start: [11, 15], end: [11, 30], level: 3, minutes: 30, holiday: true,
   },
   {

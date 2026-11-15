@@ -13,8 +13,8 @@ faq:
     a: "Two or three times is plenty for most lawns in the Northeast if you leave the clippings. If you only do it once, do it around Labor Day. More than four times a year is overkill."
   - q: "Should I fertilize my lawn around Easter?"
     a: "No. Early spring feeding pushes leaf growth instead of roots. You end up mowing more, and the soft new growth gets more disease. Wait until Memorial Day."
-  - q: "When is the latest I can fertilize my lawn in New York?"
-    a: "New York law bans lawn fertilizer from December 1 to April 1. For the lawn’s sake, the last feeding should go down after the grass stops growing but while it’s still green, before the ground freezes. Around here that’s mid-October to Thanksgiving."
+  - q: "When is the latest I can fertilize my lawn?"
+    a: "The last feeding should go down after the grass stops growing but while it’s still green, before the ground freezes. Around here that’s mid-October to Thanksgiving. After that, put the spreader away until spring."
 ---
 
 **Fertilize on Memorial Day, Labor Day and Columbus Day. Put down crabgrass preventer around Tax Day.** That’s the whole schedule for most lawns around here.
@@ -47,7 +47,7 @@ You were going to do more anyway. Fine. Here’s how to do it without hurting an
 
 **July 4th: half dose, slow-release only.** Only if you water. Never in a heat wave or a dry spell. Cool-season grass is just trying to survive July. Don’t force-feed it.
 
-**Thanksgiving: last call.** One final feeding after the grass stops growing but while it’s still green, before the ground freezes. Then put the spreader away. New York says no lawn fertilizer from December 1 to April 1.
+**Thanksgiving: last call.** One final feeding after the grass stops growing but while it’s still green, before the ground freezes. Then put the spreader away until spring.
 
 ## The holidays I skip
 
@@ -57,7 +57,7 @@ You were going to do more anyway. Fine. Here’s how to do it without hurting an
 
 ## Spreader rules
 
-- **Look for a 0 in the middle.** The middle number on the bag is phosphorus. In Westchester it has to be 0 unless a soil test says you need it or you’re starting a new lawn.
+- **Look for a 0 in the middle.** The middle number on the bag is phosphorus. Most established lawns don’t need it. Only use it if a soil test says so or you’re starting a new lawn.
 - **Follow the bag.** It tells you the spreader setting and how much ground it covers. More is not better.
 - **Sweep, don’t hose.** Anything on the driveway or sidewalk gets swept back onto the lawn. Hosing it off sends it down the storm drain.
 - **Stay away from water.** Keep it at least 20 feet from streams and ponds.
