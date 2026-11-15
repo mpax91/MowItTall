@@ -1,7 +1,7 @@
 ---
 layout: ../../layouts/Post.astro
 title: "Off-season training: stripe the carpet, earn the brownie points"
-description: "Lawn season is over. Your training isn’t. Vacuum stripes in the living room, straight-line snow shoveling, blade day, a February tune-up and the plan that wins next season, plus brownie points with your spouse."
+description: "Lawn season is over. Your training isn’t. Vacuum stripes in the living room, straight-line snow shoveling, a mowing game for rainy days, blade day, a February tune-up and the plan that wins next season."
 seoTitle: "Winter Lawn Care: Off-Season Training Plan"
 seoDescription: "What to do for your lawn in winter: blade sharpening, a mower tune-up, next year’s plan, and vacuum stripes in the living room for brownie points."
 date: 2026-11-15
@@ -34,6 +34,15 @@ Carpet stripes exactly like grass. The fibers bend one way, the light catches, a
 Every athlete trains in the off-season. Here’s yours:
 
 <div data-widget-slot></div>
+
+## Rainy day? Snow? Mow on your phone.
+
+The weather doesn’t get a vote on your training. When it’s pouring, frozen or dark at 4:30, you can still work on your lines.
+
+- **[The quick game on the homepage](/):** line up the mower, hold to mow, beat par. Mind the dog.
+- **[The full stripe game](/games/):** eight yards, from a starter home to a ballpark to a snowy Christmas lawn.
+
+Straight lines are a skill. Skills fade. Thirty seconds a day keeps you sharp for April.
 
 ## Things the lawn wants from you this winter
 

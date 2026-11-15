@@ -1,0 +1,276 @@
+---
+// "Is my grass seed working?" Seed countdown: seed type + date planted (+ what you see) → day count,
+// stage picture, timeline, verdict, watering, when to mow and what to watch for. Saved in localStorage `mit-seed`.
+// Germination windows: UC IPM / Purdue / extension consensus (rye 5–10 days, tall & fine fescue 7–14, bluegrass 14–30).
+// First mow: when about 1/3 taller than mowing height, typically 4–6 weeks (Univ. of Maryland Extension). Mike reviews.
+import PlaceChip from './PlaceChip.astro';
+const { id = 'seedwatch', guide = true } = Astro.props;
+const SEEDS = [
+  { id: 'kbg-rye', name: 'Bluegrass + rye blend', first: [5, 10], last: [14, 30], note: 'The rye pops first. The bluegrass shows up a week or two later.' },
+  { id: 'sunshade', name: 'Sun and shade mix', first: [5, 10], last: [14, 30], note: 'Rye first, then the fescue, then the bluegrass. It shows up in waves.' },
+  { id: 'rye', name: 'Perennial ryegrass', first: [5, 10], last: [5, 10], note: 'The fastest grass there is. You’ll know soon.' },
+  { id: 'tttf', name: 'Tall fescue blend', first: [7, 14], last: [7, 14], note: 'Usually green by week two.' },
+  { id: 'ff', name: 'Fine fescue / shade mix', first: [7, 14], last: [7, 14], note: 'Thin, needle-like sprouts. Easy to miss.' },
+  { id: 'kbg', name: '100% Kentucky bluegrass', first: [14, 30], last: [14, 30], note: 'The slowest one. Up to a month of nothing is normal.' },
+  { id: 'unsure', name: 'Not sure (store mix)', first: [5, 10], last: [14, 30], note: 'Most store mixes have rye in them, so the first green shows fast.' },
+];
+const SEES = [
+  { id: 'nothing', t: 'Nothing yet' },
+  { id: 'few', t: 'A few sprouts' },
+  { id: 'fuzz', t: 'Green fuzz' },
+  { id: 'patchy', t: 'Up, but patchy' },
+  { id: 'tall', t: 'It’s getting tall' },
+];
+const seedJson = JSON.stringify(SEEDS);
+---
+<section class="window tool sw" id={id} aria-labelledby={`${id}-h`} data-seedwatch data-seeds={seedJson}>
+  <h2 id={`${id}-h`}>Is my grass seed working?</h2>
+  <p class="tool-sub">Tell me what you planted and when. I’ll tell you what you should see, what to do, and whether to worry. (Probably don’t.)</p>
+
+  <div class="sw-inputs">
+    <label class="sw-wide"><span>What did you plant?</span>
+      <select data-sw-type>
+        {SEEDS.map((s) => <option value={s.id}>{s.name}</option>)}
+      </select>
+    </label>
+    <label><span>Date planted</span><input type="date" data-sw-date /></label>
+    <div class="sw-where"><span>Where</span> <PlaceChip id={`${id}-place`} /></div>
+  </div>
+
+  <fieldset class="sw-see">
+    <legend>What do you see right now? <small>(optional)</small></legend>
+    <div class="cp-chips">
+      {SEES.map((s) => <button type="button" class="cp-chip" data-sw-see={s.id} aria-pressed="false">{s.t}</button>)}
+    </div>
+  </fieldset>
+
+  <div class="sw-out" aria-live="polite">
+    <div class="sw-head">
+      <p class="sw-day"><b data-sw-day>Day –</b><span data-sw-stage>Pick a date</span></p>
+      <span class="mc-word" data-tone="close" data-sw-word>…</span>
+    </div>
+    <svg class="sw-scene" viewBox="0 0 104 34" shape-rendering="crispEdges" role="img" aria-label="What your seeded soil should look like about now" data-sw-scene></svg>
+    <div class="sw-line" aria-hidden="true">
+      <div class="sw-track" data-sw-track></div>
+      <span class="sw-today" data-sw-today></span>
+    </div>
+    <ol class="sw-steps" data-sw-steps></ol>
+    <p class="sw-verdict" data-sw-verdict></p>
+    <div class="sw-cards">
+      <div class="sw-card"><h3>Watering now</h3><p data-sw-water></p></div>
+      <div class="sw-card"><h3>When can I mow?</h3><p data-sw-mow></p></div>
+    </div>
+    <div class="sw-card sw-watch"><h3>What to watch for</h3><ul data-sw-watch></ul></div>
+    <p class="sw-soil" data-sw-soil hidden></p>
+    <div class="sw-calm">
+      <h3>Don’t freak out. Trust the process.</h3>
+      <p>Not every seed makes it, and that’s planned for. The germination number on the bag comes from a lab with perfect conditions. In a real yard, fewer come up, and the seeding rate on the bag already counts on that. Sprouts come in waves, thin spots are normal for the first month, and a lawn from seed keeps thickening into next spring.</p>
+    </div>
+    <div class="sw-actions">
+      <button type="button" class="btn btn-small" data-sw-ics>Add Reminders to My Calendar</button>
+      {guide && <a class="btn btn-small btn-quiet" href="/blog/is-my-grass-seed-growing/">The Full Seed Guide</a>}
+    </div>
+  </div>
+  <p class="tool-fine">Typical windows for Northeast lawns with the soil kept damp. Cold soil, dry spells and buried seed all slow things down. Your seed bag wins over me.</p>
+</section>
+
+<script>
+  import { getPlace } from '../scripts/place.js';
+  const KEY = 'mit-seed';
+  const DAY = 86400000;
+
+  document.querySelectorAll<HTMLElement>('[data-seedwatch]').forEach((root) => {
+    const SEEDS = JSON.parse(root.dataset.seeds!);
+    const $ = <T extends Element = HTMLElement>(s: string) => root.querySelector<T>(s)!;
+    const type = $<HTMLSelectElement>('[data-sw-type]'), date = $<HTMLInputElement>('[data-sw-date]');
+    const seeChips = [...root.querySelectorAll<HTMLButtonElement>('[data-sw-see]')];
+    const iso = (d: Date) => new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+    let see = '';
+
+    // restore
+    let saved: any = {};
+    try { saved = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch {}
+    if (saved.type && SEEDS.some((s: any) => s.id === saved.type)) type.value = saved.type;
+    else {
+      // no saved seed yet: start from the grass picker's answer if there is one
+      const fromPicker: Record<string, string> = { 'kbg-rye': 'kbg-rye', rye: 'rye', tttf: 'tttf', sunshade: 'sunshade', shade: 'ff' };
+      try { const g = localStorage.getItem('mit-grass'); if (g && fromPicker[g]) type.value = fromPicker[g]; } catch {}
+    }
+    date.value = saved.date || iso(new Date(Date.now() - 7 * DAY));
+    date.max = iso(new Date());
+    see = saved.see || '';
+    const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ type: type.value, date: date.value, see })); } catch {} };
+
+    /* ---------- the picture: soil, seeds and sprouts drawn as pixels */
+    function scene(stage: number, wave: number) {
+      // seeded random so the picture doesn't jump around on every redraw
+      let s = 7; const r = () => ((s = (s * 9301 + 49297) % 233280) / 233280);
+      const px: string[] = [];
+      const rect = (x: number, y: number, w: number, h: number, c: string) => px.push(`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`);
+      rect(0, 0, 104, 34, '#9fc6e6');                 // sky
+      rect(0, 0, 104, 6, '#b7d6ee');
+      rect(0, 20, 104, 14, '#6b4a2e');                // soil
+      for (let i = 0; i < 160; i++) rect(Math.floor(r() * 104), 20 + Math.floor(r() * 14), 1, 1, r() < 0.5 ? '#5a3d25' : '#7d5838');
+      for (let i = 0; i < 26; i++) rect(Math.floor(r() * 102), 19 + Math.floor(r() * 3), 1, 1, '#d8c08a'); // seeds on top
+      const blades = [0, 10, 40, 60, 70][stage] * (stage === 1 ? wave : 1);
+      const maxH = [0, 3, 7, 12, 14][stage];
+      const gap = stage === 3 ? 0.12 : stage === 2 ? 0.2 : 0;
+      for (let i = 0; i < blades; i++) {
+        const x = Math.floor(r() * 103);
+        if (gap && r() < gap) continue;                 // thin spots
+        const h = Math.max(1, Math.round(maxH * (0.45 + r() * 0.55)));
+        const c = r() < 0.5 ? '#5fae3e' : '#79c64f';
+        rect(x, 20 - h, 1, h, c);
+        if (h > 4 && r() < 0.4) rect(x + (r() < 0.5 ? -1 : 1), 20 - h + 1, 1, 1, '#9fd36a');
+      }
+      return px.join('');
+    }
+
+    /* ---------- stages */
+    function stageOf(d: number, sd: any) {
+      if (d < sd.first[0]) return 0;                    // soaking
+      if (d <= sd.last[1]) return 1;                     // sprouting
+      if (d <= 28) return 2;                             // filling in
+      if (d <= 49) return 3;                             // first mow window
+      return 4;                                          // growing up
+    }
+    const STAGES = ['Soaking it up', 'Sprouting', 'Filling in', 'First mow window', 'Growing up'];
+
+    async function soilTemp() {
+      const p = getPlace(); const el = $('[data-sw-soil]');
+      try {
+        const u = `https://api.open-meteo.com/v1/forecast?latitude=${p.lat.toFixed(3)}&longitude=${p.lon.toFixed(3)}&current=soil_temperature_6cm&temperature_unit=fahrenheit&timezone=America%2FNew_York`;
+        const j = await (await fetch(u)).json();
+        const t = Math.round(j.current.soil_temperature_6cm);
+        if (!Number.isFinite(t)) return;
+        el.hidden = false;
+        el.innerHTML = t < 50
+          ? `<b>Soil in ${p.name}: ${t}°F.</b> Below about 50°F, seed slows way down and may just sit until spring. That’s called dormant seeding, and it works. Nothing’s wrong.`
+          : t > 80
+            ? `<b>Soil in ${p.name}: ${t}°F.</b> That’s hot for cool-season seed. Keep the surface damp and expect some losses.`
+            : `<b>Soil in ${p.name}: ${t}°F.</b> Right in the sweet spot (50–70°F) for sprouting.`;
+      } catch { el.hidden = true; }
+    }
+
+    function update() {
+      const sd = SEEDS.find((s: any) => s.id === type.value);
+      const planted = new Date(date.value + 'T12:00');
+      const today = new Date(); today.setHours(12, 0, 0, 0);
+      const d = Math.round((today.getTime() - planted.getTime()) / DAY);
+      seeChips.forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.swSee === see)));
+      save();
+      if (!date.value || Number.isNaN(d)) return;
+      if (d < 0) {
+        $('[data-sw-day]').textContent = 'Not yet';
+        $('[data-sw-stage]').textContent = 'That date is in the future';
+        $('[data-sw-verdict]').textContent = 'Pick the day you actually spread the seed.';
+        return;
+      }
+      const st = stageOf(d, sd);
+      const mixed = sd.first[0] !== sd.last[0];
+      // how far through the sprouting waves we are (for the picture)
+      const wave = st === 1 ? Math.min(1, 0.35 + (d - sd.first[0]) / Math.max(1, sd.last[1] - sd.first[0])) : 1;
+      $('[data-sw-day]').textContent = `Day ${d}`;
+      $('[data-sw-stage]').textContent = STAGES[st];
+      $('[data-sw-scene]').innerHTML = scene(st, wave);
+
+      // timeline: 0 → 56 days, bands for sprouting and mowing
+      const span = 56, pct = (n: number) => `${Math.min(100, (n / span) * 100)}%`;
+      $('[data-sw-track]').innerHTML =
+        `<span class="sw-band sw-b-sprout" style="left:${pct(sd.first[0])};width:calc(${pct(sd.last[1])} - ${pct(sd.first[0])})"></span>` +
+        `<span class="sw-band sw-b-mow" style="left:${pct(28)};width:calc(${pct(42)} - ${pct(28)})"></span>`;
+      $('[data-sw-today]').style.left = pct(d);
+      const steps = [
+        ['Day 0', 'Seed down'],
+        [`Days ${sd.first[0]}–${sd.first[1]}`, mixed ? 'First sprouts' : 'Sprouts'],
+        ...(mixed ? [[`Days ${sd.last[0]}–${sd.last[1]}`, 'The slow ones show up']] : []),
+        ['Weeks 4–6', 'First mow'],
+        ['Next spring', 'Thick lawn'],
+      ];
+      $('[data-sw-steps]').innerHTML = steps.map(([a, b]) => `<li><b>${a}</b><span>${b}</span></li>`).join('');
+
+      // verdict: what they should see vs. what they see
+      let word = 'ON TRACK', tone = 'yes', line = '';
+      const late = d > sd.last[1] + 7;
+      if (st === 0) {
+        line = `Nothing to see yet, and that’s exactly right. The seed is soaking up water and splitting open. ${sd.note} First green usually shows around day ${sd.first[0]} to ${sd.first[1]}.`;
+        if (see && see !== 'nothing') { word = 'AHEAD OF SCHEDULE'; line = `Already? Nice. Some seed always jumps early. ${sd.note}`; }
+        else { word = see ? 'RIGHT ON TIME' : 'TOO SOON TO TELL'; tone = see ? 'yes' : 'close'; }
+      } else if (st === 1) {
+        line = mixed
+          ? `Sprout season. Get low, look across the yard in morning light, and you’ll see thin green hairs. ${sd.note} Keep watering until day ${sd.last[1]} even if it looks done.`
+          : `Sprout season. Get low and look across the yard in morning light for thin green hairs. ${sd.note}`;
+        if (see === 'nothing') {
+          if (d <= sd.first[1] + 3) { word = 'STILL NORMAL'; tone = 'close'; line = `Nothing yet on day ${d} is still inside the normal window (days ${sd.first[0]}–${sd.last[1]}). Look closer: early sprouts are thinner than a hair. Keep it damp and check again in a few days.`; }
+          else { word = 'KEEP WATERING'; tone = 'close'; line = `It’s getting late for the first wave, but it’s not over. Most seed that “didn’t work” just dried out once or got buried. Keep the top damp every day. Check the list below.`; }
+        }
+      } else {
+        line = st === 2
+          ? 'The grass is up and filling in. Patchy right now is normal. Some seed is still coming, and the first ones are growing roots.'
+          : st === 3
+            ? 'This is the first mow window. Once it’s about 4 inches tall, give it a gentle haircut. Mowing actually helps it thicken up.'
+            : 'It’s a lawn now. A young one. Thin spots get a little more seed; the rest thickens up through next spring.';
+        if (see === 'nothing') { word = 'LET’S CHECK'; tone = 'no'; line = `Nothing by day ${d} means something got in the way. It happens to everyone. See what to check below, then reseed. Fall seed can still go down until about mid-October around here.`; }
+        else if (see === 'few' || see === 'patchy') { word = late ? 'TOUCH UP' : 'NORMAL'; tone = late ? 'close' : 'yes'; if (late) line = `Patchy at day ${d} is common, and it’s fixable. Rake the thin spots lightly, add a little more seed, and keep just those spots damp for two weeks.`; }
+      }
+      $('[data-sw-word]').textContent = word; $('[data-sw-word]').dataset.tone = tone;
+      $('[data-sw-verdict]').textContent = line;
+
+      // watering
+      $('[data-sw-water]').textContent = st <= 1
+        ? 'Keep the top half inch damp, all the time. Light sprinkles 1 to 3 times a day: more when it’s sunny, warm or windy, less when it’s cool and cloudy. Rain counts. Puddles mean too much.'
+        : st === 2
+          ? 'Ease off to once a day, a little longer each time, so roots chase the water down. Skip it if it rained.'
+          : 'Every few days, longer and deeper. Once you’ve mowed it a couple of times, switch to normal lawn watering: about an inch a week, rain included.';
+
+      // mowing
+      const mowFrom = new Date(planted.getTime() + 28 * DAY), mowTo = new Date(planted.getTime() + 42 * DAY);
+      const fmt = (x: Date) => x.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      $('[data-sw-mow]').textContent = st >= 4
+        ? 'Yes. Mow it like the rest of the lawn, tall (3.5 to 4 inches), with a sharp blade.'
+        : (today >= mowFrom
+            ? 'Any time now, once it’s about 4 inches tall.'
+            : `Probably between ${fmt(mowFrom)} and ${fmt(mowTo)}.`) +
+          ' Go by height, not the date: mower on its highest setting, sharp blade, dry ground. Take off the top inch, no more.' +
+          ([10, 11, 0, 1].includes(mowFrom.getMonth()) ? ' Seeded late in the fall? Growth slows way down when it gets cold, so the first mow may wait until spring.' : '');
+
+      // what to watch for
+      const watch = st <= 1
+        ? ['A dry surface. One dry afternoon can kill sprouting seed. This is the #1 reason seed fails.',
+           'Washed-away seed after a downpour. Re-spread a little where you see bare dirt lines.',
+           'Birds. They take some. That’s why bags have extra.',
+           'Stay off it. Footprints crush sprouts and bury seed.']
+        : ['Thin spots. Normal. Touch them up with a pinch of seed and keep them damp.',
+           'No weed killer yet. Wait until you’ve mowed 3 or 4 times, and read the label. Some weeds now are fine; mowing knocks most of them out.',
+           'Don’t rake leaves hard. Mow over them or use a light leaf blower setting.',
+           'Light green color is normal on new grass. It darkens as it grows.'];
+      if (late && see === 'nothing') watch.unshift('Buried seed: it wants to sit just under the surface, about ¼ inch. Deeper doesn’t come up.', 'A crabgrass preventer put down in the last few months blocks grass seed too.', 'Old seed. Check the test date on the tag. Over a year or two old drops off fast.');
+      $('[data-sw-watch]').innerHTML = watch.map((w) => `<li>${w}</li>`).join('');
+    }
+
+    function ics() {
+      const sd = SEEDS.find((s: any) => s.id === type.value);
+      const p = new Date(date.value + 'T12:00');
+      const day = (n: number) => { const x = new Date(p.getTime() + n * DAY); return x.toISOString().slice(0, 10).replace(/-/g, ''); };
+      const ev = (n: number, title: string, body: string) =>
+        `BEGIN:VEVENT\r\nUID:mit-seed-${n}-${day(0)}@mowittall.com\r\nDTSTAMP:${day(0)}T120000Z\r\nDTSTART;VALUE=DATE:${day(n)}\r\nSUMMARY:${title}\r\nDESCRIPTION:${body}\r\nEND:VEVENT\r\n`;
+      const text = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Mow It Tall//Seed//EN\r\n' +
+        ev(sd.first[1], 'Look for grass sprouts', 'Get low and look across the yard in morning light. Keep it damp. mowittall.com/resources/#seedwatch') +
+        (sd.last[1] !== sd.first[1] ? ev(sd.last[1], 'Seed check: the slow ones', 'The bluegrass/fescue should be up by now. Ease watering to once a day. mowittall.com/resources/#seedwatch') : '') +
+        ev(30, 'First mow check', 'Is the new grass about 4 inches? Mower on high, sharp blade, dry ground. mowittall.com/resources/#seedwatch') +
+        'END:VCALENDAR\r\n';
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([text], { type: 'text/calendar' }));
+      a.download = 'mow-it-tall-seed.ics'; a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+    }
+
+    type.addEventListener('change', update);
+    date.addEventListener('change', update);
+    seeChips.forEach((c) => c.addEventListener('click', () => { see = see === c.dataset.swSee ? '' : c.dataset.swSee!; update(); }));
+    $('[data-sw-ics]').addEventListener('click', ics);
+    window.addEventListener('mit:place', soilTemp);
+    update();
+    soilTemp();
+  });
+</script>

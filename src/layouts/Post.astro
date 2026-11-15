@@ -23,7 +23,8 @@ import ThirdRule from '../components/ThirdRule.astro';
 import PartyCountdown from '../components/PartyCountdown.astro';
 import BladeCheck from '../components/BladeCheck.astro';
 import Checklist from '../components/Checklist.astro';
-import { WAITS, PREPOST, MULCHBAG, COMPLIMENTS, TRAINING } from '../data/pickers2.js';
+import SeedWatch from '../components/SeedWatch.astro';
+import { WAITS, PREPOST, MULCHBAG, COMPLIMENTS, TRAINING, HIRE, PITCH } from '../data/pickers2.js';
 import { TUNEUP } from '../data/tuneup.js';
 const { frontmatter, url } = Astro.props;
 const { title, description, tag, widget, extra, faq } = frontmatter;
@@ -87,6 +88,15 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [posting, crumbs, .
     <article class="prose">
       <slot />
     </article>
+    {widget === 'seed-watch' && (
+      <div class="post-widget" data-widget="seed-watch"><SeedWatch id="seedwatch-post" guide={false} /></div>
+    )}
+    {widget === 'hire-it' && (
+      <div class="post-widget" data-widget="hire-it"><ChipPicker id="hire" title="Hire it or DIY?" sub="Tap the job. Get my honest call." items={HIRE} prompt="Tap a job." /></div>
+    )}
+    {widget === 'pitch' && (
+      <div class="post-widget" data-widget="pitch"><ChipPicker id="pitch" title="Handle the objection" sub="Tap what they said. Here’s your move." items={PITCH} prompt="Tap what they said." /></div>
+    )}
     {widget === 'mow-check' && (
       <div class="post-widget" data-widget="mow-check"><MowCheck /></div>
     )}
@@ -192,7 +202,7 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [posting, crumbs, .
     <BeerCallout />
     <aside class="window post-cta" data-pagefind-ignore>
       <h2>Want the short version for your yard?</h2>
-      <p>Seven questions, two minutes, one plan.</p>
+      <p>Nine quick questions, two minutes, one plan.</p>
       <a class="btn" href="/plan/">Get My Free Lawn Plan</a>
     </aside>
   </main>

@@ -1932,3 +1932,30 @@ main > section.gp { margin-left: 16px; margin-right: 16px; }
 .lw-rain-key .k-rain { background: #6bb3e8; }
 .lw-rain-key .k-need { background: #f3eadb; width: 4px; border-radius: 1px; box-shadow: 0 0 0 1px #120c08; }
 .lw-rain-key span { white-space: nowrap; }
+
+/* Plan results v2 (Nov 15): live block, grass, numbers, fixes, per-task amounts + tool links, toolkit */
+.plan-notes li a { color: var(--ink); }
+.plan-box { background: rgba(0, 0, 0, 0.18); border: 2px solid rgba(238, 245, 230, 0.22); border-radius: 12px; padding: 14px 14px 10px; margin: 0 0 14px; }
+.plan-box h3 { font-size: 1.2rem; margin: 0 0 8px; color: var(--paper); }
+.plan-box p { margin: 0 0 8px; color: var(--paper-dim); font-size: 0.97rem; }
+.plan-box b { color: var(--paper); }
+.plan-now-grid { display: grid; gap: 6px; }
+@media (min-width: 560px) { .plan-now-grid { grid-template-columns: 1fr 1fr; } }
+.plan-now-grid small { display: block; font-size: 0.88rem; }
+.plan-k { display: inline-block; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--leaf); margin-right: 4px; }
+.plan-links { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.plan-links a { font-weight: 700; font-size: 0.92rem; color: var(--paper); }
+.plan-links a::after { content: ' →'; }
+.plan-item .plan-links a { color: var(--ink); }
+.plan-size span { display: block; font-weight: 700; font-size: 0.9rem; color: #e3efdc; margin-bottom: 5px; }
+.plan-size input { width: 100%; max-width: 220px; font: 750 1.2rem var(--display); color: var(--ink); background: var(--paper); border: 2px solid var(--win-edge); border-radius: 8px; padding: 8px 10px; }
+.plan-src { font-size: 0.88rem !important; margin-top: 6px !important; }
+.plan-src a { color: var(--paper); }
+.plan-numbers .lc-list { margin: 8px 0 4px; }
+.plan-numbers .lc-list a { color: var(--ink); font-weight: 700; }
+.plan-fix { border-top: 1px solid rgba(238, 245, 230, 0.15); padding-top: 8px; margin-top: 4px; }
+.plan-fix:first-of-type { border-top: 0; padding-top: 0; }
+.plan-fix h4 { margin: 0 0 3px; font-size: 1rem; color: var(--paper); }
+.plan-list-h { font-size: 1.3rem; margin: 22px 0 10px; }
+.plan-item .plan-amt { margin-top: 6px; font-weight: 700; font-size: 0.93rem; color: #1d4a2b; background: #e2efd6; border-radius: 6px; padding: 5px 8px; }
+.plan-kit { margin-top: 18px; }

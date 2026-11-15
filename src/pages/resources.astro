@@ -5,6 +5,7 @@ import SoilGauge from '../components/SoilGauge.astro';
 import RainMeter from '../components/RainMeter.astro';
 import ChipPicker from '../components/ChipPicker.astro';
 import CanISeed from '../components/CanISeed.astro';
+import SeedWatch from '../components/SeedWatch.astro';
 import LawnCalc from '../components/LawnCalc.astro';
 import SpreaderHelper from '../components/SpreaderHelper.astro';
 import { DX, DX_GROUPS } from '../data/diagnose.js';
@@ -13,9 +14,9 @@ import { NEEDS, NEED_GROUPS } from '../data/doINeed.js';
 
 const title = 'Free Lawn Care Tools and Calculators | Mow It Tall';
 const description =
-  'Free lawn tools: can I seed now, what’s wrong with my lawn, order of operations, lawn calculator, spreader settings, should I water and soil temperature.';
+  'Free lawn tools: can I seed now, is my grass seed working, what’s wrong with my lawn, order of operations, lawn calculator, spreader settings, should I water and soil temperature.';
 const jump = [
-  ['#seed', 'Can I seed now?'], ['#dx', 'What’s wrong?'], ['#ops', 'Order of operations'], ['#calc', 'Lawn calculator'],
+  ['#seed', 'Can I seed now?'], ['#seedwatch', 'Is my seed working?'], ['#dx', 'What’s wrong?'], ['#ops', 'Order of operations'], ['#calc', 'Lawn calculator'],
   ['#spreader', 'Spreader settings'], ['#need', 'Do I need this?'], ['#water-h', 'Should I water?'], ['#measure-h', 'Measure'], ['#grass-h', 'Pick grass'],
 ];
 ---
@@ -32,12 +33,13 @@ const jump = [
     <section class="plan plan-mid" aria-labelledby="quiz-h">
       <div class="window plan-card">
         <h2 id="quiz-h">Your lawn plan</h2>
-        <p>Seven questions about your yard and how much effort you’ll honestly give. You get the few things that matter, in order, with phone reminders.</p>
+        <p>Nine quick questions about your yard and how much effort you’ll honestly give. You get the few things that matter, in order, with phone reminders.</p>
         <a class="btn" href="/plan/">Get My Free Lawn Plan</a>
       </div>
     </section>
 
     <section class="tool-sec"><CanISeed /></section>
+    <section class="tool-sec"><SeedWatch /></section>
 
     <section class="tool-sec">
       <ChipPicker id="dx" title="What’s wrong with my lawn?" sub="Tap what you’re seeing. I’ll tell you the likely cause, how to check, and the fix." items={DX} groups={DX_GROUPS} prompt="Tap what your lawn is doing." />

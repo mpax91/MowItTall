@@ -69,7 +69,10 @@ const { postHref = '', id = 'gp' } = Astro.props;
     }
 
     function show() {
-      const r = (RESULTS as Record<string, R>)[pick(answers as any)];
+      const key = pick(answers as any);
+      const r = (RESULTS as Record<string, R>)[key];
+      // remember the pick so the lawn calculator, seed tracker and plan can use it
+      try { localStorage.setItem('mit-grass', key); window.dispatchEvent(new CustomEvent('mit:grass', { detail: key })); } catch {}
       $('[data-gp-quiz]').hidden = true;
       $('[data-gp-result]').hidden = false;
       $('[data-gp-tag]').textContent = r.tag;
