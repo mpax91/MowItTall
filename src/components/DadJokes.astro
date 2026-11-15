@@ -40,13 +40,14 @@ const total = JOKES.length;
 </section>
 
 <script>
-  const MSGS = [
+  // [share of jokes revealed, message]
+  const MSGS: [number, string][] = [
     [0, 'You’re fine. For now.'],
-    [4, 'A small groan escaped. That’s normal.'],
-    [8, 'Your eyes are rolling on their own now.'],
-    [12, 'You just said “oh no” out loud.'],
-    [16, 'You are becoming a dad. There’s no cure.'],
-    [20, 'You made it. Go mow something.'],
+    [0.2, 'A small groan escaped. That’s normal.'],
+    [0.4, 'Your eyes are rolling on their own now.'],
+    [0.6, 'You just said “oh no” out loud.'],
+    [0.8, 'You are becoming a dad. There’s no cure.'],
+    [1, 'You made it. Go mow something.'],
   ];
   document.querySelectorAll<HTMLElement>('[data-dj]').forEach((root) => {
     const cards = [...root.querySelectorAll<HTMLButtonElement>('[data-dj-card]')];
@@ -59,7 +60,7 @@ const total = JOKES.length;
       count.textContent = String(done);
       fill.style.width = `${(done / cards.length) * 100}%`;
       let m = MSGS[0][1];
-      for (const [min, text] of MSGS) if (done >= (min as number)) m = text as string;
+      for (const [min, text] of MSGS) if (done / cards.length >= min) m = text;
       msg.textContent = m;
       all.hidden = done === cards.length;
     };
