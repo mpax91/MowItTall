@@ -1,0 +1,175 @@
+// Mow It Tall API (Cloudflare Worker). Everything that isn't /api/* is served straight from ./dist.
+// Lawn Hall of Fame / Hall of Shame: anyone can upload, Mike approves before anything shows,
+// Reddit-style up/down votes, one vote per photo per phone (random device id, no spam check by Mike's call).
+// Storage: one D1 database (binding DB). Photos are stored as BLOBs (resized in the browser to ~1600px JPEG,
+// which also strips GPS/EXIF). Admin = the ADMIN_KEY secret set in the Cloudflare dashboard.
+
+const SEED = [
+  // Mike's own photos start the Hall of Fame (static files in /public/img).
+  ['mike-front', 'fame', 'Front yard, late May. The rhododendrons help. So do the stripes.', 'Mike', 'Bedford', '/img/front-yard-may-1400.webp', 1400, 1050],
+  ['mike-back', 'fame', 'Backyard, June. Regular push mower, mowed tall and straight.', 'Mike', 'Bedford', '/img/backyard-stripes-1400.webp', 1400, 1050],
+  ['mike-spiral', 'fame', 'The spiral. One evening, zero useful skills. Neighbors still ask.', 'Mike', 'Bedford', '/img/spiral-pattern-1400.webp', 1400, 788],
+  ['mike-frost', 'fame', 'November stripes. This lawn didn’t get the memo.', 'Mike', 'Bedford', '/img/frosty-stripes-november-1400.webp', 1400, 1050],
+];
+const MAX_BYTES = 1_900_000;          // D1 rows top out around 2 MB
+const MAX_UPLOADS_PER_DAY = 10;       // per device, just to keep a runaway script from filling the database
+
+let ready = null;
+async function init(db) {
+  if (!ready) {
+    ready = (async () => {
+      await db.batch([
+        db.prepare(`CREATE TABLE IF NOT EXISTS posts (
+          id TEXT PRIMARY KEY, board TEXT NOT NULL, caption TEXT, name TEXT, town TEXT,
+          status TEXT NOT NULL DEFAULT 'pending', created INTEGER NOT NULL, approved INTEGER,
+          device TEXT, img_url TEXT, img BLOB, w INTEGER, h INTEGER, score INTEGER NOT NULL DEFAULT 0)`),
+        db.prepare(`CREATE TABLE IF NOT EXISTS votes (
+          post_id TEXT NOT NULL, device TEXT NOT NULL, value INTEGER NOT NULL, at INTEGER NOT NULL,
+          PRIMARY KEY (post_id, device))`),
+        db.prepare(`CREATE INDEX IF NOT EXISTS posts_board ON posts (board, status)`),
+      ]);
+      const now = Date.now();
+      await db.batch(SEED.map(([id, board, caption, name, town, url, w, h], i) =>
+        db.prepare(`INSERT OR IGNORE INTO posts (id, board, caption, name, town, status, created, approved, img_url, w, h)
+                    VALUES (?, ?, ?, ?, ?, 'approved', ?, ?, ?, ?, ?)`).bind(id, board, caption, name, town, now - i * 60000, now - i * 60000, url, w, h)));
+    })().catch((e) => { ready = null; throw e; });
+  }
+  return ready;
+}
+
+const json = (data, status = 200, extra = {}) =>
+  new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store', ...extra } });
+const bad = (msg, status = 400) => json({ error: msg }, status);
+const clean = (s, n) => String(s ?? '').replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, n);
+const isDevice = (d) => typeof d === 'string' && /^[a-z0-9-]{8,64}$/i.test(d);
+const isAdmin = (env, key) => !!env.ADMIN_KEY && typeof key === 'string' && key.length > 0 && key === env.ADMIN_KEY;
+
+// Reddit's "hot": log of the net score, plus time, so new posts get a shot.
+const hot = (score, created) => {
+  const order = Math.log10(Math.max(Math.abs(score), 1));
+  const sign = score > 0 ? 1 : score < 0 ? -1 : 0;
+  return sign * order + (created / 1000 - 1_700_000_000) / 45000;
+};
+
+function publicPost(p, myVote) {
+  return {
+    id: p.id, board: p.board, caption: p.caption, name: p.name, town: p.town, score: p.score,
+    created: p.created, w: p.w, h: p.h, vote: myVote || 0,
+    img: p.img_url || `/api/hall/img/${p.id}`,
+  };
+}
+
+async function list(env, url) {
+  const board = url.searchParams.get('board') === 'shame' ? 'shame' : 'fame';
+  const sort = ['hot', 'top', 'new'].includes(url.searchParams.get('sort')) ? url.searchParams.get('sort') : 'hot';
+  const device = url.searchParams.get('device');
+  const { results } = await env.DB.prepare(
+    `SELECT id, board, caption, name, town, created, approved, img_url, w, h, score FROM posts
+     WHERE board = ? AND status = 'approved' ORDER BY approved DESC LIMIT 300`).bind(board).all();
+  let mine = {};
+  if (isDevice(device) && results.length) {
+    const v = await env.DB.prepare('SELECT post_id, value FROM votes WHERE device = ?').bind(device).all();
+    mine = Object.fromEntries(v.results.map((r) => [r.post_id, r.value]));
+  }
+  const posts = results.map((p) => publicPost(p, mine[p.id]));
+  if (sort === 'top') posts.sort((a, b) => b.score - a.score || b.created - a.created);
+  else if (sort === 'new') posts.sort((a, b) => b.created - a.created);
+  else posts.sort((a, b) => hot(b.score, b.created) - hot(a.score, a.created));
+  const counts = await env.DB.prepare(`SELECT board, COUNT(*) n FROM posts WHERE status = 'approved' GROUP BY board`).all();
+  return json({ board, sort, posts, counts: Object.fromEntries(counts.results.map((r) => [r.board, r.n])) });
+}
+
+async function vote(env, req) {
+  const { id, device, value } = await req.json().catch(() => ({}));
+  if (!isDevice(device)) return bad('Missing device.');
+  const v = Number(value);
+  if (![1, -1, 0].includes(v)) return bad('Bad vote.');
+  const post = await env.DB.prepare(`SELECT id FROM posts WHERE id = ? AND status = 'approved'`).bind(String(id)).first();
+  if (!post) return bad('No such photo.', 404);
+  const stmts = [];
+  if (v === 0) stmts.push(env.DB.prepare('DELETE FROM votes WHERE post_id = ? AND device = ?').bind(post.id, device));
+  else stmts.push(env.DB.prepare(`INSERT INTO votes (post_id, device, value, at) VALUES (?, ?, ?, ?)
+    ON CONFLICT (post_id, device) DO UPDATE SET value = excluded.value, at = excluded.at`).bind(post.id, device, v, Date.now()));
+  stmts.push(env.DB.prepare('UPDATE posts SET score = (SELECT COALESCE(SUM(value), 0) FROM votes WHERE post_id = ?) WHERE id = ?').bind(post.id, post.id));
+  await env.DB.batch(stmts);
+  const row = await env.DB.prepare('SELECT score FROM posts WHERE id = ?').bind(post.id).first();
+  return json({ id: post.id, score: row.score, vote: v });
+}
+
+async function submit(env, req) {
+  const form = await req.formData().catch(() => null);
+  if (!form) return bad('Send the photo as a form.');
+  const device = form.get('device');
+  if (!isDevice(device)) return bad('Missing device.');
+  if (form.get('ok') !== 'yes') return bad('Please check the box first.');
+  const file = form.get('photo');
+  if (!file || typeof file === 'string') return bad('Pick a photo.');
+  if (!/^image\/(jpeg|webp|png)$/.test(file.type)) return bad('That file type won’t work. Try a JPG.');
+  if (file.size > MAX_BYTES) return bad('That photo is too big. Try a smaller one.');
+  const dayAgo = Date.now() - 86400000;
+  const recent = await env.DB.prepare('SELECT COUNT(*) n FROM posts WHERE device = ? AND created > ?').bind(device, dayAgo).first();
+  if (recent.n >= MAX_UPLOADS_PER_DAY) return bad('That’s a lot of lawns for one day. Try again tomorrow.', 429);
+  const id = crypto.randomUUID().replace(/-/g, '').slice(0, 12);
+  const board = form.get('board') === 'shame' ? 'shame' : 'fame';
+  const w = Math.min(4000, Math.max(1, parseInt(form.get('w'), 10) || 1200));
+  const h = Math.min(4000, Math.max(1, parseInt(form.get('h'), 10) || 900));
+  await env.DB.prepare(`INSERT INTO posts (id, board, caption, name, town, status, created, device, img, w, h)
+    VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?)`)
+    .bind(id, board, clean(form.get('caption'), 140), clean(form.get('name'), 40), clean(form.get('town'), 40), Date.now(), device, await file.arrayBuffer(), w, h)
+    .run();
+  return json({ ok: true, id });
+}
+
+async function image(env, id, url) {
+  const p = await env.DB.prepare('SELECT status, img, img_url FROM posts WHERE id = ?').bind(id).first();
+  if (!p) return new Response('Not found', { status: 404 });
+  const admin = isAdmin(env, url.searchParams.get('key'));
+  if (p.status !== 'approved' && !admin) return new Response('Not found', { status: 404 });
+  if (p.img_url) return Response.redirect(new URL(p.img_url, url).toString(), 302);
+  const bytes = new Uint8Array(p.img);
+  const type = bytes[0] === 0xff ? 'image/jpeg' : bytes[0] === 0x89 ? 'image/png' : 'image/webp';
+  return new Response(bytes, { headers: { 'content-type': type, 'cache-control': admin && p.status !== 'approved' ? 'no-store' : 'public, max-age=31536000, immutable' } });
+}
+
+async function admin(env, req, url) {
+  if (!env.ADMIN_KEY) return bad('Set the ADMIN_KEY secret in Cloudflare first.', 503);
+  if (req.method === 'GET') {
+    if (!isAdmin(env, url.searchParams.get('key'))) return bad('Wrong key.', 401);
+    const status = ['pending', 'approved', 'rejected'].includes(url.searchParams.get('status')) ? url.searchParams.get('status') : 'pending';
+    const { results } = await env.DB.prepare(
+      `SELECT id, board, caption, name, town, status, created, img_url, w, h, score FROM posts WHERE status = ? ORDER BY created DESC LIMIT 200`).bind(status).all();
+    const counts = await env.DB.prepare('SELECT status, COUNT(*) n FROM posts GROUP BY status').all();
+    return json({ posts: results.map((p) => ({ ...publicPost(p), status: p.status })), counts: Object.fromEntries(counts.results.map((r) => [r.status, r.n])) });
+  }
+  const { key, id, action, board } = await req.json().catch(() => ({}));
+  if (!isAdmin(env, key)) return bad('Wrong key.', 401);
+  const now = Date.now();
+  if (action === 'approve') await env.DB.prepare(`UPDATE posts SET status = 'approved', approved = ? WHERE id = ?`).bind(now, id).run();
+  else if (action === 'reject') await env.DB.prepare(`UPDATE posts SET status = 'rejected' WHERE id = ?`).bind(id).run();
+  else if (action === 'move') await env.DB.prepare('UPDATE posts SET board = ? WHERE id = ?').bind(board === 'shame' ? 'shame' : 'fame', id).run();
+  else if (action === 'delete') await env.DB.batch([
+    env.DB.prepare('DELETE FROM votes WHERE post_id = ?').bind(id),
+    env.DB.prepare('DELETE FROM posts WHERE id = ?').bind(id),
+  ]);
+  else return bad('Unknown action.');
+  return json({ ok: true });
+}
+
+export default {
+  async fetch(req, env) {
+    const url = new URL(req.url);
+    if (!url.pathname.startsWith('/api/')) return env.ASSETS.fetch(req);
+    try {
+      await init(env.DB);
+      const p = url.pathname;
+      if (p === '/api/hall' && req.method === 'GET') return await list(env, url);
+      if (p === '/api/hall/vote' && req.method === 'POST') return await vote(env, req);
+      if (p === '/api/hall/submit' && req.method === 'POST') return await submit(env, req);
+      if (p.startsWith('/api/hall/img/') && req.method === 'GET') return await image(env, p.split('/').pop(), url);
+      if (p === '/api/hall/admin') return await admin(env, req, url);
+      return bad('Not found.', 404);
+    } catch (e) {
+      return json({ error: 'Something broke on our end. Try again in a minute.' }, 500);
+    }
+  },
+};

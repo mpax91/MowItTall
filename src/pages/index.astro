@@ -58,6 +58,11 @@ const tools = [
   { href: '/resources/#need', tag: 'Honest', title: 'Do I need this?', sub: 'Aerator shoes and other gadgets. Mostly no.' },
   { href: '/neighbor/', tag: 'Petty', title: 'Send to a neighbor', sub: 'A friendly, anonymous nudge for the yard next door.' },
 ];
+const hall = [
+  { href: '/hall/', img: `/img/${PHOTOS[0].src}-800.webp`, title: 'Hall of Fame', sub: 'The best lawns around. Vote them up.' },
+  { href: '/hall/?board=shame', icon: changeCards[1].icon, title: 'Hall of Shame', sub: 'Bald spots and dandelion farms. All in good fun.' },
+  { href: '/hall/#post', icon: changeCards[0].icon, title: 'Post a lawn', sub: 'Yours, or one you have the OK to post. I review every photo.' },
+];
 const games = [
   { href: '/games/', icon: changeCards[0].icon, title: 'The stripe game', sub: 'Eight yards, from a starter home to a snowy Christmas lawn.' },
   { href: '/games/#whack-h', icon: changeCards[1].icon, title: 'Whack-a-Weed', sub: '30 seconds. Hit the weeds, not the bees.' },
@@ -84,6 +89,7 @@ const games = [
       <CardRow id="l101" title="Lawn 101" lede="Everything a beginner actually needs. Start with one small change." href="/lawn-101/" more="Explore Lawn 101" items={lawn101} />
       <CardRow id="res" title="Free resources" lede="Tools that do the thinking for you. No account, no email." href="/resources/" more="See All Resources" items={tools} kind="tools" />
       <CardRow id="blog" title="From the blog" lede="Lawn takes. Some hot, all short." href="/blog/" more="Read the Blog" items={posts.map((p) => ({ href: p.url, tag: p.tag, title: p.title }))} kind="blog" />
+      <CardRow id="hall" title="Lawn Hall of Fame (and Shame)" lede="Post your stripes. Nominate a disaster. Vote like it’s Reddit." href="/hall/" more="See the Hall" items={hall} />
       <CardRow id="games" title="Games" lede="For when you should be mowing." href="/games/" more="Play the Games" items={games} kind="games" />
 
       <section class="plan plan-end" id="plan" aria-labelledby="plan-h">

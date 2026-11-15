@@ -312,3 +312,61 @@ main.nb-page > section.nb-rules { padding: 26px 0 0; }
 .sw-actions { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0 8px; }
 .lc-label { font-weight: 700; font-size: 0.9rem; color: #e3efdc; margin: 14px 0 6px !important; }
 .lc-grass .cp-chip { padding: 6px 10px; font-size: 0.9rem; }
+
+/* ---------- Lawn Hall of Fame / Shame */
+.hall-cta { margin: 12px 0 0; }
+.hall-tabs { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 18px 0 8px; }
+.hall-tab {
+  font: 800 1.05rem var(--display); padding: 11px 8px; border-radius: 10px; cursor: pointer;
+  color: var(--paper); background: rgba(0, 0, 0, 0.2); border: 2px solid rgba(238, 245, 230, 0.25);
+}
+.hall-tab span { font-weight: 600; font-size: 0.85rem; opacity: 0.8; }
+.hall-tab[aria-selected='true'] { background: var(--paper); color: var(--ink); border-color: var(--ink); box-shadow: 0 4px 0 rgba(5, 20, 10, 0.35); }
+.hall-tab[data-board='shame'][aria-selected='true'] { background: #f3d7c9; }
+.hall-board-note { color: var(--paper-dim); font-size: 0.95rem; margin: 6px 0 10px; }
+.hall-sort { display: flex; gap: 6px; margin-bottom: 14px; }
+.hall-sort .cp-chip { padding: 6px 14px; }
+.hall-feed { list-style: none; margin: 0 0 26px; padding: 0; display: grid; gap: 14px; }
+.hall-msg { color: var(--paper-dim); background: rgba(0, 0, 0, 0.18); border-radius: 12px; padding: 18px; text-align: center; }
+.hall-card { background: var(--paper); color: var(--ink); border: 3px solid var(--ink); border-radius: 12px; overflow: hidden; box-shadow: 0 5px 0 rgba(5, 20, 10, 0.35); }
+.hall-card img { display: block; width: 100%; height: auto; max-height: 70vh; object-fit: cover; background: #cfd9c8; }
+.hall-body { display: flex; align-items: flex-start; gap: 12px; padding: 10px 12px 12px; }
+.hall-vote { flex: none; display: flex; align-items: center; gap: 2px; background: #e2eadb; border-radius: 99px; padding: 2px; }
+.hall-vote button {
+  width: 40px; height: 40px; border: 0; border-radius: 99px; background: transparent; cursor: pointer;
+  font-size: 1.05rem; line-height: 1; color: #5b6e5d;
+}
+.hall-vote button:hover { background: rgba(18, 48, 29, 0.08); }
+.hall-score { min-width: 2ch; text-align: center; font: 800 1.05rem var(--display); font-variant-numeric: tabular-nums; }
+.hall-vote[data-vote='1'] .hall-up { color: #fff; background: #3f9b3a; }
+.hall-vote[data-vote='1'] .hall-score { color: #2c7a28; }
+.hall-vote[data-vote='-1'] .hall-down { color: #fff; background: var(--red); }
+.hall-vote[data-vote='-1'] .hall-score { color: var(--red); }
+.hall-text { min-width: 0; padding-top: 2px; }
+.hall-caption { margin: 0 0 2px; font-weight: 700; font-size: 0.98rem; line-height: 1.35; overflow-wrap: anywhere; }
+.hall-meta { margin: 0; font-size: 0.85rem; color: #4a5d4b; }
+.hall-post form { display: grid; gap: 12px; margin-top: 12px; }
+.hall-board-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+.hall-board-pick label { position: relative; }
+.hall-board-pick input { position: absolute; opacity: 0; inset: 0; }
+.hall-board-pick span { display: block; text-align: center; font: 800 1rem var(--display); padding: 10px; border-radius: 10px; border: 2px solid rgba(238, 245, 230, 0.3); background: rgba(0, 0, 0, 0.18); cursor: pointer; }
+.hall-board-pick input:checked + span { background: var(--paper); color: var(--ink); border-color: var(--ink); }
+.hall-board-pick input:focus-visible + span { outline: 3px solid var(--sun); }
+.hall-file input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.hall-drop { display: grid; place-items: center; gap: 8px; min-height: 140px; padding: 12px; border: 2px dashed rgba(238, 245, 230, 0.5); border-radius: 12px; cursor: pointer; text-align: center; background: rgba(0, 0, 0, 0.15); }
+.hall-file input:focus-visible + .hall-drop { outline: 3px solid var(--sun); }
+.hall-drop img { max-width: 100%; max-height: 260px; border-radius: 8px; }
+.hall-field span { display: block; font-weight: 700; font-size: 0.9rem; color: #e3efdc; margin-bottom: 5px; }
+.hall-field small { font-weight: 400; opacity: 0.8; }
+.hall-field input { width: 100%; font: 600 1rem var(--body); color: var(--ink); background: var(--paper); border: 2px solid var(--win-edge); border-radius: 8px; padding: 10px; min-height: 44px; }
+.hall-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.hall-ok { display: flex; gap: 10px; align-items: flex-start; font-size: 0.93rem; line-height: 1.4; }
+.hall-ok input { width: 22px; height: 22px; flex: none; margin-top: 1px; accent-color: var(--leaf); }
+.hall-status:empty { display: none; }
+.hall-status { margin: 0 !important; font-weight: 700; color: var(--sun); }
+.hall-post .btn { justify-self: start; }
+.ha-key { display: grid; gap: 12px; }
+.ha-text { padding: 10px 12px 12px; }
+.ha-actions { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 0; }
+.hall-admin .hall-card .btn-quiet { color: var(--ink); border-color: var(--ink); }
+.ha-key[hidden], [data-queue][hidden] { display: none; }

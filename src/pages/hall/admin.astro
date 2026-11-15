@@ -1,0 +1,70 @@
+---
+// Mike's review queue for the Hall of Fame / Shame. Needs the ADMIN_KEY secret (set in the Cloudflare dashboard).
+import Base from '../../layouts/Base.astro';
+---
+<Base title="Review lawns | Mow It Tall" description="Review queue" path="/hall/admin/">
+  <main id="main" class="page hall-admin" data-admin>
+    <header class="page-head">
+      <h1>Review lawns</h1>
+      <p class="lede">Approve it and it shows up in the Hall right away. Reject it and nobody ever sees it.</p>
+    </header>
+    <form class="window tool ha-key" data-key-form>
+      <label class="hall-field"><span>Admin key</span><input type="password" autocomplete="current-password" data-key /></label>
+      <button type="submit" class="btn btn-small">Open the Queue</button>
+      <p class="hall-status" data-msg role="status"></p>
+    </form>
+    <div data-queue hidden>
+      <div class="hall-sort" role="group" aria-label="Show">
+        <button type="button" class="cp-chip" data-status="pending" aria-pressed="true">Waiting <span data-n="pending"></span></button>
+        <button type="button" class="cp-chip" data-status="approved" aria-pressed="false">Live <span data-n="approved"></span></button>
+        <button type="button" class="cp-chip" data-status="rejected" aria-pressed="false">Rejected <span data-n="rejected"></span></button>
+      </div>
+      <ol class="hall-feed" data-list></ol>
+    </div>
+  </main>
+  <script>
+    const root = document.querySelector<HTMLElement>('[data-admin]');
+    if (root) {
+      const $ = <T extends Element = HTMLElement>(s: string) => root.querySelector<T>(s)!;
+      let key = ''; try { key = localStorage.getItem('mit-admin') || ''; } catch {}
+      let status = 'pending';
+      const esc = (s: string) => String(s || '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+      async function load() {
+        const r = await fetch(`/api/hall/admin?key=${encodeURIComponent(key)}&status=${status}`);
+        const j = await r.json().catch(() => ({ error: 'Something broke.' }));
+        if (!r.ok) { $('[data-msg]').textContent = j.error; $('[data-queue]').hidden = true; return; }
+        try { localStorage.setItem('mit-admin', key); } catch {}
+        $('[data-msg]').textContent = ''; $('[data-key-form]').hidden = true; $('[data-queue]').hidden = false;
+        root.querySelectorAll<HTMLButtonElement>('[data-status]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.status === status)));
+        for (const k of ['pending', 'approved', 'rejected']) $(`[data-n="${k}"]`).textContent = j.counts[k] ? `(${j.counts[k]})` : '';
+        $('[data-list]').innerHTML = j.posts.length ? j.posts.map((p: any) => `
+          <li class="hall-card" data-id="${p.id}">
+            <img src="${p.img.startsWith('/api/') ? `${p.img}?key=${encodeURIComponent(key)}` : p.img}" alt="" width="${p.w}" height="${p.h}" loading="lazy" />
+            <div class="hall-text ha-text">
+              <p class="hall-caption"><b>${p.board === 'shame' ? 'Hall of Shame' : 'Hall of Fame'}</b>${p.caption ? ` · ${esc(p.caption)}` : ''}</p>
+              <p class="hall-meta">${[p.name, p.town].filter(Boolean).map(esc).join(' · ') || 'No name'} · ${new Date(p.created).toLocaleString()} · score ${p.score}</p>
+              <p class="ha-actions">
+                ${p.status !== 'approved' ? '<button type="button" class="btn btn-small" data-act="approve">Approve</button>' : ''}
+                ${p.status !== 'rejected' ? '<button type="button" class="btn btn-small btn-quiet" data-act="reject">Reject</button>' : ''}
+                <button type="button" class="btn btn-small btn-quiet" data-act="move">Move to ${p.board === 'shame' ? 'Fame' : 'Shame'}</button>
+                <button type="button" class="btn btn-small btn-quiet" data-act="delete">Delete</button>
+              </p>
+            </div>
+          </li>`).join('') : '<li class="hall-msg">Nothing here.</li>';
+      }
+      $('[data-key-form]').addEventListener('submit', (e) => { e.preventDefault(); key = $<HTMLInputElement>('[data-key]').value.trim(); load(); });
+      root.querySelectorAll<HTMLButtonElement>('[data-status]').forEach((b) => b.addEventListener('click', () => { status = b.dataset.status!; load(); }));
+      $('[data-list]').addEventListener('click', async (e) => {
+        const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-act]'); if (!b) return;
+        const li = b.closest<HTMLElement>('.hall-card')!;
+        const act = b.dataset.act!;
+        if (act === 'delete' && !confirm('Delete this photo for good?')) return;
+        const board = li.querySelector('.hall-caption b')!.textContent!.includes('Shame') ? 'fame' : 'shame';
+        b.disabled = true;
+        await fetch('/api/hall/admin', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key, id: li.dataset.id, action: act, board }) });
+        load();
+      });
+      if (key) load();
+    }
+  </script>
+</Base>

@@ -4,7 +4,7 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
   site: 'https://mowittall.com',
   trailingSlash: 'ignore',
-  integrations: [sitemap({ filter: (page) => !page.includes('/404') && !page.includes('/clippings') })],
+  integrations: [sitemap({ filter: (page) => !page.includes('/404') && !page.includes('/clippings') && !page.includes('/hall/admin') })],
   // Old blog address (it used to be called Clippings)
   redirects: {
     '/toolshed': '/resources/',

@@ -3,7 +3,7 @@ import Base from '../layouts/Base.astro';
 import { PHOTOS } from '../data/photos.js';
 
 const title = 'The yards: lawn stripe photos from Bedford, NY | Mow It Tall';
-const description = 'Real lawns, real stripes, no filters. Photos from Mike’s yard in Bedford, NY, and soon, yours.';
+const description = 'Real lawns, real stripes, no filters. Photos from Mike’s yard in Bedford, NY, plus the Lawn Hall of Fame where you can post yours.';
 ---
 <Base title={title} description={description} path="/yards/">
   <main id="main" class="page">
@@ -26,8 +26,8 @@ const description = 'Real lawns, real stripes, no filters. Photos from Mike’s 
     </div>
     <section class="window submit-card" aria-labelledby="submit-h">
       <h2 id="submit-h">Got stripes? Show off.</h2>
-      <p>Soon you’ll be able to post your yard here and let the neighborhood vote. Best stripes in town get bragging rights and absolutely nothing else.</p>
-      <p class="soon">Coming this spring</p>
+      <p>Post your yard in the Lawn Hall of Fame and let everyone vote. Or nominate a lawn for the Hall of Shame (with the owner’s OK). Best stripes get bragging rights and absolutely nothing else.</p>
+      <p><a class="btn" href="/hall/">See the Hall of Fame</a></p>
     </section>
   </main>
 </Base>

@@ -1,0 +1,215 @@
+---
+// Lawn Hall of Fame / Hall of Shame. Data comes from the Worker (/api/hall). Votes: one per photo per phone.
+import Base from '../../layouts/Base.astro';
+
+const title = 'Lawn Hall of Fame (and Hall of Shame) | Mow It Tall';
+const description = 'The best and worst lawns around, voted on by you. Post your stripes, nominate a disaster, and vote them up or down.';
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  name: 'Lawn Hall of Fame and Hall of Shame',
+  description,
+  url: 'https://mowittall.com/hall/',
+  isPartOf: { '@id': 'https://mowittall.com/#website' },
+};
+---
+<Base title={title} description={description} path="/hall/" jsonLd={jsonLd}>
+  <main id="main" class="page hall" data-hall>
+    <header class="page-head">
+      <h1>The Lawn Hall of Fame <span class="nowrap">(and Shame)</span></h1>
+      <p class="lede">The best lawns around, and the ones that make you hold your rake a little tighter. Vote them up or down. One vote per photo.</p>
+      <p class="hall-cta"><a class="btn" href="#post">Post a Lawn</a></p>
+    </header>
+
+    <div class="hall-tabs" role="tablist" aria-label="Pick a hall">
+      <button type="button" role="tab" class="hall-tab" data-board="fame" aria-selected="true">Hall of Fame <span data-count="fame"></span></button>
+      <button type="button" role="tab" class="hall-tab" data-board="shame" aria-selected="false">Hall of Shame <span data-count="shame"></span></button>
+    </div>
+    <p class="hall-board-note" data-board-note>Stripes, edges and grass so thick it looks fake. Up means it belongs here.</p>
+    <div class="hall-sort" role="group" aria-label="Sort">
+      <button type="button" class="cp-chip" data-sort="hot" aria-pressed="true">Hot</button>
+      <button type="button" class="cp-chip" data-sort="top" aria-pressed="false">Top</button>
+      <button type="button" class="cp-chip" data-sort="new" aria-pressed="false">New</button>
+    </div>
+
+    <ol class="hall-feed" data-feed aria-live="polite">
+      <li class="hall-msg">Loading the lawns…</li>
+    </ol>
+
+    <section class="window tool hall-post" id="post" aria-labelledby="post-h">
+      <h2 id="post-h">Post a lawn</h2>
+      <p class="tool-sub">Great stripes or a glorious disaster. I look at every photo before it goes up, usually within a day.</p>
+      <form data-post-form novalidate>
+        <div class="hall-board-pick" role="radiogroup" aria-label="Which hall?">
+          <label><input type="radio" name="board" value="fame" checked /> <span>Hall of Fame</span></label>
+          <label><input type="radio" name="board" value="shame" /> <span>Hall of Shame</span></label>
+        </div>
+        <label class="hall-file">
+          <input type="file" accept="image/*" data-file />
+          <span class="hall-drop" data-drop>
+            <img alt="" data-preview hidden />
+            <b data-drop-text>Tap to pick a photo</b>
+          </span>
+        </label>
+        <label class="hall-field"><span>Caption</span><input type="text" maxlength="140" data-caption placeholder="Say something about it" /></label>
+        <div class="hall-row">
+          <label class="hall-field"><span>Your name <small>(optional)</small></span><input type="text" maxlength="40" data-name placeholder="First name or a nickname" /></label>
+          <label class="hall-field"><span>Town <small>(optional)</small></span><input type="text" maxlength="40" data-town placeholder="Bedford" /></label>
+        </div>
+        <label class="hall-ok"><input type="checkbox" data-ok /> <span>It’s my lawn, or I have the owner’s OK. No faces, house numbers or street signs in the shot.</span></label>
+        <button type="submit" class="btn" data-submit>Send It In</button>
+        <p class="hall-status" data-status role="status"></p>
+      </form>
+      <p class="tool-fine">Photos are shrunk on your phone before upload, which also removes the location info hidden in the file. I reject anything mean, personal or not a lawn.</p>
+    </section>
+  </main>
+
+  <script>
+    const root = document.querySelector<HTMLElement>('[data-hall]');
+    if (root) {
+      const $ = <T extends Element = HTMLElement>(s: string) => root.querySelector<T>(s)!;
+      // one random id per phone/browser: that's what "one vote per photo" counts
+      let device = '';
+      try { device = localStorage.getItem('mit-device') || ''; } catch {}
+      if (!device) { device = crypto.randomUUID(); try { localStorage.setItem('mit-device', device); } catch {} }
+
+      const params = new URLSearchParams(location.search);
+      let board = params.get('board') === 'shame' ? 'shame' : 'fame';
+      let sort = ['hot', 'top', 'new'].includes(params.get('sort') || '') ? params.get('sort')! : 'hot';
+      const feed = $('[data-feed]');
+      const NOTES: Record<string, string> = {
+        fame: 'Stripes, edges and grass so thick it looks fake. Up means it belongs here.',
+        shame: 'Bald spots, dandelion farms and mowing crimes. Up means it belongs here. All in good fun.',
+      };
+      const ago = (t: number) => {
+        const m = Math.round((Date.now() - t) / 60000);
+        if (m < 60) return m <= 1 ? 'just now' : `${m} min ago`;
+        const h = Math.round(m / 60); if (h < 24) return `${h} hr ago`;
+        const d = Math.round(h / 24); if (d < 30) return `${d} day${d === 1 ? '' : 's'} ago`;
+        return new Date(t).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+      };
+      const esc = (s: string) => String(s || '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+
+      function card(p: any) {
+        const by = [p.name, p.town].filter(Boolean).map(esc).join(' · ');
+        return `<li class="hall-card" data-id="${p.id}">
+          <img src="${p.img}" alt="${esc(p.caption || 'A lawn')}" width="${p.w}" height="${p.h}" loading="lazy" decoding="async" />
+          <div class="hall-body">
+            <div class="hall-vote" data-vote="${p.vote}">
+              <button type="button" class="hall-up" aria-label="Upvote" aria-pressed="${p.vote === 1}">▲</button>
+              <b class="hall-score">${p.score}</b>
+              <button type="button" class="hall-down" aria-label="Downvote" aria-pressed="${p.vote === -1}">▼</button>
+            </div>
+            <div class="hall-text">
+              ${p.caption ? `<p class="hall-caption">${esc(p.caption)}</p>` : ''}
+              <p class="hall-meta">${by ? `${by} · ` : ''}${ago(p.created)}</p>
+            </div>
+          </div>
+        </li>`;
+      }
+
+      async function load() {
+        root.querySelectorAll<HTMLButtonElement>('[data-board]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.board === board)));
+        root.querySelectorAll<HTMLButtonElement>('[data-sort]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.sort === sort)));
+        $('[data-board-note]').textContent = NOTES[board];
+        history.replaceState(null, '', `?board=${board}${sort !== 'hot' ? `&sort=${sort}` : ''}${location.hash}`);
+        feed.innerHTML = '<li class="hall-msg">Loading the lawns…</li>';
+        try {
+          const r = await fetch(`/api/hall?board=${board}&sort=${sort}&device=${device}`);
+          const j = await r.json();
+          if (!r.ok) throw new Error(j.error);
+          for (const k of ['fame', 'shame']) $(`[data-count="${k}"]`).textContent = j.counts?.[k] ? `(${j.counts[k]})` : '';
+          feed.innerHTML = j.posts.length
+            ? j.posts.map(card).join('')
+            : `<li class="hall-msg">${board === 'shame' ? 'Nobody’s been shamed yet. Know a lawn that deserves it? Post it below (with the owner’s OK).' : 'No lawns yet. Be the first.'}</li>`;
+        } catch {
+          feed.innerHTML = '<li class="hall-msg">Couldn’t load the lawns. Try again in a minute.</li>';
+        }
+      }
+
+      // voting: tap again to undo, tap the other arrow to switch (just like Reddit)
+      feed.addEventListener('click', async (e) => {
+        const btn = (e.target as HTMLElement).closest('.hall-up, .hall-down');
+        if (!btn) return;
+        const li = btn.closest<HTMLElement>('.hall-card')!, box = li.querySelector<HTMLElement>('.hall-vote')!;
+        const cur = Number(box.dataset.vote), dir = btn.classList.contains('hall-up') ? 1 : -1;
+        const next = cur === dir ? 0 : dir;
+        const scoreEl = box.querySelector('.hall-score')!;
+        const before = Number(scoreEl.textContent);
+        const paint = (v: number, s: number) => {
+          box.dataset.vote = String(v); scoreEl.textContent = String(s);
+          box.querySelector('.hall-up')!.setAttribute('aria-pressed', String(v === 1));
+          box.querySelector('.hall-down')!.setAttribute('aria-pressed', String(v === -1));
+        };
+        paint(next, before - cur + next);                 // feels instant
+        try {
+          const r = await fetch('/api/hall/vote', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: li.dataset.id, device, value: next }) });
+          const j = await r.json();
+          if (!r.ok) throw new Error(j.error);
+          paint(j.vote, j.score);
+        } catch { paint(cur, before); }
+      });
+      root.querySelectorAll<HTMLButtonElement>('[data-board]').forEach((b) => b.addEventListener('click', () => { board = b.dataset.board!; load(); }));
+      root.querySelectorAll<HTMLButtonElement>('[data-sort]').forEach((b) => b.addEventListener('click', () => { sort = b.dataset.sort!; load(); }));
+
+      /* ---------- posting */
+      const fileIn = $<HTMLInputElement>('[data-file]'), preview = $<HTMLImageElement>('[data-preview]'), status = $('[data-status]');
+      let blob: Blob | null = null, dims = { w: 0, h: 0 };
+      // shrink to 1600px on the long side and re-encode as JPEG: smaller upload, and the GPS data is gone
+      async function shrink(file: File) {
+        const bmp = await createImageBitmap(file).catch(() => null);
+        let src: CanvasImageSource, w: number, h: number;
+        if (bmp) { src = bmp; w = bmp.width; h = bmp.height; }
+        else {
+          const img = new Image(); img.src = URL.createObjectURL(file);
+          await img.decode(); src = img; w = img.naturalWidth; h = img.naturalHeight;
+        }
+        const k = Math.min(1, 1600 / Math.max(w, h));
+        const c = document.createElement('canvas'); c.width = Math.round(w * k); c.height = Math.round(h * k);
+        c.getContext('2d')!.drawImage(src, 0, 0, c.width, c.height);
+        for (const q of [0.82, 0.72, 0.6, 0.5]) {
+          const b: Blob | null = await new Promise((r) => c.toBlob(r, 'image/jpeg', q));
+          if (b && b.size < 1_800_000) return { blob: b, w: c.width, h: c.height };
+        }
+        throw new Error('too big');
+      }
+      fileIn.addEventListener('change', async () => {
+        const f = fileIn.files?.[0]; if (!f) return;
+        status.textContent = 'Getting it ready…';
+        try {
+          const out = await shrink(f); blob = out.blob; dims = { w: out.w, h: out.h };
+          preview.src = URL.createObjectURL(blob); preview.hidden = false;
+          $('[data-drop-text]').textContent = 'Tap to pick a different photo';
+          status.textContent = '';
+        } catch { blob = null; status.textContent = 'Couldn’t open that photo. Try a different one (a JPG works best).'; }
+      });
+      $('[data-post-form]').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!blob) { status.textContent = 'Pick a photo first.'; return; }
+        if (!$<HTMLInputElement>('[data-ok]').checked) { status.textContent = 'Check the box first.'; return; }
+        const fd = new FormData();
+        fd.set('photo', blob, 'lawn.jpg');
+        fd.set('board', (root.querySelector<HTMLInputElement>('input[name="board"]:checked')!).value);
+        fd.set('caption', $<HTMLInputElement>('[data-caption]').value);
+        fd.set('name', $<HTMLInputElement>('[data-name]').value);
+        fd.set('town', $<HTMLInputElement>('[data-town]').value);
+        fd.set('w', String(dims.w)); fd.set('h', String(dims.h));
+        fd.set('device', device); fd.set('ok', 'yes');
+        const btn = $<HTMLButtonElement>('[data-submit]'); btn.disabled = true; status.textContent = 'Sending…';
+        try {
+          const r = await fetch('/api/hall/submit', { method: 'POST', body: fd });
+          const j = await r.json();
+          if (!r.ok) throw new Error(j.error);
+          status.textContent = 'Got it! I’ll take a look and it’ll show up here once it’s approved.';
+          blob = null; preview.hidden = true; fileIn.value = ''; $('[data-drop-text]').textContent = 'Tap to pick a photo';
+          ['[data-caption]', '[data-name]', '[data-town]'].forEach((s) => ($<HTMLInputElement>(s).value = ''));
+          $<HTMLInputElement>('[data-ok]').checked = false;
+        } catch (err: any) {
+          status.textContent = err?.message || 'That didn’t go through. Try again.';
+        } finally { btn.disabled = false; }
+      });
+
+      load();
+    }
+  </script>
+</Base>
