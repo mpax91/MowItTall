@@ -98,6 +98,43 @@ const NAV = [
       </nav>
       <p>Built in Bedford, NY by Mike. Works anywhere with cool-season grass.</p>
       <p>No gas leaf blowers were used in the making of this website.</p>
+      <button type="button" class="footer-lock" aria-label="Owner login" title="Owner login" data-lock>
+        <svg viewBox="0 0 10 12" width="15" height="18" aria-hidden="true" shape-rendering="crispEdges">
+          <path fill="currentColor" d="M3 0h4v1h1v4h1v7h-9v-7h1v-4h1zM3 2v3h4v-3h-1v-1h-2v1zM4 7v3h2v-3z" />
+        </svg>
+      </button>
+      <dialog class="lock-dialog" data-lock-dialog>
+        <form method="dialog" data-lock-form>
+          <label><span>Password</span><input type="password" autocomplete="current-password" data-lock-pass required /></label>
+          <p class="lock-msg" data-lock-msg role="status"></p>
+          <div class="lock-actions">
+            <button type="button" class="btn btn-small btn-quiet" data-lock-cancel>Cancel</button>
+            <button type="submit" class="btn btn-small">Open HQ</button>
+          </div>
+        </form>
+      </dialog>
     </footer>
+    <script>
+      // Footer lock: asks for the owner password, checks it with the server (ADMIN_KEY secret), then opens /admin/.
+      const lock = document.querySelector('[data-lock]');
+      const dlg = document.querySelector<HTMLDialogElement>('[data-lock-dialog]');
+      if (lock && dlg) {
+        const pass = dlg.querySelector<HTMLInputElement>('[data-lock-pass]')!, msg = dlg.querySelector('[data-lock-msg]')!;
+        lock.addEventListener('click', () => {
+          let saved = ''; try { saved = localStorage.getItem('mit-admin') || ''; } catch {}
+          if (saved) { location.href = '/admin/'; return; }
+          msg.textContent = ''; pass.value = ''; dlg.showModal(); pass.focus();
+        });
+        dlg.querySelector('[data-lock-cancel]')!.addEventListener('click', () => dlg.close());
+        dlg.querySelector('[data-lock-form]')!.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          msg.textContent = 'Checking…';
+          const r = await fetch('/api/admin/overview', { headers: { 'x-admin-key': pass.value } }).catch(() => null);
+          if (r && r.ok) { try { localStorage.setItem('mit-admin', pass.value); } catch {} location.href = '/admin/'; return; }
+          const j = r ? await r.json().catch(() => ({})) : {};
+          msg.textContent = r && r.status === 503 ? 'The password isn’t set up in Cloudflare yet.' : (j as any).error === 'Wrong key.' ? 'Wrong password.' : 'Couldn’t check right now.';
+        });
+      }
+    </script>
   </body>
 </html>
