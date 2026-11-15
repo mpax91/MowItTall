@@ -1,9 +1,11 @@
 // Common lawn weeds in Westchester and the Northeast, with plain-English fixes.
 // Product types are generic on purpose; always follow the label.
 
+// Photos: Wikimedia Commons, cropped and resized; files in public/img/weeds/<id>-960|480|thumb.webp
 export const WEEDS = [
   {
     id: 'dandelion',
+    photo: { alt: 'A bright yellow dandelion flower up close', by: 'Greg Hume', license: 'CC BY-SA 3.0', licenseUrl: 'https://creativecommons.org/licenses/by-sa/3.0/', source: 'https://commons.wikimedia.org/wiki/File:DandelionFlower.jpg' },
     name: 'Dandelion',
     looks: 'Yellow puffball flower, jagged leaves in a flat rosette.',
     when: 'Spring and fall',
@@ -25,6 +27,7 @@ export const WEEDS = [
   },
   {
     id: 'clover',
+    photo: { alt: 'White clover flowers dotting a backyard lawn', by: 'NY State IPM Program at Cornell University', license: 'CC BY 2.0', licenseUrl: 'https://creativecommons.org/licenses/by/2.0/', source: 'https://commons.wikimedia.org/wiki/File:White_clover_(Trifolium_repens)_in_a_backyard_lawn_(14442094141).jpg' },
     name: 'White clover',
     looks: 'Three round leaflets, little white pom-pom flowers.',
     when: 'Late spring through summer',
@@ -46,6 +49,7 @@ export const WEEDS = [
   },
   {
     id: 'crabgrass',
+    photo: { alt: 'A sprawling clump of crabgrass at the edge of a lawn by the curb', by: 'NY State IPM Program at Cornell University', license: 'CC BY 2.0', licenseUrl: 'https://creativecommons.org/licenses/by/2.0/', source: 'https://commons.wikimedia.org/wiki/File:Large_crabgrass_(18217952904).jpg' },
     name: 'Crabgrass',
     looks: 'Wide, pale-green blades that sprawl out flat like a crab. Shows up in July.',
     when: 'Sprouts in spring, ugly by July',
@@ -67,6 +71,7 @@ export const WEEDS = [
   },
   {
     id: 'plantain',
+    photo: { alt: 'Broadleaf plantain: a flat rosette of wide, oval leaves', by: 'Jesse Taylor', license: 'CC BY-SA 3.0', licenseUrl: 'https://creativecommons.org/licenses/by-sa/3.0/', source: 'https://commons.wikimedia.org/wiki/File:Broadleaf_Plantain_(Plantago_major)_growing_in_crack_in_sidewalk.JPG' },
     name: 'Broadleaf plantain',
     looks: 'Big oval leaves with ribbed veins, flat to the ground. Skinny seed spikes.',
     when: 'Summer',
@@ -88,6 +93,7 @@ export const WEEDS = [
   },
   {
     id: 'creeping-charlie',
+    photo: { alt: 'Creeping Charlie: round, scalloped leaves with small purple flowers', by: 'Melissa McMasters', license: 'CC BY 2.0', licenseUrl: 'https://creativecommons.org/licenses/by/2.0/', source: 'https://commons.wikimedia.org/wiki/File:Ground_ivy_(25891694266).jpg' },
     name: 'Creeping Charlie',
     looks: 'Round, scalloped leaves on creeping vines. Tiny purple flowers. Smells minty when mowed.',
     when: 'Spring and fall, loves shade',
@@ -109,6 +115,7 @@ export const WEEDS = [
   },
   {
     id: 'violet',
+    photo: { alt: 'Wild violets: purple flowers over heart-shaped leaves', by: 'Cbaile19', license: 'CC0', licenseUrl: 'https://creativecommons.org/publicdomain/zero/1.0/', source: 'https://commons.wikimedia.org/wiki/File:Viola_sororia,_2021-04-18,_Seldom_Seen,_02.jpg' },
     name: 'Wild violet',
     looks: 'Heart-shaped leaves, little purple flowers in spring.',
     when: 'Spring, likes shade',
@@ -130,6 +137,7 @@ export const WEEDS = [
   },
   {
     id: 'nutsedge',
+    photo: { alt: 'A bright yellow-green patch of nutsedge standing out in a lawn', by: 'SB_Johnny', license: 'Public domain', licenseUrl: '', source: 'https://commons.wikimedia.org/wiki/File:Cyperus_esculentis_in_a_lawn.jpg' },
     name: 'Yellow nutsedge',
     looks: 'Shiny, bright yellow-green, grows faster than your grass. Triangle-shaped stem.',
     when: 'Summer, in wet spots',
@@ -151,6 +159,7 @@ export const WEEDS = [
   },
   {
     id: 'chickweed',
+    photo: { alt: 'Chickweed: tiny white star-shaped flowers and small leaves', by: 'André Karwath', license: 'CC BY-SA 2.5', licenseUrl: 'https://creativecommons.org/licenses/by-sa/2.5/', source: 'https://commons.wikimedia.org/wiki/File:Chickweed_(aka).jpg' },
     name: 'Chickweed',
     looks: 'Tiny pointed leaves in mats, little white star-shaped flowers.',
     when: 'Cool weather, early spring',

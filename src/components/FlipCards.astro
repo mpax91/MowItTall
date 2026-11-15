@@ -5,7 +5,8 @@ import PixelIcon from './PixelIcon.astro';
 
 interface Item {
   id?: string;
-  icon: string[];
+  icon?: string[];
+  photo?: { src: string; alt: string };   // src is the base path: <src>-480.webp / <src>-960.webp
   title: string;
   sub?: string;
   back: { label?: string; text: string }[];
@@ -22,8 +23,11 @@ const H = headingLevel;
   {items.map((it, i) => (
     <li class="flip" id={it.id}>
       <div class="flip-inner">
-        <div class="flip-face flip-front">
-          <PixelIcon map={it.icon} size={layout === 'list' ? 44 : 52} />
+        <div class:list={['flip-face flip-front', it.photo && 'has-photo']}>
+          {it.photo ? (
+            <img class="flip-photo" src={`${it.photo.src}-480.webp`} srcset={`${it.photo.src}-480.webp 480w, ${it.photo.src}-960.webp 960w`}
+              sizes="(min-width: 700px) 640px, 92vw" width="960" height="720" alt={it.photo.alt} loading={i < 2 ? 'eager' : 'lazy'} decoding="async" />
+          ) : it.icon && <PixelIcon map={it.icon} size={layout === 'list' ? 44 : 52} />}
           <div class="flip-front-text">
             <H class="flip-title">{it.title}</H>
             {it.sub && <p class="flip-sub">{it.sub}</p>}

@@ -696,6 +696,23 @@ main > section > *,
 .flips-list .flip-front { flex-direction: row; align-items: center; gap: 14px; padding-bottom: 14px; padding-right: 56px; }
 .flips-list .flip-front .flip-hint { bottom: auto; top: 50%; transform: translateY(-50%); }
 .flips-list .flip-front .pixel-icon { flex: none; }
+/* photo cards (weed board): big photo on top so the weed is obvious at a glance */
+.flips-list .flip-front.has-photo { flex-direction: column; align-items: stretch; gap: 0; padding: 0 0 14px; overflow: hidden; }
+.flip-photo { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; background: #cfdcc7; border-bottom: 3px solid var(--ink); }
+.flip-front.has-photo .flip-front-text { padding: 12px 14px 0; }
+.flip-front.has-photo .flip-title { font-size: 1.35rem; }
+.flips-list .flip-front.has-photo .flip-hint {
+  top: 10px; right: 10px; bottom: auto; transform: none;
+  background: var(--paper); color: var(--ink); border: 2px solid var(--ink); border-radius: 999px;
+  padding: 4px 10px 4px 8px; font-size: 0.85rem; box-shadow: 0 2px 0 rgba(5, 20, 10, 0.35);
+}
+.weed-chip img { width: 30px; height: 30px; border-radius: 7px; object-fit: cover; flex: none; }
+.weed-chip { padding-left: 4px; }
+.photo-credits { margin-top: 28px; font-size: 0.82rem; color: var(--paper-dim); }
+.photo-credits h2 { font-size: 1rem; margin: 0 0 6px; color: var(--paper); }
+.photo-credits ul { margin: 0; padding-left: 18px; }
+.photo-credits li { margin: 2px 0; }
+.photo-credits a { color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   .flip-inner { transition: none; }
 }
@@ -996,21 +1013,32 @@ main > section.page-head-hub { padding-top: 14px; padding-bottom: 0; }
   transition: opacity 0.3s; pointer-events: none;
 }
 .mow-hint.is-gone { opacity: 0; }
+/* results cover the lawn, slider and button together, so nothing drops below the fold */
+.mow-play { position: relative; }
 .mow-result {
-  position: absolute; inset: 10px;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
-  background: rgba(241, 246, 236, 0.96); color: var(--ink);
-  border: 2px solid var(--win-edge); border-radius: 9px; padding: 10px 14px;
+  position: absolute; inset: -3px 0 -4px; z-index: 5;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center;
+  background: var(--paper); color: var(--ink);
+  border: 3px solid var(--win-line); border-radius: 10px;
+  box-shadow: 0 0 0 2px var(--win-edge), 0 6px 0 0 rgba(5, 20, 10, 0.35);
+  padding: 14px 16px;
+  animation: mow-pop-in 0.25s ease-out;
 }
+@keyframes mow-pop-in { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
 .mow-result[hidden] { display: none; }
 .mow-result p { margin: 0; }
-.mow-score { font-family: var(--display); line-height: 1; }
-.mow-score b { font-size: 2.6rem; font-weight: 800; letter-spacing: -0.03em; }
-.mow-score span { font-size: 1rem; font-weight: 700; opacity: 0.6; }
-.mow-title { font-family: var(--display); font-weight: 800; font-size: 1.15rem; margin-top: 4px !important; }
-.mow-detail { font-size: 0.85rem; opacity: 0.75; }
-.mow-tip { font-size: 0.9rem; line-height: 1.35; margin: 6px 0 10px !important; max-width: 26em; }
-.mow-again { font-size: 1rem; padding: 8px 16px 9px; }
+.mow-score { font-family: var(--display); line-height: 0.9; }
+.mow-score b { font-size: 3.6rem; font-weight: 800; letter-spacing: -0.04em; }
+.mow-score span { font-size: 1.1rem; font-weight: 700; opacity: 0.55; }
+.mow-title { font-family: var(--display); font-weight: 800; font-size: 1.3rem; line-height: 1.15; }
+.mow-detail { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; max-width: 24em; }
+.mow-detail li { font-size: 0.82rem; line-height: 1; padding: 6px 9px; border-radius: 999px; border: 1.5px solid; white-space: nowrap; }
+.mow-detail li b { font-weight: 750; font-variant-numeric: tabular-nums; }
+.mow-detail li.is-ok { background: #e1f0cf; border-color: #8fbf5e; color: #24481a; }
+.mow-detail li.is-off { background: #fbe9d4; border-color: #e0a560; color: #6b3a0c; }
+.mow-tip { font-size: 0.95rem; line-height: 1.35; max-width: 24em; }
+.mow-again { font-size: 1.1rem; padding: 12px 28px 13px; margin-top: 2px; }
+@media (prefers-reduced-motion: reduce) { .mow-result { animation: none; } }
 
 /* slider: a garden path rail with a knob that lines up the mower */
 .mow-track {

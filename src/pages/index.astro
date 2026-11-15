@@ -6,7 +6,6 @@ import FlipCards from '../components/FlipCards.astro';
 import SoilGauge from '../components/SoilGauge.astro';
 import { PHOTOS } from '../data/photos.js';
 import { WEEDS } from '../data/weeds.js';
-import PixelIcon from '../components/PixelIcon.astro';
 import { changeCards } from '../data/changes.js';
 const posts = Object.values(import.meta.glob('./blog/[a-z]*.md', { eager: true }))
   .map((p) => ({ ...p.frontmatter, url: p.url }))
@@ -151,7 +150,7 @@ const jsonLd = {
         <p class="section-lede">The usual suspects around here, and how to deal with each one. Easy way, Mike’s way, or just let it be.</p>
         <div class="weed-chips">
           {WEEDS.map((w) => (
-            <a class="weed-chip" href={`/weeds/#${w.id}`}><PixelIcon map={w.icon} size={30} />{w.name}</a>
+            <a class="weed-chip" href={`/weeds/#${w.id}`}><img src={`/img/weeds/${w.id}-thumb.webp`} width="30" height="30" alt="" loading="lazy" decoding="async" />{w.name}</a>
           ))}
         </div>
       </section>

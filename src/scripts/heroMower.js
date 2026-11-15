@@ -282,11 +282,23 @@ export function initHeroMower(root) {
     result.querySelector('[data-score]').textContent = String(score);
     result.querySelector('[data-title]').textContent = title + (isBest && best ? ' New best!' : '');
     result.querySelector('[data-tip]').textContent = tip;
-    result.querySelector('[data-detail]').textContent =
-      `${passes} ${passes === 1 ? 'pass' : 'passes'} (perfect is ${LANES}) · ${overlapPct < 0.5 ? 'no' : Math.round(overlapPct) + '%'} double-cut · ${fmtTime(clock)} (par ${fmtTime(PAR)})` + (dogHits ? ` · bumped the dog${dogHits > 1 ? ' twice' : ''}` : '') +
-      (cov < 0.995 ? ` · ${Math.round((1 - cov) * 100)}% missed` : '');
+    const chips = [
+      ['Passes', `${passes}/${LANES}`, passes <= LANES],
+      ['Double-cut', overlapPct < 0.5 ? 'none' : Math.round(overlapPct) + '%', overlapPct < 0.5],
+      ['Missed', cov >= 0.995 ? 'none' : Math.round((1 - cov) * 100) + '%', cov >= 0.995],
+      ['Time', fmtTime(clock), clock <= PAR],
+      ['Dog', dogHits ? (dogHits > 1 ? 'bumped twice' : 'bumped') : 'dodged', !dogHits],
+    ];
+    const ul = result.querySelector('[data-detail]');
+    ul.replaceChildren(...chips.map(([k, v, ok]) => {
+      const li = document.createElement('li');
+      li.className = ok ? 'is-ok' : 'is-off';
+      li.append(k + ' ');
+      const b = document.createElement('b'); b.textContent = v; li.append(b);
+      return li;
+    }));
     stats();
-    setTimeout(() => { result.hidden = false; }, 350);
+    setTimeout(() => { result.hidden = false; result.querySelector('[data-again]').focus({ preventScroll: true }); }, 350);
   }
 
   /* ------------------------------------------------------------- draw */

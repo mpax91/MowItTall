@@ -19,7 +19,7 @@ const jsonLd = {
 };
 const items = WEEDS.map((w) => ({
   id: w.id,
-  icon: w.icon,
+  photo: { src: `/img/weeds/${w.id}`, alt: w.photo.alt },
   title: w.name,
   sub: w.looks,
   back: [
@@ -34,12 +34,23 @@ const items = WEEDS.map((w) => ({
   <main id="main" class="page">
     <header class="page-head">
       <h1>The weed board</h1>
-      <p class="lede">The weeds you’ll actually see around Bedford and the rest of the Northeast. Find yours, tap it, and pick your level of effort.</p>
+      <p class="lede">The weeds you’ll actually see around Bedford and the rest of the Northeast. Find the one that looks like yours, tap it, and pick your level of effort.</p>
     </header>
     <FlipCards items={items} layout="list" headingLevel="h2" />
     <p class="page-note">
       Before you spray anything: thick, tall grass is the best weed killer there is. Most weeds are just
       filling in where grass is thin. Always follow the product label.
     </p>
+    <section class="photo-credits" aria-labelledby="credits-h">
+      <h2 id="credits-h">Photo credits</h2>
+      <ul>
+        {WEEDS.map((w) => (
+          <li>
+            {w.name}: <a href={w.photo.source} rel="noopener">{w.photo.by}</a>, via Wikimedia Commons,{' '}
+            {w.photo.licenseUrl ? <a href={w.photo.licenseUrl} rel="noopener license">{w.photo.license}</a> : <span>{w.photo.license}</span>}. Cropped and resized.
+          </li>
+        ))}
+      </ul>
+    </section>
   </main>
 </Base>

@@ -11,23 +11,25 @@ import PlaceChip from './PlaceChip.astro';
       <span>Time <b data-time>0:00</b><small> / par 0:45</small></span>
       <span>Best <b data-best>–</b></span>
     </div>
+    <div class="mow-play">
     <div class="mow-lawn">
       <canvas aria-label="A small lawn with a push mower. Use the slider to line up the mower and hold the button to mow."></canvas>
       <p class="mow-hint" data-hint aria-hidden="true">Slide to line up. Hold to mow.<br /><small>Par is 45 seconds. Mind the dog.</small></p>
       <p class="mow-pop" data-pop aria-live="polite"></p>
       <button type="button" class="mow-done" data-done hidden>Call it done</button>
-      <div class="mow-result" data-result hidden>
-        <p class="mow-score"><b data-score>0</b><span>/100</span></p>
-        <p class="mow-title" data-title></p>
-        <p class="mow-detail" data-detail></p>
-        <p class="mow-tip" data-tip></p>
-        <button type="button" class="btn mow-again" data-again>Mow again</button>
-      </div>
     </div>
     <div class="mow-track" data-mow-track role="slider" tabindex="0" aria-label="Mower position" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
       <span class="mow-knob" data-knob aria-hidden="true"><i></i><i></i><i></i></span>
     </div>
     <button type="button" class="mow-hold" data-hold><span>Hold to mow</span></button>
+    <div class="mow-result" data-result hidden role="dialog" aria-label="Your mowing score">
+      <p class="mow-score"><b data-score>0</b><span>/100</span></p>
+      <p class="mow-title" data-title></p>
+      <ul class="mow-detail" data-detail></ul>
+      <p class="mow-tip" data-tip></p>
+      <button type="button" class="btn mow-again" data-again>Mow again</button>
+    </div>
+    </div>
   </div>
 
   <p class="hero-lede">
