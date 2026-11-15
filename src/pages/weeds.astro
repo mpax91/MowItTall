@@ -1,11 +1,11 @@
 ---
 import Base from '../layouts/Base.astro';
 import FlipCards from '../components/FlipCards.astro';
-import { WEEDS } from '../data/weeds.js';
+import { WEEDS, WEED_GROUPS } from '../data/weeds.js';
 
-const title = 'Common lawn weeds in Westchester and how to get rid of them | Mow It Tall';
+const title = 'Common lawn weeds in Westchester, with real photos and easy fixes | Mow It Tall';
 const description =
-  'Dandelions, clover, crabgrass, creeping Charlie and more: how to spot the most common lawn weeds in the Northeast, plus the easy fix, Mike’s fix, and when to just let it be.';
+  'Dandelions, clover, crabgrass, nutsedge, stiltgrass, moss and more: photos of the most common lawn weeds in the Northeast, plus the easy fix, Mike’s fix, and when to just let it be.';
 const jsonLd = {
   '@context': 'https://schema.org',
   '@type': 'ItemList',
@@ -17,9 +17,9 @@ const jsonLd = {
     url: `https://mowittall.com/weeds/#${w.id}`,
   })),
 };
-const items = WEEDS.map((w) => ({
+const card = (w) => ({
   id: w.id,
-  photo: { src: `/img/weeds/${w.id}`, alt: w.photo.alt },
+  photos: w.photos.map((p) => ({ src: `/img/weeds/${w.id}-${p.n}`, alt: p.alt, caption: p.caption })),
   title: w.name,
   sub: w.looks,
   back: [
@@ -28,26 +28,42 @@ const items = WEEDS.map((w) => ({
     { label: 'Mike’s fix: ', text: w.mike },
     { label: 'Or just let it be: ', text: w.chill },
   ],
-}));
+});
+const groups = WEED_GROUPS.map((g) => ({ ...g, items: WEEDS.filter((w) => w.group === g.id).map(card) }));
 ---
 <Base title={title} description={description} path="/weeds/" jsonLd={jsonLd}>
   <main id="main" class="page">
     <header class="page-head">
       <h1>The weed board</h1>
-      <p class="lede">The weeds you’ll actually see around Bedford and the rest of the Northeast. Find the one that looks like yours, tap it, and pick your level of effort.</p>
+      <p class="lede">The weeds you’ll actually see around Bedford and the rest of the Northeast. Swipe the photos to find the one that looks like yours, then tap it for the fix.</p>
+      <nav class="weed-jump" aria-label="Weed types">
+        {WEED_GROUPS.map((g) => <a class="weed-chip" href={`#group-${g.id}`}>{g.title}</a>)}
+      </nav>
     </header>
-    <FlipCards items={items} layout="list" headingLevel="h2" />
+    {groups.map((g) => (
+      <section class="weed-sec" aria-labelledby={`group-${g.id}`}>
+        <h2 class="weed-group" id={`group-${g.id}`}>{g.title}</h2>
+        {g.note && <p class="weed-group-note">{g.note}</p>}
+        <FlipCards items={g.items} layout="list" headingLevel="h3" />
+      </section>
+    ))}
     <p class="page-note">
       Before you spray anything: thick, tall grass is the best weed killer there is. Most weeds are just
       filling in where grass is thin. Always follow the product label.
     </p>
-    <section class="photo-credits" aria-labelledby="credits-h">
+    <section class="weed-sec photo-credits" aria-labelledby="credits-h">
       <h2 id="credits-h">Photo credits</h2>
+      <p>All photos are used under free licenses, cropped and resized.</p>
       <ul>
         {WEEDS.map((w) => (
           <li>
-            {w.name}: <a href={w.photo.source} rel="noopener">{w.photo.by}</a>, via Wikimedia Commons,{' '}
-            {w.photo.licenseUrl ? <a href={w.photo.licenseUrl} rel="noopener license">{w.photo.license}</a> : <span>{w.photo.license}</span>}. Cropped and resized.
+            <strong>{w.name}:</strong>{' '}
+            {w.photos.map((p, j) => (
+              <span>
+                {j > 0 && '; '}{p.caption.toLowerCase()} by <a href={p.source} rel="noopener">{p.by}</a>,{' '}
+                {p.licenseUrl ? <a href={p.licenseUrl} rel="noopener license">{p.license}</a> : p.license}
+              </span>
+            ))}
           </li>
         ))}
       </ul>

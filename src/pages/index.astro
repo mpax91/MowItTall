@@ -149,7 +149,7 @@ const jsonLd = {
         </div>
         <p class="section-lede">The usual suspects around here, and how to deal with each one. Easy way, Mike’s way, or just let it be.</p>
         <div class="weed-chips">
-          {WEEDS.map((w) => (
+          {WEEDS.filter((w) => w.group !== 'joke').map((w) => (
             <a class="weed-chip" href={`/weeds/#${w.id}`}><img src={`/img/weeds/${w.id}-thumb.webp`} width="30" height="30" alt="" loading="lazy" decoding="async" />{w.name}</a>
           ))}
         </div>

@@ -696,16 +696,49 @@ main > section > *,
 .flips-list .flip-front { flex-direction: row; align-items: center; gap: 14px; padding-bottom: 14px; padding-right: 56px; }
 .flips-list .flip-front .flip-hint { bottom: auto; top: 50%; transform: translateY(-50%); }
 .flips-list .flip-front .pixel-icon { flex: none; }
-/* photo cards (weed board): big photo on top so the weed is obvious at a glance */
+/* photo cards (weed board): big swipeable photos on top so the weed is obvious at a glance */
 .flips-list .flip-front.has-photo { flex-direction: column; align-items: stretch; gap: 0; padding: 0 0 14px; overflow: hidden; }
-.flip-photo { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; background: #cfdcc7; border-bottom: 3px solid var(--ink); }
+.flip-photos { position: relative; z-index: 3; border-bottom: 3px solid var(--ink); background: #cfdcc7; }
+.flip-photos-track {
+  display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none;
+  overscroll-behavior-x: contain; touch-action: pan-x pan-y; cursor: pointer;
+}
+.flip-photos-track::-webkit-scrollbar { display: none; }
+.flip-photos-track:focus-visible { outline: 3px solid var(--sun); outline-offset: -3px; }
+.flip-photo-slide { flex: 0 0 100%; margin: 0; position: relative; scroll-snap-align: start; scroll-snap-stop: always; }
+.flip-photo { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; }
+.flip-photo-slide figcaption {
+  position: absolute; left: 10px; bottom: 10px; pointer-events: none;
+  background: rgba(18, 48, 29, 0.82); color: #fff; font-size: 0.82rem; font-weight: 700;
+  padding: 4px 9px; border-radius: 999px;
+}
+.flip-photo-slide figcaption span { font-weight: 500; opacity: 0.85; }
+.flip-photos-nav {
+  position: absolute; top: 50%; transform: translateY(-50%); width: 38px; height: 38px; border-radius: 50%;
+  border: 2px solid var(--ink); background: rgba(241, 246, 236, 0.92); color: var(--ink);
+  font-size: 1.6rem; line-height: 1; font-weight: 700; display: grid; place-items: center; padding: 0 0 3px; cursor: pointer;
+  box-shadow: 0 2px 0 rgba(5, 20, 10, 0.35);
+}
+.flip-photos-nav.prev { left: 8px; }
+.flip-photos-nav.next { right: 8px; }
+.flip-photos-nav[hidden] { display: none; }
+.flip-photos-dots { position: absolute; right: 12px; bottom: 14px; display: flex; gap: 5px; pointer-events: none; }
+.flip-photos-dots i { width: 7px; height: 7px; border-radius: 50%; background: rgba(255, 255, 255, 0.55); box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25); }
+.flip-photos-dots i.on { background: #fff; }
 .flip-front.has-photo .flip-front-text { padding: 12px 14px 0; }
 .flip-front.has-photo .flip-title { font-size: 1.35rem; }
 .flips-list .flip-front.has-photo .flip-hint {
-  top: 10px; right: 10px; bottom: auto; transform: none;
+  top: 10px; right: 10px; bottom: auto; transform: none; z-index: 4; pointer-events: none;
   background: var(--paper); color: var(--ink); border: 2px solid var(--ink); border-radius: 999px;
   padding: 4px 10px 4px 8px; font-size: 0.85rem; box-shadow: 0 2px 0 rgba(5, 20, 10, 0.35);
 }
+.flip.has-photos .flip-inner { cursor: pointer; }
+.flip.has-photos.is-flipped .flip-front, .flip.has-photos:not(.is-flipped) .flip-back { pointer-events: none; }
+.flip.has-photos .flip-btn { inset: auto; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+.flip.has-photos:has(.flip-btn:focus-visible) { outline: 3px solid var(--sun); outline-offset: 3px; border-radius: 12px; }
+.weed-group { margin: 30px 0 12px; font-size: 1.5rem; }
+.weed-group-note { color: var(--paper-dim); margin: -6px 0 12px; }
+.weed-jump { display: flex; flex-wrap: wrap; gap: 8px; margin: -8px 0 6px; }
 .weed-chip img { width: 30px; height: 30px; border-radius: 7px; object-fit: cover; flex: none; }
 .weed-chip { padding-left: 4px; }
 .photo-credits { margin-top: 28px; font-size: 0.82rem; color: var(--paper-dim); }
@@ -1353,3 +1386,5 @@ html.mz-lock, html.mz-lock body { overflow: hidden; overscroll-behavior: none; }
 .mz-round[hidden] { display: none; }
 .mz-compass svg { transition: transform 0.15s; }
 .mz.is-full .mz-sheet:not([hidden]) ~ .mz-turn { display: none !important; }
+main > section.weed-sec { padding: 0; }
+.weed-sec .weed-group { margin-top: 26px; }
