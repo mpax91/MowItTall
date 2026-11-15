@@ -91,9 +91,9 @@ export function initHeroMower(root) {
     dogPlan = [5 + Math.random() * 5, 15 + Math.random() * 7];   // two dogs, at random times
     doneBtn.hidden = true; pop.classList.remove('is-on');
     pass = 1; passes = 0; overlap = 0; fresh = 0; started = false; done = false;
-    particles = []; lastCov = 0;
+    particles = []; lastCov = -1;   // -1 forces the "Mowed" readout back to 0%
     result.hidden = true;
-    hold.disabled = false;
+    hold.disabled = false; hold.classList.remove('is-again'); holdLabel.textContent = 'Hold to mow';
     setKnob();
     outTime.textContent = '0:00'; outTime.classList.remove('is-over');
     stats();
@@ -134,6 +134,7 @@ export function initHeroMower(root) {
   /* ------------------------------------------------------------ hold */
   function startDrive(e) {
     if (e) e.preventDefault();
+    if (done && result.hidden && growT <= 0) { again(); return; }   // after closing the score card, the button replays
     if (done || growT > 0) return;
     driving = true; started = true; doneBtn.hidden = true;
     hold.classList.add('is-on'); holdLabel.textContent = 'Mowing…';
@@ -186,7 +187,17 @@ export function initHeroMower(root) {
   hold.addEventListener('contextmenu', (e) => e.preventDefault());
   hold.addEventListener('keydown', (e) => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) startDrive(e); });
   hold.addEventListener('keyup', (e) => { if (e.key === ' ' || e.key === 'Enter') stopDrive(); });
-  root.querySelector('[data-again]').addEventListener('click', () => { result.hidden = true; growT = 0.8; });
+  function again() { result.hidden = true; hold.classList.remove('is-again'); holdLabel.textContent = 'Hold to mow'; growT = 0.8; }
+  // close the score card: keep the finished lawn on screen, turn the yellow button into "Mow again"
+  function closeResult() {
+    if (result.hidden) return;
+    result.hidden = true;
+    hold.disabled = false; hold.classList.add('is-again'); holdLabel.textContent = 'Mow again';
+    hold.focus({ preventScroll: true });
+  }
+  root.querySelector('[data-again]').addEventListener('click', again);
+  root.querySelector('[data-close]').addEventListener('click', closeResult);
+  result.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeResult(); });
 
   function dismissHint() { hint.classList.add('is-gone'); }
 

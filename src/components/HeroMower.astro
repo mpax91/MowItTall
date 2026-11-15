@@ -23,6 +23,7 @@ import PlaceChip from './PlaceChip.astro';
     </div>
     <button type="button" class="mow-hold" data-hold><span>Hold to mow</span></button>
     <div class="mow-result" data-result hidden role="dialog" aria-label="Your mowing score">
+      <button type="button" class="mow-x" data-close aria-label="Close and look at your lawn">&times;</button>
       <p class="mow-score"><b data-score>0</b><span>/100</span></p>
       <p class="mow-title" data-title></p>
       <ul class="mow-detail" data-detail></ul>
