@@ -1,5 +1,6 @@
 ---
 // Homepage hero: the headline, a quick mowing game, then what the site is and the main call to action.
+import PlaceChip from './PlaceChip.astro';
 ---
 <section class="hero2" aria-labelledby="hero-h" data-hero>
   <h1 id="hero-h">Small changes. Big stripes.</h1>
@@ -30,17 +31,17 @@
   </div>
 
   <p class="hero-lede">
-    Small, easy changes, timed for Bedford and the rest of the Northeast. Take the two-minute
+    Small, easy changes, timed for Westchester &amp; the Lower Hudson Valley. Take the two-minute
     quiz and get a free lawn plan built for your yard and how much effort you actually want to give.
   </p>
   <div class="hero-cta">
     <a class="btn btn-big" href="/plan/" data-hero-cta>Get my free lawn plan</a>
     <span class="hero-cta-note">2 minutes. No email needed.</span>
   </div>
-  <p class="hero-now" data-hero-now hidden>
-    <span class="hero-now-label">Right now in Bedford:</span> <strong data-now-title></strong>
-    <a href="#cal-h">See the live calendar</a>
-  </p>
+  <div class="hero-now" data-hero-now>
+    <div class="hero-now-where"><span class="hero-now-label">Right now in</span> <PlaceChip id="hero-place" /></div>
+    <p class="hero-now-task" data-now-task hidden><strong data-now-title></strong> <a href="#cal-h">See the live calendar</a></p>
+  </div>
   <p class="hero-tag">You don’t need to be a <span class="nowrap">know-it-all.</span> Just mow it tall.</p>
 </section>
 
@@ -55,10 +56,10 @@
     const pick = snap.now[0];
     if (pick) {
       now.querySelector('[data-now-title]').textContent = `${pick.t.title} (through ${fmt(pick.t.end)})`;
-      now.hidden = false;
+      now.querySelector('[data-now-task]').hidden = false;
     } else if (snap.next) {
       now.querySelector('[data-now-title]').textContent = `Nothing urgent. Next up: ${snap.next.t.title}, ${fmt(snap.next.t.start)}`;
-      now.hidden = false;
+      now.querySelector('[data-now-task]').hidden = false;
     }
   }
 </script>

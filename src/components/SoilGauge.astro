@@ -1,5 +1,6 @@
 ---
-// Live soil temperature for Bedford as a horizontal thermometer with labeled zones.
+// Live soil temperature (Bedford by default, or the visitor's ZIP) as a horizontal thermometer.
+import PlaceChip from './PlaceChip.astro';
 const ZONES = [
   { id: 'asleep', min: 25, max: 40, name: 'Asleep', what: 'Grass is dormant. Nothing grows, nothing to do.' },
   { id: 'waking', min: 40, max: 50, name: 'Waking up / winding down', what: 'Roots are working, blades barely grow. Cleanup weather.' },
@@ -11,7 +12,9 @@ const lo = 25, hi = 85;
 ---
 <section class="soil" aria-labelledby="soil-h" data-soil data-lo={lo} data-hi={hi}>
   <div class="soil-card">
-    <h2 id="soil-h">Bedford soil, right now</h2>
+    <h2 id="soil-h">Soil temperature, right now</h2>
+    <div class="soil-where"><span>Reading for</span> <PlaceChip id="soil-place" /></div>
+    <p class="soil-note" data-soil-note hidden></p>
     <p class="soil-sub">Two inches down, updated hourly. Grass and weeds go by soil temperature, not the calendar.</p>
 
     <div class="thermo" role="img" aria-label="Soil thermometer" data-thermo>

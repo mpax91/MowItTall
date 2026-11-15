@@ -13,8 +13,9 @@ const months = MONTHS_LONG.map((name, i) => ({
   <div class="cal-head">
     <h2 id="cal-h">What your lawn needs right now</h2>
     <p class="cal-today">
-      Today is <time data-today>this week</time>. Timing is set for Bedford and the rest of the Northeast.
+      Today is <time data-today>this week</time>. Timing is set for Westchester &amp; the Lower Hudson Valley.
     </p>
+    <p class="cal-place-note" data-place-note hidden></p>
   </div>
 
   <div class="cal-summary" data-summary>
@@ -61,6 +62,12 @@ const months = MONTHS_LONG.map((name, i) => ({
 
 <script>
   import { TASKS, statusOf, snapshot, windowText, fmt } from '../data/tasks.js';
+  import { getPlace, noteFor } from '../scripts/place.js';
+
+  const placeNote = document.querySelector('[data-place-note]');
+  const showNote = (p) => { if (placeNote) { placeNote.textContent = noteFor(p); placeNote.hidden = !placeNote.textContent; } };
+  showNote(getPlace());
+  window.addEventListener('mit:place', (e) => showNote(e.detail));
 
   const root = document.querySelector('[data-calendar]');
   if (root) {

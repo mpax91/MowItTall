@@ -90,6 +90,7 @@ const PROFILES = [
   { name: 'The Stripe Lord', blurb: 'You already named the mower. This is the full program. Godspeed.' },
 ];
 
+import { getPlace, setZip } from './place.js';
 const KEY = 'mit-quiz';
 
 export function initQuiz(root) {
@@ -119,7 +120,7 @@ export function initQuiz(root) {
     if (s.type === 'zip') {
       body.innerHTML = `
         <label class="sr-only" for="zip">ZIP code</label>
-        <input id="zip" class="quiz-input" inputmode="numeric" autocomplete="postal-code" maxlength="5" placeholder="10506" value="${answers.zip || ''}">
+        <input id="zip" class="quiz-input" inputmode="numeric" autocomplete="postal-code" maxlength="5" placeholder="10506" value="${answers.zip || (!getPlace().home && getPlace().zip) || ''}">
         <p class="quiz-note" data-note></p>`;
       const input = body.querySelector('input');
       const check = () => {
@@ -168,6 +169,8 @@ export function initQuiz(root) {
   }
 
   function go(d) {
+    // The quiz ZIP also sets the soil reading and location chips across the site.
+    if (d > 0 && STEPS[step]?.type === 'zip' && answers.zip?.length === 5 && answers.zip !== getPlace().zip) setZip(answers.zip);
     step = Math.max(0, Math.min(STEPS.length, step + d));
     save();
     if (step === STEPS.length) { answers.done = true; save(); showResult(); return; }
