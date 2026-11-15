@@ -4,7 +4,7 @@ import { getPlace, noteFor } from './place.js';
 function advice(temp, month) {
   const spring = month >= 2 && month <= 5; // Mar–Jun
   const fall = month >= 8 && month <= 10; // Sep–Nov
-  if (temp < 40) return 'Your grass is resting. Nothing to do but mow the leaves into the lawn.';
+  if (temp < 40) return 'Your grass is resting. Keep leaves from piling up on it and stay off it when it’s frozen.';
   if (temp < 50) {
     if (spring) return 'Waking up. Crabgrass starts sprouting around 55°F, so get your crabgrass preventer ready.';
     return 'Grass is slowing down for winter. Good time for one last mow and a final feeding.';

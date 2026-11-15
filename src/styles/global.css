@@ -2073,3 +2073,39 @@ main > section.gp { margin-left: 16px; margin-right: 16px; }
 /* card titles wrap normally (balance split "Stay on top of / fallen leaves" mid-card on phones) */
 .lw-card .lw-big { text-wrap: wrap; }
 .lw-days { white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- "Your lawn this week" v3 (Nov 15 evening): three matching flip cards */
+.lw-grid { grid-template-columns: 1fr; align-items: start; }
+.lw-todo { grid-column: auto; }
+@media (min-width: 640px) { .lw-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.lw-flipcard { position: relative; perspective: 1200px; min-height: 200px; cursor: pointer; transition: height 0.35s ease; border-radius: 12px; outline: none; }
+.lw-flipcard:focus-visible { box-shadow: 0 0 0 3px var(--sun); }
+.lw-flip { position: relative; height: 100%; transform-style: preserve-3d; transition: transform 0.55s cubic-bezier(0.3, 1.1, 0.4, 1); }
+.lw-flipcard.is-flipped .lw-flip { transform: rotateY(180deg); }
+.lw-face {
+  position: absolute; top: 0; left: 0; right: 0; display: flex; flex-direction: column; gap: 8px;
+  padding: 13px 14px 12px; border-radius: 12px; text-align: left;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+}
+.lw-front { background: rgba(0, 0, 0, 0.18); border: 2px solid rgba(238, 245, 230, 0.22); }
+.lw-flipcard:hover .lw-front { border-color: rgba(238, 245, 230, 0.45); }
+.lw-back { transform: rotateY(180deg); background: var(--paper); color: var(--ink); border: 2px solid var(--ink); pointer-events: none; }
+.lw-flipcard.is-flipped .lw-back { pointer-events: auto; }
+.lw-flipcard.is-flipped .lw-front { pointer-events: none; }
+.lw-face p { margin: 0; }
+.lw-back p { font-size: 0.93rem; line-height: 1.45; }
+.lw-back .lw-label { color: #2c7a28; }
+.lw-back-small { font-size: 0.82rem !important; color: #4a5d4b; }
+.lw-back-links a { font-weight: 800; color: var(--ink); }
+.lw-back-links a::after { content: ' →'; }
+.lw-tap { align-self: flex-end; margin-top: 2px; font-size: 0.78rem; font-weight: 700; color: var(--leaf); opacity: 0.9; }
+.lw-back .lw-tap { color: #2c7a28; }
+.lw-water .lw-answer, .lw-soil .lw-answer { min-height: 0; }
+.lw-soil .lw-answer { align-items: baseline; gap: 8px; }
+.lw-soil .lw-zone-name { margin: 0; font-size: 1rem; }
+.lw-back .lw-bars { height: 80px; margin: 2px 0 0; }
+.lw-back .lw-dlg-stats { margin: 4px 0; }
+.lw-back .lw-zones { margin: 0; gap: 4px; }
+.lw-back .lw-zones li { padding: 5px 8px; font-size: 0.82rem; }
+@media (prefers-reduced-motion: reduce) { .lw-flip, .lw-flipcard { transition: none; } }
+.lw-front .lw-tap { margin-top: auto; }

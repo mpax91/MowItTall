@@ -115,6 +115,7 @@ export const TASKS = [
     title: 'Stay on top of fallen leaves',
     short: 'A thick layer of leaves blocks sunlight and traps moisture, which can smother the grass and invite snow mold.',
     why: 'Light layer? Mow over it and the chopped bits feed the lawn. Piling up? Rake or blow them off. Aim to see grass, not leaves.',
+    tip: 'Mulching is best when you can: chopped leaves break down and add nutrients and organic matter back to the soil. In a heavy leaf week that may not be realistic, so mulch what you can and rake or bag the rest.',
     start: [10, 15], end: [11, 30], level: 0, minutes: 0,
   },
   {
