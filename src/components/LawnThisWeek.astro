@@ -49,7 +49,7 @@ const zonesJson = JSON.stringify(ZONES);
           <h3 class="lw-big" data-now-title>…</h3>
           <p class="lw-pills"><span class="lw-days" data-now-days></span></p>
           <p class="lw-why" data-now-why></p>
-          <span class="lw-tap" aria-hidden="true"><span>More details</span><i class="lw-tap-ic"><svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.2 8.6A5.2 5.2 0 1 1 11.8 4.3"/><path d="M12.6 1.8v3.1H9.5"/></svg></i></span>
+          <span class="lw-tap" aria-hidden="true"></span>
         </div>
         <div class="lw-face lw-back" aria-hidden="true" data-now-back></div>
       </div>
@@ -66,7 +66,7 @@ const zonesJson = JSON.stringify(ZONES);
           </div>
           <p class="lw-tiny" data-rain-key>Rain vs. what your lawn used</p>
           <p class="lw-why" data-water-why>Adding up the rain.</p>
-          <span class="lw-tap" aria-hidden="true"><span>More details</span><i class="lw-tap-ic"><svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.2 8.6A5.2 5.2 0 1 1 11.8 4.3"/><path d="M12.6 1.8v3.1H9.5"/></svg></i></span>
+          <span class="lw-tap" aria-hidden="true"></span>
         </div>
         <div class="lw-face lw-back" aria-hidden="true" data-water-back></div>
       </div>
@@ -87,7 +87,7 @@ const zonesJson = JSON.stringify(ZONES);
           </div>
           <p class="lw-why" data-soil-advice>Checking the ground…</p>
           <p hidden data-soil-trend></p>
-          <span class="lw-tap" aria-hidden="true"><span>More details</span><i class="lw-tap-ic"><svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.2 8.6A5.2 5.2 0 1 1 11.8 4.3"/><path d="M12.6 1.8v3.1H9.5"/></svg></i></span>
+          <span class="lw-tap" aria-hidden="true"></span>
         </div>
         <div class="lw-face lw-back" aria-hidden="true" data-soil-back></div>
       </div>
@@ -107,7 +107,6 @@ const zonesJson = JSON.stringify(ZONES);
     const ZONES = JSON.parse(root.dataset.zones!);
     const input = $<HTMLInputElement>('[data-lw-input]'), msg = $('[data-lw-msg]'), go = $<HTMLButtonElement>('[data-lw-go]');
     const esc = (s: string) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
-    const TAP_BACK = '<span class="lw-tap"><span>Back</span><i class="lw-tap-ic"><svg viewBox="0 0 16 16" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13.2 8.6A5.2 5.2 0 1 1 11.8 4.3"/><path d="M12.6 1.8v3.1H9.5"/></svg></i></span>';
     const plural = (n: number, w: string) => `${n} ${w}${n === 1 ? '' : 's'}`;
 
     /* ---------------- ZIP box */
@@ -239,18 +238,18 @@ const zonesJson = JSON.stringify(ZONES);
     /* ---------------- backs */
     const backFocus = () => {
       const el = $('[data-now-back]');
-      if (!snap.now.length) { el.innerHTML = `<p class="lw-label">What to focus on now</p><p>Nothing pressing. A good week to clean and sharpen your gear.</p>${TAP_BACK}`; return; }
+      if (!snap.now.length) { el.innerHTML = '<p class="lw-label">What to focus on now</p><p>Nothing pressing. A good week to clean and sharpen your gear.</p><span class="lw-tap" aria-hidden="true"></span>'; return; }
       const t = snap.now[0].t, also = snap.now.slice(1).map(({ t }: any) => t.title);
       el.innerHTML = `<p class="lw-label">${esc(t.title)}</p>
         <p><b>How:</b> ${esc(t.why)}</p>
         ${t.tip ? `<p><b>Tip:</b> ${esc(t.tip)}</p>` : ''}
         ${also.length ? `<p class="lw-back-small"><b>Also this time of year:</b> ${also.map(esc).join(', ')}.</p>` : ''}
         <p class="lw-back-links"><a href="#cal-h">See the whole year</a></p>
-        ${TAP_BACK}`;
+        <span class="lw-tap" aria-hidden="true"></span>`;
     };
     const backWater = () => {
       const el = $('[data-water-back]');
-      if (!wv) { el.innerHTML = `<p class="lw-label">Water?</p><p>Couldn’t reach the weather data. Rule of thumb: about an inch a week, rain included, early in the morning.</p><p class="lw-back-links"><a href="/resources/#water-h">Open the rain meter</a></p>${TAP_BACK}`; return; }
+      if (!wv) { el.innerHTML = '<p class="lw-label">Water?</p><p>Couldn’t reach the weather data. Rule of thumb: about an inch a week, rain included, early in the morning.</p><p class="lw-back-links"><a href="/resources/#water-h">Open the rain meter</a></p><span class="lw-tap" aria-hidden="true"></span>'; return; }
       const peak = Math.max(0.5, ...wdays.map((d: any) => d.rain));
       const bars = wdays.slice(1).map((d: any) => {
         const day = new Date(d.date + 'T12:00').toLocaleDateString('en-US', { weekday: 'narrow' });
@@ -262,7 +261,7 @@ const zonesJson = JSON.stringify(ZONES);
         <div class="lw-dlg-stats"><div><b>${inch(wv.rain)}</b><span>Rain, 7 days</span></div><div><b>${inch(wv.used)}</b><span>Lawn used</span></div><div><b>${inch(wv.comingRain)}</b><span>Coming, 3 days</span></div></div>
         <p class="lw-back-small">Rain numbers come from a weather model and can miss pop-up storms.</p>
         <p class="lw-back-links"><a href="/resources/#water-h">Full rain meter</a></p>
-        ${TAP_BACK}`;
+        <span class="lw-tap" aria-hidden="true"></span>`;
     };
     const backSoil = () => {
       const el = $('[data-soil-back]');
@@ -273,7 +272,7 @@ const zonesJson = JSON.stringify(ZONES);
         <ul class="lw-zones">${ZONES.map((z: any) => `<li class="${Number.isFinite(t) && ((t >= z.min && t < z.max) || (z.id === 'asleep' && t < z.min) || (z.id === 'heat' && t >= z.max)) ? 'is-now' : ''}"><i class="zone-${z.id}"></i><b>${z.name}</b> <span>${z.min}–${z.max}°F</span><br>${esc(z.what)}</li>`).join('')}</ul>
         <p class="lw-back-small">Measured about 2 inches down, where roots and weed seeds live.</p>
         <p class="lw-back-links"><a href="/resources/#soil-h">Full soil thermometer</a></p>
-        ${TAP_BACK}`;
+        <span class="lw-tap" aria-hidden="true"></span>`;
     };
     backFocus();
     // soil.js fills the front asynchronously; rebuild the back when the reading lands
