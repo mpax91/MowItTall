@@ -1,0 +1,60 @@
+---
+// "The weed playbook": six ways to deal with weeds, from no chemicals to blanket treatments.
+// All plays are rendered in the HTML (good for search); buttons just show one at a time.
+import { PLAYS } from '../data/weedPlays.js';
+const METERS = [
+  { k: 'worry', label: 'Kid & pet caution' },
+  { k: 'effort', label: 'Effort' },
+  { k: 'speed', label: 'Speed' },
+  { k: 'cost', label: 'Cost' },
+];
+---
+<section class="window mc wp" aria-labelledby="wp-h" data-weed-playbook>
+  <h2 id="wp-h">The weed playbook</h2>
+  <p class="mc-sub">Six plays, from no chemicals to the full treatment. Tap one.</p>
+  <div class="wp-tabs" role="tablist" aria-label="Plays">
+    {PLAYS.map((p, i) => (
+      <button type="button" role="tab" id={`wp-tab-${p.id}`} aria-controls={`wp-${p.id}`} aria-selected={i === 0 ? 'true' : 'false'} data-wp-tab={p.id}>
+        <span class="wp-n">{i + 1}</span>{p.short}
+      </button>
+    ))}
+  </div>
+  <div class="wp-scale" aria-hidden="true"><span>No chemicals</span><span>Full chemical</span></div>
+
+  {PLAYS.map((p, i) => (
+    <div class="wp-panel" role="tabpanel" id={`wp-${p.id}`} aria-labelledby={`wp-tab-${p.id}`} hidden={i !== 0}>
+      <h3>{p.name}</h3>
+      <p class="wp-tag">{p.tag}</p>
+      <dl class="wp-meters">
+        {METERS.map((m) => (
+          <div>
+            <dt>{m.label}</dt>
+            <dd aria-label={`${p[m.k]} out of 5`}>
+              {[1, 2, 3, 4, 5].map((n) => <i class:list={[n <= p[m.k] && 'on', m.k === 'worry' && 'w']}></i>)}
+            </dd>
+          </div>
+        ))}
+      </dl>
+      <p class="wp-how"><b>How:</b> {p.how}</p>
+      <div class="wp-pc">
+        <div><p class="wp-h pro">The good</p><ul>{p.pros.map((x) => <li>{x}</li>)}</ul></div>
+        <div><p class="wp-h con">The catch</p><ul>{p.cons.map((x) => <li>{x}</li>)}</ul></div>
+      </div>
+      <p class="wp-best"><b>Best for:</b> {p.best}</p>
+    </div>
+  ))}
+  <p class="mw-fine">Ratings are my opinion. The label on the product is the boss.</p>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-weed-playbook]').forEach((root) => {
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[data-wp-tab]')];
+    tabs.forEach((t) => t.addEventListener('click', () => {
+      tabs.forEach((x) => {
+        const on = x === t;
+        x.setAttribute('aria-selected', String(on));
+        root.querySelector<HTMLElement>(`#wp-${x.dataset.wpTab}`)!.hidden = !on;
+      });
+    }));
+  });
+</script>

@@ -1,0 +1,58 @@
+// "The weed playbook" for /blog/kid-and-pet-safe-lawn-care/. Ratings are Mike's opinion (1–5).
+// worry = how careful you need to be with kids and pets (1 = barely, 5 = very). Mike reviews all copy.
+export const PLAYS = [
+  {
+    id: 'offense', short: 'Offense', name: 'Play offense: thicken it',
+    tag: 'Grow so much grass there’s no room for weeds.',
+    worry: 1, effort: 3, speed: 1, cost: 2,
+    how: 'Overseed thin spots every fall, mow tall (3.5 to 4 inches), feed on the holidays, water deep.',
+    pros: ['No chemicals at all', 'Fixes the cause, not just the symptom', 'Gets better every single year', 'Tall, thick grass shades weed seeds so they can’t sprout'],
+    cons: ['Slow. Think one to three seasons', 'Seeding works best in fall only', 'New seed needs watering for a few weeks', 'Won’t evict dandelions that are already dug in'],
+    best: 'Everyone. Even if you spray, do this too.',
+  },
+  {
+    id: 'hand', short: 'Hand pull', name: 'Hand-to-hand combat',
+    tag: 'You vs. the weed. Old school.',
+    worry: 1, effort: 5, speed: 3, cost: 1,
+    how: 'Pull or pop weeds with a weeding tool the day after a good rain, when roots slide right out.',
+    pros: ['Free', 'Instant results', 'Weirdly satisfying', 'Kids can help. Pay them per dandelion'],
+    cons: ['Your back will file a complaint', 'Snap a dandelion root and it grows back', 'Hopeless against a full carpet of crabgrass'],
+    best: 'Small lawns, a few weeds, and podcasts.',
+  },
+  {
+    id: 'chill', short: 'Let it be', name: 'Let it be',
+    tag: 'A lawn doesn’t have to be a golf course.',
+    worry: 1, effort: 1, speed: 5, cost: 1,
+    how: 'Mow tall and leave the clover and violets. Some people even seed microclover on purpose.',
+    pros: ['Zero work, zero product', 'Clover stays green in a drought', 'Clover pulls nitrogen from the air and feeds the grass', 'Bees love it'],
+    cons: ['Bees plus barefoot kids can mean stings', 'Your stripes won’t pop as much', 'The neighbor with the perfect lawn will judge you'],
+    best: 'People with better things to do. No shame.',
+  },
+  {
+    id: 'lowtox', short: 'Low-tox', name: 'The low-tox stuff',
+    tag: 'Gentler products. Not magic.',
+    worry: 2, effort: 2, speed: 3, cost: 4,
+    how: 'Iron-based weed killer for broadleaf weeds like dandelions and clover. Spot spray, follow the label.',
+    pros: ['Mineral-based, gentler than standard weed killers', 'Works on a lot of broadleaf weeds', 'Doesn’t hurt the grass when used right'],
+    cons: ['Often needs a second round', 'Can stain concrete and pavers', 'Pricier per weed', 'Still keep kids and pets off until it’s dry'],
+    best: 'Folks who want to spray, just not the heavy stuff.',
+  },
+  {
+    id: 'spot', short: 'Spot spray', name: 'Spot spray (the standard stuff)',
+    tag: 'Effective and efficient. Just aim.',
+    worry: 3, effort: 2, speed: 5, cost: 2,
+    how: 'A standard lawn weed killer, sprayed only on the weeds. Calm day, kids and pets inside, off the grass until dry.',
+    pros: ['Works, and works fast', 'Cheap', 'Spot spraying uses a tiny fraction of the product', 'Selective: kills the weeds, not the grass'],
+    cons: ['Read and follow the label, every time', 'Drift can hurt gardens and shrubs', 'Not on new seed', 'Keep everyone off until it dries'],
+    best: 'A handful of stubborn weeds you’re done fighting.',
+  },
+  {
+    id: 'blanket', short: 'Blanket', name: 'Blanket treatments',
+    tag: 'Weed and feed, preventer over the whole yard.',
+    worry: 4, effort: 1, speed: 4, cost: 2,
+    how: 'A granular product spread over the entire lawn, watered in as the label says.',
+    pros: ['Easy. One pass with the spreader', 'Crabgrass preventer really does stop crabgrass', 'Hits weeds you didn’t notice yet'],
+    cons: ['Treats every inch, even where there are no weeds', 'More stuff where kids and pets play', 'Preventer also stops grass seed from growing', 'Timing has to be right or it’s wasted'],
+    best: 'Big weed problems, and only if you follow the label to the letter.',
+  },
+];
