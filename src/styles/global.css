@@ -2154,3 +2154,38 @@ main > section.gp { margin-left: 16px; margin-right: 16px; }
 .lw-thirst-zones span:first-child { text-align: left; }
 .lw-thirst-zones span:last-child { text-align: right; }
 .lw-back .lw-bar.is-today b { color: #fff; background: #2f7fc0; border-radius: 4px; padding: 0 4px; }
+
+/* ---------- Compact calendar (homepage): continuing tasks + flip cards with the folded "Tap" corner (Nov 15) */
+.calendar.is-compact .cal-flipcard { position: relative; padding: 0; perspective: 1000px; cursor: pointer; background: none; border: 0; box-shadow: none;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation; transition: height 0.3s ease; outline: none; }
+.calendar.is-compact .cal-flipcard:focus-visible { box-shadow: 0 0 0 3px var(--sun); border-radius: 10px; }
+.cal-flip { position: relative; height: 100%; transform-style: preserve-3d; transition: transform 0.5s cubic-bezier(0.3, 1.1, 0.4, 1); will-change: transform; }
+.cal-flipcard.is-flipped .cal-flip { transform: rotateY(180deg); }
+.cal-face {
+  --fold: 30px; position: absolute; top: 0; left: 0; right: 0; padding: 8px 10px 10px; border-radius: 10px;
+  backface-visibility: hidden; -webkit-backface-visibility: hidden;
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - var(--fold)), calc(100% - var(--fold)) 100%, 0 100%);
+}
+.cal-front { background: var(--paper); color: var(--ink); border: 2px solid transparent; }
+.cal-back { transform: rotateY(180deg); background: #1f5534; color: var(--paper); border: 2px solid rgba(238, 245, 230, 0.3); pointer-events: none; }
+.cal-flipcard.is-flipped .cal-back { pointer-events: auto; }
+.cal-face::after {
+  content: 'Tap'; position: absolute; right: -2px; bottom: -2px; width: var(--fold); height: var(--fold); box-sizing: border-box; padding: 4px 0 0 3px;
+  font-family: var(--display); font-size: 0.56rem; font-weight: 800; line-height: 1; color: var(--paper);
+  background: linear-gradient(to top left, transparent 50%, #2f6e47 50%, #3a7d52 100%);
+  border-top-left-radius: 4px; filter: drop-shadow(-2px -2px 2px rgba(0, 0, 0, 0.3));
+}
+.cal-back::after { color: var(--ink); background: linear-gradient(to top left, transparent 50%, #dfe9d5 50%, var(--paper) 100%); }
+@media (hover: hover) { .cal-flipcard:hover .cal-front { --fold: 36px; } }
+@keyframes cal-jiggle { 0%, 100% { --fold: 30px; } 20% { --fold: 42px; } 40% { --fold: 27px; } 60% { --fold: 36px; } 80% { --fold: 29px; } }
+.cal-flipcard.cal-jiggle .cal-front { animation: cal-jiggle 0.8s ease-in-out; }
+.calendar.is-compact .cal-task .cal-face p.cal-brief { display: block; margin: 2px 0 0; padding-right: 18px; font-size: 0.84rem; line-height: 1.35; color: #3c513e; }
+.calendar.is-compact .cal-task .cal-back p:not(.cal-window) { display: block; margin: 4px 0 0; padding-right: 6px; font-size: 0.82rem; line-height: 1.4; color: var(--paper); }
+.calendar.is-compact .cal-back p:last-child { padding-bottom: 16px; }
+.calendar.is-compact .cal-back .cal-window { color: var(--leaf); }
+.calendar.is-compact .cal-flipcard[data-state='now'] .cal-front { border-color: #2f7d34; box-shadow: inset 0 0 0 1px #2f7d34; }
+.calendar.is-compact .cal-flipcard[data-state='now'] .cal-status { display: block; padding-right: 22px; }
+.calendar.is-compact .cal-flipcard[data-state='past'] { opacity: 1; }
+.calendar.is-compact .cal-flipcard[data-state='past'] .cal-front { opacity: 0.62; }
+.cal-task.is-cont .cal-window { font-style: italic; }
+@media (prefers-reduced-motion: reduce) { .cal-flip, .cal-flipcard { transition: none; } }

@@ -8,9 +8,16 @@ interface Props { compact?: boolean }
 const { compact = false } = Astro.props;
 const SHOW = 2;
 const list = TASKS.filter((t) => t.level <= 2);
+// each month lists tasks that start in it, then tasks still running from an earlier month ("Still going")
+const SMALL = new Set(['a', 'an', 'the', 'and', 'or', 'of', 'to', 'in', 'on', 'at', 'by', 'for', 'up', 'as']);
+const tc = (x: string) => x.split(' ').map((w, i, a) => (i && i < a.length - 1 && SMALL.has(w.toLowerCase()) ? w.toLowerCase() : w.charAt(0).toUpperCase() + w.slice(1))).join(' ');
+const SHORT_M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
 const months = MONTHS_LONG.map((name, i) => ({
   name,
-  tasks: list.filter((t) => t.start[0] === i + 1),
+  tasks: [
+    ...list.filter((t) => t.start[0] === i + 1).map((t) => ({ t, cont: false })),
+    ...list.filter((t) => t.start[0] < i + 1 && t.end[0] >= i + 1).map((t) => ({ t, cont: true })),
+  ],
 }));
 ---
 <section class:list={['calendar', { 'is-compact': compact }]} aria-labelledby="cal-h" data-calendar>
@@ -51,14 +58,30 @@ const months = MONTHS_LONG.map((name, i) => ({
     {months.map((m, i) => (
       <div class="cal-month" data-month={i + 1}>
         <h3 class="cal-month-name">{m.name}</h3>
-        <span class="cal-flag" hidden>Today</span>
+        <span class="cal-flag" hidden>Now</span>
         {m.tasks.length === 0 && (
           <p class="cal-rest">{i < 2 ? 'Rest. Dream about spring.' : 'Nothing new. Keep it up.'}</p>
         )}
-        {m.tasks.map((t, k) => (
-          <article class:list={['cal-task', { 'is-extra': compact && k >= SHOW }]} data-task={t.id} data-start={t.start.join('-')} data-end={t.end.join('-')}>
-            <p class="cal-window">{windowText(t)}</p>
-            <h4>{t.title}</h4>
+        {m.tasks.map(({ t, cont }, k) => compact ? (
+          <article class:list={['cal-task', 'cal-flipcard', { 'is-extra': k >= SHOW, 'is-cont': cont }]} data-task={t.id} data-start={t.start.join('-')} data-end={t.end.join('-')} tabindex="0" role="button" aria-pressed="false" aria-label={`${t.title}. Tap for how.`}>
+            <div class="cal-flip">
+              <div class="cal-face cal-front">
+                <p class="cal-window">{cont ? `Still going · since ${SHORT_M[t.start[0] - 1]}` : windowText(t)}</p>
+                <h4>{tc(t.title)}</h4>
+                <p class="cal-brief">{t.brief}</p>
+                <p class="cal-status" data-status></p>
+              </div>
+              <div class="cal-face cal-back" aria-hidden="true">
+                <p class="cal-window">{windowText(t)}</p>
+                <p>{t.short}</p>
+                <p><b>How:</b> {t.why}</p>
+              </div>
+            </div>
+          </article>
+        ) : (
+          <article class:list={['cal-task', { 'is-cont': cont }]} data-task={t.id} data-start={t.start.join('-')} data-end={t.end.join('-')}>
+            <p class="cal-window">{cont ? `Still going · since ${SHORT_M[t.start[0] - 1]}` : windowText(t)}</p>
+            <h4>{tc(t.title)}</h4>
             <p>{t.short}</p>
             <p class="cal-status" data-status></p>
           </article>
@@ -126,6 +149,40 @@ const months = MONTHS_LONG.map((name, i) => ({
       fill('now', 'Nothing urgent. Enjoy it.', 'Your lawn is between jobs.');
     }
     if (snap.next) fill('next', snap.next.t.title, `Starts ${fmt(snap.next.t.start)}. In ${plural(snap.next.s.days, 'day')}.`);
+    }
+
+    // compact: cards flip to show how; card height follows the side showing
+    const flips = [...root.querySelectorAll('.cal-flipcard')];
+    const fitCard = (c) => {
+      if (!c.offsetParent) return;
+      const side = c.querySelector(c.classList.contains('is-flipped') ? '.cal-back' : '.cal-front');
+      c.style.height = `${side.offsetHeight}px`;
+    };
+    const fitCards = () => flips.forEach(fitCard);
+    flips.forEach((c) => {
+      const flip = () => {
+        const on = !c.classList.contains('is-flipped');
+        c.classList.toggle('is-flipped', on);
+        c.setAttribute('aria-pressed', String(on));
+        c.querySelector('.cal-front').setAttribute('aria-hidden', String(on));
+        c.querySelector('.cal-back').setAttribute('aria-hidden', String(!on));
+        fitCard(c);
+      };
+      c.addEventListener('click', flip);
+      c.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); } });
+    });
+    fitCards();
+    document.fonts?.ready.then(fitCards);
+    window.addEventListener('resize', fitCards);
+    for (const b of root.querySelectorAll('[data-cal-more]')) b.addEventListener('click', () => requestAnimationFrame(fitCards));
+    if (flips.length && 'IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      const io = new IntersectionObserver((es) => es.forEach((e) => {
+        if (!e.isIntersecting) return;
+        const c = e.target; io.unobserve(c);
+        setTimeout(() => { if (!c.classList.contains('is-flipped')) c.classList.add('cal-jiggle'); }, 400);
+        c.addEventListener('animationend', () => c.classList.remove('cal-jiggle'), { once: true });
+      }), { threshold: 0.9 });
+      root.querySelectorAll(`[data-month="${today.getMonth() + 1}"] .cal-flipcard`).forEach((c) => io.observe(c));
     }
 
     // mark this month and scroll it into view, with last month peeking in
