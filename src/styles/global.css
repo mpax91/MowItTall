@@ -866,13 +866,13 @@ main > section > *,
 .link-btn { background: none; border: 0; color: #cfe3c8; text-decoration: underline; cursor: pointer; padding: 4px 0; font-size: 0.95rem; }
 
 /* ---------- Homepage hero ---------- */
-.hero2 { max-width: 820px; margin-inline: auto; padding: 18px var(--gutter) 30px; }
+.hero2 { max-width: 820px; margin-inline: auto; padding: 8px var(--gutter) 30px; }
 .hero2 h1 {
   font-size: clamp(2.3rem, 10vw, 3.8rem);
   font-weight: 800;
   letter-spacing: -0.035em;
   line-height: 1.02;
-  margin-bottom: 16px;
+  margin-bottom: 12px;
   max-width: 14ch;
 }
 .hero-lede { font-size: 1.15rem; color: var(--paper-dim); margin: 0 0 22px; max-width: 34em; }
@@ -978,7 +978,7 @@ main > section.page-head-hub { padding-top: 14px; padding-bottom: 0; }
 .mow-stats b { color: var(--paper); font-weight: 750; margin-left: 4px; font-variant-numeric: tabular-nums; }
 .mow-lawn {
   position: relative;
-  aspect-ratio: 104 / 82;
+  aspect-ratio: 104 / 72;
   border: 3px solid var(--win-line);
   border-radius: 10px;
   box-shadow: 0 0 0 2px var(--win-edge), 0 6px 0 0 rgba(5, 20, 10, 0.35);

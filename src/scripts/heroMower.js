@@ -10,7 +10,7 @@ const LANES = 8;          // a perfect job is 8 passes
 const EDGE = 4;           // mulch edging on each side
 const HEDGE = 7;          // hedge rows top and bottom
 const W = DECK * LANES + EDGE * 2;
-const H = 82;
+const H = 72;
 const L0 = EDGE, L1 = W - EDGE;          // lawn x range [L0, L1)
 const T0 = HEDGE, T1 = H - HEDGE;        // lawn y range [T0, T1)
 const LAWN_PX = (L1 - L0) * (T1 - T0);
