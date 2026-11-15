@@ -43,14 +43,19 @@ const lo = 25, hi = 85;
       <h3 class="lw-big" data-now-title>…</h3>
       <p class="lw-sub" data-now-when></p>
       <p class="lw-next"><span class="lw-label">Next up</span> <b data-next-title></b> <span data-next-when></span></p>
-      <a class="lw-link" href="#cal-h">The whole year</a>
+      <a class="lw-link" href="#cal-h">See the Whole Year</a>
     </article>
 
     <article class="lw-card lw-water" data-lw-water>
       <p class="lw-label">Should I water?</p>
-      <p class="lw-big"><span class="water-badge" data-water-verdict data-tone="">Checking…</span></p>
+      <p class="lw-big"><span data-rain-val>…</span> <span class="lw-unit">of rain</span> <span class="water-badge" data-water-verdict data-tone="">Checking…</span></p>
+      <div class="lw-rain" role="img" aria-label="Rain this week compared with what the lawn used" data-rain-meter>
+        <div class="lw-rain-track"><span class="lw-rain-fill" data-rain-fill style="width:0"></span></div>
+        <span class="lw-rain-need" data-rain-need hidden></span>
+      </div>
+      <p class="lw-rain-key" data-rain-key>Last 7 days of rain vs. what your lawn used.</p>
       <p class="lw-sub" data-water-why>Adding up the rain.</p>
-      <a class="lw-link" href="/resources/#water-h">Rain meter</a>
+      <a class="lw-link" href="/resources/#water-h">See More Details</a>
     </article>
 
     <article class="lw-card lw-soil" data-lw-soil data-lo={lo} data-hi={hi}>
@@ -66,7 +71,7 @@ const lo = 25, hi = 85;
       </div>
       <p class="lw-sub" data-soil-advice>Checking the ground…</p>
       <p class="lw-trend" data-soil-trend></p>
-      <a class="lw-link" href="/resources/#soil-h">Soil thermometer</a>
+      <a class="lw-link" href="/resources/#soil-h">See More Details</a>
     </article>
   </div>
 </section>
@@ -134,9 +139,19 @@ const lo = 25, hi = 85;
         const v = verdict(await fetchWater(place), getGauge());
         if (mine !== wseq) return;
         badge.textContent = VERDICTS[v.key].label; badge.dataset.tone = VERDICTS[v.key].tone; why.textContent = v.line;
+        // meter: blue fill = rain this week, white tick = what the lawn used; scale is at least 1 inch
+        const inch = (n) => `${n < 0.005 ? '0' : n.toFixed(n < 1 ? 2 : 1)} in`;
+        const max = Math.max(1, v.rain, v.used) * 1.15;
+        water.querySelector('[data-rain-val]').textContent = inch(v.rain);
+        water.querySelector('[data-rain-fill]').style.width = `${Math.min(100, (v.rain / max) * 100)}%`;
+        const need = water.querySelector('[data-rain-need]');
+        need.style.left = `${Math.min(100, (v.used / max) * 100)}%`; need.hidden = false;
+        water.querySelector('[data-rain-key]').innerHTML = `<span><i class="k-rain"></i>Rain ${inch(v.rain)}</span> <span><i class="k-need"></i>Lawn used ${inch(v.used)}</span>`;
+        water.classList.add('is-live');
       } catch {
         if (mine !== wseq) return;
         badge.textContent = 'Can’t tell'; badge.dataset.tone = 'maybe';
+        water.querySelector('[data-rain-val]').textContent = '--';
         why.textContent = 'Couldn’t reach the weather data. Rule of thumb: about an inch a week, rain included.';
       }
     };

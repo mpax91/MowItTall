@@ -1914,3 +1914,21 @@ main > section.gp { margin-left: 16px; margin-right: 16px; }
 .mow-stats > span:last-child { align-items: flex-end; text-align: right; }
 .mow-stats b { margin-left: 0; font-size: 1.05rem; }
 .mow-stat-v { white-space: nowrap; }
+
+/* water card meter (matches the soil card's thermometer) */
+.lw-unit { font-size: 0.95rem; font-weight: 700; color: var(--paper-dim); }
+.lw-water .lw-big { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 6px; }
+.lw-water .water-badge { font-size: 0.85rem; padding: 2px 8px 3px; align-self: center; }
+.lw-rain { position: relative; margin: 4px 0 2px; }
+.lw-rain-track {
+  height: 10px; border-radius: 99px; overflow: hidden; background: rgba(238, 245, 230, 0.16);
+  box-shadow: 0 0 0 3px #f3eadb, 0 0 0 5px #120c08;
+}
+.lw-rain-fill { display: block; height: 100%; background: linear-gradient(90deg, #5aa6e0, #7cc0f0); transition: width 0.8s cubic-bezier(0.3, 1.2, 0.5, 1); }
+.lw-rain-need { position: absolute; top: -4px; width: 0; height: 18px; }
+.lw-rain-need::after { content: ''; position: absolute; left: -2px; top: 0; width: 4px; height: 18px; background: #f3eadb; border-radius: 2px; box-shadow: 0 0 0 2px #120c08; }
+.lw-rain-key { font-size: 0.8rem; color: var(--paper-dim); display: flex; flex-wrap: wrap; align-items: center; gap: 2px 10px; margin-top: 4px !important; }
+.lw-rain-key i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
+.lw-rain-key .k-rain { background: #6bb3e8; }
+.lw-rain-key .k-need { background: #f3eadb; width: 4px; border-radius: 1px; box-shadow: 0 0 0 1px #120c08; }
+.lw-rain-key span { white-space: nowrap; }
