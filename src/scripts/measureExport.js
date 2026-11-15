@@ -207,7 +207,7 @@ export async function renderImage(areas, { angle = 0 } = {}) {
   const n = areas.length;
   ctx.fillText(`${ac < 0.1 ? ac.toFixed(3) : ac.toFixed(2)} acres · ${n} area${n === 1 ? '' : 's'}`, 48, mapH + 176);
 
-  // "Mow it TALL" with TALL stretched taller, like the site's wordmark.
+  // "Mow It TALL" with TALL stretched taller, like the site's wordmark.
   ctx.textAlign = 'right';
   ctx.font = `800 40px ${DISPLAY}`;
   const tallW = ctx.measureText('TALL').width;
@@ -218,7 +218,7 @@ export async function renderImage(areas, { angle = 0 } = {}) {
   ctx.fillText('TALL', 0, 0);
   ctx.restore();
   ctx.fillStyle = '#ffffff';
-  ctx.fillText('Mow it ', W - 48 - tallW, mapH + 110);
+  ctx.fillText('Mow It ', W - 48 - tallW, mapH + 110);
   ctx.fillStyle = '#c9dcc0';
   ctx.font = `400 24px ${BODY}`;
   ctx.fillText('mowittall.com', W - 48, mapH + 150);

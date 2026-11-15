@@ -117,6 +117,26 @@ const months = MONTHS_LONG.map((name, i) => ({
       todayEl.textContent = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
       todayEl.setAttribute('datetime', today.toISOString().slice(0, 10));
     }
+    // endless loop: a copy of the year on each side, so scrolling past December lands on January (and back)
+    const track = root.querySelector('[data-track]');
+    const orig = [...track.children];
+    const copy = () => orig.map((n) => {
+      const c = n.cloneNode(true);
+      c.classList.add('is-clone'); c.setAttribute('aria-hidden', 'true');
+      c.querySelectorAll('[tabindex]').forEach((e) => e.setAttribute('tabindex', '-1'));
+      return c;
+    });
+    track.prepend(...copy()); track.append(...copy());
+    const yearW = () => orig[0].offsetLeft - track.children[0].offsetLeft;
+    let loopT;
+    const wrap = () => {
+      const w = yearW();
+      if (!w) return;
+      if (track.scrollLeft < w * 0.2) track.scrollLeft += w;
+      else if (track.scrollLeft > w * 1.95) track.scrollLeft -= w;
+    };
+    track.addEventListener('scroll', () => { clearTimeout(loopT); loopT = setTimeout(wrap, 140); }, { passive: true });
+
     for (const b of root.querySelectorAll('[data-cal-more]')) {
       b.addEventListener('click', () => { b.parentElement.classList.add('is-open'); b.remove(); });
     }
@@ -187,10 +207,8 @@ const months = MONTHS_LONG.map((name, i) => ({
 
     // mark this month and scroll it into view, with last month peeking in
     const month = today.getMonth() + 1;
-    const col = root.querySelector(`[data-month="${month}"]`);
-    col.classList.add('is-current');
-    col.querySelector('.cal-flag').hidden = false;
-    const track = root.querySelector('[data-track]');
+    root.querySelectorAll(`[data-month="${month}"]`).forEach((m) => { m.classList.add('is-current'); m.querySelector('.cal-flag').hidden = false; });
+    const col = orig.find((m) => m.dataset.month === String(month));
     const prev = col.previousElementSibling;
     const align = () => {
       const pad = parseFloat(getComputedStyle(track).paddingLeft) || 0;
