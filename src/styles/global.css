@@ -2146,3 +2146,10 @@ main > section.gp { margin-left: 16px; margin-right: 16px; }
 .lw-rain-head b { color: #8fcaf3; font-weight: 800; }
 .lw-rain-ends { display: flex; justify-content: space-between; gap: 8px; margin-top: -2px !important; font-size: 0.8rem; color: var(--paper-dim); }
 .lw-rain-ends span:first-child { color: #8fcaf3; }
+/* Water card: dryness meter (Soaked / Fine / A Bit Dry / Thirsty), same look as the soil bar */
+.lw-water .lw-thirst .thermo-marker:not([hidden]) { display: block; }
+.lw-thirst.is-asleep .thermo-track { opacity: 0.5; }
+.lw-thirst-zones { display: flex; margin-top: 2px !important; font-size: 0.7rem; font-weight: 700; color: var(--paper-dim); }
+.lw-thirst-zones span { flex-basis: 0; text-align: center; white-space: nowrap; }
+.lw-thirst-zones span:first-child { text-align: left; }
+.lw-thirst-zones span:last-child { text-align: right; }

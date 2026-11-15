@@ -60,10 +60,17 @@ const zonesJson = JSON.stringify(ZONES);
         <div class="lw-face lw-front">
           <p class="lw-label">Water?</p>
           <p class="lw-answer"><span class="water-badge" data-water-verdict data-tone="">Checking…</span></p>
-          <p class="lw-rain-head" data-rain-head>How much of your lawn’s water came from rain</p>
-          <div class="lw-rain" role="img" aria-label="Share of the lawn's water this week that came from rain" data-rain-bar>
-            <div class="lw-rain-track"><span class="lw-rain-fill" data-rain-fill style="width:0"></span></div>
+          <p class="lw-rain-head" data-rain-head>How dry is the lawn?</p>
+          <div class="thermo lw-thermo lw-thirst" role="img" aria-label="How dry the lawn is this week" data-rain-bar>
+            <div class="thermo-track">
+              <span class="thermo-zone" style="flex-grow:5;background:#5aa6e0"></span>
+              <span class="thermo-zone" style="flex-grow:2.5;background:#6fbf4a"></span>
+              <span class="thermo-zone" style="flex-grow:3.5;background:#f6c945"></span>
+              <span class="thermo-zone" style="flex-grow:4;background:#e0663a"></span>
+            </div>
+            <div class="thermo-marker" data-thirst-marker hidden></div>
           </div>
+          <p class="lw-thirst-zones" aria-hidden="true"><span style="flex-grow:5">Soaked</span><span style="flex-grow:2.5">Fine</span><span style="flex-grow:3.5">A Bit Dry</span><span style="flex-grow:4">Thirsty</span></p>
           <p class="lw-rain-ends"><span data-rain-a>Rain: …</span><span data-rain-b>Lawn drank: …</span></p>
           <p class="lw-why" data-water-why>Adding up the rain.</p>
           <span class="lw-tap" aria-hidden="true"></span>
@@ -172,16 +179,20 @@ const zonesJson = JSON.stringify(ZONES);
         if (mine !== wseq) return;
         wv = v; wdays = days;
         badge.textContent = VERDICTS[v.key].label; badge.dataset.tone = VERDICTS[v.key].tone;
-        // progress bar: full width = what the lawn drank this week, blue = the part rain covered
-        const pct = v.used < 0.02 ? 100 : Math.round((v.rain / v.used) * 100);
-        water.querySelector<HTMLElement>('[data-rain-fill]')!.style.width = `${Math.min(100, pct)}%`;
-        water.querySelector('[data-rain-head]')!.innerHTML = v.used < 0.02 ? 'Your lawn barely drank anything this week'
-          : pct >= 100 ? '<b>Rain covered it all</b> this week' + (pct >= 150 ? ' (and then some)' : '')
-          : v.rain < 0.02 ? '<b>No rain</b> this week' : pct < 5 ? '<b>Almost no rain</b> this week'
-          : `Rain covered <b>${pct}%</b> of what your lawn drank`;
+        // dryness meter: marker = this week's shortfall (rain minus what the lawn drank), zones match the verdict cutoffs
+        const d = v.deficit, short = inch(Math.abs(d));
+        const zone = d < 0 ? 'Soaked' : d <= 0.25 ? 'Fine' : d <= 0.6 ? 'A Bit Dry' : 'Thirsty';
+        const mk = water.querySelector<HTMLElement>('[data-thirst-marker]')!;
+        mk.style.left = `${((Math.max(-0.5, Math.min(1, d)) + 0.5) / 1.5) * 100}%`; mk.hidden = false;
+        water.querySelector('[data-rain-bar]')!.classList.toggle('is-asleep', v.key === 'asleep');
+        water.querySelector('[data-rain-head]')!.innerHTML = v.key === 'asleep'
+          ? (d > 0.03 ? `<b>${short} short</b>, but the lawn’s asleep` : '<b>Plenty of rain</b>, and the lawn’s asleep')
+          : d < 0 ? `<b>Soaked.</b> Rain beat what the lawn drank by ${short}`
+          : d <= 0.03 ? '<b>Even.</b> Rain kept up with the lawn'
+          : `<b>${short} short</b> this week. ${zone === 'Fine' ? 'No big deal.' : zone === 'A Bit Dry' ? 'Getting dry.' : 'Thirsty.'}`;
         water.querySelector('[data-rain-a]')!.textContent = `Rain: ${inch(v.rain)}`;
         water.querySelector('[data-rain-b]')!.textContent = `Lawn drank: ${inch(v.used)}`;
-        water.querySelector('[data-rain-bar]')!.setAttribute('aria-label', `Last 7 days: ${inch(v.rain)} of rain, and the lawn used ${inch(v.used)}`);
+        water.querySelector('[data-rain-bar]')!.setAttribute('aria-label', `Last 7 days: ${inch(v.rain)} of rain, the lawn used ${inch(v.used)}. ${zone}.`);
         // short description: the first sentence of the full explanation
         // card reason: why this verdict, without repeating the numbers the bar already shows
         const WHY: Record<string, string> = {
