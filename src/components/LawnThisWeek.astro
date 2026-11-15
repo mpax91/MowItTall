@@ -219,16 +219,15 @@ const zonesJson = JSON.stringify(ZONES);
       c.addEventListener('click', (e) => { if (!(e.target as HTMLElement).closest('a')) flip(c); });
       c.addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && e.target === c) { e.preventDefault(); flip(c); } });
     });
-    // first card gives a little "peek" once when it scrolls into view, so people see it flips
+    // each card's folded corner jiggles once when it scrolls into view, so people see it's tappable
     if ('IntersectionObserver' in window && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      const io = new IntersectionObserver((es) => {
-        if (es.some((e) => e.isIntersecting)) {
-          io.disconnect();
-          setTimeout(() => { if (!cards[0].classList.contains('is-flipped')) cards[0].classList.add('lw-peek'); }, 500);
-          cards[0].addEventListener('animationend', () => cards[0].classList.remove('lw-peek'), { once: true });
-        }
-      }, { threshold: 0.7 });
-      io.observe(cards[0]);
+      const io = new IntersectionObserver((es) => es.forEach((e) => {
+        if (!e.isIntersecting) return;
+        const c = e.target as HTMLElement; io.unobserve(c);
+        setTimeout(() => { if (!c.classList.contains('is-flipped')) c.classList.add('lw-jiggle'); }, 400);
+        c.addEventListener('animationend', () => c.classList.remove('lw-jiggle'), { once: true });
+      }), { threshold: 0.8 });
+      cards.forEach((c) => io.observe(c));
     }
     if ('ResizeObserver' in window) {
       let w = 0;
@@ -248,7 +247,7 @@ const zonesJson = JSON.stringify(ZONES);
     };
     const backWater = () => {
       const el = $('[data-water-back]');
-      if (!wv) { el.innerHTML = '<p class="lw-label">Water?</p><p>Couldn’t reach the weather data. Rule of thumb: about an inch a week, rain included, early in the morning.</p><p class="lw-back-links"><a href="/resources/#water-h">Open the rain meter</a></p><span class="lw-tap" aria-hidden="true"></span>'; return; }
+      if (!wv) { el.innerHTML = '<p class="lw-label">Water?</p><p>Couldn’t reach the weather data. Rule of thumb: about an inch a week, rain included, early in the morning.</p><span class="lw-tap" aria-hidden="true"></span>'; return; }
       const peak = Math.max(0.5, ...wdays.map((d: any) => d.rain));
       const bars = wdays.slice(1).map((d: any) => {
         const day = new Date(d.date + 'T12:00').toLocaleDateString('en-US', { weekday: 'narrow' });
@@ -259,7 +258,6 @@ const zonesJson = JSON.stringify(ZONES);
         <p class="lw-back-small">Last 7 days · <span class="is-future-key">next 3 (forecast)</span></p>
         <div class="lw-dlg-stats"><div><b>${inch(wv.rain)}</b><span>Rain, 7 days</span></div><div><b>${inch(wv.used)}</b><span>Lawn used</span></div><div><b>${inch(wv.comingRain)}</b><span>Coming, 3 days</span></div></div>
         <p class="lw-back-small">Rain numbers come from a weather model and can miss pop-up storms.</p>
-        <p class="lw-back-links"><a href="/resources/#water-h">Full rain meter</a></p>
         <span class="lw-tap" aria-hidden="true"></span>`;
     };
     const backSoil = () => {
@@ -270,7 +268,6 @@ const zonesJson = JSON.stringify(ZONES);
         ${trend ? `<p>${esc(trend)}</p>` : ''}
         <ul class="lw-zones">${ZONES.map((z: any) => `<li class="${Number.isFinite(t) && ((t >= z.min && t < z.max) || (z.id === 'asleep' && t < z.min) || (z.id === 'heat' && t >= z.max)) ? 'is-now' : ''}"><i class="zone-${z.id}"></i><b>${z.name}</b> <span>${z.min}–${z.max}°F</span><br>${esc(z.what)}</li>`).join('')}</ul>
         <p class="lw-back-small">Measured about 2 inches down, where roots and weed seeds live.</p>
-        <p class="lw-back-links"><a href="/resources/#soil-h">Full soil thermometer</a></p>
         <span class="lw-tap" aria-hidden="true"></span>`;
     };
     backFocus();
