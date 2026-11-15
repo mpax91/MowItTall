@@ -168,7 +168,7 @@ const zonesJson = JSON.stringify(ZONES);
 
     /* ---------------- Water */
     const water = $('[data-lw-water]');
-    let wseq = 0, wv: any = null, wdays: any[] = [];
+    let wseq = 0, wv: any = null, wdays: any[] = [], wwhy = '';
     const inch = (n: number) => `${n < 0.005 ? '0' : n.toFixed(n < 1 ? 2 : 1)} in`;
     const runWater = async (place: any) => {
       const mine = ++wseq;
@@ -202,7 +202,8 @@ const zonesJson = JSON.stringify(ZONES);
           water: (v.text.match(/Give it one deep soak.*?morning\./) || ['Give it one deep soak, early in the morning.'])[0],
           maybe: 'One good watering, about half an inch, keeps it happy.',
         };
-        water.querySelector('[data-water-why]')!.textContent = WHY[v.key] || v.line;
+        wwhy = WHY[v.key] || v.line;
+        water.querySelector('[data-water-why]')!.textContent = wwhy;
         backWater(); fitAll();
       } catch {
         if (mine !== wseq) return;
@@ -280,8 +281,8 @@ const zonesJson = JSON.stringify(ZONES);
       el.innerHTML = `<p class="lw-label">Daily rain</p>
         <div class="lw-bars" role="img" aria-label="Daily rain: last 7 days and the next 3">${bars}</div>
         <p class="lw-back-small">Last 7 days · <span class="is-future-key">next 3 (forecast)</span></p>
-        <div class="lw-dlg-stats"><div><b>${inch(wv.rain)}</b><span>Rain, 7 days</span></div><div><b>${inch(wv.used)}</b><span>Lawn used</span></div><div><b>${inch(wv.comingRain)}</b><span>Coming, 3 days</span></div></div>
-        <p class="lw-back-small">Rain numbers come from a weather model and can miss pop-up storms.</p>
+        <div class="lw-dlg-stats"><div><b>${inch(wv.rain)}</b><span>Rain, 7 days</span></div><div><b>${inch(wv.used)}</b><span>Lawn drank</span></div><div><b>${inch(wv.comingRain)}</b><span>Forecast</span></div></div>
+        <p class="lw-back-take">${esc(wwhy)}</p>
         <span class="lw-tap" aria-hidden="true"></span>`;
     };
     const backSoil = () => {
