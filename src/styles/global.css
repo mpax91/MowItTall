@@ -1311,3 +1311,17 @@ html.mz-lock, html.mz-lock body { overflow: hidden; overscroll-behavior: none; }
 .tool-card { padding: 22px 20px; }
 .tool-card h2 { font-size: 1.6rem; margin-bottom: 8px; }
 .tool-card p { color: #e3efdc; margin: 0 0 16px; }
+.mz-turn {
+  position: absolute; z-index: 1100; right: 10px; top: calc(env(safe-area-inset-top) + 120px);
+  display: flex !important; flex-direction: column; gap: 10px;
+}
+.mz:not(.is-full) .mz-turn { display: none !important; }
+.mz-round {
+  width: 46px; height: 46px; display: grid; place-items: center; cursor: pointer; padding: 0;
+  color: var(--ink); background: var(--paper); border: 2px solid var(--win-edge); border-radius: 50%;
+  box-shadow: 0 3px 0 var(--win-edge);
+}
+.mz-round:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--win-edge); }
+.mz-round[hidden] { display: none; }
+.mz-compass svg { transition: transform 0.15s; }
+.mz.is-full .mz-sheet:not([hidden]) ~ .mz-turn { display: none !important; }

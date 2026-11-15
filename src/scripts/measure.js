@@ -2,15 +2,16 @@
 // Free imagery (Esri World Imagery) and free address search (Esri geocoder, no key, not stored).
 // Shapes are saved on the visitor's phone only (localStorage 'mit-yard').
 
-import L from 'leaflet';
+import L from './leafletGlobal.js';
+import 'leaflet-rotate';
 import 'leaflet/dist/leaflet.css';
 import polylabel from 'polylabel';
 import { getPlace } from './place.js';
 import { renderImage } from './measureExport.js';
+import { satLayer } from './satTiles.js';
 
 const KEY = 'mit-yard';
 export const COLORS = ['#f6c945', '#9fd36a', '#7cc8f2', '#ff9ec0', '#ffad5c', '#c7a8ff', '#5fe0c4', '#ff7a6b'];
-export const TILE_URL = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 export const ATTRIBUTION = 'Imagery © Esri, Maxar, Earthstar Geographics';
 const GEO = 'https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer';
 const NAMES = ['Front yard', 'Back yard', 'Side yard', 'By the street', 'Other side'];
@@ -86,15 +87,23 @@ export function initMeasure(root) {
     touchZoom: false,
     zoomSnap: 0.25,
     zoomDelta: 0.5,
-    maxZoom: 21,
+    maxZoom: 21.5,
     minZoom: 4,
+    rotate: true,
+    rotateControl: false,
+    touchRotate: false,
+    shiftKeyRotate: false,
+    pitchDrag: false,
+    touchPitch: false,
   }).setView([place.lat, place.lon], 16);
-  L.tileLayer(TILE_URL, { maxNativeZoom: 19, maxZoom: 21, attribution: ATTRIBUTION, crossOrigin: true }).addTo(map);
+  satLayer(L, { attribution: ATTRIBUTION, maxZoom: 22 }).addTo(map);
   map.attributionControl.setPrefix('<a href="https://leafletjs.com">Leaflet</a>');
 
   // Page mode never grabs touches, so the page always scrolls. Full screen does.
   function setInteractive(on) {
-    for (const h of [map.dragging, map.touchZoom, map.scrollWheelZoom]) on ? h.enable() : h.disable();
+    for (const h of [map.dragging, map.touchZoom, map.touchRotate, map.shiftKeyRotate, map.scrollWheelZoom]) {
+      if (h) on ? h.enable() : h.disable();
+    }
   }
 
   const project = (p) => map.project(p, Z_REF);
@@ -156,6 +165,29 @@ export function initMeasure(root) {
       pending.clear();
       paintTotal();
     });
+  }
+
+  // ---------- turning the map ----------
+  const compass = $('[data-mz-compass]');
+  function paintCompass() {
+    const b = ((Math.round(map.getBearing()) % 360) + 360) % 360;
+    compass.hidden = b === 0;
+    compass.querySelector('svg').style.transform = `rotate(${-map.getBearing()}deg)`;
+  }
+  let bearingTimer = 0;
+  map.on('rotate', () => {
+    paintCompass();
+    clearTimeout(bearingTimer);
+    bearingTimer = setTimeout(save, 400);
+  });
+  function turn(deg) {
+    map.setBearing(map.getBearing() + deg, { animate: true, duration: 0.25 });
+  }
+  // Which way the photo is turned on screen, for the saved image.
+  function screenAngle() {
+    const c = map.getCenter();
+    const a = map.latLngToContainerPoint(c), b = map.latLngToContainerPoint([c.lat, c.lng + 0.001]);
+    return Math.atan2(b.y - a.y, b.x - a.x);
   }
 
   map.on('zoomend', () => {
@@ -455,7 +487,12 @@ export function initMeasure(root) {
     }).addTo(map);
     closeSheets();
     if (!drawing && !areas.length) startDrawing();
+    if (!tipShown) {
+      tipShown = true;
+      toast('Tip: twist two fingers, or tap the arrows, to turn the map.');
+    }
   }
+  let tipShown = false;
 
   let suggTimer = 0, suggReq = 0;
   searchInput.addEventListener('input', () => {
@@ -584,7 +621,10 @@ export function initMeasure(root) {
     btn.disabled = true;
     btn.textContent = 'Making it…';
     try {
-      const blob = await renderImage(areas.map((a) => ({ name: a.name, color: a.color, sqft: a.sqft, pts: a.pts.map((p) => [p.lat, p.lng]) })));
+      const blob = await renderImage(
+        areas.map((a) => ({ name: a.name, color: a.color, sqft: a.sqft, pts: a.pts.map((p) => [p.lat, p.lng]) })),
+        { angle: screenAngle() },
+      );
       const file = new File([blob], 'my-lawn-mowittall.jpg', { type: 'image/jpeg' });
       const touch = matchMedia('(pointer: coarse)').matches;
       if (touch && navigator.canShare && navigator.canShare({ files: [file] })) {
@@ -683,6 +723,7 @@ export function initMeasure(root) {
       localStorage.setItem(KEY, JSON.stringify({
         v: 1,
         total: Math.round(total()),
+        bearing: Math.round(map.getBearing() * 10) / 10,
         areas: areas.map((a) => ({ name: a.name, color: a.color, pts: a.pts.map((p) => [+p.lat.toFixed(7), +p.lng.toFixed(7)]) })),
       }));
     } catch { /* private mode */ }
@@ -691,6 +732,7 @@ export function initMeasure(root) {
   function load() {
     try {
       const d = JSON.parse(localStorage.getItem(KEY));
+      if (d && typeof d.bearing === 'number' && d.bearing) map.setBearing(d.bearing);
       for (const x of (d && d.areas) || []) {
         if (!Array.isArray(x.pts) || x.pts.length < 3) continue;
         const a = makeArea(x.pts.map((p) => L.latLng(p[0], p[1])), String(x.name || defaultName()).slice(0, 24), x.color || nextColor());
@@ -712,6 +754,7 @@ export function initMeasure(root) {
     b.textContent = 'Start over';
     areas.forEach(dropArea);
     areas = [];
+    map.setBearing(0);
     save();
     map.setView([place.lat, place.lon], 16);
     setMode();
@@ -738,15 +781,19 @@ export function initMeasure(root) {
     if (act === 'undo-delete') return undoDelete();
     if (act === 'save-image') return saveImage(b);
     if (act === 'clear') return clearAll(b);
+    if (act === 'turn-left') return turn(-15);
+    if (act === 'turn-right') return turn(15);
+    if (act === 'north') return map.setBearing(0, { animate: true, duration: 0.3 });
   });
 
   // Keep the label/total chips from passing taps through to the map.
-  for (const el of root.querySelectorAll('.mz-top, .mz-bar, .mz-sheet, .mz-toast')) {
+  for (const el of root.querySelectorAll('.mz-top, .mz-bar, .mz-sheet, .mz-toast, .mz-turn')) {
     L.DomEvent.disableClickPropagation(el);
     L.DomEvent.disableScrollPropagation(el);
   }
 
   load();
   if (areas.length) fit(false);
+  paintCompass();
   setMode();
 }

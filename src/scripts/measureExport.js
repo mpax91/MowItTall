@@ -2,8 +2,7 @@
 // square feet, and a striped footer with the total. Runs in the browser, no server.
 
 import polylabel from 'polylabel';
-
-const TILE = (z, x, y) => `https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/${z}/${y}/${x}`;
+import { tileSource, MAXZ } from './satTiles.js';
 const DISPLAY = '"Bricolage Grotesque Variable", "Atkinson Hyperlegible Next", system-ui, sans-serif';
 const BODY = '"Atkinson Hyperlegible Next", system-ui, sans-serif';
 const Z = 19; // work in pixel space at this zoom
@@ -16,17 +15,6 @@ function proj(lat, lng) {
   return [((lng + 180) / 360) * s, ((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2) * s];
 }
 
-function loadImg(src) {
-  return new Promise((res) => {
-    const img = new Image();
-    const t = setTimeout(() => res(null), 12000);
-    img.crossOrigin = 'anonymous';
-    img.onload = () => { clearTimeout(t); res(img); };
-    img.onerror = () => { clearTimeout(t); res(null); };
-    img.src = src;
-  });
-}
-
 function roundRect(ctx, x, y, w, h, r) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
@@ -37,7 +25,8 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-export async function renderImage(areas) {
+// angle: how far the map is turned on screen (radians), so the image matches what you saw.
+export async function renderImage(areas, { angle = 0 } = {}) {
   try {
     await Promise.all([
       document.fonts.load(`800 60px ${DISPLAY}`),
@@ -48,7 +37,13 @@ export async function renderImage(areas) {
 
   const W = 1200;
   const FOOT = 210;
-  const rings = areas.map((a) => a.pts.map(([lat, lng]) => proj(lat, lng)));
+  const world = areas.map((a) => a.pts.map(([lat, lng]) => proj(lat, lng)));
+  const flat = world.flat();
+  const C = [flat.reduce((t, p) => t + p[0], 0) / flat.length, flat.reduce((t, p) => t + p[1], 0) / flat.length];
+  const cos = Math.cos(angle), sin = Math.sin(angle);
+  const turnP = ([x, y]) => [(x - C[0]) * cos - (y - C[1]) * sin, (x - C[0]) * sin + (y - C[1]) * cos];
+  const unturnP = ([x, y]) => [x * cos + y * sin + C[0], -x * sin + y * cos + C[1]];
+  const rings = world.map((r) => r.map(turnP));
   const xs = rings.flat().map((p) => p[0]);
   const ys = rings.flat().map((p) => p[1]);
   let minx = Math.min(...xs), maxx = Math.max(...xs), miny = Math.min(...ys), maxy = Math.max(...ys);
@@ -72,23 +67,42 @@ export async function renderImage(areas) {
   ctx.fillStyle = '#2a4a30';
   ctx.fillRect(0, 0, W, mapH);
 
-  // Satellite tiles. Pick a tile zoom so tiles are drawn near their real size.
-  let tz = Math.min(Z, Math.max(1, Z + Math.ceil(Math.log2(s))));
+  // Satellite tiles, drawn turned to match the map. Pick a tile zoom near real size.
+  const corners = [[minx, miny], [maxx, miny], [maxx, maxy], [minx, maxy]].map(unturnP);
+  const ux = corners.map((p) => p[0]), uy = corners.map((p) => p[1]);
+  const uminx = Math.min(...ux), umaxx = Math.max(...ux), uminy = Math.min(...uy), umaxy = Math.max(...uy);
+  let tz = Math.min(MAXZ, Math.max(1, Z + Math.ceil(Math.log2(s))));
   let f = 2 ** (tz - Z);
-  while (((Math.floor((maxx * f) / 256) - Math.floor((minx * f) / 256) + 1) * (Math.floor((maxy * f) / 256) - Math.floor((miny * f) / 256) + 1)) > 80 && tz > 1) {
-    tz--; f = 2 ** (tz - Z);
-  }
+  const count = () => (Math.floor((umaxx * f) / 256) - Math.floor((uminx * f) / 256) + 1) * (Math.floor((umaxy * f) / 256) - Math.floor((uminy * f) / 256) + 1);
+  while (count() > 120 && tz > 1) { tz--; f = 2 ** (tz - Z); }
+  ctx.imageSmoothingQuality = 'high';
   const jobs = [];
-  for (let tx = Math.floor((minx * f) / 256); tx <= Math.floor((maxx * f) / 256); tx++) {
-    for (let ty = Math.floor((miny * f) / 256); ty <= Math.floor((maxy * f) / 256); ty++) {
-      jobs.push(loadImg(TILE(tz, tx, ty)).then((img) => {
-        if (!img) return;
-        const size = (256 / f) * s;
-        ctx.drawImage(img, X((tx * 256) / f), Y((ty * 256) / f), size + 0.6, size + 0.6);
-      }));
+  for (let tx = Math.floor((uminx * f) / 256); tx <= Math.floor((umaxx * f) / 256); tx++) {
+    for (let ty = Math.floor((uminy * f) / 256); ty <= Math.floor((umaxy * f) / 256); ty++) {
+      jobs.push(tileSource(tz, tx, ty).then((src) => ({ src, tx, ty })));
     }
   }
-  await Promise.all(jobs);
+  const tiles = await Promise.all(jobs);
+  // Stitch the tiles flat first, then turn the whole mosaic once, so no seams show.
+  const tx0 = Math.floor((uminx * f) / 256), ty0 = Math.floor((uminy * f) / 256);
+  const cols = Math.floor((umaxx * f) / 256) - tx0 + 1, rows = Math.floor((umaxy * f) / 256) - ty0 + 1;
+  const mosaic = document.createElement('canvas');
+  mosaic.width = cols * 256;
+  mosaic.height = rows * 256;
+  const mctx = mosaic.getContext('2d');
+  mctx.imageSmoothingQuality = 'high';
+  mctx.fillStyle = '#2a4a30';
+  mctx.fillRect(0, 0, mosaic.width, mosaic.height);
+  for (const { src, tx, ty } of tiles) {
+    if (src) mctx.drawImage(src.img, src.sx, src.sy, src.sw, src.sw, (tx - tx0) * 256, (ty - ty0) * 256, 256, 256);
+  }
+  ctx.save();
+  ctx.setTransform(s, 0, 0, s, -minx * s, -miny * s);
+  ctx.rotate(angle);
+  ctx.translate(-C[0], -C[1]);
+  const size = 256 / f;
+  ctx.drawImage(mosaic, tx0 * size, ty0 * size, cols * size, rows * size);
+  ctx.restore();
 
   // Shapes: dark outline under a colored line so edges read on any photo.
   ctx.lineJoin = 'round';

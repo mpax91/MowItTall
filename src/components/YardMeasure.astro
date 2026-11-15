@@ -21,6 +21,18 @@
     </div>
     <p class="mz-hint mz-ui" data-mz-hint role="status"></p>
 
+    <div class="mz-turn mz-ui" role="group" aria-label="Turn the map">
+      <button type="button" class="mz-round" data-act="turn-left" aria-label="Turn map left">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M9 4 4 8.5 9 13" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 8.5H13a6.5 6.5 0 1 1 0 13H9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+      </button>
+      <button type="button" class="mz-round" data-act="turn-right" aria-label="Turn map right">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true" style="transform:scaleX(-1)"><path d="M9 4 4 8.5 9 13" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 8.5H13a6.5 6.5 0 1 1 0 13H9" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>
+      </button>
+      <button type="button" class="mz-round mz-compass" data-act="north" data-mz-compass aria-label="Point north up" hidden>
+        <svg viewBox="0 0 24 24" width="26" height="26" aria-hidden="true"><path d="M12 2 16 12H8z" fill="#c8372d"/><path d="M12 22 8 12h8z" fill="#12301d"/><text x="12" y="10.5" font-size="6" font-weight="800" text-anchor="middle" fill="#fff" font-family="system-ui">N</text></svg>
+      </button>
+    </div>
+
     <div class="mz-sheet mz-ui" data-mz-search hidden>
       <p class="mz-sheet-title">Find your house</p>
       <form class="mz-search-form" data-mz-search-form novalidate>
