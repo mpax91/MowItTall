@@ -9,8 +9,35 @@ import { PHOTOS } from '../data/photos.js';
 const title = 'Lawn care 101 for beginners in the Northeast | Mow It Tall';
 const description =
   'Lawn care basics for beginners in Westchester and the Northeast: six small habits, which grass seed to buy, common weeds and real yard photos.';
+const faqs = [
+  {
+    q: 'How high should I mow my lawn?',
+    a: 'For most lawns in New York and the Northeast, 3.5 to 4 inches. Taller grass shades the soil so weed seeds can’t sprout, and it grows deeper roots so it stays green in summer.',
+  },
+  {
+    q: 'When should I put down crabgrass preventer in Westchester?',
+    a: 'When the soil warms to about 55°F, usually early to mid April around Bedford. A good clue: put it down when the forsythia bushes are blooming.',
+  },
+  {
+    q: 'Should I bag my grass clippings?',
+    a: 'No. Leave them on the lawn. They break down quickly and return nutrients to the soil. Bag only if the grass got very long and the clippings are clumping.',
+  },
+  {
+    q: 'When is the best time to seed a lawn in New York?',
+    a: 'Late August through September. The soil is still warm, the air is cooler, and there are fewer weeds competing with new grass.',
+  },
+  {
+    q: 'How often should I water my lawn?',
+    a: 'Once or twice a week, deeply, in the early morning. Aim for about an inch of water a week, counting rain. Short daily watering grows shallow roots.',
+  },
+];
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+};
 ---
-<Base title={title} description={description} path="/lawn-101/">
+<Base title={title} description={description} path="/lawn-101/" jsonLd={jsonLd}>
   <main id="main">
     <section class="page-head page-head-hub">
       <h1>Lawn 101</h1>
@@ -70,7 +97,7 @@ const description =
       <div class="window plan-card">
         <h2 id="dx-card-h">Something look wrong?</h2>
         <p>Brown spots, seed that won’t come up, mushrooms, moss? Tap what you see and get the cause and the fix. Or get any job’s steps in the right order.</p>
-        <p class="shed-jump"><a class="btn" href="/toolshed/#dx">What’s wrong with my lawn?</a> <a class="bf-chip" href="/toolshed/#ops">Order of operations</a></p>
+        <p class="shed-jump"><a class="btn" href="/resources/#dx">What’s wrong with my lawn?</a> <a class="bf-chip" href="/resources/#ops">Order of operations</a></p>
       </div>
     </section>
 
@@ -78,8 +105,17 @@ const description =
       <div class="window plan-card">
         <h2 id="plan-h">Want the short list for your yard?</h2>
         <p>Seven questions, two minutes. I’ll tell you exactly what to do and when.</p>
-        <a class="btn" href="/plan/">Take the quiz</a>
+        <a class="btn" href="/plan/">Get my free lawn plan</a>
       </div>
+    </section>
+    <section class="faq" aria-labelledby="faq-h">
+      <h2 id="faq-h">Quick answers</h2>
+      {faqs.map((f) => (
+        <details>
+          <summary>{f.q}</summary>
+          <p>{f.a}</p>
+        </details>
+      ))}
     </section>
   </main>
 </Base>

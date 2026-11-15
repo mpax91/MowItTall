@@ -1,0 +1,26 @@
+---
+// Homepage section: centered heading + lede, a sideways-swiping row of cards, and an "Explore" button.
+// Cards: { href, title, sub?, tag?, icon? (pixel map), img? (src) }
+import PixelIcon from './PixelIcon.astro';
+interface Card { href: string; title: string; sub?: string; tag?: string; icon?: string[]; img?: string }
+interface Props { id: string; title: string; lede?: string; href: string; more: string; items: Card[]; kind?: string }
+const { id, title, lede, href, more, items, kind = '' } = Astro.props;
+---
+<section class:list={['row-sec', kind && `row-${kind}`]} id={id} aria-labelledby={`${id}-h`}>
+  <h2 id={`${id}-h`}>{title}</h2>
+  {lede && <p class="section-lede">{lede}</p>}
+  <ul class="row-track" aria-label={`${title}: swipe sideways`}>
+    {items.map((c) => (
+      <li>
+        <a class="row-card" href={c.href}>
+          {c.img && <img class="row-img" src={c.img} alt="" width="64" height="64" loading="lazy" decoding="async" />}
+          {c.icon && <span class="row-icon"><PixelIcon map={c.icon} size={44} /></span>}
+          {c.tag && <span class="clip-tag">{c.tag}</span>}
+          <span class="row-title">{c.title}</span>
+          {c.sub && <span class="row-sub">{c.sub}</span>}
+        </a>
+      </li>
+    ))}
+  </ul>
+  <p class="row-more"><a class="btn btn-quiet" href={href}>{more}</a></p>
+</section>

@@ -1,10 +1,20 @@
 ---
-// Homepage hero: the headline, a quick mowing game, then what the site is and the main call to action.
-import PlaceChip from './PlaceChip.astro';
+// Homepage hero: headline + one line about the site + the main CTA, then a quick mowing game in its own box.
 ---
 <section class="hero2" aria-labelledby="hero-h" data-hero>
-  <h1 id="hero-h">Small changes. Big stripes.</h1>
+  <h1 id="hero-h">A better lawn, without becoming a lawn&nbsp;guy.</h1>
+  <p class="hero-lede">
+    Small, easy changes for lawns in Westchester &amp; the Lower Hudson Valley, from the neighbor with the striped lawn.
+  </p>
+  <div class="hero-cta">
+    <a class="btn btn-big" href="/plan/" data-hero-cta>Get my free lawn plan</a>
+    <span class="hero-cta-note">7 quick questions. No email needed.</span>
+  </div>
 
+  <div class="window mow-box">
+  <div class="mow-box-head">
+    <h2 class="mow-box-title">Quick game: <span>stripe this lawn</span></h2>
+  </div>
   <div class="mow" data-mow>
     <div class="mow-stats" aria-live="polite">
       <span>Mowed <b data-pct>0%</b></span>
@@ -32,41 +42,12 @@ import PlaceChip from './PlaceChip.astro';
     </div>
     </div>
   </div>
-
-  <p class="hero-lede">
-    Small, easy changes, timed for Westchester &amp; the Lower Hudson Valley. Take the two-minute
-    quiz and get a free lawn plan built for your yard and how much effort you actually want to give.
-  </p>
-  <div class="hero-cta">
-    <a class="btn btn-big" href="/plan/" data-hero-cta>Get my free lawn plan</a>
-    <span class="hero-cta-note">2 minutes. No email needed.</span>
+  <p class="mow-box-more">Want more? <a href="/games/">Eight yards on the games page</a></p>
   </div>
-  <div class="hero-now" data-hero-now>
-    <div class="hero-now-where"><span class="hero-now-label">Right now in</span> <PlaceChip id="hero-place" /></div>
-    <p class="hero-now-task" data-now-task hidden><strong data-now-title></strong> <a href="#cal-h">See the live calendar</a></p>
-    <p class="hero-now-task hero-water" data-water-line hidden><span class="hero-now-label">Watering:</span> <span class="water-badge" data-water-verdict data-tone=""></span> <span data-water-why></span> <a href="/toolshed/#water-h">Rain meter</a></p>
-  </div>
-  <p class="hero-tag">You don’t need to be a <span class="nowrap">know-it-all.</span> Just mow it tall.</p>
 </section>
 
 <script>
   import { initHeroMower } from '../scripts/heroMower.js';
-  import { TASKS, snapshot, fmt } from '../data/tasks.js';
-  import { initWaterLine } from '../scripts/water.js';
-  const water = document.querySelector('[data-water-line]');
-  if (water) initWaterLine(water);
   const mow = document.querySelector('[data-mow]');
   if (mow) initHeroMower(mow);
-  const now = document.querySelector('[data-hero-now]');
-  if (now) {
-    const snap = snapshot(TASKS.filter((t) => t.level <= 2), new Date());
-    const pick = snap.now[0];
-    if (pick) {
-      now.querySelector('[data-now-title]').textContent = `${pick.t.title} (through ${fmt(pick.t.end)})`;
-      now.querySelector('[data-now-task]').hidden = false;
-    } else if (snap.next) {
-      now.querySelector('[data-now-title]').textContent = `Nothing urgent. Next up: ${snap.next.t.title}, ${fmt(snap.next.t.start)}`;
-      now.querySelector('[data-now-task]').hidden = false;
-    }
-  }
 </script>

@@ -1,0 +1,152 @@
+---
+// Homepage "Your lawn this week": a big ZIP box, then three glance cards for that ZIP
+// (what to do now, should I water, soil temperature). Bedford until the visitor changes it.
+const ZONES = [
+  { id: 'asleep', min: 25, max: 40, name: 'Asleep' },
+  { id: 'waking', min: 40, max: 50, name: 'Waking up / winding down' },
+  { id: 'go', min: 50, max: 56, name: 'Go time' },
+  { id: 'growing', min: 56, max: 68, name: 'Prime growing' },
+  { id: 'heat', min: 68, max: 85, name: 'Heat stress' },
+];
+const lo = 25, hi = 85;
+---
+<section class="lw" id="local" aria-labelledby="lw-h" data-lw>
+  <h2 id="lw-h">Your lawn this week</h2>
+  <p class="section-lede">Live for your ZIP code: what to do, whether to water and how warm the soil is.</p>
+
+  <form class="lw-zip" data-lw-form novalidate>
+    <label for="lw-zip-in">Your ZIP code</label>
+    <div class="lw-zip-row">
+      <span class="lw-zip-field">
+        <svg class="place-pin" viewBox="0 0 7 9" width="14" height="18" aria-hidden="true" shape-rendering="crispEdges">
+          <path fill="#0a2414" d="M2 0h3v1h1v1h1v3h-1v1h-1v1h-1v2h-1v-2h-1v-1h-1v-1h-1v-3h1v-1h1z" />
+          <path fill="#c8372d" d="M2 1h3v1h1v3h-1v1h-1v1h-1v-1h-1v-1h-1v-3h1z" />
+          <path fill="#f1f6ec" d="M3 2h1v2h-1z" />
+        </svg>
+        <input id="lw-zip-in" inputmode="numeric" autocomplete="postal-code" maxlength="5" placeholder="10506" value="10506" data-lw-input />
+      </span>
+      <button type="submit" class="btn lw-go" data-lw-go>Update</button>
+    </div>
+    <p class="lw-zip-meta">
+      Showing <b data-lw-name>Bedford, NY</b>
+      <span aria-hidden="true">·</span>
+      <button type="button" class="link-btn" data-lw-gps>Use my location</button>
+      <button type="button" class="link-btn" data-lw-home hidden>Back to Bedford</button>
+    </p>
+    <p class="lw-msg" data-lw-msg role="status"></p>
+    <p class="lw-note" data-lw-note hidden></p>
+  </form>
+
+  <div class="lw-grid">
+    <article class="lw-card lw-todo">
+      <p class="lw-label">Do it now</p>
+      <h3 class="lw-big" data-now-title>…</h3>
+      <p class="lw-sub" data-now-when></p>
+      <p class="lw-next"><span class="lw-label">Next up</span> <b data-next-title></b> <span data-next-when></span></p>
+      <a class="lw-link" href="#cal-h">The whole year</a>
+    </article>
+
+    <article class="lw-card lw-water" data-lw-water>
+      <p class="lw-label">Should I water?</p>
+      <p class="lw-big"><span class="water-badge" data-water-verdict data-tone="">Checking…</span></p>
+      <p class="lw-sub" data-water-why>Adding up the rain.</p>
+      <a class="lw-link" href="/resources/#water-h">Rain meter</a>
+    </article>
+
+    <article class="lw-card lw-soil" data-lw-soil data-lo={lo} data-hi={hi}>
+      <p class="lw-label">Soil temperature</p>
+      <p class="lw-big"><span data-soil-value>…</span> <span class="lw-zone" aria-live="polite">
+        {ZONES.map((z) => <span class="lw-zone-name" data-zone={z.id} data-min={z.min} data-max={z.max}>{z.name}</span>)}
+      </span></p>
+      <div class="thermo lw-thermo" role="img" aria-label="Soil thermometer" data-thermo>
+        <div class="thermo-track">
+          {ZONES.map((z) => <span class={`thermo-zone zone-${z.id}`} style={`flex-grow:${z.max - z.min}`}></span>)}
+        </div>
+        <div class="thermo-marker" data-marker style="left:30%"></div>
+      </div>
+      <p class="lw-sub" data-soil-advice>Checking the ground…</p>
+      <p class="lw-trend" data-soil-trend></p>
+      <a class="lw-link" href="/resources/#soil-h">Soil thermometer</a>
+    </article>
+  </div>
+</section>
+
+<script>
+  import { getPlace, setZip, useMyLocation, resetPlace, adoptQuizZip, noteFor } from '../scripts/place.js';
+  import { fetchWater, verdict, getGauge, VERDICTS } from '../scripts/water.js';
+  import { initSoil } from '../scripts/soil.js';
+  import { TASKS, snapshot, fmt } from '../data/tasks.js';
+
+  const root = document.querySelector('[data-lw]');
+  if (root) {
+    const $ = (s) => root.querySelector(s);
+    const input = $('[data-lw-input]'), msg = $('[data-lw-msg]'), go = $('[data-lw-go]');
+
+    /* ---------------- ZIP box */
+    const paint = (p) => {
+      $('[data-lw-name]').textContent = p.name;
+      if (document.activeElement !== input) input.value = p.zip || '';
+      $('[data-lw-home]').hidden = !!p.home;
+      const note = noteFor(p);
+      $('[data-lw-note]').textContent = note;
+      $('[data-lw-note]').hidden = !note;
+    };
+    input.addEventListener('input', () => { input.value = input.value.replace(/\D/g, '').slice(0, 5); msg.textContent = ''; });
+    input.addEventListener('focus', () => input.select());
+    $('[data-lw-form]').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      go.disabled = true; msg.textContent = 'Looking it up…';
+      const r = await setZip(input.value);
+      go.disabled = false;
+      if (r.error) { msg.textContent = r.error; return; }
+      msg.textContent = ''; input.blur();
+    });
+    $('[data-lw-gps]').addEventListener('click', async () => {
+      msg.textContent = 'Asking your phone…';
+      const r = await useMyLocation();
+      msg.textContent = r.error || '';
+    });
+    $('[data-lw-home]').addEventListener('click', () => { resetPlace(); msg.textContent = ''; });
+
+    /* ---------------- Do it now / next up */
+    const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+    const snap = snapshot(TASKS.filter((t) => t.level <= 2), new Date());
+    if (snap.now.length) {
+      const first = snap.now[0];
+      $('[data-now-title]').textContent = first.t.title;
+      $('[data-now-when]').textContent = `Through ${fmt(first.t.end)}. ${plural(first.s.daysLeft, 'day')} left.` + (snap.now.length > 1 ? ` Plus ${snap.now.length - 1} more.` : '');
+    } else {
+      $('[data-now-title]').textContent = 'Nothing. Enjoy it.';
+      $('[data-now-when]').textContent = 'Your lawn is between jobs.';
+    }
+    if (snap.next) {
+      $('[data-next-title]').textContent = snap.next.t.title;
+      $('[data-next-when]').textContent = `${fmt(snap.next.t.start)} (in ${plural(snap.next.s.days, 'day')})`;
+    } else $('.lw-next').hidden = true;
+
+    /* ---------------- Water */
+    const water = $('[data-lw-water]');
+    let wseq = 0;
+    const runWater = async (place) => {
+      const mine = ++wseq;
+      const badge = water.querySelector('[data-water-verdict]'), why = water.querySelector('[data-water-why]');
+      try {
+        const v = verdict(await fetchWater(place), getGauge());
+        if (mine !== wseq) return;
+        badge.textContent = VERDICTS[v.key].label; badge.dataset.tone = VERDICTS[v.key].tone; why.textContent = v.line;
+      } catch {
+        if (mine !== wseq) return;
+        badge.textContent = 'Can’t tell'; badge.dataset.tone = 'maybe';
+        why.textContent = 'Couldn’t reach the weather data. Rule of thumb: about an inch a week, rain included.';
+      }
+    };
+
+    /* ---------------- Soil (shared logic; this card shows only the current zone) */
+    initSoil($('[data-lw-soil]'));
+
+    paint(getPlace());
+    runWater(getPlace());
+    window.addEventListener('mit:place', (e) => { const p = (e as CustomEvent).detail; paint(p); runWater(p); });
+    adoptQuizZip();
+  }
+</script>

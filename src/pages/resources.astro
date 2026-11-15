@@ -19,11 +19,11 @@ const jump = [
   ['#spreader', 'Spreader settings'], ['#need', 'Do I need this?'], ['#water-h', 'Should I water?'], ['#measure-h', 'Measure'], ['#grass-h', 'Pick grass'],
 ];
 ---
-<Base title={title} description={description} path="/toolshed/">
+<Base title={title} description={description} path="/resources/">
   <main id="main">
     <section class="page-head page-head-hub">
-      <h1>The toolshed</h1>
-      <p class="lede">Free tools that do the thinking for you. No account, no email, no gas blower.</p>
+      <h1>Free lawn resources</h1>
+      <p class="lede">Free tools and cheat sheets that do the thinking for you. No account, no email, no gas blower.</p>
       <nav class="shed-jump" aria-label="Jump to a tool">
         {jump.map(([h, t]) => <a class="bf-chip" href={h}>{t}</a>)}
       </nav>
@@ -33,7 +33,7 @@ const jump = [
       <div class="window plan-card">
         <h2 id="quiz-h">Your lawn plan</h2>
         <p>Seven questions about your yard and how much effort you’ll honestly give. You get the few things that matter, in order, with phone reminders.</p>
-        <a class="btn" href="/plan/">Take the quiz</a>
+        <a class="btn" href="/plan/">Get my free lawn plan</a>
       </div>
     </section>
 

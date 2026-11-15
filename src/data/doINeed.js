@@ -30,7 +30,7 @@ export const NEEDS = [
   { id: 'irrigation', group: 'services', label: 'Irrigation system', word: 'PROBABLY NOT', tone: 'no', title: 'Nice to have. Expensive to need.',
     lede: 'In the Northeast, rain does most of the work. A tan lawn in August is just napping, and it wakes up when the rain comes back.',
     sections: [{ h: 'Worth it if', list: ['You want it green all July, you seed every fall, or you travel a lot.'] }, { h: 'If you have one', list: ['Water deep and not often: about an inch a week, in one or two long runs, early morning.', 'Ten minutes every day grows shallow roots and weeds. Turn that schedule off.'] }],
-    more: { href: '/toolshed/#water-h', text: 'Should I water? Check the rain meter' } },
+    more: { href: '/resources/#water-h', text: 'Should I water? Check the rain meter' } },
   { id: 'lime', group: 'bags', label: 'Lime', word: 'ONLY WITH A SOIL TEST', tone: 'close', title: 'Lime without a soil test is guessing.',
     lede: 'Lime raises pH. Lots of Northeast soil is too sour, so lime often helps. But if yours isn’t, lime does nothing or makes it worse.',
     sections: [{ h: 'Do this', list: ['Get a soil test. If pH is under about 6, lime it.', 'Fall is a great time. Split big amounts between fall and spring.'] }],

@@ -1741,3 +1741,144 @@ main > section.gp { margin-left: 16px; margin-right: 16px; }
 .prose .wp-pc ul, .wp-pc ul { margin: 0; padding-left: 1.1em; }
 .prose .wp-pc li, .wp-pc li { margin: 3px 0; font-size: 0.93rem; line-height: 1.35; color: var(--ink); }
 .prose .wp-best, .wp-best { margin: 10px 0 0; padding-top: 8px; border-top: 1px solid #c9dcc0; font-size: 0.95rem; }
+
+/* ================================================================
+   Homepage v2 (Nov 15): centered hero, game in its own box, "Your lawn this week",
+   compact calendar, swipe rows. Headings, ledes and buttons are centered on the homepage.
+   ================================================================ */
+.hero2 { text-align: center; padding-bottom: 24px; }
+.hero2 h1 { max-width: 15ch; margin: 6px auto 12px; font-size: clamp(2.15rem, 9vw, 3.5rem); text-wrap: balance; }
+.hero2 .hero-lede { margin: 0 auto 20px; max-width: 30em; text-wrap: balance; }
+.hero2 .hero-cta { flex-direction: column; justify-content: center; gap: 8px; margin-bottom: 28px; }
+.mow-box { text-align: left; padding: 12px 12px 10px; }
+.mow-box-head { display: flex; justify-content: center; margin-bottom: 8px; }
+.mow-box-title { margin: 0; font-size: 1.05rem; font-weight: 750; letter-spacing: 0; color: var(--paper); }
+.mow-box-title span { color: var(--leaf); }
+.mow-box .mow { margin: 0; }
+.mow-box .mow-stats { padding: 0 2px 8px; }
+.mow-box-more { margin: 10px 0 0; text-align: center; font-size: 0.92rem; color: var(--paper-dim); }
+.mow-box-more a { color: var(--paper); font-weight: 700; }
+
+/* shared centered section look */
+.whats, .lw, .row-sec, .calendar.is-compact .cal-head, .plan-end { text-align: center; }
+.whats .section-lede, .lw .section-lede, .row-sec .section-lede { margin-inline: auto; max-width: 32em; }
+
+/* How this site works */
+.whats-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: left; }
+.whats-grid a {
+  display: flex; flex-direction: column; gap: 4px; height: 100%; padding: 12px 12px 13px; text-decoration: none;
+  border-radius: 12px; background: rgba(0, 0, 0, 0.16); border: 2px solid rgba(238, 245, 230, 0.22); color: var(--paper-dim);
+}
+.whats-grid a:hover { border-color: var(--leaf); }
+.whats-grid b { font-family: var(--display); font-weight: 750; font-size: 1.05rem; line-height: 1.15; color: var(--paper); }
+.whats-grid span { font-size: 0.9rem; line-height: 1.35; }
+
+/* Your lawn this week */
+.lw { padding-bottom: 20px !important; }
+.lw-zip {
+  max-width: 420px; margin: 0 auto 18px; padding: 14px 14px 10px; border-radius: 12px;
+  background: var(--paper); color: var(--ink); border: 3px solid var(--ink); box-shadow: 0 5px 0 rgba(5, 20, 10, 0.35);
+}
+.lw-zip label { display: block; font-family: var(--display); font-weight: 750; font-size: 1rem; margin-bottom: 8px; }
+.lw-zip-row { display: flex; gap: 8px; }
+.lw-zip-field {
+  flex: 1; min-width: 0; display: flex; align-items: center; gap: 8px; padding: 0 12px;
+  background: #fff; border: 2px solid var(--ink); border-radius: 9px;
+}
+.lw-zip-field:focus-within { outline: 3px solid var(--sun); outline-offset: 1px; }
+.lw-zip-field input {
+  flex: 1; min-width: 0; width: 100%; border: 0; outline: 0; background: transparent; color: var(--ink);
+  font: 750 1.6rem/1 var(--display); letter-spacing: 0.08em; padding: 9px 0 10px; font-variant-numeric: tabular-nums;
+}
+.lw-go { flex: none; }
+.lw-zip-meta { margin: 9px 0 0; font-size: 0.95rem; }
+.lw-zip-meta .link-btn { color: var(--ink); font-size: 0.95rem; font-weight: 700; padding: 2px 0; }
+.lw-msg:empty, .lw-note[hidden] { display: none; }
+.lw-msg, .lw-note { margin: 6px 0 0; font-size: 0.9rem; line-height: 1.35; }
+.lw-grid { display: grid; gap: 10px; text-align: left; }
+@media (min-width: 640px) { .lw-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.lw-card {
+  display: flex; flex-direction: column; gap: 6px; padding: 13px 14px 12px; border-radius: 12px;
+  background: rgba(0, 0, 0, 0.18); border: 2px solid rgba(238, 245, 230, 0.22);
+}
+.lw-card p { margin: 0; }
+.lw-card h3 { margin: 0; }
+.lw-label { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--leaf); }
+.lw-big { font-family: var(--display); font-weight: 800; font-size: 1.35rem; line-height: 1.15; color: var(--paper); }
+.lw-water .water-badge { font-size: 1.15rem; padding: 3px 10px 4px; border-width: 2px; border-radius: 8px; }
+.lw-sub { font-size: 0.93rem; line-height: 1.4; color: var(--paper-dim); }
+.lw-next { font-size: 0.93rem; line-height: 1.4; color: var(--paper-dim); padding-top: 8px; border-top: 1px solid rgba(238, 245, 230, 0.18); }
+.lw-next .lw-label { display: block; margin-bottom: 2px; }
+.lw-next b { color: var(--paper); }
+.lw-link { margin-top: auto; padding-top: 4px; font-weight: 700; font-size: 0.93rem; color: var(--paper); }
+.lw-link::after { content: ' →'; }
+.lw-zone-name { display: none; font-size: 0.95rem; font-weight: 700; color: var(--leaf); margin-left: 4px; }
+.lw-zone-name.is-current { display: inline; }
+.lw-thermo { margin: 4px 0 2px; padding: 0; }
+.lw-thermo .thermo-track { height: 10px; }
+.lw-thermo .thermo-marker { top: -4px; height: 18px; }
+.lw-trend { font-size: 0.85rem; color: var(--paper-dim); opacity: 0.85; }
+.lw-trend:empty { display: none; }
+
+/* compact calendar (homepage): names only, max 3 per month */
+.calendar.is-compact { padding-top: 6px; }
+.cal-mini-h { font-size: 1.25rem; margin: 0 0 12px; }
+.calendar.is-compact .cal-month { flex-basis: 62%; max-width: 230px; padding: 12px; }
+.calendar.is-compact .cal-month-name { font-size: 1.05rem; margin-bottom: 8px; }
+.calendar.is-compact .cal-task { padding: 8px 10px; margin-bottom: 6px; }
+.calendar.is-compact .cal-task h4 { font-size: 0.95rem; margin: 1px 0 0; }
+.calendar.is-compact .cal-task p:not(.cal-window):not(.cal-status) { display: none; }
+.calendar.is-compact .cal-task .cal-window { font-size: 0.8rem; }
+.calendar.is-compact .cal-task .cal-status { display: none; font-size: 0.8rem; font-weight: 700; margin-top: 2px; }
+.calendar.is-compact .cal-task[data-state='now'] .cal-status { display: block; }
+.calendar.is-compact .cal-task.is-extra { display: none; }
+.calendar.is-compact .cal-month.is-open .cal-task.is-extra { display: block; }
+.calendar.is-compact .cal-rest { font-size: 0.9rem; }
+.cal-more {
+  display: block; width: 100%; padding: 7px; border-radius: 8px; cursor: pointer;
+  background: transparent; color: var(--paper); border: 2px dashed rgba(238, 245, 230, 0.35);
+  font: 700 0.9rem var(--body);
+}
+.cal-cta-mini { text-align: center; font-weight: 700; }
+
+/* swipe rows */
+.row-sec { padding-inline: 0 !important; }
+.row-sec > h2, .row-sec > .section-lede, .row-sec > .row-more { padding-inline: var(--col); max-width: none; }
+.row-track {
+  list-style: none; margin: 0; display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory;
+  padding: 4px var(--col) 14px; scroll-padding-inline: var(--col); max-width: none !important; text-align: left;
+  scrollbar-width: thin;
+}
+.row-track li { flex: 0 0 210px; scroll-snap-align: start; display: flex; }
+.row-card {
+  display: flex; flex-direction: column; gap: 6px; width: 100%; min-height: 150px; padding: 14px 14px 15px;
+  text-decoration: none; background: var(--paper); color: var(--ink); border: 3px solid var(--ink); border-radius: 12px;
+  box-shadow: 0 5px 0 rgba(5, 20, 10, 0.35);
+}
+.row-card:active { transform: translateY(2px); box-shadow: 0 3px 0 rgba(5, 20, 10, 0.35); }
+.row-card:hover .row-title { text-decoration: underline; }
+.row-img { width: 56px; height: 56px; object-fit: cover; border-radius: 8px; border: 2px solid var(--ink); }
+.row-icon { display: block; line-height: 0; }
+.row-card .clip-tag { align-self: flex-start; }
+.row-title { font-family: var(--display); font-weight: 800; font-size: 1.08rem; line-height: 1.2; }
+.row-sub { font-size: 0.9rem; line-height: 1.35; color: #3c5a45; }
+.row-blog .row-track li { flex-basis: 250px; }
+.row-more { margin: 4px 0 0; }
+.row-sec .btn-quiet { color: var(--paper); }
+
+/* closing plan */
+.plan-end .plan-card { padding: 22px 18px; }
+.plan-end .plan-card p { margin-inline: auto; max-width: 30em; }
+.plan-end .hero-tag { margin-top: 22px; }
+
+.lw-thermo .thermo-marker { display: none; }
+.lw-soil.is-live .lw-thermo .thermo-marker { display: block; }
+.lw-zip-meta > span[aria-hidden] { margin: 0 4px; }
+.lw-thermo { position: relative; height: auto; }
+.lw-thermo .thermo-track { margin: 0; }
+.lw-thermo .thermo-marker::after { top: -4px; height: 18px; }
+/* equal-height month cards so short months don't leave a hole under them */
+.calendar.is-compact .cal-track { align-items: stretch; }
+.calendar.is-compact .cal-month { display: flex; flex-direction: column; }
+.calendar.is-compact .cal-more { margin-top: auto; }
+@media (min-width: 520px) { .row-games .row-track { justify-content: center; } }

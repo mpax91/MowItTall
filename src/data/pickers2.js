@@ -108,7 +108,7 @@ export const TRAINING = [
     more: { href: '/blog/mowing-the-lawn-is-a-workout/', text: 'Mowing is a workout' } },
   { id: 'soiltemp', label: 'Checking soil temp', word: 'EASY, TIGER', tone: 'close', title: 'It’s 34°F. It will be 34°F tomorrow.',
     lede: 'You don’t need to check daily in January. I do. You don’t need to.',
-    more: { href: '/toolshed/#soil-h', text: 'Fine, here it is' } },
+    more: { href: '/resources/#soil-h', text: 'Fine, here it is' } },
   { id: 'plan', label: 'The game plan', word: 'DRAFT DAY', tone: 'yes', title: 'Make next year’s plan in February.',
     lede: 'Soil test results in hand, seed picked, holidays on the calendar. Championships are won in the off-season.',
     more: { href: '/plan/', text: 'Get your free plan' } },

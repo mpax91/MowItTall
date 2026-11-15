@@ -2,15 +2,14 @@
 import Base from '../layouts/Base.astro';
 import Calendar from '../components/Calendar.astro';
 import HeroMower from '../components/HeroMower.astro';
-import FlipCards from '../components/FlipCards.astro';
-import SoilGauge from '../components/SoilGauge.astro';
+import LawnThisWeek from '../components/LawnThisWeek.astro';
+import CardRow from '../components/CardRow.astro';
 import { PHOTOS } from '../data/photos.js';
-import { WEEDS } from '../data/weeds.js';
 import { changeCards } from '../data/changes.js';
 const posts = Object.values(import.meta.glob('./blog/[a-z]*.md', { eager: true }))
   .map((p) => ({ ...p.frontmatter, url: p.url }))
   .sort((a, b) => new Date(b.date) - new Date(a.date))
-  .slice(0, 3);
+  .slice(0, 8);
 
 
 const title = 'Mow It Tall: the easy guide to a better lawn';
@@ -18,28 +17,7 @@ const description =
   'Small, easy changes for a better-looking lawn. Simple lawn care tips for beginners in Bedford, Westchester and the Northeast, from a neighbor with great stripes.';
 const site = 'https://mowittall.com';
 
-const faqs = [
-  {
-    q: 'How high should I mow my lawn?',
-    a: 'For most lawns in New York and the Northeast, 3.5 to 4 inches. Taller grass shades the soil so weed seeds can’t sprout, and it grows deeper roots so it stays green in summer.',
-  },
-  {
-    q: 'When should I put down crabgrass preventer in Westchester?',
-    a: 'When the soil warms to about 55°F, usually early to mid April around Bedford. A good clue: put it down when the forsythia bushes are blooming.',
-  },
-  {
-    q: 'Should I bag my grass clippings?',
-    a: 'No. Leave them on the lawn. They break down quickly and return nutrients to the soil. Bag only if the grass got very long and the clippings are clumping.',
-  },
-  {
-    q: 'When is the best time to seed a lawn in New York?',
-    a: 'Late August through September. The soil is still warm, the air is cooler, and there are fewer weeds competing with new grass.',
-  },
-  {
-    q: 'How often should I water my lawn?',
-    a: 'Once or twice a week, deeply, in the early morning. Aim for about an inch of water a week, counting rain. Short daily watering grows shallow roots.',
-  },
-];
+
 
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -59,124 +37,61 @@ const jsonLd = {
       description: 'Bedford, NY homeowner known locally for his striped lawn.',
       homeLocation: { '@type': 'Place', name: 'Bedford, New York' },
     },
-    {
-      '@type': 'FAQPage',
-      mainEntity: faqs.map((f) => ({
-        '@type': 'Question',
-        name: f.q,
-        acceptedAnswer: { '@type': 'Answer', text: f.a },
-      })),
-    },
   ],
 };
+
+const lawn101 = [
+  { href: '/weeds/', img: '/img/weeds/dandelion-thumb.webp', title: 'What’s that weed?', sub: '16 usual suspects, with real photos and the easy fix.' },
+  { href: '/lawn-101/#grass', icon: changeCards[5].icon, title: 'Which grass should I plant?', sub: 'Four questions. One answer. No seed-aisle panic.' },
+  ...changeCards.map((c) => ({ href: '/lawn-101/#changes-h', icon: c.icon, title: c.title, sub: c.sub })),
+  { href: '/yards/', img: `/img/${PHOTOS[0].src}-800.webp`, title: 'Proof it works', sub: 'My yard. Push mower. No lawn company.' },
+];
+const tools = [
+  { href: '/resources/#seed', tag: 'Live', title: 'Can I seed now?', sub: 'Checks your soil and forecast. Yes or no.' },
+  { href: '/resources/#dx', tag: 'Fix it', title: 'What’s wrong with my lawn?', sub: 'Tap what you see. Get the likely cause and the fix.' },
+  { href: '/resources/#water-h', tag: 'Live', title: 'Should I water?', sub: 'This week’s rain vs. what your grass drank.' },
+  { href: '/measure/', tag: 'Map', title: 'Measure your yard', sub: 'Draw it on the map. Get the square feet.' },
+  { href: '/resources/#calc', tag: 'Math', title: 'Lawn calculator', sub: 'How many bags of seed, food or lime.' },
+  { href: '/resources/#spreader', tag: 'Math', title: 'Spreader settings', sub: 'Half rate, twice. No stripes of shame.' },
+  { href: '/resources/#ops', tag: 'Steps', title: 'Order of operations', sub: 'What to do first when you overseed or fix a mess.' },
+  { href: '/resources/#need', tag: 'Honest', title: 'Do I need this?', sub: 'Aerator shoes and other gadgets. Mostly no.' },
+  { href: '/neighbor/', tag: 'Petty', title: 'Send to a neighbor', sub: 'A friendly, anonymous nudge for the yard next door.' },
+];
+const games = [
+  { href: '/games/', icon: changeCards[0].icon, title: 'The stripe game', sub: 'Eight yards, from a starter home to a snowy Christmas lawn.' },
+  { href: '/games/#whack-h', icon: changeCards[1].icon, title: 'Whack-a-Weed', sub: '30 seconds. Hit the weeds, not the bees.' },
+];
 ---
 <Base title={title} description={description} path="/" jsonLd={jsonLd}>
     <main id="main">
       <HeroMower />
 
-      <section class="how" aria-labelledby="how-h">
-        <h2 id="how-h">How it works</h2>
-        <ol class="how-steps">
-          <li><strong>Take the quiz.</strong> Seven quick questions about your yard, your problems and how much effort you’ll honestly give. Couch Potato is a valid answer.</li>
-          <li><strong>Get your plan.</strong> Just the few things that matter for your lawn, in order, with the right timing for your area.</li>
-          <li><strong>Get reminded.</strong> Add it to your phone’s calendar, so it tells you when to do each thing. No app, no account.</li>
-        </ol>
-        <a class="btn" href="/plan/">Start the quiz</a>
-      </section>
-
-      <Calendar />
-
-      <SoilGauge />
-
-      <section class="changes" aria-labelledby="changes-h">
-        <h2 id="changes-h">Small changes, big lawn</h2>
-        <p class="section-lede">You don’t need a 40-step program. Tap a card. Pick one. Next month, pick another.</p>
-        <FlipCards items={changeCards} layout="list" />
-      </section>
-
-      <section class="yards-teaser" aria-labelledby="yards-h">
-        <div class="section-head">
-          <h2 id="yards-h">Proof it works</h2>
-          <a class="more" href="/yards/">See the yards</a>
-        </div>
-        <p class="section-lede">My yard in Bedford. Regular push mower, no lawn company, just these habits.</p>
-        <div class="photo-strip">
-          {PHOTOS.map((p) => (
-            <figure class="photo">
-              <img
-                src={`/img/${p.src}-800.webp`}
-                srcset={`/img/${p.src}-800.webp 800w, /img/${p.src}-1400.webp 1400w`}
-                sizes="(min-width: 900px) 420px, 82vw"
-                width={p.w} height={p.h} loading="lazy" decoding="async" alt={p.alt}
-              />
-              <figcaption>{p.caption}</figcaption>
-            </figure>
-          ))}
-        </div>
-      </section>
-
-      <section class="plan plan-mid" aria-labelledby="plan-mid-h">
-        <div class="window plan-card">
-          <h2 id="plan-mid-h">Want this for your yard?</h2>
-          <p>Tell me about your lawn and how much time you’ve got. I’ll tell you exactly what to do and when.</p>
-          <a class="btn" href="/plan/">Get my free lawn plan</a>
-        </div>
-      </section>
-
-      <section class="clips-teaser" aria-labelledby="clips-h">
-        <div class="section-head">
-          <h2 id="clips-h">From the blog</h2>
-          <a class="more" href="/blog/">All posts</a>
-        </div>
-        <p class="section-lede">Lawn takes. Some hot, all short.</p>
-        <ul class="clip-list">
-          {posts.map((p) => (
-            <li>
-              <a class="clip" href={p.url}>
-                <span class="clip-tag">{p.tag}</span>
-                <span class="clip-title">{p.title}</span>
-                <span class="clip-dek">{p.description}</span>
-              </a>
-            </li>
-          ))}
+      <section class="whats" aria-labelledby="whats-h">
+        <h2 id="whats-h">How this site works</h2>
+        <p class="section-lede">No 40-step program. Grab what you need and get back to your weekend.</p>
+        <ul class="whats-grid">
+          <li><a href="/plan/"><b>Your free plan</b><span>Seven questions. A plan for your yard, with reminders on your phone.</span></a></li>
+          <li><a href="#local"><b>Your lawn this week</b><span>What to do, whether to water and how warm the soil is, for your ZIP.</span></a></li>
+          <li><a href="#l101"><b>Lawn 101 &amp; resources</b><span>The basics, weed ID and calculators. Minus the boring parts.</span></a></li>
+          <li><a href="#blog"><b>Blog &amp; games</b><span>Hot takes, rankings and a mower game for when you should be mowing.</span></a></li>
         </ul>
       </section>
 
-      <section class="weeds-teaser" aria-labelledby="weeds-h">
-        <div class="section-head">
-          <h2 id="weeds-h">What’s that weed?</h2>
-          <a class="more" href="/weeds/">Weed board</a>
-        </div>
-        <p class="section-lede">The usual suspects around here, and how to deal with each one. Easy way, Mike’s way, or just let it be.</p>
-        <div class="weed-chips">
-          {WEEDS.filter((w) => w.group !== 'joke').map((w) => (
-            <a class="weed-chip" href={`/weeds/#${w.id}`}><img src={`/img/weeds/${w.id}-thumb.webp`} width="30" height="30" alt="" loading="lazy" decoding="async" />{w.name}</a>
-          ))}
-        </div>
-      </section>
+      <LawnThisWeek />
+      <Calendar compact />
 
-      <section class="games-teaser" aria-labelledby="games-h">
-        <div class="games-card">
-          <h2 id="games-h">Think you can stripe?</h2>
-          <p>Eight yards to mow, from a starter home to a ballpark to a snowy Christmas lawn. Pull-start the mower and paint the straightest stripes you can. Plus Whack-a-Weed.</p>
-          <a class="btn btn-quiet" href="/games/">Play the games</a>
+      <CardRow id="l101" title="Lawn 101" lede="Everything a beginner actually needs. Start with one small change." href="/lawn-101/" more="Explore Lawn 101" items={lawn101} />
+      <CardRow id="res" title="Free resources" lede="Tools that do the thinking for you. No account, no email." href="/resources/" more="See all resources" items={tools} kind="tools" />
+      <CardRow id="blog" title="From the blog" lede="Lawn takes. Some hot, all short." href="/blog/" more="Read the blog" items={posts.map((p) => ({ href: p.url, tag: p.tag, title: p.title }))} kind="blog" />
+      <CardRow id="games" title="Games" lede="For when you should be mowing." href="/games/" more="Play the games" items={games} kind="games" />
+
+      <section class="plan plan-end" id="plan" aria-labelledby="plan-h">
+        <div class="window plan-card">
+          <h2 id="plan-h">Get your free lawn plan</h2>
+          <p>Seven questions, two minutes. A plan for your yard and how much effort you actually want to give, with reminders on your phone’s calendar.</p>
+          <a class="btn btn-big" href="/plan/">Get my free lawn plan</a>
         </div>
-      </section>
-
-      <section class="plan" id="plan" aria-labelledby="plan-h">
-        <h2 id="plan-h">Get your lawn game plan</h2>
-        <p>Seven questions. Two minutes. A plan for your yard, plus reminders on your phone’s calendar.</p>
-        <a class="btn btn-big" href="/plan/">Get my free lawn plan</a>
-      </section>
-
-      <section class="faq" aria-labelledby="faq-h">
-        <h2 id="faq-h">Quick answers</h2>
-        {faqs.map((f) => (
-          <details>
-            <summary>{f.q}</summary>
-            <p>{f.a}</p>
-          </details>
-        ))}
+        <p class="hero-tag">You don’t need to be a <span class="nowrap">know-it-all.</span> Just mow it tall.</p>
       </section>
     </main>
 

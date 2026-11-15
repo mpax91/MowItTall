@@ -72,4 +72,4 @@ Tap what you used:
 
 Fall: pick weeds or seed. If you can only do one, **seed**. If you want both, either time it carefully or use the trick. And whatever you use, read the label before you spend $80 on seed.
 
-Not sure when your seed window is? [Can I seed now?](/toolshed/#seed) checks your soil and forecast. Want the steps in order? [Overseeding, step by step](/toolshed/#ops-overseed).
+Not sure when your seed window is? [Can I seed now?](/resources/#seed) checks your soil and forecast. Want the steps in order? [Overseeding, step by step](/resources/#ops-overseed).

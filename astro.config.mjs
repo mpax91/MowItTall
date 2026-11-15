@@ -7,6 +7,7 @@ export default defineConfig({
   integrations: [sitemap({ filter: (page) => !page.includes('/404') && !page.includes('/clippings') })],
   // Old blog address (it used to be called Clippings)
   redirects: {
+    '/toolshed': '/resources/',
     '/clippings': '/blog/',
     '/clippings/power-ranking-every-excuse-for-a-bad-lawn': '/blog/power-ranking-every-excuse-for-a-bad-lawn/',
     '/clippings/stop-bagging-your-clippings': '/blog/stop-bagging-your-clippings/',

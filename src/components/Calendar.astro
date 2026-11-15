@@ -3,13 +3,22 @@
 // search engines); the browser stamps today's date and marks what's done, now and next.
 import { TASKS, MONTHS_LONG, windowText } from '../data/tasks.js';
 
+interface Props { compact?: boolean }
+// compact (homepage): no heading/summary, task names only, at most SHOW (2) per month with "+N more"
+const { compact = false } = Astro.props;
+const SHOW = 2;
 const list = TASKS.filter((t) => t.level <= 2);
 const months = MONTHS_LONG.map((name, i) => ({
   name,
   tasks: list.filter((t) => t.start[0] === i + 1),
 }));
 ---
-<section class="calendar" aria-labelledby="cal-h" data-calendar>
+<section class:list={['calendar', { 'is-compact': compact }]} aria-labelledby="cal-h" data-calendar>
+  {compact ? (
+  <div class="cal-head">
+    <h2 id="cal-h" class="cal-mini-h">The lawn year at a glance</h2>
+  </div>
+  ) : (<Fragment>
   <div class="cal-head">
     <h2 id="cal-h">What your lawn needs right now</h2>
     <p class="cal-today">
@@ -35,6 +44,7 @@ const months = MONTHS_LONG.map((name, i) => ({
       <p class="cal-sum-when" data-when></p>
     </div>
   </div>
+  </Fragment>)}
 
   <div class="cal-track" data-track tabindex="0" aria-label="Lawn care calendar, January to December. Scroll sideways.">
     {months.map((m, i) => (
@@ -44,20 +54,27 @@ const months = MONTHS_LONG.map((name, i) => ({
         {m.tasks.length === 0 && (
           <p class="cal-rest">{i < 2 ? 'Rest. Dream about spring.' : 'Nothing new. Keep it up.'}</p>
         )}
-        {m.tasks.map((t) => (
-          <article class="cal-task" data-task={t.id} data-start={t.start.join('-')} data-end={t.end.join('-')}>
+        {m.tasks.map((t, k) => (
+          <article class:list={['cal-task', { 'is-extra': compact && k >= SHOW }]} data-task={t.id} data-start={t.start.join('-')} data-end={t.end.join('-')}>
             <p class="cal-window">{windowText(t)}</p>
             <h4>{t.title}</h4>
             <p>{t.short}</p>
             <p class="cal-status" data-status></p>
           </article>
         ))}
+        {compact && m.tasks.length > SHOW && (
+          <button type="button" class="cal-more" data-cal-more>+{m.tasks.length - SHOW} more</button>
+        )}
       </div>
     ))}
   </div>
+  {compact ? (
+  <p class="cal-cta cal-cta-mini"><a href="/resources/#cal-h">See the full calendar</a></p>
+  ) : (
   <p class="cal-cta">
-    This is the general plan. <a href="/plan/">Take the quiz</a> to get one for your yard and your energy level.
+    This is the general plan. <a href="/plan/">Get your free lawn plan</a> for one built for your yard and your energy level.
   </p>
+  )}
 </section>
 
 <script>
@@ -73,10 +90,14 @@ const months = MONTHS_LONG.map((name, i) => ({
   if (root) {
     const today = new Date();
     const list = TASKS.filter((t) => t.level <= 2);
-    root.querySelector('[data-today]').textContent = today.toLocaleDateString('en-US', {
-      weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
-    });
-    root.querySelector('[data-today]').setAttribute('datetime', today.toISOString().slice(0, 10));
+    const todayEl = root.querySelector('[data-today]');
+    if (todayEl) {
+      todayEl.textContent = today.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+      todayEl.setAttribute('datetime', today.toISOString().slice(0, 10));
+    }
+    for (const b of root.querySelectorAll('[data-cal-more]')) {
+      b.addEventListener('click', () => { b.parentElement.classList.add('is-open'); b.remove(); });
+    }
 
     const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
     for (const card of root.querySelectorAll('[data-task]')) {
@@ -90,6 +111,7 @@ const months = MONTHS_LONG.map((name, i) => ({
     }
 
     const snap = snapshot(list, today);
+    if (root.querySelector('[data-summary]')) {
     const fill = (key, title, when) => {
       const el = root.querySelector(`[data-sum="${key}"]`);
       el.querySelector('[data-title]').textContent = title;
@@ -105,6 +127,7 @@ const months = MONTHS_LONG.map((name, i) => ({
       fill('now', 'Nothing urgent. Enjoy it.', 'Your lawn is between jobs.');
     }
     if (snap.next) fill('next', snap.next.t.title, `Starts ${fmt(snap.next.t.start)}. In ${plural(snap.next.s.days, 'day')}.`);
+    }
 
     // mark this month and scroll it into view, with last month peeking in
     const month = today.getMonth() + 1;

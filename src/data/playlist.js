@@ -63,7 +63,7 @@ export const SETS = [
       { title: 'Walking on Sunshine', artist: 'Katrina and the Waves', year: 1985, len: '3:58',
         why: 'You’re walking about two and a half miles an hour behind a mower. In the sun. That’s cardio. Drink some water.' },
       { title: 'Have You Ever Seen the Rain', artist: 'Creedence Clearwater Revival', year: 1970, len: '2:40',
-        why: 'The July question. If the answer is no, water deep once or twice a week, not a little every night. The rain meter will tell you.', link: '/toolshed/#water-h' },
+        why: 'The July question. If the answer is no, water deep once or twice a week, not a little every night. The rain meter will tell you.', link: '/resources/#water-h' },
       { title: 'Cruel Summer', artist: 'Bananarama', year: 1983, len: '3:35',
         why: 'August. Cool-season grass hates the heat. Mow tall, mow less often and skip the fertilizer until fall.' },
     ],
