@@ -2072,3 +2072,4 @@ main > section.gp { margin-left: 16px; margin-right: 16px; }
 .lw-days { background: rgba(159, 211, 106, 0.18); color: var(--leaf); border: 1px solid rgba(159, 211, 106, 0.5); }
 /* card titles wrap normally (balance split "Stay on top of / fallen leaves" mid-card on phones) */
 .lw-card .lw-big { text-wrap: wrap; }
+.lw-days { white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }

@@ -125,7 +125,7 @@ const zonesJson = JSON.stringify(ZONES);
     });
 
     /* ---------------- What to focus on now (recomputed from today's date on every visit, so it moves on by itself) */
-    const MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    const MONTHS = ['Jan', 'Feb', 'March', 'April', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];   // short so the pill fits on one line
     const part = (d: number) => (d <= 10 ? 'early' : d <= 20 ? 'mid' : 'late');
     // approximate window, e.g. "Mid-October to late November" (windows shift with the weather, so no exact countdown)
     const approx = (t: any) => {
