@@ -2,10 +2,11 @@
 import Base from '../layouts/Base.astro';
 import Calendar from '../components/Calendar.astro';
 import SoilGauge from '../components/SoilGauge.astro';
+import RainMeter from '../components/RainMeter.astro';
 
-const title = 'Free lawn tools: live lawn calendar and soil temperature for Bedford, NY | Mow It Tall';
+const title = 'Free lawn tools: should I water, live lawn calendar and soil temperature for Bedford, NY | Mow It Tall';
 const description =
-  'Free lawn care tools for Westchester and the Northeast: a custom lawn plan quiz, a yard measuring tool, a live lawn calendar, and today’s soil temperature in Bedford, NY.';
+  'Free lawn care tools for Westchester and the Northeast: a custom lawn plan quiz, a yard measuring tool, a should-I-water rain meter, a live lawn calendar, and today’s soil temperature in Bedford, NY.';
 ---
 <Base title={title} description={description} path="/toolshed/">
   <main id="main">
@@ -32,6 +33,8 @@ const description =
 
     <Calendar />
 
+    <RainMeter />
+
     <SoilGauge />
 
     <section class="workbench" aria-labelledby="bench-h">
@@ -39,6 +42,7 @@ const description =
       <p class="section-lede">Tools I’m building next.</p>
       <ul class="bench-list">
         <li><strong>Should I mow today?</strong> A straight yes or no for your ZIP, from rain and soil temperature.</li>
+        <li><strong>Watering alerts.</strong> A heads-up on your phone when the rain meter says your lawn needs a drink.</li>
         <li><strong>How many bags?</strong> Your yard measurement turned into exactly what to buy, right in your plan.</li>
         <li><strong>Soil alerts.</strong> A heads-up when Bedford’s soil hits crabgrass-preventer temperature.</li>
       </ul>

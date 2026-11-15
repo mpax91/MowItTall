@@ -43,6 +43,7 @@ import PlaceChip from './PlaceChip.astro';
   <div class="hero-now" data-hero-now>
     <div class="hero-now-where"><span class="hero-now-label">Right now in</span> <PlaceChip id="hero-place" /></div>
     <p class="hero-now-task" data-now-task hidden><strong data-now-title></strong> <a href="#cal-h">See the live calendar</a></p>
+    <p class="hero-now-task hero-water" data-water-line hidden><span class="hero-now-label">Watering:</span> <span class="water-badge" data-water-verdict data-tone=""></span> <span data-water-why></span> <a href="/toolshed/#water-h">Rain meter</a></p>
   </div>
   <p class="hero-tag">You don’t need to be a <span class="nowrap">know-it-all.</span> Just mow it tall.</p>
 </section>
@@ -50,6 +51,9 @@ import PlaceChip from './PlaceChip.astro';
 <script>
   import { initHeroMower } from '../scripts/heroMower.js';
   import { TASKS, snapshot, fmt } from '../data/tasks.js';
+  import { initWaterLine } from '../scripts/water.js';
+  const water = document.querySelector('[data-water-line]');
+  if (water) initWaterLine(water);
   const mow = document.querySelector('[data-mow]');
   if (mow) initHeroMower(mow);
   const now = document.querySelector('[data-hero-now]');

@@ -1386,3 +1386,51 @@ html.mz-lock, html.mz-lock body { overflow: hidden; overscroll-behavior: none; }
 .mz.is-full .mz-sheet:not([hidden]) ~ .mz-turn { display: none !important; }
 main > section.weed-sec { padding: 0; }
 .weed-sec .weed-group { margin-top: 26px; }
+
+/* ---------- Rain meter (Toolshed) + homepage watering line ---------- */
+.rain-card {
+  background: #13283d;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 6px 6px;
+  color: #e6f0f7;
+  padding: 26px 22px;
+  border: 3px solid #e6f0f7;
+  border-radius: 12px;
+  box-shadow: 0 0 0 2px #07111c, 0 8px 0 0 rgba(5, 20, 10, 0.35);
+}
+.rain-card .soil-where { color: #a9c3d6; }
+.rain-verdict { margin: 18px 0 8px; }
+.water-badge {
+  display: inline-block; font-family: var(--display); font-weight: 800; line-height: 1.1;
+  padding: 3px 10px 4px; border-radius: 8px; border: 2px solid currentColor;
+}
+.rain-verdict .water-badge { font-size: 1.6rem; padding: 6px 14px 7px; border-radius: 10px; border-width: 3px; }
+.water-badge[data-tone='ok'] { color: #0e2a18; background: var(--leaf); border-color: #0e2a18; }
+.water-badge[data-tone='wait'] { color: #07243a; background: #8ecbf0; border-color: #07243a; }
+.water-badge[data-tone='maybe'] { color: #3a2a05; background: var(--sun); border-color: #3a2a05; }
+.water-badge[data-tone='water'] { color: #fff; background: var(--red); border-color: #5a120c; }
+.rain-text { font-size: 1.1rem; margin: 0 0 18px; max-width: 32em; }
+.rm-bars { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px; height: 120px; align-items: end; }
+.rm-bars li { display: grid; grid-template-rows: 16px 1fr 16px 14px; height: 100%; text-align: center; align-items: end; }
+.rm-bars b { font-size: 0.68rem; font-weight: 700; color: #cfe5f4; }
+.rm-bar { display: block; width: 72%; margin: 0 auto; background: #5fb3e8; border-radius: 3px 3px 0 0; box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.35); align-self: end; }
+.rm-bars li.is-today .rm-bar { background: #9fd8ff; }
+.rm-bars li.is-future .rm-bar { background: repeating-linear-gradient(45deg, rgba(95, 179, 232, 0.55) 0 4px, rgba(95, 179, 232, 0.2) 4px 8px); box-shadow: inset 0 0 0 1.5px #5fb3e8; }
+.rm-bars small { font-size: 0.7rem; color: #a9c3d6; align-self: start; padding-top: 3px; border-top: 1px solid rgba(230, 240, 247, 0.25); }
+.rm-bars li.is-today small { color: #fff; font-weight: 700; }
+.rm-bars i { font-style: normal; font-size: 0.65rem; color: #8ecbf0; }
+.rm-legend { margin: 8px 0 16px; font-size: 0.8rem; color: #a9c3d6; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.rm-key { display: inline-block; width: 12px; height: 12px; border-radius: 2px; background: #5fb3e8; }
+.rm-key-future { margin-left: 8px; background: repeating-linear-gradient(45deg, rgba(95, 179, 232, 0.55) 0 3px, rgba(95, 179, 232, 0.2) 3px 6px); box-shadow: inset 0 0 0 1.5px #5fb3e8; }
+.rm-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin: 0 0 18px; }
+.rm-stats div { background: rgba(0, 0, 0, 0.22); border: 1.5px solid rgba(230, 240, 247, 0.2); border-radius: 8px; padding: 8px 10px; }
+.rm-stats dt { font-size: 0.75rem; color: #a9c3d6; line-height: 1.2; }
+.rm-stats dd { margin: 2px 0 0; font-family: var(--display); font-weight: 800; font-size: 1.15rem; }
+.rm-gauge label { display: block; font-size: 0.92rem; margin-bottom: 6px; color: #cfe5f4; }
+.rm-gauge-row { display: flex; align-items: center; gap: 8px; }
+.rm-gauge input { width: 5.5em; font: inherit; font-size: 1rem; padding: 7px 9px; border-radius: 8px; border: 2px solid #e6f0f7; background: #0b1b2b; color: #fff; }
+.rm-gauge .btn { font-size: 0.95rem; padding: 7px 14px 8px; }
+.rm-gauge-on { font-size: 0.92rem; color: #cfe5f4; }
+.rain-card .linkish { background: none; border: 0; padding: 0; font: inherit; color: #8ecbf0; text-decoration: underline; cursor: pointer; }
+.rain-how { margin: 18px 0 0; font-size: 0.85rem; color: #a9c3d6; max-width: 36em; }
+.hero-water .water-badge { font-size: 0.9rem; padding: 1px 7px 2px; border-width: 1.5px; margin-right: 2px; }

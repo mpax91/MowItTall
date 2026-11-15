@@ -1,0 +1,40 @@
+---
+// Rain meter: should I water? Last week's rain vs. what the lawn used, plus the next 3 days.
+import PlaceChip from './PlaceChip.astro';
+---
+<section class="soil rain" aria-labelledby="water-h" data-rain-meter>
+  <div class="rain-card">
+    <h2 id="water-h">Should I water?</h2>
+    <div class="soil-where"><span>Rain for</span> <PlaceChip id="rain-place" /></div>
+    <p class="soil-note" data-rm-note hidden></p>
+    <p class="rain-verdict"><span class="water-badge" data-rm-verdict data-tone="">Checking the sky…</span></p>
+    <p class="rain-text" data-rm-text></p>
+
+    <ol class="rm-bars" data-rm-bars aria-label="Rain each day: the last week and the next 3 days"></ol>
+    <p class="rm-legend"><span class="rm-key"></span> Rain <span class="rm-key rm-key-future"></span> Forecast, with chance of rain</p>
+
+    <dl class="rm-stats">
+      <div><dt>Rain, last 7 days</dt><dd data-rm-rain>–</dd></div>
+      <div><dt>Lawn used</dt><dd data-rm-used>–</dd></div>
+      <div><dt>Next 3 days</dt><dd data-rm-coming>–</dd></div>
+    </dl>
+
+    <form class="rm-gauge" data-rm-gauge-form>
+      <label for="rm-gauge-input">Got a rain gauge? This week’s total:</label>
+      <span class="rm-gauge-row">
+        <input id="rm-gauge-input" data-rm-gauge-input inputmode="decimal" placeholder="0.8" maxlength="4" />
+        <span>in</span>
+        <button type="submit" class="btn btn-small">Use it</button>
+      </span>
+    </form>
+    <p class="rm-gauge-on" data-rm-gauge-on hidden>Using your rain gauge. <button type="button" class="linkish" data-rm-gauge-clear>Go back to the weather data</button></p>
+
+    <p class="rain-how">How it works: a lawn here needs about an inch of water a week in summer, less when it’s cool. I add up the rain from the past week, subtract what the grass used up in sun, heat and wind, and check the forecast. Rain comes from weather models, so a pop-up storm on your street can get missed. That’s what the gauge box is for.</p>
+  </div>
+</section>
+
+<script>
+  import { initRainMeter } from '../scripts/water.js';
+  const el = document.querySelector('[data-rain-meter]');
+  if (el) initRainMeter(el);
+</script>
