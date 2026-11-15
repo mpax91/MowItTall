@@ -1,0 +1,82 @@
+---
+// Lawn dad jokes: tap a card to reveal the punchline. Jokes live in src/data/jokes.js.
+import { JOKES, TIERS } from '../data/jokes.js';
+let n = 0;
+const tiers = TIERS.map((t) => ({ ...t, jokes: JOKES.filter((j) => j.level === t.level).map((j) => ({ ...j, n: ++n })) }));
+const total = JOKES.length;
+---
+<section class="dj" aria-labelledby="dj-h" data-dj>
+  <div class="window dj-top">
+    <h2 id="dj-h">The Groan Meter</h2>
+    <p class="dj-sub">Tap a joke for the punchline. Try to make it to the bottom.</p>
+    <div class="dj-meter" aria-live="polite">
+      <div class="dj-bar"><span data-dj-fill></span></div>
+      <p><b data-dj-count>0</b> of {total} survived. <span data-dj-msg>You’re fine. For now.</span></p>
+    </div>
+    <button type="button" class="dj-all" data-dj-all>Show all punchlines</button>
+  </div>
+
+  {tiers.map((t) => (
+    <div class="dj-tier">
+      <h3><span class="dj-lvl" aria-label={`Groan level ${t.level} of 5`}>{'●'.repeat(t.level)}<i>{'●'.repeat(5 - t.level)}</i></span> {t.name}</h3>
+      <p class="dj-note">{t.note}</p>
+      <ol class="dj-list" start={t.jokes[0].n}>
+        {t.jokes.map((j) => (
+          <li>
+            <button type="button" class="dj-card" aria-expanded="false" data-dj-card>
+              <span class="dj-n" aria-hidden="true">{String(j.n).padStart(2, '0')}</span>
+              <span class="dj-body">
+                <span class="dj-q">{j.q}</span>
+                <span class="dj-hint" aria-hidden="true">Tap for the punchline</span>
+                <span class="dj-a">{j.a}</span>
+                {j.tip && <span class="dj-tip"><b>Real tip:</b> {j.tip}</span>}
+              </span>
+            </button>
+          </li>
+        ))}
+      </ol>
+    </div>
+  ))}
+</section>
+
+<script>
+  const MSGS = [
+    [0, 'You’re fine. For now.'],
+    [4, 'A small groan escaped. That’s normal.'],
+    [8, 'Your eyes are rolling on their own now.'],
+    [12, 'You just said “oh no” out loud.'],
+    [16, 'You are becoming a dad. There’s no cure.'],
+    [20, 'You made it. Go mow something.'],
+  ];
+  document.querySelectorAll<HTMLElement>('[data-dj]').forEach((root) => {
+    const cards = [...root.querySelectorAll<HTMLButtonElement>('[data-dj-card]')];
+    const fill = root.querySelector<HTMLElement>('[data-dj-fill]')!;
+    const count = root.querySelector<HTMLElement>('[data-dj-count]')!;
+    const msg = root.querySelector<HTMLElement>('[data-dj-msg]')!;
+    const all = root.querySelector<HTMLButtonElement>('[data-dj-all]')!;
+    const update = () => {
+      const done = cards.filter((c) => c.classList.contains('open')).length;
+      count.textContent = String(done);
+      fill.style.width = `${(done / cards.length) * 100}%`;
+      let m = MSGS[0][1];
+      for (const [min, text] of MSGS) if (done >= (min as number)) m = text as string;
+      msg.textContent = m;
+      all.hidden = done === cards.length;
+    };
+    const open = (c: HTMLButtonElement) => { c.classList.add('open'); c.setAttribute('aria-expanded', 'true'); };
+    cards.forEach((c) => c.addEventListener('click', () => {
+      if (c.classList.contains('open')) return;
+      open(c);
+      update();
+    }));
+    all.addEventListener('click', () => { cards.forEach(open); update(); });
+    // First card wiggles once when it scrolls into view, so people know to tap
+    const first = cards[0];
+    if (first && 'IntersectionObserver' in window) {
+      const io = new IntersectionObserver((es) => {
+        if (es.some((e) => e.isIntersecting)) { first.classList.add('wiggle'); io.disconnect(); }
+      }, { threshold: 0.8 });
+      io.observe(first);
+    }
+  });
+</script>
