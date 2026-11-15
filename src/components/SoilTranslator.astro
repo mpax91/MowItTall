@@ -1,0 +1,121 @@
+---
+// "Soil test translator": enter pH and Low/OK/High ratings from a soil report, get a short game plan.
+// Reuses .mc panel styles (.mc-verdict, .mc-word, .mc-seg, .mc-group).
+const ROWS = [
+  { id: 'p', label: 'Phosphorus (P)' },
+  { id: 'k', label: 'Potassium (K)' },
+  { id: 'mg', label: 'Magnesium (Mg)' },
+  { id: 'om', label: 'Organic matter' },
+];
+---
+<section class="window mc st" aria-labelledby="st-h" data-soil-translator>
+  <h2 id="st-h">The soil test translator</h2>
+  <p class="mc-sub">Got your report? Put in your pH and tap what it says for each one. I’ll tell you what to do.</p>
+
+  <div class="st-ph">
+    <label for="st-ph">Your pH</label>
+    <input id="st-ph" type="text" inputmode="decimal" value="5.8" data-st-ph />
+    <span class="st-scale" aria-hidden="true"><i data-st-dot></i></span>
+  </div>
+
+  {ROWS.map((r) => (
+    <fieldset class="mc-group st-row">
+      <legend>{r.label}</legend>
+      <div class="mc-seg mc-seg-3">
+        <button type="button" data-st={r.id} data-v="low" aria-pressed="false">Low</button>
+        <button type="button" data-st={r.id} data-v="ok" aria-pressed="true">{r.id === 'om' ? 'OK / not listed' : 'Optimal'}</button>
+        <button type="button" data-st={r.id} data-v="high" aria-pressed="false">High</button>
+      </div>
+    </fieldset>
+  ))}
+
+  <div class="mc-verdict st-verdict" aria-live="polite">
+    <span class="mc-word" data-st-word data-tone="close">SOUR</span>
+    <p class="mc-line" data-st-line></p>
+  </div>
+  <p class="st-buy" data-st-buy></p>
+  <ol class="st-plan" data-st-plan></ol>
+  <p class="mw-fine">Your lab’s own numbers and advice beat mine. This just translates the big stuff.</p>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-soil-translator]').forEach((root) => {
+    const ans: Record<string, string> = { p: 'ok', k: 'ok', mg: 'ok', om: 'ok' };
+    const phIn = root.querySelector<HTMLInputElement>('[data-st-ph]')!;
+    const dot = root.querySelector<HTMLElement>('[data-st-dot]')!;
+    const word = root.querySelector<HTMLElement>('[data-st-word]')!;
+    const line = root.querySelector<HTMLElement>('[data-st-line]')!;
+    const buy = root.querySelector<HTMLElement>('[data-st-buy]')!;
+    const plan = root.querySelector<HTMLElement>('[data-st-plan]')!;
+    let yard = 0;
+    try { yard = Number(JSON.parse(localStorage.getItem('mit-yard') || 'null')?.total) || 0; } catch { /* private mode */ }
+
+    function update() {
+      const ph = parseFloat(phIn.value.replace(/[^0-9.]/g, ''));
+      const steps: string[] = [];
+      let liming = false;
+      if (!Number.isFinite(ph) || ph < 3 || ph > 10) {
+        word.textContent = 'HMM'; word.dataset.tone = 'close';
+        line.textContent = 'Type the pH from your report. It’s usually between 4.5 and 8.';
+        dot.style.left = '50%';
+      } else {
+        dot.style.left = `${Math.min(100, Math.max(0, ((ph - 4.5) / 3.5) * 100))}%`;
+        if (ph < 5.0) {
+          word.textContent = 'VERY SOUR'; word.dataset.tone = 'no'; liming = true;
+          line.textContent = 'Your grass can’t get at the food in the soil. Lime is job one.';
+        } else if (ph < 6.0) {
+          word.textContent = 'SOUR'; word.dataset.tone = 'close'; liming = true;
+          line.textContent = 'A little acidic, like most soil around here. Lime fixes it.';
+        } else if (ph <= 7.0) {
+          word.textContent = 'JUST RIGHT'; word.dataset.tone = 'yes';
+          line.textContent = 'Right in the sweet spot. No lime. Put the bag down.';
+        } else if (ph <= 7.5) {
+          word.textContent = 'A LITTLE SWEET'; word.dataset.tone = 'close';
+          line.textContent = 'A touch high, but fine. Do not lime.';
+        } else {
+          word.textContent = 'TOO SWEET'; word.dataset.tone = 'no';
+          line.textContent = 'Rare around here. Don’t lime, and call your Cooperative Extension office before trying to lower it.';
+        }
+      }
+
+      if (liming) {
+        const type = ans.mg === 'low' ? 'dolomitic lime (it adds magnesium too)' : 'calcitic lime';
+        let rate = 'Use the amount on your report, but never more than 50 lb per 1,000 sq ft at once. If it calls for more, split it between spring and fall.';
+        if (yard > 0) {
+          const max = Math.round(yard / 1000 * 50);
+          rate += ` For your ${Math.round(yard).toLocaleString()} sq ft, one round tops out around ${max.toLocaleString()} lb (about ${Math.ceil(max / 40)} 40-lb bags).`;
+        }
+        steps.push(`<b>Lime.</b> Get ${type}. ${rate} Pellets go through a regular spreader.`);
+      } else if (Number.isFinite(ph) && ph > 7.0) {
+        steps.push('<b>No lime.</b> Skip anything that raises pH.');
+      }
+      if (ans.mg === 'high' && liming) steps.push('<b>Magnesium is high,</b> so stick with calcitic lime. Skip dolomitic.');
+      if (ans.mg === 'low' && !liming) steps.push('<b>Magnesium is low but pH is fine.</b> Skip lime. Use a fertilizer that lists magnesium.');
+
+      if (ans.p === 'low') steps.push('<b>Phosphorus is low.</b> Use a fertilizer with a number in the middle for a season or two, or starter fertilizer when you seed.');
+      if (ans.p === 'high') steps.push('<b>Phosphorus is high.</b> Zero in the middle. It drops on its own over a few years.');
+      if (ans.k === 'low') steps.push('<b>Potassium is low.</b> Pick a bag with a bigger last number, like 22-0-14, especially in fall.');
+      if (ans.k === 'high') steps.push('<b>Potassium is high.</b> Skip the high-potassium fall bags.');
+      if (ans.om === 'low') steps.push('<b>Organic matter is low.</b> Leave the clippings, mow over the leaves, and rake a thin layer of compost in after you aerate.');
+      if (ans.om === 'high') steps.push('<b>Organic matter is high.</b> Nice. Nothing to fix.');
+
+      steps.push('<b>Nitrogen:</b> ignore the test number. It changes week to week. Just <a href="/blog/holiday-lawn-fertilizer-schedule/">feed on the holidays</a>.');
+      steps.push(liming
+        ? '<b>Retest in a year</b> to see if the lime worked. It takes months to kick in.'
+        : '<b>Retest in about 3 years,</b> same time of year, same lab.');
+
+      const mid = ans.p === 'low' ? 'a number in the middle' : 'a 0 in the middle';
+      const last = ans.k === 'low' ? 'a bigger last number' : ans.k === 'high' ? 'a tiny last number' : 'a small last number';
+      buy.innerHTML = `<b>What to buy:</b> lawn food with a big first number, ${mid} and ${last}.`;
+      plan.innerHTML = steps.map((s) => `<li>${s}</li>`).join('');
+    }
+
+    root.querySelectorAll<HTMLButtonElement>('[data-st]').forEach((b) => b.addEventListener('click', () => {
+      ans[b.dataset.st!] = b.dataset.v!;
+      root.querySelectorAll<HTMLButtonElement>(`[data-st="${b.dataset.st}"]`).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      update();
+    }));
+    phIn.addEventListener('input', update);
+    update();
+  });
+</script>

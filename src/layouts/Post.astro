@@ -7,6 +7,7 @@ import DadJokes from '../components/DadJokes.astro';
 import FeedSchedule from '../components/FeedSchedule.astro';
 import GrassPicker from '../components/GrassPicker.astro';
 import BagDecoder from '../components/BagDecoder.astro';
+import SoilTranslator from '../components/SoilTranslator.astro';
 const { frontmatter, url } = Astro.props;
 const { title, description, tag, widget, faq } = frontmatter;
 const date = (frontmatter.date instanceof Date ? frontmatter.date.toISOString() : String(frontmatter.date)).slice(0, 10);
@@ -49,6 +50,9 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': faqLd ? [posting, f
     )}
     {widget === 'playlist' && (
       <div class="post-widget" data-widget="playlist"><Playlist /></div>
+    )}
+    {widget === 'soil-translator' && (
+      <div class="post-widget" data-widget="soil-translator"><SoilTranslator /></div>
     )}
     {widget === 'bag-decoder' && (
       <div class="post-widget" data-widget="bag-decoder"><BagDecoder /></div>

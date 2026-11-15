@@ -1647,3 +1647,18 @@ main > section.gp { margin-left: 16px; margin-right: 16px; }
 .prose .bd-facts, .bd-facts { margin: 12px 0 0; padding-left: 1.2em; }
 .prose .bd-facts li, .bd-facts li { margin: 6px 0; font-size: 0.96rem; line-height: 1.4; }
 .bd-facts b { color: var(--sun); }
+
+/* ---------- Soil test translator (.st-*; reuses .mc) ---------- */
+.st-ph { display: grid; grid-template-columns: auto 90px; align-items: center; gap: 6px 12px; }
+.st-ph label { font-weight: 700; font-size: 0.95rem; color: #e3efdc; }
+.st-ph input { width: 100%; box-sizing: border-box; min-height: 46px; text-align: center; font-family: var(--display); font-weight: 800; font-size: 1.5rem; color: var(--ink); background: var(--paper); border: 2px solid var(--win-edge); border-radius: 8px; }
+.st-scale { grid-column: 1 / -1; position: relative; height: 12px; border-radius: 6px; border: 2px solid var(--win-edge); background: linear-gradient(90deg, #e2563b 0%, #f6c945 30%, #9fd36a 43%, #9fd36a 72%, #f6c945 86%, #6aa8e0 100%); }
+.st-scale i { position: absolute; top: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; border-radius: 50%; background: #fff; border: 3px solid var(--win-edge); transition: left 0.25s ease; }
+.st-row { margin-top: 14px; }
+.st-verdict { margin-top: 18px; min-height: 0; }
+.prose .st-buy, .st-buy { margin: 12px 0 0; padding: 10px 12px; border-radius: 8px; background: var(--paper); color: var(--ink); font-size: 0.98rem; line-height: 1.4; }
+.st-buy b { color: #2f6e47; }
+.prose .st-plan, .st-plan { margin: 12px 0 0; padding-left: 1.3em; }
+.prose .st-plan li, .st-plan li { margin: 7px 0; font-size: 0.96rem; line-height: 1.42; }
+.st-plan b { color: var(--sun); }
+.prose .st-plan a, .st-plan a { color: var(--leaf); }
