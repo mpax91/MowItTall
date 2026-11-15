@@ -692,14 +692,14 @@ export function initMeasure(root) {
         + btn('finish', 'Finish', 'is-primary', drawing.pts.length < 3);
     } else if (selected) {
       html = (pickedVtx >= 0
-        ? btn('remove-corner', 'Remove corner', '', selected.pts.length <= 3)
+        ? btn('remove-corner', 'Remove Corner', '', selected.pts.length <= 3)
         : btn('rename', 'Rename'))
         + btn('delete', 'Delete')
         + btn('deselect', 'OK', 'is-primary');
     } else if (areas.length) {
-      html = btn('add', '+ Add area', 'is-primary') + btn('save-image', 'Save image');
+      html = btn('add', '+ Add Area', 'is-primary') + btn('save-image', 'Save Image');
     } else {
-      html = btn('search', 'Find my house', 'is-primary');
+      html = btn('search', 'Find My House', 'is-primary');
     }
     barEl.innerHTML = html;
     renderSummary();
@@ -747,12 +747,12 @@ export function initMeasure(root) {
   function clearAll(b) {
     if (!clearArmed) {
       b.textContent = 'Tap again to erase everything';
-      clearArmed = setTimeout(() => { clearArmed = 0; b.textContent = 'Start over'; }, 3500);
+      clearArmed = setTimeout(() => { clearArmed = 0; b.textContent = 'Start Over'; }, 3500);
       return;
     }
     clearTimeout(clearArmed);
     clearArmed = 0;
-    b.textContent = 'Start over';
+    b.textContent = 'Start Over';
     areas.forEach(dropArea);
     areas = [];
     map.setBearing(0);

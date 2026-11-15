@@ -19,7 +19,7 @@ const PAR = 45;           // seconds; relaxed on purpose: about 4 seconds to lin
 const DOG_HIT = 5;        // points lost for bumping the dog
 const GUIDE_PASSES = 3;   // the guide line fades out over this many passes
 const FINISH = 0.99;      // coverage that ends the round on its own
-const DONE_AT = 0.95;     // coverage where "Call it done" shows up
+const DONE_AT = 0.95;     // coverage where "Call It Done" shows up
 const BEST_KEY = 'mit-hero-best';
 
 const RATINGS = [
@@ -93,7 +93,7 @@ export function initHeroMower(root) {
     pass = 1; passes = 0; overlap = 0; fresh = 0; started = false; done = false;
     particles = []; lastCov = -1;   // -1 forces the "Mowed" readout back to 0%
     result.hidden = true;
-    hold.disabled = false; hold.classList.remove('is-again'); holdLabel.textContent = 'Hold to mow';
+    hold.disabled = false; hold.classList.remove('is-again'); holdLabel.textContent = 'Hold to Mow';
     setKnob();
     outTime.textContent = '0:00'; outTime.classList.remove('is-over');
     stats();
@@ -143,7 +143,7 @@ export function initHeroMower(root) {
   function stopDrive() {
     if (!driving) return;
     driving = false;
-    hold.classList.remove('is-on'); holdLabel.textContent = 'Hold to mow';
+    hold.classList.remove('is-on'); holdLabel.textContent = 'Hold to Mow';
     settle();
   }
   // after the mower comes to rest: end the round, or offer to call it
@@ -187,12 +187,12 @@ export function initHeroMower(root) {
   hold.addEventListener('contextmenu', (e) => e.preventDefault());
   hold.addEventListener('keydown', (e) => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) startDrive(e); });
   hold.addEventListener('keyup', (e) => { if (e.key === ' ' || e.key === 'Enter') stopDrive(); });
-  function again() { result.hidden = true; hold.classList.remove('is-again'); holdLabel.textContent = 'Hold to mow'; growT = 0.8; }
-  // close the score card: keep the finished lawn on screen, turn the yellow button into "Mow again"
+  function again() { result.hidden = true; hold.classList.remove('is-again'); holdLabel.textContent = 'Hold to Mow'; growT = 0.8; }
+  // close the score card: keep the finished lawn on screen, turn the yellow button into "Mow Again"
   function closeResult() {
     if (result.hidden) return;
     result.hidden = true;
-    hold.disabled = false; hold.classList.add('is-again'); holdLabel.textContent = 'Mow again';
+    hold.disabled = false; hold.classList.add('is-again'); holdLabel.textContent = 'Mow Again';
     hold.focus({ preventScroll: true });
   }
   root.querySelector('[data-again]').addEventListener('click', again);
@@ -260,7 +260,7 @@ export function initHeroMower(root) {
     if ((dir === 0 && my <= yTop) || (dir === 2 && my >= yBottom)) {
       passes++; pass++; rowDone = -1;
       dir = dir === 0 ? 2 : 0;
-      driving = false; hold.classList.remove('is-on'); holdLabel.textContent = 'Hold to mow';
+      driving = false; hold.classList.remove('is-on'); holdLabel.textContent = 'Hold to Mow';
       if (navigator.vibrate) navigator.vibrate(12);
       settle();
     }
@@ -278,7 +278,7 @@ export function initHeroMower(root) {
 
   function finish() {
     done = true;
-    driving = false; doneBtn.hidden = true; hold.classList.remove('is-on'); holdLabel.textContent = 'Hold to mow';
+    driving = false; doneBtn.hidden = true; hold.classList.remove('is-on'); holdLabel.textContent = 'Hold to Mow';
     if (rowDone !== -1) passes++;   // a partial last pass still counts
     hold.disabled = true;
     const cov = fresh / LAWN_PX;

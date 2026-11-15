@@ -241,9 +241,9 @@ export function initQuiz(root) {
           </li>`).join('')}
       </ol>
       <div class="plan-actions">
-        <button type="button" class="btn" data-ics>Add reminders to my calendar</button>
-        <button type="button" class="btn btn-quiet" data-print>Print or save as PDF</button>
-        <button type="button" class="btn btn-quiet" data-restart>Retake the quiz</button>
+        <button type="button" class="btn" data-ics>Add Reminders to My Calendar</button>
+        <button type="button" class="btn btn-quiet" data-print>Print or Save as PDF</button>
+        <button type="button" class="btn btn-quiet" data-restart>Retake the Quiz</button>
       </div>`;
     result.hidden = false;
     result.querySelector('[data-ics]').addEventListener('click', () => downloadIcs(ordered, profile));

@@ -1,5 +1,5 @@
 // Where the visitor's lawn is. Defaults to Bedford, NY. A visitor can type a ZIP or tap
-// "Use my location" (GPS, only when they ask). The quiz ZIP fills it in too.
+// "Use My Location" (GPS, only when they ask). The quiz ZIP fills it in too.
 // Saved in localStorage; every widget listens for the 'mit:place' event.
 
 export const BEDFORD = { zip: '10506', name: 'Bedford, NY', lat: 41.2043, lon: -73.6437, home: true };

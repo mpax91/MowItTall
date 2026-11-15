@@ -738,7 +738,7 @@ export function initGame(root) {
     ui.readyBest.textContent = best ? `Your best here: ${best}` : '';
     ui.readyBest.hidden = !best;
     ui.cord.style.setProperty('--p', '0');
-    ui.cord.textContent = 'Hold to start the mower';
+    ui.cord.textContent = 'Hold to Start the Mower';
     show(ui.ready);
     hud();
   }

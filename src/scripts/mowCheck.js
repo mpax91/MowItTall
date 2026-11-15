@@ -188,7 +188,7 @@ export function initMowCheck(root) {
       if (navigator.share) { await navigator.share({ title: 'Can I mow right now?', text, url }); return; }
       await navigator.clipboard.writeText(`${text} ${url}`);
       shareBtn.textContent = 'Copied!';
-      setTimeout(() => { shareBtn.textContent = 'Send this to your neighbor'; }, 1800);
+      setTimeout(() => { shareBtn.textContent = 'Send This to Your Neighbor'; }, 1800);
     } catch { /* share sheet closed */ }
   });
 

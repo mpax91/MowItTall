@@ -19,7 +19,7 @@ const { id, title, sub = '', items, storeKey, fine = '' } = Astro.props;
       </li>
     ))}
   </ul>
-  <button type="button" class="linkish ck-reset" data-ck-reset>Start over</button>
+  <button type="button" class="linkish ck-reset" data-ck-reset>Start Over</button>
   {fine && <p class="tool-fine" set:html={fine} />}
 </section>
 
