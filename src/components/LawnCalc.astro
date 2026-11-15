@@ -1,0 +1,63 @@
+---
+// "Your lawn in plain English": lawn size → what to buy and how long things take. Mike reviews the rates.
+const { id = 'calc' } = Astro.props;
+const presets = [
+  { v: 2500, t: 'Tiny', s: '2,500' },
+  { v: 5000, t: 'Small', s: '5,000' },
+  { v: 10890, t: '¼ acre', s: '10,890' },
+  { v: 21780, t: '½ acre', s: '21,780' },
+  { v: 43560, t: '1 acre', s: '43,560' },
+];
+---
+<section class="window tool lc" id={id} aria-labelledby={`${id}-h`} data-lawn-calc>
+  <h2 id={`${id}-h`}>Your lawn in plain English</h2>
+  <p class="tool-sub">Put in your lawn size. Get what to buy, how long it takes, and how many tennis courts you’re mowing.</p>
+  <div class="mw-inputs lc-input">
+    <label class="ml-wide"><span>Lawn size (sq ft)</span><input type="text" inputmode="numeric" value="5,000" data-lc-sqft autocomplete="off" /></label>
+  </div>
+  <div class="cp-chips lc-presets" role="group" aria-label="Common sizes">
+    {presets.map((p) => <button type="button" class="cp-chip" data-lc-preset={p.v} aria-pressed="false"><b>{p.t}</b> <span>{p.s}</span></button>)}
+  </div>
+  <p class="mw-src" data-lc-src></p>
+  <dl class="lc-list" aria-live="polite" data-lc-out></dl>
+  <p class="tool-fine">Rough numbers for Northeast lawns. Every bag lists how much it covers. Trust the bag over me. Grass seed rates assume a sun mix; shade and tall fescue mixes run heavier.</p>
+</section>
+
+<script>
+  import { yardTotal, num, fmt, round1 } from '../scripts/yard.js';
+  document.querySelectorAll<HTMLElement>('[data-lawn-calc]').forEach((root) => {
+    const input = root.querySelector<HTMLInputElement>('[data-lc-sqft]')!;
+    const out = root.querySelector<HTMLElement>('[data-lc-out]')!;
+    const presets = [...root.querySelectorAll<HTMLButtonElement>('[data-lc-preset]')];
+    const y = yardTotal();
+    if (y) { input.value = fmt(y); root.querySelector('[data-lc-src]')!.textContent = 'From your map. Nice.'; }
+    const bags = (a: number, cover: number) => {
+      const n = a / cover;
+      return n < 0.95 ? `${Math.max(10, Math.round(n * 10) * 10)}% of a bag` : `${Math.ceil(n - 0.05)} bag${Math.ceil(n - 0.05) === 1 ? '' : 's'}`;
+    };
+    const mins = (a: number, w: number, mph: number) => Math.max(5, Math.round(((a / w) * 1.15) / (mph * 88)));
+    const hm = (m: number) => (m < 60 ? `${m} min` : `${Math.floor(m / 60)} hr ${m % 60 ? `${m % 60} min` : ''}`.trim());
+    function row(t: string, d: string) { return `<div><dt>${t}</dt><dd>${d}</dd></div>`; }
+    function update() {
+      const a = num(input.value);
+      presets.forEach((p) => p.setAttribute('aria-pressed', String(Number(p.dataset.lcPreset) === Math.round(a))));
+      if (a < 100) { out.innerHTML = row('Your lawn', 'Put in a size above.'); return; }
+      const k = a / 1000, acres = a / 43560;
+      const courts = a / 2808, spaces = a / 162;
+      const gal = a * 0.623;
+      out.innerHTML = [
+        row('Your lawn', `${fmt(a)} sq ft. That’s ${acres < 1 ? acres.toFixed(2) : round1(acres)} acres, about <b>${courts < 1 ? 'most of a tennis court' : `${round1(courts)} tennis courts`}</b>, or ${fmt(Math.round(spaces))} parking spaces.`),
+        row('Overseed it', `About <b>${round1(k * 3)} to ${round1(k * 4)} lb</b> of seed. Starting from bare dirt, about double.`),
+        row('Fertilizer, each feeding', `<b>${bags(a, 5000)}</b> of the 5,000 sq ft size, or <b>${bags(a, 15000)}</b> of the 15,000 size. Three feedings a year.`),
+        row('Crabgrass preventer', `Same math: <b>${bags(a, 5000)}</b> (5,000 size) or <b>${bags(a, 15000)}</b> (15,000 size), once in April.`),
+        row('Lime (only if your soil test says so)', `No more than <b>${fmt(Math.round(k * 50))} lb</b> at a time. That’s ${Math.ceil(k * 50 / 40)} of the 40 lb bags.`),
+        row('One inch of water', `<b>${fmt(Math.round(gal))} gallons</b>. About ${fmt(Math.round(gal / 40))} bathtubs. In summer your lawn wants that every week. Thank the rain.`),
+        row('Mowing time', `Push mower: about <b>${hm(mins(a, 1.75, 2.5))}</b>. Riding mower: about ${hm(mins(a, 3.5, 4.5))}. Zero-turn: about ${hm(mins(a, 4, 6.5))}.`),
+        row('A season of mowing', `About 26 mows, May to October. That’s <b>${hm(mins(a, 1.75, 2.5) * 26)}</b> behind a push mower. Pick a good playlist.`),
+      ].join('');
+    }
+    input.addEventListener('input', update);
+    presets.forEach((p) => p.addEventListener('click', () => { input.value = fmt(Number(p.dataset.lcPreset)); update(); }));
+    update();
+  });
+</script>

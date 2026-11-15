@@ -5,6 +5,7 @@ description: "Skunks, moles, raccoons, bees, rabbits, deer, geese and more: what
 date: 2026-11-15
 minutes: 3
 tag: PSA
+topics: [dogs-kids, weeds]
 widget: critters
 faq:
   - q: "What does it mean when skunks dig in your lawn?"

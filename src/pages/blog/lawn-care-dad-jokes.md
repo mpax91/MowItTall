@@ -5,6 +5,7 @@ description: "The worst lawn jokes I know, from mild groan to dad leaves the roo
 date: 2026-11-15
 minutes: 2
 tag: Rankings
+topics: [fun]
 widget: dad-jokes
 faq:
   - q: "What is a good lawn care joke?"

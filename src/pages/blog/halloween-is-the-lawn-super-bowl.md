@@ -5,6 +5,7 @@ description: "Late October is when your grass looks its best all year, and 60 pe
 date: 2026-11-15
 minutes: 3
 tag: Hot take
+topics: [fun, mowing]
 faq:
   - q: "When does a cool-season lawn look its best?"
     a: "Usually mid-to-late October in the Northeast. The summer weeds are dead, cool nights keep the grass thick and dark green, and any seed you put down in September has filled in."

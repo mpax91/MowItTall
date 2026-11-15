@@ -5,6 +5,7 @@ description: "When to fertilize your lawn in the Northeast: Memorial Day, Labor 
 date: 2026-11-15
 minutes: 4
 tag: Rules
+topics: [feeding]
 widget: feed-schedule
 faq:
   - q: "What is the holiday lawn fertilizer schedule?"

@@ -5,6 +5,7 @@ description: "8am on weekdays, 9 on Saturday, 10 on Sunday, and never during you
 date: 2026-11-15
 minutes: 3
 tag: Rules
+topics: [mowing, fun]
 widget: mow-check
 faq:
   - q: "How early is too early to mow the lawn?"

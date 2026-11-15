@@ -1,10 +1,12 @@
 ---
 import Base from '../../layouts/Base.astro';
-const posts = Object.values(import.meta.glob('./[a-z]*.md', { eager: true }))
-  .map((p) => ({ ...p.frontmatter, url: p.url }))
-  .sort((a, b) => new Date(b.date) - new Date(a.date));
+import PostList from '../../components/PostList.astro';
+import { TOPICS } from '../../data/topics.js';
+import { allPosts } from '../../data/posts.js';
+const posts = allPosts(import.meta.glob('./[a-z]*.md', { eager: true }));
+const counts = Object.fromEntries(TOPICS.map((t) => [t.slug, posts.filter((p) => (p.topics || []).includes(t.slug)).length]));
 const title = 'The Mow It Tall blog: lawn takes, some hot, all short';
-const description = 'Opinionated, short, occasionally petty lawn care takes from Bedford, NY. No 3,000-word guides. No fluff.';
+const description = 'Opinionated, short, occasionally petty lawn care takes from Bedford, NY. Search every post or browse by topic: mowing, fertilizer, seed, weeds, soil, dogs and kids, gear.';
 ---
 <Base title={title} description={description} path="/blog/">
   <main id="main" class="page">
@@ -12,16 +14,72 @@ const description = 'Opinionated, short, occasionally petty lawn care takes from
       <h1>The blog</h1>
       <p class="lede">Lawn takes. Some hot, all short. If a post takes longer to read than it takes to mow your front yard, I failed.</p>
     </header>
-    <ul class="clip-list clip-list-big">
-      {posts.map((p) => (
-        <li>
-          <a class="clip" href={p.url}>
-            <span class="clip-tag">{p.tag}</span>
-            <span class="clip-title">{p.title}</span>
-            <span class="clip-dek">{p.description}</span>
-          </a>
-        </li>
-      ))}
-    </ul>
+
+    <div class="bf" data-blog-filter>
+      <label class="bf-search">
+        <span class="sr-only">Search the blog</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="M15.5 15.5 21 21" /></svg>
+        <input type="search" placeholder="Search posts: dog pee, spreader, crabgrass…" data-bf-q autocomplete="off" enterkeyhint="search" />
+      </label>
+      <div class="bf-chips" role="group" aria-label="Topics">
+        <button type="button" class="bf-chip" aria-pressed="true" data-bf-topic="">All <span>{posts.length}</span></button>
+        {TOPICS.filter((t) => counts[t.slug]).map((t) => (
+          <button type="button" class="bf-chip" aria-pressed="false" data-bf-topic={t.slug}>{t.name} <span>{counts[t.slug]}</span></button>
+        ))}
+      </div>
+      <p class="bf-status" aria-live="polite" data-bf-status></p>
+    </div>
+
+    <PostList posts={posts} filter />
+
+    <div class="bf-empty" data-bf-empty hidden>
+      <p><b>Nothing on that yet.</b> Try a different word, or <a data-bf-site href="/search/">search the whole site</a> (tools, weeds, the FAQ).</p>
+    </div>
+
+    <nav class="topic-index" aria-labelledby="topics-h">
+      <h2 id="topics-h">Browse by topic</h2>
+      <ul>
+        {TOPICS.filter((t) => counts[t.slug]).map((t) => (
+          <li><a href={`/blog/topic/${t.slug}/`}><b>{t.name}</b><span>{t.blurb}</span></a></li>
+        ))}
+      </ul>
+    </nav>
   </main>
 </Base>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-blog-filter]')!;
+  const q = root.querySelector<HTMLInputElement>('[data-bf-q]')!;
+  const chips = [...root.querySelectorAll<HTMLButtonElement>('[data-bf-topic]')];
+  const items = [...document.querySelectorAll<HTMLElement>('[data-post-list] > li')];
+  const status = root.querySelector<HTMLElement>('[data-bf-status]')!;
+  const empty = document.querySelector<HTMLElement>('[data-bf-empty]')!;
+  const siteLink = document.querySelector<HTMLAnchorElement>('[data-bf-site]')!;
+  let topic = new URLSearchParams(location.search).get('topic') || '';
+  if (!chips.some((c) => c.dataset.bfTopic === topic)) topic = '';
+  q.value = new URLSearchParams(location.search).get('q') || '';
+
+  function apply() {
+    const words = q.value.toLowerCase().trim().split(/\s+/).filter(Boolean);
+    let shown = 0;
+    items.forEach((li) => {
+      const okTopic = !topic || (li.dataset.topics || '').split(' ').includes(topic);
+      const text = li.dataset.text || '';
+      const okText = words.every((w) => text.includes(w) || text.includes(w.replace(/s$/, '')));
+      li.hidden = !(okTopic && okText);
+      if (!li.hidden) shown++;
+    });
+    chips.forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.bfTopic === topic)));
+    const filtered = topic || words.length;
+    status.textContent = filtered ? `${shown} post${shown === 1 ? '' : 's'}` : '';
+    empty.hidden = shown > 0;
+    siteLink.href = '/search/' + (q.value.trim() ? `?q=${encodeURIComponent(q.value.trim())}` : '');
+    const u = new URL(location.href);
+    topic ? u.searchParams.set('topic', topic) : u.searchParams.delete('topic');
+    q.value.trim() ? u.searchParams.set('q', q.value.trim()) : u.searchParams.delete('q');
+    history.replaceState(null, '', u);
+  }
+  q.addEventListener('input', apply);
+  chips.forEach((c) => c.addEventListener('click', () => { topic = c.dataset.bfTopic || ''; apply(); }));
+  apply();
+</script>

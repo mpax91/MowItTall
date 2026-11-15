@@ -3,16 +3,30 @@ import Base from '../layouts/Base.astro';
 import Calendar from '../components/Calendar.astro';
 import SoilGauge from '../components/SoilGauge.astro';
 import RainMeter from '../components/RainMeter.astro';
+import ChipPicker from '../components/ChipPicker.astro';
+import CanISeed from '../components/CanISeed.astro';
+import LawnCalc from '../components/LawnCalc.astro';
+import SpreaderHelper from '../components/SpreaderHelper.astro';
+import { DX, DX_GROUPS } from '../data/diagnose.js';
+import { OPS, OPS_GROUPS } from '../data/orderOps.js';
+import { NEEDS, NEED_GROUPS } from '../data/doINeed.js';
 
-const title = 'Free lawn tools: should I water, live lawn calendar and soil temperature for Bedford, NY | Mow It Tall';
+const title = 'Free lawn tools: can I seed now, what’s wrong with my lawn, lawn calculator and more | Mow It Tall';
 const description =
-  'Free lawn care tools for Westchester and the Northeast: a custom lawn plan quiz, a yard measuring tool, a grass seed picker, a should-I-water rain meter, a live lawn calendar, and today’s soil temperature in Bedford, NY.';
+  'Free lawn care tools for Westchester and the Northeast: can I seed now, a lawn problem diagnosis, step-by-step order of operations, a plain-English lawn calculator, spreader settings, should I water, soil temperature and a live lawn calendar.';
+const jump = [
+  ['#seed', 'Can I seed now?'], ['#dx', 'What’s wrong?'], ['#ops', 'Order of operations'], ['#calc', 'Lawn calculator'],
+  ['#spreader', 'Spreader settings'], ['#need', 'Do I need this?'], ['#water-h', 'Should I water?'], ['#measure-h', 'Measure'], ['#grass-h', 'Pick grass'],
+];
 ---
 <Base title={title} description={description} path="/toolshed/">
   <main id="main">
     <section class="page-head page-head-hub">
       <h1>The toolshed</h1>
       <p class="lede">Free tools that do the thinking for you. No account, no email, no gas blower.</p>
+      <nav class="shed-jump" aria-label="Jump to a tool">
+        {jump.map(([h, t]) => <a class="bf-chip" href={h}>{t}</a>)}
+      </nav>
     </section>
 
     <section class="plan plan-mid" aria-labelledby="quiz-h">
@@ -23,12 +37,30 @@ const description =
       </div>
     </section>
 
+    <section class="tool-sec"><CanISeed /></section>
+
+    <section class="tool-sec">
+      <ChipPicker id="dx" title="What’s wrong with my lawn?" sub="Tap what you’re seeing. I’ll tell you the likely cause, how to check, and the fix." items={DX} groups={DX_GROUPS} prompt="Tap what your lawn is doing." />
+    </section>
+
+    <section class="tool-sec">
+      <ChipPicker id="ops" title="Order of operations" sub="Pick the job. Get the steps in the right order. Order matters more than products." items={OPS} groups={OPS_GROUPS} prompt="Tap a job." fine="Always follow the product labels. They win." />
+    </section>
+
+    <section class="tool-sec"><LawnCalc /></section>
+
     <section class="plan plan-mid" aria-labelledby="measure-h">
       <div class="window plan-card">
         <h2 id="measure-h">Measure your yard</h2>
-        <p>Trace your grass on a satellite map. Each part gets its square feet written right on it, plus a total you can save as a picture.</p>
+        <p>Trace your grass on a satellite map. Each part gets its square feet written right on it, plus a total. Every tool on this page uses it.</p>
         <a class="btn" href="/measure/">Measure my lawn</a>
       </div>
+    </section>
+
+    <section class="tool-sec"><SpreaderHelper /></section>
+
+    <section class="tool-sec">
+      <ChipPicker id="need" title="Do I need this?" sub="Tap the thing your neighbor bought. Get my verdict." items={NEEDS} groups={NEED_GROUPS} prompt="Tap something." />
     </section>
 
     <section class="plan plan-mid" aria-labelledby="grass-h">
@@ -39,20 +71,28 @@ const description =
       </div>
     </section>
 
-    <Calendar />
-
     <RainMeter />
 
     <SoilGauge />
+
+    <Calendar />
+
+    <section class="plan plan-mid" aria-labelledby="nb-card-h">
+      <div class="window plan-card">
+        <h2 id="nb-card-h">Know a lawn that needs help?</h2>
+        <p>Send your neighbor a free lawn plan. Print an anonymous note for their door, or text it.</p>
+        <a class="btn" href="/neighbor/">Send it to a neighbor</a>
+      </div>
+    </section>
 
     <section class="workbench" aria-labelledby="bench-h">
       <h2 id="bench-h">On the workbench</h2>
       <p class="section-lede">Tools I’m building next.</p>
       <ul class="bench-list">
-        <li><strong>Should I mow today?</strong> A straight yes or no for your ZIP, from rain and soil temperature.</li>
-        <li><strong>Watering alerts.</strong> A heads-up on your phone when the rain meter says your lawn needs a drink.</li>
-        <li><strong>How many bags?</strong> Your yard measurement turned into exactly what to buy, right in your plan.</li>
-        <li><strong>Soil alerts.</strong> A heads-up when Bedford’s soil hits crabgrass-preventer temperature.</li>
+        <li><strong>Should I mow today?</strong> A straight yes or no for your ZIP, from rain, soil temperature and the etiquette rules.</li>
+        <li><strong>Lawn alerts.</strong> A heads-up when it’s time to water, seed, feed or put down crabgrass preventer.</li>
+        <li><strong>Your lawn, saved.</strong> An account with your measurements, your plan, what you’ve done and progress photos.</li>
+        <li><strong>Anonymous neighbor emails.</strong> Send the site to a neighbor without them knowing it was you.</li>
       </ul>
     </section>
   </main>

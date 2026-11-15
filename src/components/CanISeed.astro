@@ -1,0 +1,28 @@
+---
+// "Can I seed now?" Live answer from soil temperature, the calendar and the 7-day forecast. Logic in src/scripts/seedNow.js.
+import PlaceChip from './PlaceChip.astro';
+const { id = 'seed' } = Astro.props;
+---
+<section class="window tool sn" id={id} aria-labelledby={`${id}-h`} data-seed-now>
+  <h2 id={`${id}-h`}>Can I seed now?</h2>
+  <div class="soil-where sn-where"><span>Checking</span> <PlaceChip id={`${id}-place`} /></div>
+  <p class="soil-note" data-sn-note hidden></p>
+  <div class="mc-verdict sn-out" aria-live="polite">
+    <span class="mc-word" data-tone="close" data-sn-word>CHECKING…</span>
+    <p class="mc-line" data-sn-line>Looking at your soil and the forecast.</p>
+    <p class="sn-rain" data-sn-rain></p>
+  </div>
+  <div class="mw-stats">
+    <div><b data-sn-soil>–</b><span>Soil now</span></div>
+    <div><b data-sn-next>–</b><span>Soil, next 7</span></div>
+    <div><b data-sn-high>–</b><span>Highs, next 7</span></div>
+    <div><b data-sn-rainv>–</b><span>Rain, next 7</span></div>
+  </div>
+  <p class="sn-germ" data-sn-germ hidden>How long until you see green: perennial rye about 5 to 10 days, tall fescue 1 to 2 weeks, Kentucky bluegrass 2 to 4 weeks. Don’t panic in week one.</p>
+  <p class="tool-fine">Grass seed sprouts best with soil between about 50 and 70°F. Around here the best window is mid-August through September, with spring as the backup. <a href="/lawn-101/#grass">Which seed?</a> · <a href="/toolshed/#ops-overseed">Seeding steps, in order</a></p>
+</section>
+
+<script>
+  import { initSeedNow } from '../scripts/seedNow.js';
+  document.querySelectorAll('[data-seed-now]').forEach((el) => initSeedNow(el));
+</script>

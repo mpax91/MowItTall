@@ -1,5 +1,7 @@
 ---
 import Base from './Base.astro';
+import BeerCallout from '../components/BeerCallout.astro';
+import { topicBySlug } from '../data/topics.js';
 import MowCheck from '../components/MowCheck.astro';
 import MowWorkout from '../components/MowWorkout.astro';
 import Playlist from '../components/Playlist.astro';
@@ -11,8 +13,15 @@ import SoilTranslator from '../components/SoilTranslator.astro';
 import SoilReportCard from '../components/SoilReportCard.astro';
 import CritterCards from '../components/CritterCards.astro';
 import WeedPlaybook from '../components/WeedPlaybook.astro';
+import ChipPicker from '../components/ChipPicker.astro';
+import SpreaderHelper from '../components/SpreaderHelper.astro';
+import MowerLetter from '../components/MowerLetter.astro';
+import { SPOTS, SPOT_GROUPS } from '../data/spotFixer.js';
+import { NEEDS, NEED_GROUPS } from '../data/doINeed.js';
+import { GS } from '../data/granSpray.js';
 const { frontmatter, url } = Astro.props;
 const { title, description, tag, widget, extra, faq } = frontmatter;
+const topics = (frontmatter.topics || []).filter((t) => topicBySlug[t]);
 const date = (frontmatter.date instanceof Date ? frontmatter.date.toISOString() : String(frontmatter.date)).slice(0, 10);
 const minutes = frontmatter.minutes || 2;
 const pretty = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -36,7 +45,7 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': faqLd ? [posting, f
 <Base title={`${title} | Mow It Tall`} description={description} path={path} jsonLd={jsonLd}>
   <main id="main" class="post">
     <header class="post-head">
-      <a class="post-back" href="/blog/">Blog</a>
+      <a class="post-back" href="/blog/" data-pagefind-ignore>Blog</a>
       <span class="clip-tag">{tag}</span>
       <h1>{title}</h1>
       <p class="post-dek">{description}</p>
@@ -75,6 +84,21 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': faqLd ? [posting, f
     {widget === 'critters' && (
       <div class="post-widget" data-widget="critters"><CritterCards /></div>
     )}
+    {widget === 'spot-fixer' && (
+      <div class="post-widget" data-widget="spot-fixer"><ChipPicker id="damage" title="The damage report" sub="What happened to your lawn? Tap it. I’ll tell you how worried to be (not very) and how to fix it." items={SPOTS} groups={SPOT_GROUPS} prompt="Tap what happened." /></div>
+    )}
+    {widget === 'spreader' && (
+      <div class="post-widget" data-widget="spreader"><SpreaderHelper /></div>
+    )}
+    {widget === 'gran-spray' && (
+      <div class="post-widget" data-widget="gran-spray"><ChipPicker id="gs" title="Granules or spray for…" sub="Tap the job. Get my honest pick." items={GS} prompt="Tap a job." /></div>
+    )}
+    {widget === 'mower-letter' && (
+      <div class="post-widget" data-widget="mower-letter"><MowerLetter /></div>
+    )}
+    {widget === 'do-i-need' && (
+      <div class="post-widget" data-widget="do-i-need"><ChipPicker id="need" title="Do I need this?" sub="Tap the thing your neighbor bought. Get my verdict." items={NEEDS} groups={NEED_GROUPS} prompt="Tap something." /></div>
+    )}
     {extra === 'soil-report' && (
       <div class="post-widget" data-widget="soil-report"><SoilReportCard /></div>
     )}
@@ -89,7 +113,14 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': faqLd ? [posting, f
         })();
       </script>
     )}
-    <aside class="window post-cta">
+    {topics.length > 0 && (
+      <nav class="post-topics" aria-label="More on these topics" data-pagefind-ignore>
+        <span>More on:</span>
+        {topics.map((t) => <a class="bf-chip" href={`/blog/topic/${t}/`}>{topicBySlug[t].name}</a>)}
+      </nav>
+    )}
+    <BeerCallout />
+    <aside class="window post-cta" data-pagefind-ignore>
       <h2>Want the short version for your yard?</h2>
       <p>Seven questions, two minutes, one plan.</p>
       <a class="btn" href="/plan/">Take the quiz</a>

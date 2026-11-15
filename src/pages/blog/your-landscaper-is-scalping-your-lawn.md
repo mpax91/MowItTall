@@ -5,6 +5,7 @@ description: "Drive around Bedford in July and count the brown lawns. Then count
 date: 2026-11-13
 minutes: 2
 tag: Hot take
+topics: [mowing]
 ---
 
 Here’s a fun game. Next July, drive down any street in town and look at the lawns that are brown and crispy. Now look at how short they are.

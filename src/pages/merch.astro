@@ -1,0 +1,36 @@
+---
+import Base from '../layouts/Base.astro';
+import BeerCallout from '../components/BeerCallout.astro';
+const title = 'Mow It Tall merch (coming soon)';
+const description = 'Hats and shirts for people who mow tall. The Mow It Tall merch store is coming soon.';
+// Placeholder designs. Swap in real products and links when the store opens.
+const items = [
+  { name: 'The “Mow it TALL” hat', note: 'For the guy who stripes his lawn and calls it “not a big deal.”', kind: 'hat', line1: 'MOW IT', line2: 'TALL' },
+  { name: '“Lawn Psycho” tee', note: 'Top effort level on the quiz. Wear it with pride. Or a warning.', kind: 'tee', line1: 'LAWN', line2: 'PSYCHO' },
+  { name: '“I said what I said” tee', note: 'Perennial rye. Fight me.', kind: 'tee', line1: 'PERENNIAL', line2: 'RYE' },
+  { name: '“Leave the clippings” tee', note: 'Free fertilizer. Every mow.', kind: 'tee', line1: 'LEAVE THE', line2: 'CLIPPINGS' },
+];
+---
+<Base title={title} description={description} path="/merch/">
+  <main id="main" class="page">
+    <header class="page-head">
+      <h1>Merch</h1>
+      <p class="lede">The store isn’t open yet. These are the ideas on the board. Your neighbor will ask where you got it.</p>
+    </header>
+    <ul class="merch">
+      {items.map((m) => (
+        <li class="merch-item">
+          <div class={`merch-art merch-${m.kind}`} aria-hidden="true">
+            <span class="merch-print"><b>{m.line1}</b><b>{m.line2}</b></span>
+          </div>
+          <div class="merch-text">
+            <h2>{m.name}</h2>
+            <p>{m.note}</p>
+            <span class="merch-soon">Coming soon</span>
+          </div>
+        </li>
+      ))}
+    </ul>
+    <BeerCallout />
+  </main>
+</Base>

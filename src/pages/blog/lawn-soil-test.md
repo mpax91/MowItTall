@@ -5,6 +5,7 @@ description: "Why a soil test is the cheapest lawn upgrade there is, how often t
 date: 2026-11-15
 minutes: 6
 tag: PSA
+topics: [soil, feeding]
 widget: soil-translator
 extra: soil-report
 faq:

@@ -1,0 +1,94 @@
+---
+// Spreader helper: Mike's half-rate, two-direction method. Same total product, fewer stripes.
+const { id = 'spreader', measureHref = '/measure/' } = Astro.props;
+---
+<section class="window tool sh" id={id} aria-labelledby={`${id}-h`} data-spreader data-measure-href={measureHref}>
+  <h2 id={`${id}-h`}>Half rate, twice</h2>
+  <p class="tool-sub">Tell me what the bag says. I’ll tell you what to set and how much should be gone after each pass.</p>
+
+  <div class="mc-verdict sh-out" aria-live="polite">
+    <span class="mc-word" data-tone="yes" data-sh-word>SET IT TO ABOUT 3</span>
+    <p class="mc-line" data-sh-line></p>
+  </div>
+  <div class="mw-stats">
+    <div><b data-sh-total>–</b><span>Total</span></div>
+    <div><b data-sh-pass>–</b><span>Per pass</span></div>
+    <div><b data-sh-bags>–</b><span>Bags</span></div>
+    <div><b data-sh-left>–</b><span>Left over</span></div>
+  </div>
+
+  <svg class="sh-map" viewBox="0 0 300 120" role="img" aria-label="Pass 1 goes back and forth, pass 2 goes side to side, after one lap around the edge">
+    <rect x="4" y="4" width="292" height="112" rx="8" fill="#2f6e47" stroke="#eef5e6" stroke-width="3" />
+    <rect x="16" y="16" width="268" height="88" rx="4" fill="none" stroke="#f6c945" stroke-width="4" stroke-dasharray="2 6" stroke-linecap="round" />
+    <g stroke="#f1f6ec" stroke-width="3" stroke-linecap="round" opacity="0.9">
+      <path d="M30 32 H270 M30 50 H270 M30 68 H270 M30 86 H270" />
+    </g>
+    <g stroke="#9fd36a" stroke-width="3" stroke-linecap="round" stroke-dasharray="6 5">
+      <path d="M50 26 V94 M90 26 V94 M130 26 V94 M170 26 V94 M210 26 V94 M250 26 V94" />
+    </g>
+  </svg>
+  <p class="sh-key"><span class="sh-k0"></span>Edges first <span class="sh-k1"></span>Pass 1 <span class="sh-k2"></span>Pass 2</p>
+
+  <div class="mw-inputs sh-inputs">
+    <label><span>Setting on the bag</span><input type="text" inputmode="decimal" value="6" data-sh-set autocomplete="off" /></label>
+    <label><span>Lawn size (sq ft)</span><input type="text" inputmode="numeric" value="5000" data-sh-sqft autocomplete="off" /></label>
+    <label><span>Bag weight (lb)</span><input type="text" inputmode="decimal" value="15" data-sh-lb autocomplete="off" /></label>
+    <label><span>Bag covers (sq ft)</span><input type="text" inputmode="numeric" value="5000" data-sh-cover autocomplete="off" /></label>
+  </div>
+  <p class="mw-src" data-sh-src></p>
+
+  <fieldset class="mc-group">
+    <legend>Your spreader</legend>
+    <div class="mc-seg mc-seg-3">
+      <button type="button" data-sh-type="broadcast" aria-pressed="true">Broadcast</button>
+      <button type="button" data-sh-type="drop" aria-pressed="false">Drop</button>
+      <button type="button" data-sh-type="hand" aria-pressed="false">Handheld</button>
+    </div>
+  </fieldset>
+  <p class="sh-tip" data-sh-tip></p>
+  <p class="tool-fine">Spreader numbers aren’t perfectly even, so half the number isn’t always exactly half the stuff. So check yourself: after pass 1, about the “per pass” amount should be gone. Way more left than that? Bump it up a notch for pass 2. Your bag’s label wins.</p>
+</section>
+
+<script>
+  import { yardTotal, num, fmt, round1 } from '../scripts/yard.js';
+  document.querySelectorAll<HTMLElement>('[data-spreader]').forEach((root) => {
+    const $ = <T extends HTMLElement = HTMLElement>(s: string) => root.querySelector<T>(s)!;
+    const set = $<HTMLInputElement>('[data-sh-set]'), sqft = $<HTMLInputElement>('[data-sh-sqft]');
+    const lb = $<HTMLInputElement>('[data-sh-lb]'), cover = $<HTMLInputElement>('[data-sh-cover]');
+    const types = [...root.querySelectorAll<HTMLButtonElement>('[data-sh-type]')];
+    let type = 'broadcast';
+    const TIPS: Record<string, string> = {
+      broadcast: 'Broadcast spreaders throw wider than you think. Line up each trip so the throw just reaches your last wheel track. Close the hopper before you turn or stop.',
+      drop: 'Drop spreaders only drop between the wheels. Overlap each trip by a wheel width, or you get perfect stripes you didn’t want. Two directions fixes most misses.',
+      hand: 'Handhelds are for small lawns and patches. Crank at the same speed the whole time, walk at the same speed, and go two directions.',
+    };
+    const y = yardTotal();
+    if (y) { sqft.value = fmt(y); $('[data-sh-src]').textContent = 'Lawn size from your map. Nice.'; }
+    else { const a = document.createElement('a'); a.href = root.dataset.measureHref || '/measure/'; a.textContent = 'Measure it on a map'; const s = $('[data-sh-src]'); s.textContent = 'Don’t know your size? '; s.append(a); }
+
+    function update() {
+      const area = num(sqft.value), w = num(lb.value), c = num(cover.value);
+      const raw = set.value.trim();
+      const sNum = num(raw);
+      const word = $('[data-sh-word]');
+      if (/^\d+(\.\d+)?$/.test(raw) && sNum > 0) {
+        const half = Math.round(sNum / 2 * 2) / 2;
+        word.textContent = `SET IT TO ABOUT ${half % 1 ? half.toFixed(1) : half}`;
+      } else if (raw) {
+        word.textContent = 'HALFWAY TO ' + raw.toUpperCase().slice(0, 6);
+      } else word.textContent = 'HALF THE BAG NUMBER';
+      $('[data-sh-line]').textContent = raw
+        ? `Bag says ${raw}. Go about half that, once back and forth, then again side to side. Same amount of stuff, no stripes.`
+        : 'Find the setting for your spreader on the back of the bag.';
+      const total = area && w && c ? (area / c) * w : 0;
+      $('[data-sh-total]').textContent = total ? `${round1(total)} lb` : '–';
+      $('[data-sh-pass]').textContent = total ? `${round1(total / 2)} lb` : '–';
+      $('[data-sh-bags]').textContent = total ? String(round1(area / c)) : '–';
+      $('[data-sh-left]').textContent = total ? `${round1(Math.max(0, w * Math.ceil(area / c - 0.001) - total))} lb` : '–';
+      $('[data-sh-tip]').textContent = TIPS[type];
+    }
+    [set, sqft, lb, cover].forEach((i) => i.addEventListener('input', update));
+    types.forEach((b) => b.addEventListener('click', () => { type = b.dataset.shType!; types.forEach((x) => x.setAttribute('aria-pressed', String(x === b))); update(); }));
+    update();
+  });
+</script>

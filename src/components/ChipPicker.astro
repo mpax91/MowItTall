@@ -1,0 +1,75 @@
+---
+// Generic "tap a chip, get a card" widget. Used by the spot fixer, order of operations,
+// "Do I need this?", "What's wrong with my lawn?" and granules vs. spray.
+// items: [{ id, label, group?, word?, tone? ('yes'|'close'|'no'|'never'), title, lede?, sections?: [{ h, list, ordered? }], more?: { href, text } }]
+// Strings in lede / list are trusted HTML written by us (links, <b>).
+// A link to #<id>-<item id> opens that card.
+interface Item { id: string; label: string; group?: string; word?: string; tone?: string; title: string; lede?: string; sections?: { h: string; list: string[]; ordered?: boolean }[]; more?: { href: string; text: string } }
+interface Props { id: string; title: string; sub?: string; items: Item[]; groups?: { id: string; name: string }[]; prompt?: string; fine?: string; headingLevel?: 'h2' | 'h3' }
+const { id, title, sub = '', items, groups = [], prompt = 'Tap one.', fine = '', headingLevel = 'h2' } = Astro.props;
+const H = headingLevel;
+const sets = groups.length ? groups.map((g) => ({ ...g, items: items.filter((i) => i.group === g.id) })) : [{ id: 'all', name: '', items }];
+---
+<section class="window tool cp" id={id} aria-labelledby={`${id}-h`} data-chip-picker>
+  <H id={`${id}-h`} class="cp-title">{title}</H>
+  {sub && <p class="tool-sub">{sub}</p>}
+  <div class="cp-sets">
+    {sets.map((s) => (
+      <div class="cp-set">
+        {s.name && <p class="cp-group">{s.name}</p>}
+        <div class="cp-chips" role="group" aria-label={s.name || title}>
+          {s.items.map((it) => (
+            <button type="button" class="cp-chip" aria-pressed="false" aria-controls={`${id}-${it.id}`} data-cp-chip={it.id}>{it.label}</button>
+          ))}
+        </div>
+      </div>
+    ))}
+  </div>
+  <p class="cp-prompt" data-cp-prompt>{prompt}</p>
+  <div class="cp-cards" aria-live="polite">
+    {items.map((it) => (
+      <article class="cp-card" id={`${id}-${it.id}`} data-cp-card={it.id} hidden>
+        {it.word && <span class="mc-word cp-word" data-tone={it.tone || 'yes'}>{it.word}</span>}
+        <h3 class="cp-card-title">{it.title}</h3>
+        {it.lede && <p class="cp-lede" set:html={it.lede} />}
+        {(it.sections || []).map((sec) => (
+          <div class="cp-sec">
+            {sec.h && <p class="cp-sec-h">{sec.h}</p>}
+            {sec.ordered
+              ? <ol class="cp-steps">{sec.list.map((l) => <li set:html={l} />)}</ol>
+              : <ul class="cp-list">{sec.list.map((l) => <li set:html={l} />)}</ul>}
+          </div>
+        ))}
+        {it.more && <a class="cp-more" href={it.more.href}>{it.more.text}</a>}
+      </article>
+    ))}
+  </div>
+  {fine && <p class="tool-fine" set:html={fine} />}
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-chip-picker]').forEach((root) => {
+    const chips = [...root.querySelectorAll<HTMLButtonElement>('[data-cp-chip]')];
+    const cards = [...root.querySelectorAll<HTMLElement>('[data-cp-card]')];
+    const prompt = root.querySelector<HTMLElement>('[data-cp-prompt]')!;
+    function open(key: string, scroll: boolean) {
+      let card: HTMLElement | undefined;
+      chips.forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.cpChip === key)));
+      cards.forEach((c) => { c.hidden = c.dataset.cpCard !== key; if (!c.hidden) card = c; });
+      prompt.hidden = Boolean(card);
+      if (card && scroll) {
+        const r = card.getBoundingClientRect();
+        if (r.top > window.innerHeight - 140 || r.top < 0) card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+    chips.forEach((c) => c.addEventListener('click', () => open(c.dataset.cpChip!, true)));
+    function fromHash() {
+      const h = decodeURIComponent(location.hash.slice(1));
+      if (!h.startsWith(root.id + '-')) return;
+      const key = h.slice(root.id.length + 1);
+      if (cards.some((c) => c.dataset.cpCard === key)) { open(key, false); root.querySelector(`[data-cp-card="${key}"]`)?.scrollIntoView({ block: 'start' }); }
+    }
+    fromHash();
+    window.addEventListener('hashchange', fromHash);
+  });
+</script>

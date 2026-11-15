@@ -5,6 +5,7 @@ description: "Which lawn products are low-worry with kids and pets, which ones n
 date: 2026-11-15
 minutes: 5
 tag: PSA
+topics: [dogs-kids, weeds]
 widget: weed-playbook
 faq:
   - q: "Is lawn fertilizer safe for kids and pets?"

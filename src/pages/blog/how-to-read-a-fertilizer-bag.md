@@ -5,6 +5,7 @@ description: "What 24-0-6 actually means, what nitrogen, phosphorus and potassiu
 date: 2026-11-15
 minutes: 5
 tag: PSA
+topics: [feeding, gear]
 widget: bag-decoder
 faq:
   - q: "What do the three numbers on a fertilizer bag mean?"

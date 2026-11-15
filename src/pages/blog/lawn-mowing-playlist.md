@@ -5,6 +5,7 @@ description: "29 songs about grass, stripes, standing tall and not mowing at 7am
 date: 2026-11-15
 minutes: 4
 tag: Rankings
+topics: [fun, mowing]
 widget: playlist
 faq:
   - q: "What are good songs to listen to while mowing the lawn?"

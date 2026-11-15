@@ -1,0 +1,86 @@
+---
+// Funny "letter to your spouse" generator for the mower post. Logic in src/scripts/mowerLetter.js.
+const { id = 'letter' } = Astro.props;
+---
+<section class="window tool ml" id={id} aria-labelledby={`${id}-h`} data-mower-letter>
+  <h2 id={`${id}-h`}>Write the letter</h2>
+  <p class="tool-sub">Tell me what you want. I’ll write the letter. You do the begging.</p>
+
+  <fieldset class="mc-group ml-first">
+    <legend>I want</legend>
+    <div class="mc-seg ml-seg-want">
+      <button type="button" data-ml="want" data-v="self" aria-pressed="true">Self-<br />propelled</button>
+      <button type="button" data-ml="want" data-v="battery" aria-pressed="false">Battery</button>
+      <button type="button" data-ml="want" data-v="rider" aria-pressed="false">Riding</button>
+      <button type="button" data-ml="want" data-v="zero" aria-pressed="false">Zero-turn</button>
+      <button type="button" data-ml="want" data-v="robot" aria-pressed="false">Robot</button>
+    </div>
+  </fieldset>
+  <fieldset class="mc-group">
+    <legend>The real reason</legend>
+    <div class="mc-seg ml-seg-why">
+      <button type="button" data-ml="reason" data-v="time" aria-pressed="true">Time</button>
+      <button type="button" data-ml="reason" data-v="back" aria-pressed="false">My back</button>
+      <button type="button" data-ml="reason" data-v="kids" aria-pressed="false">The kids</button>
+      <button type="button" data-ml="reason" data-v="stripes" aria-pressed="false">Stripes</button>
+      <button type="button" data-ml="reason" data-v="neighbor" aria-pressed="false">The neighbor</button>
+    </div>
+  </fieldset>
+  <fieldset class="mc-group">
+    <legend>Tone</legend>
+    <div class="mc-seg mc-seg-3">
+      <button type="button" data-ml="tone" data-v="sweet" aria-pressed="true">Sweet</button>
+      <button type="button" data-ml="tone" data-v="lawyer" aria-pressed="false">Lawyer</button>
+      <button type="button" data-ml="tone" data-v="desperate" aria-pressed="false">Desperate</button>
+    </div>
+  </fieldset>
+  <div class="mw-inputs ml-inputs">
+    <label><span>Their name</span><input type="text" placeholder="Honey" maxlength="30" data-ml-spouse autocomplete="off" /></label>
+    <label><span>Your name</span><input type="text" placeholder="You" maxlength="30" data-ml-me autocomplete="off" /></label>
+    <label class="ml-wide"><span>Lawn size (sq ft)</span><input type="text" inputmode="numeric" value="10,000" data-ml-sqft autocomplete="off" /></label>
+  </div>
+  <p class="mw-src" data-ml-src></p>
+
+  <div class="ml-paper" aria-live="polite"><p data-ml-out></p></div>
+  <div class="ml-actions">
+    <button type="button" class="btn" data-ml-share>Send it</button>
+    <button type="button" class="btn ml-alt" data-ml-copy>Copy</button>
+    <button type="button" class="linkish ml-again" data-ml-again>Reword it</button>
+  </div>
+  <p class="tool-fine">Results not guaranteed. Mow It Tall is not responsible for the conversation that follows.</p>
+</section>
+
+<script>
+  import { letter } from '../scripts/mowerLetter.js';
+  import { yardTotal, num, fmt } from '../scripts/yard.js';
+  document.querySelectorAll<HTMLElement>('[data-mower-letter]').forEach((root) => {
+    const $ = <T extends HTMLElement = HTMLElement>(s: string) => root.querySelector<T>(s)!;
+    const st: Record<string, string> = { want: 'self', reason: 'time', tone: 'sweet' };
+    let seed = 0;
+    const sqft = $<HTMLInputElement>('[data-ml-sqft]');
+    const y = yardTotal();
+    if (y) { sqft.value = fmt(y); $('[data-ml-src]').textContent = 'Lawn size from your map. Very official.'; }
+    const out = $('[data-ml-out]');
+    function text() {
+      return letter({ want: st.want, reason: st.reason, tone: st.tone, sqft: num(sqft.value) || 10000, spouse: $<HTMLInputElement>('[data-ml-spouse]').value, me: $<HTMLInputElement>('[data-ml-me]').value }, seed);
+    }
+    function render() { out.textContent = text(); }
+    root.querySelectorAll<HTMLButtonElement>('[data-ml]').forEach((b) => b.addEventListener('click', () => {
+      st[b.dataset.ml!] = b.dataset.v!;
+      root.querySelectorAll<HTMLButtonElement>(`[data-ml="${b.dataset.ml}"]`).forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      render();
+    }));
+    root.querySelectorAll('input').forEach((i) => i.addEventListener('input', render));
+    $('[data-ml-again]').addEventListener('click', () => { seed++; render(); });
+    const flash = (b: HTMLElement, t: string) => { const o = b.textContent; b.textContent = t; setTimeout(() => (b.textContent = o), 1600); };
+    $('[data-ml-copy]').addEventListener('click', async (e) => {
+      try { await navigator.clipboard.writeText(text() + '\n\n(Written with help from mowittall.com)'); flash(e.currentTarget as HTMLElement, 'Copied'); } catch { flash(e.currentTarget as HTMLElement, 'Long-press to copy'); }
+    });
+    $('[data-ml-share]').addEventListener('click', async (e) => {
+      const t = text() + '\n\n(Written with help from mowittall.com)';
+      if (navigator.share) { try { await navigator.share({ text: t }); } catch { /* cancelled */ } }
+      else { try { await navigator.clipboard.writeText(t); flash(e.currentTarget as HTMLElement, 'Copied. Paste it in a text.'); } catch { /* */ } }
+    });
+    render();
+  });
+</script>

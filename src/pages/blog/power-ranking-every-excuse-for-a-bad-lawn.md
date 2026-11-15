@@ -5,6 +5,7 @@ description: "From \"it’s the shade\" to \"the dog,\" we ranked them all. Only
 date: 2026-11-10
 minutes: 3
 tag: Rankings
+topics: [fun]
 ---
 
 Everybody has an excuse. I’ve heard them all at block parties. Here they are, ranked from least believable to most.

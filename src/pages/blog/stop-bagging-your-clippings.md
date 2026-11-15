@@ -5,6 +5,7 @@ description: "You’re doing extra work to throw away free fertilizer. Here’s 
 date: 2026-11-02
 minutes: 2
 tag: PSA
+topics: [mowing, feeding]
 ---
 
 Every Saturday, somebody on my street fills a bag with grass clippings, drags it to the curb, then drives to the store to buy fertilizer.

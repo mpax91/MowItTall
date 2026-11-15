@@ -1,0 +1,81 @@
+---
+import Base from '../layouts/Base.astro';
+import { NOTES } from '../data/neighborNotes.js';
+const title = 'Send Mow It Tall to a neighbor (anonymously, if you want)';
+const description = 'Know a lawn that needs help? Send your neighbor a free lawn plan. Print an anonymous door note with a QR code, or text it from your phone.';
+---
+<Base title={title} description={description} path="/neighbor/">
+  <main id="main" class="page nb-page">
+    <header class="page-head nb-head">
+      <h1>Send this to a neighbor</h1>
+      <p class="lede">Know a lawn that’s crying for help? Pick a message. Print it and tuck it in their door, or text it. They never have to know it was you.</p>
+    </header>
+
+    <section class="window tool nb" aria-labelledby="nb-h" data-neighbor>
+      <h2 id="nb-h" class="sr-only">Pick a message</h2>
+      <div class="cp-chips nb-picks" role="group" aria-label="Message">
+        {NOTES.map((n, i) => <button type="button" class="cp-chip" data-nb={n.id} aria-pressed={i === 0 ? 'true' : 'false'}>{n.label}</button>)}
+      </div>
+
+      <div class="nb-note" data-nb-card>
+        <p class="nb-to">To the owner of this lawn,</p>
+        <p class="nb-msg" data-nb-msg>{NOTES[0].note}</p>
+        <div class="nb-qr-row">
+          <div class="nb-qr" data-nb-qr aria-label="QR code to the free lawn plan" role="img"></div>
+          <div>
+            <p class="nb-scan">Scan for your free lawn plan</p>
+            <p class="nb-url" data-nb-url>mowittall.com/plan</p>
+          </div>
+        </div>
+        <p class="nb-sign">— A neighbor who cares (maybe too much)</p>
+        <p class="nb-brand">Mow it <b>TALL</b></p>
+      </div>
+
+      <div class="nb-actions">
+        <button type="button" class="btn" data-nb-print>Print it (anonymous)</button>
+        <a class="btn nb-alt" data-nb-sms href="sms:">Text it</a>
+        <button type="button" class="btn nb-alt" data-nb-share>Share</button>
+      </div>
+      <p class="tool-fine">Printing is the anonymous one. Fold it, tuck it in their door or under the mat. A text comes from your number, so they’ll know it was you. Sending it anonymously by email is coming soon.</p>
+    </section>
+
+    <section class="nb-rules">
+      <h2>The rules</h2>
+      <ul>
+        <li>Be funny, not mean. The goal is a better lawn on your street, not a feud.</li>
+        <li>One note per lawn per season. After that it’s harassment and also sad.</li>
+        <li>If their lawn is nicer than yours, use the “Secret admirer” one and take notes.</li>
+      </ul>
+    </section>
+  </main>
+</Base>
+
+<script>
+  import qrcode from 'qrcode-generator';
+  import { NOTES } from '../data/neighborNotes.js';
+  const root = document.querySelector<HTMLElement>('[data-neighbor]')!;
+  const $ = <T extends HTMLElement = HTMLElement>(s: string) => root.querySelector<T>(s)!;
+  const link = `${location.origin}/plan/?from=neighbor`;
+  const pretty = `${location.host.replace(/^www\./, '')}/plan`;
+  let note = NOTES[0];
+
+  const qr = qrcode(0, 'M');
+  qr.addData(link);
+  qr.make();
+  $('[data-nb-qr]').innerHTML = qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+  $('[data-nb-url]').textContent = pretty;
+
+  function text() { return note.text.replace('{link}', link); }
+  function render() {
+    $('[data-nb-msg]').textContent = note.note;
+    $<HTMLAnchorElement>('[data-nb-sms]').href = `sms:?&body=${encodeURIComponent(text())}`;
+    root.querySelectorAll<HTMLButtonElement>('[data-nb]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.nb === note.id)));
+  }
+  root.querySelectorAll<HTMLButtonElement>('[data-nb]').forEach((b) => b.addEventListener('click', () => { note = NOTES.find((n) => n.id === b.dataset.nb)!; render(); }));
+  $('[data-nb-print]').addEventListener('click', () => window.print());
+  $('[data-nb-share]').addEventListener('click', async (e) => {
+    if (navigator.share) { try { await navigator.share({ text: text() }); } catch { /* cancelled */ } return; }
+    try { await navigator.clipboard.writeText(text()); const b = e.currentTarget as HTMLElement; const o = b.textContent; b.textContent = 'Copied'; setTimeout(() => (b.textContent = o), 1500); } catch { /* */ }
+  });
+  render();
+</script>

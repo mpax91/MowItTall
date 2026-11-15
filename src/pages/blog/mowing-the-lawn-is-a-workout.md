@@ -5,6 +5,7 @@ description: "Some people go to the gym. Big deal. You push a mower up a hill in
 date: 2026-11-15
 minutes: 3
 tag: Hot take
+topics: [mowing, fun]
 widget: mow-workout
 faq:
   - q: "Does mowing the lawn count as exercise?"

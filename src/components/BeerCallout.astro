@@ -1,0 +1,36 @@
+---
+// "Buy me a beer" tip callout. Links come from src/data/site.js (empty = "coming soon").
+// compact: one-line version for the footer.
+import { tipLink, TIPS_ON } from '../data/site.js';
+const { compact = false } = Astro.props;
+const amounts = [5, 10];
+---
+{compact ? (
+  <p class="beer-line" id="beer">
+    Site saved you a weekend? {TIPS_ON
+      ? <a href={tipLink(5)} target="_blank" rel="noopener">Buy me a beer</a>
+      : <span>Buy me a beer <em>(tip jar coming soon)</em></span>}
+  </p>
+) : (
+  <aside class="beer" aria-labelledby="beer-h" data-pagefind-ignore>
+    <div class="beer-mug" aria-hidden="true">
+      <svg viewBox="0 0 16 16" shape-rendering="crispEdges">
+        <rect x="2" y="3" width="9" height="2" fill="#f1f6ec" />
+        <rect x="2" y="5" width="9" height="9" fill="#f6c945" />
+        <rect x="3" y="6" width="1" height="6" fill="#ffe08a" />
+        <rect x="11" y="6" width="3" height="1" fill="#eef5e6" /><rect x="13" y="7" width="1" height="4" fill="#eef5e6" /><rect x="11" y="11" width="3" height="1" fill="#eef5e6" />
+        <rect x="2" y="14" width="9" height="1" fill="#0a2414" />
+      </svg>
+    </div>
+    <div class="beer-body">
+      <h2 id="beer-h">Did this help? Buy me a beer.</h2>
+      <p>No ads, no paywall, no email required. If the site saved you a bag of fertilizer or a fight with your spouse, a beer keeps it going.</p>
+      <div class="beer-btns">
+        {amounts.map((a) => TIPS_ON
+          ? <a class="btn beer-btn" href={tipLink(a)} target="_blank" rel="noopener">${a} {a === 5 ? '· one beer' : '· a round'}</a>
+          : <span class="btn beer-btn is-off" aria-disabled="true">${a} {a === 5 ? '· one beer' : '· a round'}</span>)}
+      </div>
+      {!TIPS_ON && <p class="beer-soon">Tip jar opens soon. The thought counts. Slightly.</p>}
+    </div>
+  </aside>
+)}

@@ -5,6 +5,7 @@ description: "In Bedford, gas leaf blowers are banned and people still have feel
 date: 2026-11-06
 minutes: 2
 tag: Bedford
+topics: [gear, fun]
 ---
 
 In Bedford, gas leaf blowers are banned, and people still have strong feelings about it. I’m not here to referee that fight. I’m here to tell you something better.

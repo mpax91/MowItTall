@@ -1,0 +1,23 @@
+---
+// Blog post cards. Used by /blog/ and /blog/topic/<slug>/.
+// filter: adds data attributes so the blog page's search box and topic chips can hide cards.
+import { topicBySlug } from '../data/topics.js';
+const { posts, filter = false } = Astro.props;
+---
+<ul class="clip-list clip-list-big" data-post-list>
+  {posts.map((p) => (
+    <li
+      data-topics={filter ? (p.topics || []).join(' ') : undefined}
+      data-text={filter ? `${p.title} ${p.description} ${p.tag} ${(p.topics || []).map((t) => topicBySlug[t]?.name || t).join(' ')}`.toLowerCase() : undefined}
+    >
+      <a class="clip" href={p.url}>
+        <span class="clip-tag">{p.tag}</span>
+        <span class="clip-title">{p.title}</span>
+        <span class="clip-dek">{p.description}</span>
+        {(p.topics || []).length > 0 && (
+          <span class="clip-topics">{p.topics.map((t) => <span>{topicBySlug[t]?.name || t}</span>)}</span>
+        )}
+      </a>
+    </li>
+  ))}
+</ul>

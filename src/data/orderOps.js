@@ -1,0 +1,128 @@
+// "Order of operations": pick a job, get the steps in the right order. Mike reviews every sequence.
+// Seeding order from Mike: mow low first, then starter fertilizer, then water.
+export const OPS_GROUPS = [
+  { id: 'grow', name: 'Grow grass' },
+  { id: 'feed', name: 'Feed and treat' },
+  { id: 'season', name: 'Seasonal' },
+];
+export const OPS = [
+  {
+    id: 'overseed', group: 'grow', label: 'Overseed the lawn', word: 'BEST IN SEPTEMBER', tone: 'yes',
+    title: 'Overseeding, in order',
+    lede: 'Late August through September is the sweet spot. The order matters more than the products.',
+    sections: [{ h: 'The order', ordered: true, list: [
+      '<b>Weeds first, if any.</b> Kill weeds 2 to 4 weeks before you seed. The weed killer label says how long to wait.',
+      '<b>Mow low.</b> About 2 inches, and bag the clippings this one time. Seed needs to hit dirt, not land on a mattress.',
+      '<b>Loosen it up.</b> Rake hard, or aerate if the soil is packed.',
+      '<b>Spread the seed.</b> Half going one way, half going the other.',
+      '<b>Starter fertilizer.</b> Right after the seed.',
+      '<b>Rake it in lightly</b> so the seed touches soil.',
+      '<b>Water.</b> Lightly, once or twice a day, so the top stays damp until it sprouts. Then less often, but longer.',
+      '<b>First mow</b> when the new grass hits about 4 inches. Back to tall.',
+      '<b>No crabgrass preventer or weed killer</b> on new grass until you’ve mowed it a few times. Check the label.',
+    ] }],
+    more: { href: '/blog/grass-types-northeast/', text: 'Which seed to buy' },
+  },
+  {
+    id: 'patch', group: 'grow', label: 'Fix a bare spot', word: 'SPRING OR FALL', tone: 'yes',
+    title: 'Patching a bare spot',
+    sections: [{ h: 'The order', ordered: true, list: [
+      '<b>Figure out why it died.</b> Dog, shade, traffic, grubs? Fix the cause or it’ll die again.',
+      '<b>Scratch out the dead stuff</b> until you see dirt. Loosen the top inch.',
+      '<b>Seed it</b> a little heavier than the bag says for overseeding.',
+      '<b>Pinch of starter fertilizer</b>, then rake lightly.',
+      '<b>Cover thin</b> with a sprinkle of peat moss or straw if birds or sun are a problem. You should still see dirt through it.',
+      '<b>Keep it damp</b> every day until it’s up and growing.',
+    ] }],
+  },
+  {
+    id: 'aerate', group: 'grow', label: 'Aerate', word: 'EARLY FALL', tone: 'yes',
+    title: 'Aerating, in order',
+    sections: [{ h: 'The order', ordered: true, list: [
+      '<b>Mark sprinkler heads and buried wires.</b> The machine will find them otherwise.',
+      '<b>Water the day before</b> if it’s been dry. Hard ground won’t give up plugs.',
+      '<b>Mow.</b> Normal height is fine.',
+      '<b>Aerate</b> in two directions.',
+      '<b>Leave the plugs.</b> They break down in a week or two.',
+      '<b>Seed and starter fertilizer right after.</b> The holes are the perfect seed pockets.',
+      '<b>Water</b> like you just seeded, because you did.',
+    ] }],
+  },
+  {
+    id: 'preventer', group: 'feed', label: 'Crabgrass preventer', word: 'APRIL-ISH', tone: 'yes',
+    title: 'Crabgrass preventer, in order',
+    lede: 'Goes down when soil hits about 55°F, roughly when forsythia blooms. In Bedford that’s usually April.',
+    sections: [{ h: 'The order', ordered: true, list: [
+      '<b>Clean up.</b> Rake out winter junk and leaves first.',
+      '<b>Decide: preventer or seed.</b> Preventer stops grass seed too. Spots you plan to seed this spring get skipped.',
+      '<b>Spread it</b> with a spreader. Half rate, two directions.',
+      '<b>Sweep the driveway</b> back onto the lawn.',
+      '<b>Water it in</b> within a few days, or let a rain do it.',
+      '<b>Leave it alone.</b> No raking, no dethatching after. That breaks the barrier.',
+    ] }],
+    more: { href: '/blog/holiday-lawn-fertilizer-schedule/', text: 'The holiday schedule (Tax Day)' },
+  },
+  {
+    id: 'feed', group: 'feed', label: 'Fertilize', word: 'ON THE HOLIDAYS', tone: 'yes',
+    title: 'Fertilizing, in order',
+    sections: [{ h: 'The order', ordered: true, list: [
+      '<b>Mow first.</b> Then you won’t suck granules back up or fling them around.',
+      '<b>Fill the spreader on the driveway</b>, not on the lawn. A spill on grass makes a dead spot.',
+      '<b>Do the edges first</b>: one lap around the outside.',
+      '<b>Fill in the middle at half rate</b>, back and forth, then again side to side.',
+      '<b>Sweep the driveway and sidewalk</b> back onto the lawn.',
+      '<b>Water it in</b> with about a quarter inch, or time it before a light rain. Not a downpour.',
+    ] }],
+    more: { href: '/blog/spreader-settings-half-rate-twice/', text: 'Spreader settings, explained' },
+  },
+  {
+    id: 'weeds', group: 'feed', label: 'Kill weeds', word: 'WHEN THEY’RE GROWING', tone: 'yes',
+    title: 'Killing weeds, in order',
+    sections: [{ h: 'The order', ordered: true, list: [
+      '<b>Don’t mow</b> for a couple of days before. More leaf means more to hit.',
+      '<b>Pick the day.</b> Weeds growing, not too hot (roughly 60 to 85°F), no rain for a day, no wind.',
+      '<b>Spot treat</b> the weeds you see. Don’t blanket the whole yard.',
+      '<b>Keep kids and pets off</b> until it’s dry, or as long as the label says.',
+      '<b>Wait to mow</b> a couple of days after.',
+      '<b>Plan your seeding.</b> Most weed killers need a few weeks before you can seed. Read the label.',
+    ] }],
+    more: { href: '/blog/kid-and-pet-safe-lawn-care/', text: 'What’s safe with kids and pets' },
+  },
+  {
+    id: 'lime', group: 'feed', label: 'Lime', word: 'AFTER A SOIL TEST', tone: 'close',
+    title: 'Liming, in order',
+    sections: [{ h: 'The order', ordered: true, list: [
+      '<b>Soil test.</b> No test, no lime.',
+      '<b>Work out how much</b> from the test. No more than about 50 lb per 1,000 sq ft at once.',
+      '<b>Spread it</b> in two directions. Pelletized lime goes through a regular spreader.',
+      '<b>Water it in</b> or let rain do it. It works slowly, over months.',
+      '<b>More needed?</b> Split it: half in fall, half in spring.',
+      '<b>Retest next year.</b>',
+    ] }],
+    more: { href: '/blog/lawn-soil-test/', text: 'Soil test guide and translator' },
+  },
+  {
+    id: 'spring', group: 'season', label: 'Spring cleanup', word: 'WHEN IT FIRMS UP', tone: 'yes',
+    title: 'Spring cleanup, in order',
+    sections: [{ h: 'The order', ordered: true, list: [
+      '<b>Wait until the ground is firm.</b> Walking on mushy spring soil packs it down.',
+      '<b>Sharpen the blade</b> and tune up the mower.',
+      '<b>Rake lightly</b> to fluff matted spots and pull out sticks and leaves.',
+      '<b>Fix plow damage</b> and flush salty spots by the road with water.',
+      '<b>Crabgrass preventer</b> when soil hits 55°F.',
+      '<b>First mow</b> once it’s growing. Keep it tall from day one.',
+    ] }],
+  },
+  {
+    id: 'fall', group: 'season', label: 'Fall wrap-up', word: 'OCT TO NOV', tone: 'yes',
+    title: 'Putting the lawn to bed, in order',
+    sections: [{ h: 'The order', ordered: true, list: [
+      '<b>Mow the leaves</b> into the lawn instead of raking. Free fertilizer.',
+      '<b>Last feeding</b> around Columbus Day (Thanksgiving if you’re a Lawn Psycho).',
+      '<b>Last mow</b> a little shorter, about 3 inches, so it doesn’t mat under snow.',
+      '<b>Clean the mower deck</b> and run the gas out or add stabilizer.',
+      '<b>Stake the edges</b> of the driveway so the plow knows where the lawn is.',
+    ] }],
+    more: { href: '/blog/you-never-needed-a-leaf-blower/', text: 'Why you never needed a leaf blower' },
+  },
+];

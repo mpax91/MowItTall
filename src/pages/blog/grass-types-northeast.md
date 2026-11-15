@@ -5,6 +5,7 @@ description: "Kentucky bluegrass vs. perennial rye vs. tall fescue vs. fine fesc
 date: 2026-11-15
 minutes: 5
 tag: Rankings
+topics: [seeding]
 widget: grass-picker
 faq:
   - q: "What is the best grass seed for the Northeast?"
