@@ -2197,3 +2197,10 @@ main > section.gp { margin-left: 16px; margin-right: 16px; }
 .calendar.is-compact .cal-more i { font-style: normal; transition: transform 0.2s; }
 .calendar.is-compact .cal-month.is-open .cal-more i { transform: rotate(180deg); }
 .calendar.is-compact .cal-month.is-open .cal-more { margin-top: 2px; }
+/* calendar: subdued "nothing to do" joke cards (Jan, Feb) */
+.cal-task.is-chill { background: #b8c7af; color: #2c3f2f; }
+.calendar.is-compact .cal-flipcard.is-chill { background: none; }
+.calendar.is-compact .cal-flipcard.is-chill .cal-front { background: #b8c7af; color: #2c3f2f; }
+.calendar.is-compact .cal-flipcard.is-chill .cal-front .cal-window { color: #4f6651; }
+.calendar.is-compact .cal-task.is-chill .cal-face p.cal-brief { color: #3d5240; }
+.calendar.is-compact .cal-flipcard.is-chill .cal-back { background: #2b4a35; }

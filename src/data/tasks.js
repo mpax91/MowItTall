@@ -47,6 +47,7 @@ export const TASKS = [
   },
   {
     id: 'spot-weeds',
+    cal: 6,   // calendar month override (main month would be May, leaving June empty)
     brief: 'Hit weeds while they’re growing.',
     title: 'Spot-spray weeds',
     short: 'Hit dandelions and clover while they’re actively growing.',
