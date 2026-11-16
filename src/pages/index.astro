@@ -4,6 +4,7 @@ import Calendar from '../components/Calendar.astro';
 import HeroMower from '../components/HeroMower.astro';
 import LawnThisWeek from '../components/LawnThisWeek.astro';
 import CardRow from '../components/CardRow.astro';
+import TrendingGrid from '../components/TrendingGrid.astro';
 import { PHOTOS } from '../data/photos.js';
 import { changeCards } from '../data/changes.js';
 const posts = Object.values(import.meta.glob('./blog/[a-z]*.md', { eager: true }))
@@ -46,26 +47,10 @@ const lawn101 = [
   ...changeCards.map((c) => ({ href: '/lawn-101/#changes-h', icon: c.icon, title: c.title, sub: c.sub })),
   { href: '/yards/', img: `/img/${PHOTOS[0].src}-800.webp`, title: 'Proof it works', sub: 'My yard. Push mower. No lawn company.' },
 ];
-const tools = [
-  { href: '/resources/#seed', tag: 'Live', title: 'Can I seed now?', sub: 'Checks your soil and forecast. Yes or no.' },
-  { href: '/resources/#seedwatch', tag: 'New', title: 'Is my grass seed working?', sub: 'Day-by-day check on new seed. Spoiler: be patient.' },
-  { href: '/resources/#dx', tag: 'Fix it', title: 'What’s wrong with my lawn?', sub: 'Tap what you see. Get the likely cause and the fix.' },
-  { href: '/resources/#water-h', tag: 'Live', title: 'Should I water?', sub: 'This week’s rain vs. what your grass drank.' },
-  { href: '/measure/', tag: 'Map', title: 'Measure your yard', sub: 'Draw it on the map. Get the square feet.' },
-  { href: '/resources/#calc', tag: 'Math', title: 'Lawn calculator', sub: 'How many bags of seed, food or lime.' },
-  { href: '/resources/#spreader', tag: 'Math', title: 'Spreader settings', sub: 'Half rate, twice. No stripes of shame.' },
-  { href: '/resources/#ops', tag: 'Steps', title: 'Order of operations', sub: 'What to do first when you overseed or fix a mess.' },
-  { href: '/resources/#need', tag: 'Honest', title: 'Do I need this?', sub: 'Aerator shoes and other gadgets. Mostly no.' },
-  { href: '/neighbor/', tag: 'Petty', title: 'Send to a neighbor', sub: 'A friendly, anonymous nudge for the yard next door.' },
-];
 const hall = [
   { href: '/hall/', img: `/img/${PHOTOS[0].src}-800.webp`, title: 'Hall of Fame', sub: 'The best lawns around. Vote them up.' },
   { href: '/hall/?board=shame', icon: changeCards[1].icon, title: 'Hall of Shame', sub: 'Bald spots and dandelion farms. All in good fun.' },
   { href: '/hall/#post', icon: changeCards[0].icon, title: 'Post a lawn', sub: 'Yours, or one you have the OK to post. I review every photo.' },
-];
-const games = [
-  { href: '/games/', icon: changeCards[0].icon, title: 'The stripe game', sub: 'Eight yards, from a starter home to a snowy Christmas lawn.' },
-  { href: '/games/#whack-h', icon: changeCards[1].icon, title: 'Whack-a-Weed', sub: '30 seconds. Hit the weeds, not the bees.' },
 ];
 ---
 <Base title={title} description={description} path="/" jsonLd={jsonLd}>
@@ -74,11 +59,10 @@ const games = [
       <LawnThisWeek />
       <Calendar compact />
 
+      <TrendingGrid />
       <CardRow id="l101" title="Lawn 101" lede="Everything a beginner actually needs. Start with one small change." href="/lawn-101/" more="Explore Lawn 101" items={lawn101} />
-      <CardRow id="res" title="Free Resources" lede="Tools that do the thinking for you. No account, no email." href="/resources/" more="See All Resources" items={tools} kind="tools" />
       <CardRow id="blog" title="From the Blog" lede="Lawn takes. Some hot, all short." href="/blog/" more="Read the Blog" items={posts.map((p) => ({ href: p.url, tag: p.tag, title: p.title }))} kind="blog" />
       <CardRow id="hall" title="Lawn Hall of Fame (and Shame)" lede="Post your stripes. Nominate a disaster. Vote like it’s Reddit." href="/hall/" more="See the Hall" items={hall} />
-      <CardRow id="games" title="Games" lede="For when you should be mowing." href="/games/" more="Play the Games" items={games} kind="games" />
 
       <section class="plan plan-end" id="plan" aria-labelledby="plan-h">
         <div class="window plan-card">

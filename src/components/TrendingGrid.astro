@@ -1,0 +1,103 @@
+---
+// Homepage "What's Trending": a 2x2 grid of the four tools Mike most wants people to find.
+// Each card: pixel icon in a green tile, title, one short line.
+import PixelIcon from './PixelIcon.astro';
+const icons = {
+  weed: [
+    '................',
+    '....aaaaaa......',
+    '...awwwwwwa.....',
+    '..awwyyyywwa....',
+    '.awwyyYYyywwa...',
+    '.awwyYYYYywwa...',
+    '.awwyyYYyywwa...',
+    '.awwwyyyywwwa...',
+    '.awwlwwgwwlwa...',
+    '.awwglwglgwwa...',
+    '..awwgggggwa....',
+    '...awwwgwwas....',
+    '....aaaaaasSk...',
+    '..........sSSk..',
+    '...........sSSk.',
+    '............sk..',
+  ],
+  measure: [
+    '................',
+    '.yy..........yy.',
+    '.yylllggglllgyy.',
+    '..lllgggrrrggg..',
+    '..lllggrrwrrgg..',
+    '..lllggrrrrrgg..',
+    '..lllgggrrrggg..',
+    '..lllggglrlggg..',
+    '..lllggglrlggg..',
+    '..lllgggaaaggg..',
+    '..lllggglllggg..',
+    '..lllggglllggg..',
+    '..lllggglllggg..',
+    '.yylllggglllgyy.',
+    '.yy..........yy.',
+    '................',
+  ],
+  neighbor: [
+    '................',
+    '................',
+    '.aaaaaaaaaaaaaa.',
+    '.aawwwwwwwwwwaa.',
+    '.awawwwwwwwwawa.',
+    '.awwawwwwwwawwa.',
+    '.awwwawwwwawwwa.',
+    '.awwwwarrawwwwa.',
+    '.awwwwrrrrwwwwa.',
+    '.awwwwwrrwwwwwa.',
+    '.awwwwwwwwwwwwa.',
+    '.aWWWWWWWWWWWWa.',
+    '.aaaaaaaaaaaaaa.',
+    '................',
+    '................',
+    '................',
+  ],
+  games: [
+    '................',
+    '................',
+    '................',
+    '..aaaa....aaaa..',
+    '.aSSSSaaaaSSSSa.',
+    'aSSSSSSSSSSSSSSa',
+    'aSSkSSSSSSSSrSSa',
+    'aSkkkSSSSSSySrSa',
+    'aSSkSSSaaSSSySSa',
+    'aSSSSSSSSSSSSSSa',
+    'aSSSSaaaaaaSSSSa',
+    '.aSSa......aSSa.',
+    '..aa........aa..',
+    '................',
+    '................',
+    '................',
+  ],
+};
+const items = [
+  { href: '/weeds/', icon: icons.weed, title: 'What’s That Weed?', sub: 'Real photos. Easy fixes.' },
+  { href: '/measure/', icon: icons.measure, title: 'Measure Your Yard', sub: 'Draw it. Get square feet.' },
+  { href: '/neighbor/', icon: icons.neighbor, title: 'Send to a Neighbor', sub: 'A petty, anonymous nudge.' },
+  { href: '/games/', icon: icons.games, title: 'Lawn Games', sub: 'For when you should be mowing.' },
+];
+---
+<section class="row-sec trend" id="trending" aria-labelledby="trending-h">
+  <div class="row-head">
+    <h2 id="trending-h">What’s Trending</h2>
+    <a class="row-all" href="/resources/" aria-label="See all free tools">View All</a>
+  </div>
+  <p class="section-lede">The good stuff. Start here.</p>
+  <ul class="trend-grid">
+    {items.map((c) => (
+      <li>
+        <a class="trend-card" href={c.href}>
+          <span class="trend-icon"><PixelIcon map={c.icon} size={48} /></span>
+          <span class="trend-title">{c.title}</span>
+          <span class="trend-sub">{c.sub}</span>
+        </a>
+      </li>
+    ))}
+  </ul>
+</section>

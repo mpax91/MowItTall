@@ -2301,3 +2301,29 @@ main > section.ag-wrap { padding-top: 6px; }
   padding: 10px 16px 11px; color: #fff; background: var(--red); border: 2px solid var(--win-edge); border-radius: 999px;
   text-decoration: none; box-shadow: 0 4px 0 rgba(5, 20, 10, 0.45);
 }
+
+/* Homepage "What's Trending" 2x2 grid */
+.trend-grid {
+  list-style: none; margin: 0 var(--col); padding: 0;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 12px;
+}
+.trend-grid li { display: flex; margin: 0; padding: 0; }
+.trend-card {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 6px; width: 100%;
+  padding: 14px 13px 15px; text-decoration: none; text-align: left;
+  background: var(--paper); color: var(--ink); border: 3px solid var(--ink); border-radius: 12px;
+  box-shadow: 0 5px 0 rgba(5, 20, 10, 0.35);
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+}
+.trend-card:active { transform: translateY(2px); box-shadow: 0 3px 0 rgba(5, 20, 10, 0.35); }
+.trend-card:hover .trend-title { text-decoration: underline; }
+.trend-icon {
+  display: grid; place-items: center; width: 60px; height: 60px; margin-bottom: 4px; line-height: 0;
+  background: linear-gradient(#2f6e47, #143820); border: 2px solid var(--ink); border-radius: 12px;
+  box-shadow: inset 0 0 0 2px rgba(238, 245, 230, 0.25);
+}
+.trend-title {
+  font-family: var(--display); font-weight: 800; font-size: clamp(1.02rem, 4.6vw, 1.15rem); line-height: 1.15;
+  text-wrap: pretty;
+}
+.trend-sub { font-size: 0.88rem; line-height: 1.35; color: #3c5a45; text-wrap: pretty; }
