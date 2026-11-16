@@ -1,4 +1,5 @@
 import { PLAYBOOK } from './playbook.js';
+import { ingest, summary, exportRows, nightly, rollup, evInit, etDate } from './events.js';
 // Mow It Tall API (Cloudflare Worker). Everything that isn't /api/* is served straight from ./dist.
 // Lawn Hall of Fame / Hall of Shame: anyone can upload, Mike approves before anything shows,
 // Reddit-style up/down votes, one vote per photo per phone (random device id, no spam check by Mike's call).
@@ -311,6 +312,17 @@ async function dash(env, req, url) {
     }
     return json({ ok: true, slug });
   }
+  /* ----- first-party event log (worker/events.js) */
+  if (p === '/api/admin/events/summary' && req.method === 'GET') return await summary(env, url);
+  if (p === '/api/admin/events/export' && req.method === 'GET') return await exportRows(env, url);
+  if (p === '/api/admin/events/rollup' && req.method === 'POST') {
+    if (!env.EV) return bad('The events database isn’t set up yet.', 503);
+    const { days } = await req.json().catch(() => ({}));
+    await evInit(env.EV);
+    const n = Math.min(Math.max(Number(days) || 3, 1), 400);
+    for (let i = 0; i < n; i++) await rollup(env.EV, etDate(Date.now() - i * 86400000));
+    return json({ ok: true, days: n });
+  }
   /* ----- small saved settings/results */
   if (p === '/api/admin/kv' && req.method === 'GET') {
     const k = url.searchParams.get('k');
@@ -359,6 +371,12 @@ export default {
       }
       return env.ASSETS.fetch(req);
     }
+    // First-party event log: no Hall database needed, never errors back to the page.
+    if (url.pathname === '/api/e') return req.method === 'POST' ? await ingest(req, env, ctx).catch(() => new Response(null, { status: 204 })) : bad('Not found.', 404);
+    // Read-only export for MikeCOS: EXPORT_KEY (if set) works here as well as the admin password.
+    if (url.pathname === '/api/admin/events/export' && env.EXPORT_KEY && req.headers.get('x-export-key') === env.EXPORT_KEY) {
+      try { return await exportRows(env, url); } catch { return json({ error: 'Something broke on our end.' }, 500); }
+    }
     try {
       await init(env.DB);
       const p = url.pathname;
@@ -374,5 +392,9 @@ export default {
     } catch (e) {
       return json({ error: 'Something broke on our end. Try again in a minute.' }, 500);
     }
+  },
+  // Nightly (see "triggers" in wrangler.jsonc): rebuild the event log's daily tables for the last 3 days.
+  async scheduled(event, env, ctx) {
+    ctx.waitUntil(nightly(env));
   },
 };

@@ -132,7 +132,65 @@ const NAV = [
       var MIT_KEYS = 'quiz_name step_number question_id step_type answer effort_level lawn_profile grass_pick task_count game_name level_name score new_best coverage tool_name choice file_name file_extension search_term search_location results_count topic method content_type item_id cta_location cta_text link_url link_text link_area link_domain nav_area card_id question form_id form_location percent read_seconds zip3 yard_size area_count vote board amount platform target page_path page_referrer error_message error_source program_name value currency'.split(' ');
       window.mitTrack = function (event, params) {
         try { var reset = {}; MIT_KEYS.forEach(function (k) { reset[k] = undefined; }); window.dataLayer.push(reset); window.dataLayer.push(Object.assign({ event: event }, params || {})); } catch (e) {}
+        try { if (window.mitLog) window.mitLog(event, params); } catch (e) {}
       };
+      // Mike's own event log (worker/events.js → Cloudflare D1, kept forever, free). Every mitTrack event, plus
+      // page_view and page_leave (seconds the page was actually on screen). No IP, no names: a random device id
+      // (the same `mit-device` the Hall uses) and a 30-minute session. Skips /admin/, bots, Global Privacy Control,
+      // and anything that isn't mowittall.com (set localStorage mit-log-test = 1 to test elsewhere).
+      (function () {
+        try {
+          var ls = localStorage, host = location.hostname.replace(/^www\./, '');
+          if (host !== 'mowittall.com' && ls.getItem('mit-log-test') !== '1') return;
+          if (/^\/admin\//.test(location.pathname) || navigator.webdriver || navigator.globalPrivacyControl) return;
+          var uid = function () { return crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12); };
+          var now = Date.now(), nv = 0, d = ls.getItem('mit-device');
+          if (!d) { d = uid(); ls.setItem('mit-device', d); nv = 1; }
+          var S = {}; try { S = JSON.parse(ls.getItem('mit-sess') || '{}'); } catch (e) {}
+          var q = new URLSearchParams(location.search), src = q.get('utm_source'), med = q.get('utm_medium'), camp = q.get('utm_campaign');
+          if (!src && q.get('gclid')) { src = 'google'; med = 'cpc'; }
+          var ref = ''; try { ref = document.referrer ? new URL(document.referrer).hostname.replace(/^www\./, '') : ''; } catch (e) {}
+          if (ref === host) ref = '';
+          if (!src && ref) { src = ref; med = /(^|\.)(google|bing|duckduckgo|yahoo|ecosia|brave|baidu|yandex|startpage|qwant|aol)\./.test(ref) ? 'organic' : 'referral'; }
+          // New session after 30 quiet minutes, or when a visitor comes back through a different link/campaign.
+          if (!S.id || now - (S.last || 0) > 30 * 60000 || (src && (src !== S.src || (camp || '') !== (S.camp || '')))) {
+            S = { id: uid(), src: src || '(direct)', med: med || (src ? 'referral' : '(none)'), camp: camp || '', land: location.pathname, nv: nv };
+          }
+          var Q = [], timer, save = function () { S.last = Date.now(); try { ls.setItem('mit-sess', JSON.stringify(S)); } catch (e) {} };
+          save();
+          var flush = function (beacon) {
+            while (Q.length) {
+              var body = JSON.stringify({ d: d, s: S.id, nv: S.nv ? 1 : 0, a: { src: S.src, med: S.med, camp: S.camp, land: S.land }, e: Q.splice(0, 25) });
+              if (beacon && navigator.sendBeacon) navigator.sendBeacon('/api/e', new Blob([body], { type: 'text/plain' }));
+              else fetch('/api/e', { method: 'POST', body: body, keepalive: true, headers: { 'content-type': 'text/plain' } })
+                .then(function (r) { if (r.ok && pend.length) { var sent = body; pend = pend.filter(function (e) { return sent.indexOf(e.k) < 0; }); keepPend(); } }).catch(function () {});
+            }
+          };
+          var push = function (n, x, ms) {
+            Q.push({ n: n, p: location.pathname, ti: (document.title || '').slice(0, 160), x: x || undefined, ms: ms || undefined });
+            save(); clearTimeout(timer); timer = setTimeout(flush, 1500);
+          };
+          // page_leave backup: browsers sometimes drop the goodbye beacon, so it's also kept here and re-sent from the
+          // next page (the server ignores the copy by its id). Cleared once a normal send succeeds.
+          var PK = 'mit-ev-pend', pend = []; try { pend = JSON.parse(ls.getItem(PK) || '[]').slice(-10); } catch (e) {}
+          var keepPend = function () { try { ls.setItem(PK, JSON.stringify(pend.slice(-10))); } catch (e) {} };
+          pend.forEach(function (e) { Q.push(e); });
+          window.mitLog = function (n, x) { if (typeof n === 'string') push(n, x); };
+          // Time on page: only while the tab is visible. Sent as page_leave whenever the page is hidden or closed.
+          var shown = document.visibilityState === 'visible' ? now : 0, acc = 0;
+          var leave = function () {
+            if (shown) { acc += Date.now() - shown; shown = 0; }
+            if (acc > 0) {
+              var ev = { n: 'page_leave', p: location.pathname, ti: (document.title || '').slice(0, 160), ms: acc, k: uid(), t: Date.now() };
+              Q.push(ev); pend.push(ev); keepPend(); save(); acc = 0;
+            }
+            clearTimeout(timer); flush(true);
+          };
+          document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden') leave(); else shown = Date.now(); });
+          addEventListener('pagehide', leave);
+          push('page_view');
+        } catch (e) {}
+      })();
     </script>
     <script type="application/ld+json" set:html={JSON.stringify(ld)} />
   </head>
@@ -301,7 +359,7 @@ const NAV = [
         addEventListener('beforeprint', function () { T('print_page', {}); });
         if (document.body.classList.contains('is-404')) T('page_not_found', { page_path: location.pathname.slice(0, 150), page_referrer: document.referrer.slice(0, 150) });
         var errs = 0;
-        addEventListener('error', function (e) { if (errs++ < 3 && e.message) T('js_error', { error_message: String(e.message).slice(0, 100), error_source: String(e.filename || '').split('/').pop().slice(0, 60) }); });
+        addEventListener('error', function (e) { if (e.message && !/ResizeObserver loop/.test(e.message) && errs++ < 3) T('js_error', { error_message: String(e.message).slice(0, 100), error_source: String(e.filename || '').split('/').pop().slice(0, 60) }); });
         // Location and yard size (coarse only: first 3 ZIP digits, size bucket)
         window.addEventListener('mit:place', function (e) { var z = e.detail && (e.detail.zip || ''); T('location_set', { zip3: String(z).slice(0, 3), method: e.detail && e.detail.source || 'zip' }); });
         window.addEventListener('appinstalled', function () { T('app_installed', {}); });

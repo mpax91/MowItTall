@@ -13,6 +13,12 @@
   },
   // Created automatically on the first deploy (no database_id needed). Admin key: the ADMIN_KEY secret,
   // set in the Cloudflare dashboard (Workers & Pages → mowittall → Settings → Variables and Secrets).
-  "d1_databases": [{ "binding": "DB", "database_name": "mowittall-hall" }],
+  // EV = the first-party event log (worker/events.js), its own database so it never crowds the Hall photos.
+  "d1_databases": [
+    { "binding": "DB", "database_name": "mowittall-hall" },
+    { "binding": "EV", "database_name": "mowittall-events" }
+  ],
+  // 7:17 UTC ≈ 2:17am Eastern: rebuild the event log's daily tables.
+  "triggers": { "crons": ["17 7 * * *"] },
   "workers_dev": true
 }

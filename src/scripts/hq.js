@@ -490,6 +490,94 @@ export function initHQ({ root, api, show }) {
     }
   });
 
+  /* ================================================================ OUR OWN EVENT LOG (worker/events.js) */
+  let evDays = '28', evLoaded = false;
+  const evNum = (n) => Math.round(Number(n) || 0).toLocaleString();
+  const evPct = (a, b) => (b ? `${Math.round((100 * a) / b)}%` : '–');
+  const evSecs = (t) => { t = Math.round(Number(t) || 0); return t < 60 ? `${t}s` : `${Math.floor(t / 60)}m ${String(t % 60).padStart(2, '0')}s`; };
+  const evDelta = (a, b) => { if (!b) return a ? '<em class="ev-up">new</em>' : ''; const d = Math.round(((a - b) / b) * 100); return `<em class="${d >= 0 ? 'ev-up' : 'ev-down'}">${d >= 0 ? '▲' : '▼'} ${Math.abs(d)}%</em>`; };
+  const evTbl = (rows, cols) => rows.length ? `<div class="rk-scroll"><table class="pb-table rk"><thead><tr>${cols.map((c) => `<th>${c[0]}</th>`).join('')}</tr></thead><tbody>${rows.map((r) => `<tr>${cols.map((c) => `<td>${c[1](r)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>` : '<p class="dash-fine">Nothing yet.</p>';
+  const DIM_NAMES = { channel: 'Channel', device: 'Device', os: 'Phone / Computer', browser: 'Browser', country: 'Country', hour: 'Hour (Eastern)' };
+  const evHour = (h) => { h = Number(h); return `${h % 12 || 12}${h < 12 ? 'am' : 'pm'}`; };
+
+  async function loadEvents() {
+    const box = $('[data-ev]');
+    let r;
+    try { r = await api(`/api/admin/events/summary?days=${evDays}`); } catch (err) { box.innerHTML = `<p class="hall-msg">Couldn’t load the event log: ${esc(err.message)}</p>`; return; }
+    evLoaded = true;
+    if (!r.ready) { box.innerHTML = '<p class="hall-msg">The events database shows up after the next deploy. Check back in a few minutes.</p>'; return; }
+    const store = `<p class="dash-fine">Storage: ${(r.storage.bytes / 1e6).toFixed(1)} MB of the free 500 MB · ${evNum(r.storage.rawRows)} raw events${r.storage.rawSince ? ` since ${r.storage.rawSince}` : ''}${r.storage.trimmed ? ` · oldest raw month trimmed: ${esc(r.storage.trimmed)} (daily totals kept)` : ''}.</p>`;
+    if (r.empty) { box.innerHTML = `<p class="hall-msg">No visits logged yet. The first ones show up a minute or two after someone opens mowittall.com.</p>${store}`; return; }
+    const t = r.totals, p = r.prevTotals;
+    const tile = (v, label, a, b) => `<div><b>${v}</b><span>${label}</span>${r.days < 3650 ? evDelta(a, b) : ''}</div>`;
+    const max = Math.max(1, ...r.daily.map((d) => d.sessions));
+    const bars = r.daily.length > 1 ? `<div class="ev-bars" role="img" aria-label="Sessions per day">${r.daily.map((d) => `<i style="height:${Math.max(3, Math.round((d.sessions / max) * 100))}%" title="${d.date}: ${d.sessions} sessions, ${d.views} views"></i>`).join('')}</div><p class="dash-fine ev-axis"><span>${r.daily[0].date}</span><span>Sessions per day</span><span>${r.daily[r.daily.length - 1].date}</span></p>` : '';
+    const byDim = (dim) => r.dims.filter((x) => x.dim === dim);
+    const evParams = (name) => r.params.filter((x) => x.name === name).slice(0, 12);
+    const evShort = (u) => esc(String(u || '').replace(/^https?:\/\/[^/]+/, ''));
+    box.innerHTML = `
+      <p class="dash-fine">${esc(r.cur.from)} to ${esc(r.cur.to)}${r.days < 3650 && evDays !== 'all' ? ` · arrows compare with the ${r.days} day${r.days === 1 ? '' : 's'} before` : ''}</p>
+      <div class="dash-tiles ev-tiles">
+        ${tile(evNum(t.users), 'Visitors', t.users, p.users)}
+        ${tile(evNum(t.sessions), 'Visits', t.sessions, p.sessions)}
+        ${tile(evNum(t.views), 'Page views', t.views, p.views)}
+        ${tile(evPct(t.engaged, t.sessions), 'Engaged visits', t.sessions ? t.engaged / t.sessions : 0, p.sessions ? p.engaged / p.sessions : 0)}
+        ${tile(evSecs(t.sessions ? t.engagement_sec / t.sessions : 0), 'Time per visit', t.sessions ? t.engagement_sec / t.sessions : 0, p.sessions ? p.engagement_sec / p.sessions : 0)}
+        ${tile(evNum(t.key_events), 'Key events', t.key_events, p.key_events)}
+      </div>
+      ${bars}
+      <details class="dash-more pb" open><summary>Where Visitors Come From</summary>
+        ${evTbl(r.sources, [['Channel', (x) => esc(x.channel)], ['Source / medium', (x) => `${esc(x.source)} / ${esc(x.medium)}`], ['Visits', (x) => evNum(x.sessions)], ['Engaged', (x) => evPct(x.engaged, x.sessions)], ['Pages per visit', (x) => (x.sessions ? (x.views / x.sessions).toFixed(1) : '–')]])}</details>
+      <details class="dash-more pb" open><summary>Top Pages</summary>
+        ${evTbl(r.pages, [['Page', (x) => `<a href="${esc(x.path)}" target="_blank" rel="noopener">${esc(x.path)}</a>`], ['Views', (x) => evNum(x.views)], ['Time per view', (x) => evSecs(x.views ? x.sec / x.views : 0)]])}</details>
+      <details class="dash-more pb"><summary>Landing Pages (Where Visits Start)</summary>
+        ${evTbl(r.landing, [['Page', (x) => esc(x.landing)], ['Visits', (x) => evNum(x.sessions)], ['Engaged', (x) => evPct(x.engaged, x.sessions)]])}</details>
+      <details class="dash-more pb"><summary>Events</summary>
+        <p class="dash-fine">Every event the site sends (the same ones GA4 gets). Tap one to see its most common values. Key events: ${r.keyEvents.map((k) => `<code>${k}</code>`).join(', ')}.</p>
+        ${r.events.length ? r.events.map((e) => { const ps = evParams(e.name); return `<details class="ev-ev"><summary><code>${esc(e.name)}</code> <b>${evNum(e.count)}</b> <small>${evNum(e.users)} ${e.users === 1 ? "person" : "people"}</small></summary>${ps.length ? evTbl(ps, [['Parameter', (x) => `<code>${esc(x.param)}</code>`], ['Value', (x) => esc(x.value)], ['Count', (x) => evNum(x.count)]]) : '<p class="dash-fine">No extra details on this one.</p>'}</details>`; }).join('') : '<p class="dash-fine">Nothing yet.</p>'}</details>
+      <details class="dash-more pb"><summary>Devices, Places and Times</summary>
+        <div class="ev-grid">${['channel', 'device', 'os', 'browser', 'country', 'hour'].map((dim) => `<div><h3>${DIM_NAMES[dim]}</h3>${evTbl(dim === 'hour' ? byDim(dim).sort((a, b) => a.value - b.value) : byDim(dim).slice(0, 10), [[DIM_NAMES[dim], (x) => esc(dim === 'hour' ? evHour(x.value) : x.value)], ['Visits', (x) => evNum(x.sessions)]])}</div>`).join('')}
+        <div><h3>Towns</h3>${evTbl(r.geo, [['Town', (x) => `${esc(x.city)}${x.region ? `, ${esc(x.region)}` : ''}`], ['Visits', (x) => evNum(x.sessions)]])}</div></div></details>
+      <details class="dash-more pb"><summary>Outbound Clicks</summary>
+        ${evTbl(r.clicks, [['Site', (x) => esc(x.domain)], ['Clicks', (x) => evNum(x.clicks)]])}</details>
+      <details class="dash-more pb"><summary>Latest 25 Events (Live)</summary>
+        ${evTbl(r.recent, [['When', (x) => ago(x.at)], ['Event', (x) => `<code>${esc(x.name)}</code>`], ['Page', (x) => evShort(x.path)], ['Details', (x) => esc((x.params || '').replace(/[{}"]/g, '').replace(/,/g, ', ').slice(0, 90))], ['From', (x) => `${esc(x.city || '')} · ${esc(x.dev_type || '')}`]])}</details>
+      <details class="dash-more pb"><summary>Download the Data</summary>
+        <p>CSV for the dates above. Opens in Excel or Google Sheets.</p>
+        <p class="ev-dl">${['ev_days', 'ev_pages', 'ev_landing', 'ev_events', 'ev_dims', 'ev_geo', 'ev_clicks', 'ev_raw'].map((tb) => `<button type="button" class="btn btn-small" data-ev-dl="${tb}">${{ ev_days: 'Daily totals', ev_pages: 'Pages', ev_landing: 'Sources', ev_events: 'Events', ev_dims: 'Devices & times', ev_geo: 'Towns', ev_clicks: 'Outbound clicks', ev_raw: 'Every event (raw)' }[tb]}</button>`).join(' ')}</p>
+        <p class="dash-fine">For MikeCOS: <code>GET /api/admin/events/export?table=ev_days&amp;from=YYYY-MM-DD&amp;to=YYYY-MM-DD</code> with an <code>x-export-key</code> header (the <code>EXPORT_KEY</code> secret). The tables match the Bedford Bee’s GA tables (days, landing, pages, geo, dims, clicks), plus raw events and event counts. The raw table returns 5,000 rows at a time; pass <code>after=</code> the last id.</p>
+      </details>
+      ${store}
+      <p><button type="button" class="linkish" data-ev-rebuild>Rebuild all daily totals from the raw events</button> <span class="dash-fine" data-ev-msg></span></p>`;
+  }
+  root.querySelector('[data-ev-range]').addEventListener('click', (e) => {
+    const b = e.target.closest('[data-days]'); if (!b) return;
+    evDays = b.dataset.days; root.querySelectorAll('[data-ev-range] [data-days]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+    $('[data-ev]').style.opacity = '0.5'; loadEvents().finally(() => { $('[data-ev]').style.opacity = ''; });
+  });
+  $('[data-ev]').addEventListener('click', async (e) => {
+    const dl = e.target.closest('[data-ev-dl]');
+    if (dl) {
+      const days = evDays === 'all' ? 3650 : Number(evDays);
+      const to = new Date().toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+      const from = new Date(Date.now() - (days - 1) * 86400000).toLocaleDateString('en-CA', { timeZone: 'America/New_York' });
+      dl.disabled = true;
+      try {
+        const key = localStorage.getItem('mit-admin') || '';
+        const res = await fetch(`/api/admin/events/export?table=${dl.dataset.evDl}&from=${from}&to=${to}&format=csv`, { headers: { 'x-admin-key': key } });
+        if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || 'Download failed.');
+        const a = document.createElement('a'); a.href = URL.createObjectURL(await res.blob()); a.download = `mowittall-${dl.dataset.evDl}-${from}-to-${to}.csv`; a.click();
+      } catch (err) { alert(err.message); } finally { dl.disabled = false; }
+      return;
+    }
+    if (e.target.closest('[data-ev-rebuild]')) {
+      const msg = $('[data-ev-msg]'); msg.textContent = 'Rebuilding…';
+      try { const x = await api('/api/admin/events/rollup', { method: 'POST', body: JSON.stringify({ days: 400 }) }); msg.textContent = `Done (${x.days} days).`; loadEvents(); } catch (err) { msg.textContent = err.message; }
+    }
+  });
+  root.querySelector('[data-tab="analytics"]').addEventListener('click', () => { if (!evLoaded) loadEvents(); });
+  if (location.hash === '#analytics') loadEvents();
+
   /* ================================================================ boot */
   (async () => {
     try {
