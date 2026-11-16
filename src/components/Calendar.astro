@@ -220,6 +220,11 @@ const months = MONTHS_LONG.map((name, i) => ({
       const tallest = Math.max(0, ...fronts.filter((f) => f.offsetParent).map((f) => f.offsetHeight));
       fronts.forEach((f) => (f.style.minHeight = `${tallest}px`));
       flips.forEach(fitCard);
+      // month boxes all match the tallest collapsed month (with or without a Show More button); an expanded month grows on its own
+      const monthsEls = [...track.children];
+      monthsEls.forEach((m) => (m.style.minHeight = ''));
+      const base = Math.max(0, ...monthsEls.filter((m) => !m.classList.contains('is-open') && !m.querySelector('.is-flipped')).map((m) => m.offsetHeight));
+      monthsEls.forEach((m) => (m.style.minHeight = `${base}px`));
     };
     flips.forEach((c) => {
       const flip = () => {
