@@ -35,7 +35,7 @@ const groups = WEED_GROUPS.map((g) => ({ ...g, items: WEEDS.filter((w) => w.grou
   <main id="main" class="page">
     <header class="page-head">
       <h1>The Weed Board</h1>
-      <p class="lede">The weeds you’ll actually see around Bedford and the rest of the Northeast. Swipe the photos to find the one that looks like yours, then tap it for the fix.</p>
+      <p class="lede">The weeds you’ll actually see in cool-season lawns across the Northeast. Swipe the photos to find the one that looks like yours. Tap, or keep swiping, for the fix.</p>
       <nav class="weed-jump" aria-label="Weed types">
         {WEED_GROUPS.map((g) => <a class="weed-chip" href={`#group-${g.id}`}>{g.title}</a>)}
       </nav>
@@ -52,9 +52,10 @@ const groups = WEED_GROUPS.map((g) => ({ ...g, items: WEEDS.filter((w) => w.grou
       filling in where grass is thin. Always follow the product label.
     </p>
     <section class="weed-sec photo-credits" aria-labelledby="credits-h">
-      <h2 id="credits-h">Photo Credits</h2>
-      <p>All photos are used under free licenses, cropped and resized.</p>
-      <ul>
+      <details>
+        <summary><h2 id="credits-h">Photo Credits</h2></summary>
+        <p>All photos are used under free licenses, cropped and resized.</p>
+        <ul>
         {WEEDS.map((w) => (
           <li>
             <strong>{w.name}:</strong>{' '}
@@ -66,7 +67,8 @@ const groups = WEED_GROUPS.map((g) => ({ ...g, items: WEEDS.filter((w) => w.grou
             ))}
           </li>
         ))}
-      </ul>
+        </ul>
+      </details>
     </section>
   </main>
 </Base>

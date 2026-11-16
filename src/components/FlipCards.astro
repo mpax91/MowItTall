@@ -36,23 +36,19 @@ const H = headingLevel;
                   </figure>
                 ))}
               </div>
-              {it.photos.length > 1 && (
-                <>
-                  <button type="button" class="flip-photos-nav prev" data-dir="-1" aria-label="Previous photo" hidden>‹</button>
-                  <button type="button" class="flip-photos-nav next" data-dir="1" aria-label="Next photo">›</button>
-                  <div class="flip-photos-dots" aria-hidden="true">{it.photos.map((_, j) => <i class:list={[j === 0 && 'on']}></i>)}</div>
-                </>
-              )}
+              <button type="button" class="flip-photos-nav prev" data-dir="-1" aria-label="Previous photo" hidden>‹</button>
+              <button type="button" class="flip-photos-nav next" data-dir="1" aria-label="Next photo">›</button>
+              <div class="flip-photos-dots" aria-hidden="true">{it.photos.map((_, j) => <i class:list={[j === 0 && 'on']}></i>)}<i class="fix"></i></div>
             </div>
           ) : it.icon && <PixelIcon map={it.icon} size={layout === 'list' ? 44 : 52} />}
           <div class="flip-front-text">
             <H class="flip-title">{it.title}</H>
             {it.sub && <p class="flip-sub">{it.sub}</p>}
           </div>
-          <span class="flip-hint" aria-hidden="true">
+          {!it.photos && <span class="flip-hint" aria-hidden="true">
             <svg viewBox="0 0 16 16" width="16" height="16"><path d="M3 8a5 5 0 0 1 8.5-3.5L13 6M13 2v4H9M13 8a5 5 0 0 1-8.5 3.5L3 10M3 14v-4h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Tap
-          </span>
+          </span>}
         </div>
         <div class="flip-face flip-back">
           <p class="flip-back-title">{it.title}</p>
@@ -62,7 +58,7 @@ const H = headingLevel;
               {b.text}
             </p>
           ))}
-          <span class="flip-hint" aria-hidden="true">Tap to flip back</span>
+          <span class="flip-hint" aria-hidden="true">{it.photos ? 'Tap or swipe back to the photos' : 'Tap to flip back'}</span>
         </div>
       </div>
       <button type="button" class="flip-btn" aria-expanded="false" aria-label={`${it.title}: show details`}></button>
@@ -84,69 +80,88 @@ const H = headingLevel;
     document.fonts?.ready.then(fitAll);
     // Photo sets. Phones won't scroll sideways inside a 3D-flipped card, so the swipe is done by hand:
     // follow the finger with a transform, snap to the nearest photo, let up/down drags scroll the page.
+    // The "last slide" is the back of the card: swiping past the last photo (or its › arrow) flips it.
+    // Taps are detected from the touch itself, not the click event, which phones can drop after a swipe.
+    // A flip from a touch is followed by the browser's own click, which would land on the other face and undo it.
+    const flip = (card) => { card._flipAt = Date.now(); card.querySelector('.flip-btn').click(); };
     for (const ph of list.querySelectorAll('[data-photos]')) {
+      const card = ph.closest('.flip');
       const track = ph.querySelector('.flip-photos-track');
-      const dots = [...ph.querySelectorAll('.flip-photos-dots i')];
+      const dots = [...ph.querySelectorAll('.flip-photos-dots i:not(.fix)')];
       const prev = ph.querySelector('.prev'), next = ph.querySelector('.next');
       const n = track.children.length;
-      let k = 0, x0 = 0, y0 = 0, dx = 0, mode = null, moved = false;
+      let k = 0, x0 = null, y0 = 0, dx = 0, mode = null;
       const go = (i, animate = true) => {
         k = Math.max(0, Math.min(n - 1, i));
         track.style.transition = animate ? 'transform 0.28s ease-out' : 'none';
         track.style.transform = `translateX(${-k * 100}%)`;
         dots.forEach((d, j) => d.classList.toggle('on', j === k));
         if (prev) prev.hidden = k <= 0;
-        if (next) next.hidden = k >= n - 1;
+        if (next) next.setAttribute('aria-label', k >= n - 1 ? 'Show the fix' : 'Next photo');
         // load the next photo early so it's ready before the swipe lands
         track.children[Math.min(n - 1, k + 1)]?.querySelector('img')?.setAttribute('loading', 'eager');
       };
       ph._go = go;
-      if (n > 1) {
-        track.addEventListener('pointerdown', (e) => {
-          if (e.pointerType === 'mouse' && e.button !== 0) return;
-          x0 = e.clientX; y0 = e.clientY; dx = 0; mode = null; moved = false;
-        });
-        track.addEventListener('pointermove', (e) => {
-          if (x0 === null) return;
-          const mx = e.clientX - x0, my = e.clientY - y0;
-          if (!mode && Math.hypot(mx, my) > 8) {
-            mode = Math.abs(mx) > Math.abs(my) ? 'x' : 'y';
-            if (mode === 'x') { track.setPointerCapture(e.pointerId); moved = true; }
-          }
-          if (mode !== 'x') return;
-          dx = mx;
-          const edge = (k === 0 && dx > 0) || (k === n - 1 && dx < 0) ? 0.3 : 1;   // rubber band at the ends
-          track.style.transition = 'none';
-          track.style.transform = `translateX(calc(${-k * 100}% + ${dx * edge}px))`;
-        });
-        const end = () => {
-          if (mode === 'x') {
-            const w = track.clientWidth;
-            go(k + (dx < -w * 0.18 ? 1 : dx > w * 0.18 ? -1 : 0));
-          }
-          x0 = null; mode = null;
-        };
-        track.addEventListener('pointerup', end);
-        track.addEventListener('pointercancel', end);
-        track.addEventListener('keydown', (e) => {
-          if (e.key === 'ArrowRight') { go(k + 1); e.preventDefault(); }
-          if (e.key === 'ArrowLeft') { go(k - 1); e.preventDefault(); }
-        });
-      }
-      x0 = null;
-      ph.addEventListener('click', (e) => {
-        e.stopPropagation();
-        if (moved) { moved = false; return; }   // a swipe isn't a tap
-        const nav = e.target.closest('.flip-photos-nav');
-        if (nav) { go(k + Number(nav.dataset.dir)); return; }
-        ph.closest('.flip').querySelector('.flip-btn').click();
+      track.addEventListener('pointerdown', (e) => {
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+        x0 = e.clientX; y0 = e.clientY; dx = 0; mode = null;
       });
+      track.addEventListener('pointermove', (e) => {
+        if (x0 === null) return;
+        const mx = e.clientX - x0, my = e.clientY - y0;
+        if (!mode && Math.hypot(mx, my) > 8) {
+          mode = Math.abs(mx) > Math.abs(my) ? 'x' : 'y';
+          if (mode === 'x') track.setPointerCapture(e.pointerId);
+        }
+        if (mode !== 'x') return;
+        dx = mx;
+        const edge = k === 0 && dx > 0 ? 0.3 : 1;   // rubber band at the start; the end pulls toward the back
+        track.style.transition = 'none';
+        track.style.transform = `translateX(calc(${-k * 100}% + ${dx * edge}px))`;
+      });
+      track.addEventListener('pointerup', (e) => {
+        if (x0 === null) return;
+        if (mode === 'x') {
+          const w = track.clientWidth;
+          if (k === n - 1 && dx < -w * 0.18) { go(k); flip(card); }
+          else go(k + (dx < -w * 0.18 ? 1 : dx > w * 0.18 ? -1 : 0));
+        } else if (!mode) {
+          flip(card);   // a tap
+        }
+        if (track.hasPointerCapture?.(e.pointerId)) track.releasePointerCapture(e.pointerId);
+        x0 = null; mode = null;
+      });
+      track.addEventListener('pointercancel', () => { if (mode === 'x') go(k); x0 = null; mode = null; });
+      track.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowRight') { k >= n - 1 ? flip(card) : go(k + 1); e.preventDefault(); }
+        if (e.key === 'ArrowLeft') { go(k - 1); e.preventDefault(); }
+        if (e.key === 'Enter') { flip(card); e.preventDefault(); }
+      });
+      ph.addEventListener('click', (e) => {
+        e.stopPropagation();   // taps on the photos are handled above
+        const nav = e.target.closest('.flip-photos-nav');
+        if (!nav || Date.now() - (card._flipAt || 0) < 350) return;
+        const d = Number(nav.dataset.dir);
+        if (d > 0 && k >= n - 1) flip(card); else go(k + d);
+      });
+      // On the back, a swipe to the right goes back to the photos.
+      const back = card.querySelector('.flip-back');
+      let bx = null, by = 0;
+      back.addEventListener('pointerdown', (e) => { bx = e.clientX; by = e.clientY; });
+      back.addEventListener('pointerup', (e) => {
+        if (bx === null) return;
+        const mx = e.clientX - bx, my = e.clientY - by;
+        bx = null;
+        if (mx > 50 && Math.abs(mx) > Math.abs(my) * 1.5 && card.classList.contains('is-flipped')) flip(card);
+      });
+      back.addEventListener('pointercancel', () => { bx = null; });
       go(0, false);
     }
     // On photo cards the button is keyboard-only, so taps anywhere else on the card flip it.
     for (const card of list.querySelectorAll('.flip.has-photos')) {
       card.querySelector('.flip-inner').addEventListener('click', (e) => {
         if (e.target.closest('[data-photos]')) return;
+        if (Date.now() - (card._flipAt || 0) < 350) return;   // leftover click from a touch that already flipped it
         card.querySelector('.flip-btn').click();
       });
     }

@@ -2327,3 +2327,13 @@ main > section.ag-wrap { padding-top: 6px; }
   text-wrap: pretty;
 }
 .trend-sub { font-size: 0.88rem; line-height: 1.35; color: #3c5a45; text-wrap: pretty; }
+
+/* Weed board: last dot = the fix (back of the card); back face swipes right to the photos */
+.flip-photos-dots i.fix { background: var(--sun); opacity: 0.85; border-radius: 2px; }
+.flip.has-photos .flip-back { touch-action: pan-y; }
+.photo-credits summary { cursor: pointer; list-style: none; display: inline-flex; align-items: center; gap: 8px; }
+.photo-credits summary::-webkit-details-marker { display: none; }
+.photo-credits summary h2 { display: inline; margin: 0; }
+.photo-credits summary::after { content: '▾'; color: var(--paper); font-size: 0.95rem; transition: transform 0.2s; }
+.photo-credits details[open] summary::after { transform: rotate(180deg); }
+.photo-credits details[open] summary { margin-bottom: 6px; }
