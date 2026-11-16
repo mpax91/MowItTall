@@ -28,6 +28,8 @@ import Checklist from '../components/Checklist.astro';
 import SeedWatch from '../components/SeedWatch.astro';
 import { WAITS, PREPOST, MULCHBAG, COMPLIMENTS, TRAINING, HIRE, PITCH } from '../data/pickers2.js';
 import { TUNEUP } from '../data/tuneup.js';
+import { GIFTS, RESOLUTIONS, OPENING_DAY, ROBOT, TREES } from '../data/pickers3.js';
+import WeedBracket from '../components/WeedBracket.astro';
 const { frontmatter, url } = Astro.props;
 const { title, description, tag, widget, extra, faq } = frontmatter;
 const rawPath = new URL(url || Astro.url.pathname, 'https://mowittall.com').pathname;
@@ -142,6 +144,24 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [posting, crumbs, .
     )}
     {widget === 'gran-spray' && (
       <div class="post-widget" data-widget="gran-spray"><ChipPicker id="gs" title="Granules or spray for…" sub="Tap the job. Get my honest pick." items={GS} prompt="Tap a job." /></div>
+    )}
+    {widget === 'gift-finder' && (
+      <div class="post-widget" data-widget="gift-finder"><ChipPicker id="gift" title="The Gift Finder" sub="Tap your budget or who you’re shopping for." items={GIFTS} prompt="Tap one." /></div>
+    )}
+    {widget === 'resolutions' && (
+      <div class="post-widget" data-widget="resolutions"><Checklist id="resolve" title="Pick Your Lawn Resolutions" sub="Tick the ones you’re signing up for. They save on your phone, so check back in June and see how you’re doing." items={RESOLUTIONS} storeKey="mit-resolutions" /></div>
+    )}
+    {widget === 'opening-day' && (
+      <div class="post-widget" data-widget="opening-day"><Checklist id="opening" title="The Opening Day Lineup Card" sub="Tick every box and you’re cleared to play. Saves on your phone." items={OPENING_DAY} storeKey="mit-opening-day" /></div>
+    )}
+    {widget === 'robot' && (
+      <div class="post-widget" data-widget="robot"><ChipPicker id="robot" title="What Your Robot Mower Thinks of You" sub="Tap something you do. Hear it from the robot." items={ROBOT} prompt="Tap a confession." /></div>
+    )}
+    {widget === 'trees' && (
+      <div class="post-widget" data-widget="trees"><ChipPicker id="trees" title="What’s Dropping on Your Lawn?" sub="Tap your tree. Get the verdict and the game plan." items={TREES} prompt="Tap a tree." /></div>
+    )}
+    {widget === 'bracket' && (
+      <div class="post-widget" data-widget="bracket"><WeedBracket /></div>
     )}
     {widget === 'mower-letter' && (
       <div class="post-widget" data-widget="mower-letter"><MowerLetter /></div>

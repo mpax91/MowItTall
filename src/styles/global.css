@@ -1642,6 +1642,7 @@ main > section.gp { margin-left: 16px; margin-right: 16px; }
 
 /* Prose tables (grass cheat sheet) */
 .prose table { width: 100%; border-collapse: collapse; margin: 14px 0 18px; font-size: 0.9rem; background: var(--paper); color: var(--ink); border-radius: 10px; overflow: hidden; }
+.prose table strong { color: inherit; }
 .prose th, .prose td { padding: 8px 6px; text-align: left; vertical-align: top; border-bottom: 1px solid #c9dcc0; }
 .prose th { background: #2f6e47; color: #fff; font-family: var(--display); font-weight: 800; font-size: 0.82rem; }
 .prose td:first-child { font-weight: 700; }

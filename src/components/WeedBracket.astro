@@ -1,0 +1,230 @@
+---
+// The Lawn Weed Bracket: pick the WORSE weed in each matchup, round by round, until one is crowned.
+// Picks save on the phone (localStorage `mit-bracket`). Each pick is also a vote: POST /api/bracket/vote
+// (one vote per pairing per phone, same random device id as the Hall: `mit-device`). After you pick, the
+// card shows what everyone else picked for that same pairing. Champion picks feed "The People's Champion".
+// If the API can't be reached, the bracket still works; it just hides the percentages.
+import { BRACKET_ID, REGIONS, ENTRANTS, ROUNDS } from '../data/bracket.js';
+const data = { b: BRACKET_ID, regions: REGIONS, entrants: ENTRANTS, rounds: ROUNDS };
+---
+<section class="window tool bk" id="bracket" aria-labelledby="bk-h" data-bracket>
+  <h2 id="bk-h" class="bk-title">The Lawn Weed Bracket</h2>
+  <p class="tool-sub">Tap the <b>worse</b> weed in each matchup. Your picks move on. After each pick, see how everyone else voted.</p>
+  <div class="bk-tabs" role="tablist" aria-label="Rounds" data-tabs>
+    {ROUNDS.map((r, i) => (
+      <button type="button" role="tab" class="bk-tab" data-tab={i} aria-selected={i === 0 ? 'true' : 'false'} disabled={i > 0}>
+        <span class="bk-tab-name">{r.short}</span><span class="bk-tab-count" data-count={i}>0/{r.games}</span>
+      </button>
+    ))}
+  </div>
+  <p class="bk-round" data-round-name aria-live="polite">Round of 16</p>
+  <div class="bk-games" data-games></div>
+  <div class="bk-champ" data-champ hidden></div>
+  <p class="bk-note" data-note hidden></p>
+  <div class="bk-foot">
+    <button type="button" class="linkish" data-reset>Start Over</button>
+  </div>
+</section>
+
+<script type="application/json" id="bk-data" set:html={JSON.stringify(data)} />
+
+<script>
+  type Ent = { id: string; name: string; seed: number; region: string; line: string };
+  type Data = { b: string; regions: { id: string; name: string }[]; entrants: Ent[]; rounds: { id: string; name: string; short: string; games: number }[] };
+  const root = document.querySelector<HTMLElement>('[data-bracket]');
+  const raw = document.getElementById('bk-data');
+  if (root && raw) {
+    const D: Data = JSON.parse(raw.textContent || '{}');
+    const byId: Record<string, Ent> = Object.fromEntries(D.entrants.map((e) => [e.id, e]));
+    const regionName: Record<string, string> = Object.fromEntries(D.regions.map((r) => [r.id, r.name]));
+    const KEY = 'mit-bracket';
+    const track = (e: string, p: Record<string, unknown>) => (window as any).mitTrack?.(e, p);
+    let picks: Record<string, string> = {};
+    try { picks = JSON.parse(localStorage.getItem(KEY) || '{}').picks || {}; } catch {}
+    let device = '';
+    try { device = localStorage.getItem('mit-device') || ''; } catch {}
+    if (!device) { device = (crypto as any).randomUUID ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now(); try { localStorage.setItem('mit-device', device); } catch {} }
+    let counts: { pairs: Record<string, Record<string, number>>; champ: Record<string, number>; voters: number } | null = null;
+    let current = 0;
+
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[data-tab]')];
+    const games = root.querySelector<HTMLElement>('[data-games]')!;
+    const champ = root.querySelector<HTMLElement>('[data-champ]')!;
+    const note = root.querySelector<HTMLElement>('[data-note]')!;
+    const roundName = root.querySelector<HTMLElement>('[data-round-name]')!;
+
+    const key = (r: number, i: number) => `r${r + 1}-${i}`;
+    const pairKey = (a: string, b: string) => [a, b].sort().join('~');
+    function teams(r: number, i: number): [string | undefined, string | undefined] {
+      if (r === 0) return [D.entrants[i * 2]?.id, D.entrants[i * 2 + 1]?.id];
+      return [picks[key(r - 1, i * 2)], picks[key(r - 1, i * 2 + 1)]];
+    }
+    const done = (r: number) => Array.from({ length: D.rounds[r].games }, (_, i) => picks[key(r, i)]).filter(Boolean).length;
+    const complete = (r: number) => done(r) === D.rounds[r].games;
+    function clean() {
+      // Drop any later pick that no longer has a seat at its table (you changed an earlier winner).
+      for (let r = 1; r < D.rounds.length; r++) for (let i = 0; i < D.rounds[r].games; i++) {
+        const k = key(r, i), [a, b] = teams(r, i);
+        if (picks[k] && picks[k] !== a && picks[k] !== b) delete picks[k];
+      }
+    }
+    const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ v: 1, picks })); } catch {} };
+    const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' } as any)[c]);
+
+    function pct(a: string, b: string, who: string) {
+      const c = counts?.pairs[pairKey(a, b)];
+      if (!c) return null;
+      const total = (c[a] || 0) + (c[b] || 0);
+      if (!total) return null;
+      return Math.round(((c[who] || 0) / total) * 100);
+    }
+
+    function card(r: number, i: number) {
+      const [a, b] = teams(r, i);
+      const k = key(r, i);
+      const label = r === 0 ? regionName[byId[a!]?.region] : r === 1 ? `${regionName[byId[a!]?.region] || ''} Final` : D.rounds[r].name;
+      if (!a || !b) return '';
+      const picked = picks[k];
+      const side = (id: string, other: string) => {
+        const e = byId[id];
+        const p = picked ? pct(id, other, id) : null;
+        const sel = picked === id;
+        return `<button type="button" class="bk-team${sel ? ' is-pick' : ''}${picked && !sel ? ' is-out' : ''}" data-pick="${id}" data-game="${k}" aria-pressed="${sel}">
+          ${p !== null ? `<span class="bk-fill" style="width:${p}%"></span>` : ''}
+          <img src="/img/weeds/${id}-thumb.webp" alt="" width="56" height="56" loading="lazy" decoding="async">
+          <span class="bk-text"><span class="bk-name"><span class="bk-seed">${e.seed}</span>${esc(e.name)}</span><span class="bk-line">${esc(e.line)}</span></span>
+          <span class="bk-side">${sel ? '<span class="bk-badge">Worse</span>' : ''}${p !== null ? `<span class="bk-pct">${p}%</span>` : ''}</span>
+        </button>`;
+      };
+      return `<article class="bk-game"><p class="bk-label">${esc(label)}</p>${side(a, b)}<p class="bk-vs" aria-hidden="true">vs</p>${side(b, a)}</article>`;
+    }
+
+    function peoples() {
+      const list = Object.entries(counts?.champ || {}).filter(([id]) => byId[id]).sort((x, y) => y[1] - x[1]).slice(0, 5);
+      const total = Object.values(counts?.champ || {}).reduce((s, n) => s + n, 0);
+      if (!list.length) return '';
+      return `<div class="bk-people"><p class="bk-people-h">The People’s Champion</p><ol>${list.map(([id, n]) =>
+        `<li><img src="/img/weeds/${id}-thumb.webp" alt="" width="32" height="32"><span>${esc(byId[id].name)}</span><b>${Math.round((n / total) * 100)}%</b></li>`).join('')}</ol>
+        <p class="bk-people-n">${total} bracket${total === 1 ? '' : 's'} finished so far.</p></div>`;
+    }
+
+    function render() {
+      const last = D.rounds.length - 1;
+      tabs.forEach((t, i) => {
+        t.disabled = i > 0 && !complete(i - 1);
+        t.setAttribute('aria-selected', String(i === current));
+        root.querySelector<HTMLElement>(`[data-count="${i}"]`)!.textContent = `${done(i)}/${D.rounds[i].games}`;
+      });
+      const winner = picks[key(last, 0)];
+      const showChamp = current === last && winner;
+      roundName.textContent = D.rounds[current].name;
+      games.innerHTML = Array.from({ length: D.rounds[current].games }, (_, i) => card(current, i)).join('');
+      champ.hidden = !showChamp;
+      if (showChamp) {
+        const e = byId[winner];
+        champ.innerHTML = `<p class="bk-champ-k">Your Worst Weed in America</p>
+          <img src="/img/weeds/${winner}-thumb.webp" alt="" width="96" height="96">
+          <p class="bk-champ-name">${esc(e.name)}</p>
+          <p class="bk-champ-line">${esc(e.line)}</p>
+          <button type="button" class="btn bk-share" data-share>Share My Bracket</button>
+          <a class="bk-champ-link" href="/weeds/#${winner}">How to beat it</a>
+          ${peoples()}`;
+      }
+    }
+
+    function go(r: number, scroll: boolean) {
+      current = r; render();
+      if (scroll) root.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
+    }
+
+    async function vote(pair: string, pick: string) {
+      try {
+        const res = await fetch('/api/bracket/vote', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ b: D.b, pair, pick, device }) });
+        if (!res.ok) throw new Error('vote');
+        const j = await res.json();
+        if (counts && j.counts) { if (pair === 'champ') counts.champ = j.counts; else counts.pairs[pair] = j.counts; render(); }
+      } catch { /* keep going; picks still save locally */ }
+    }
+
+    games.addEventListener('click', (ev) => {
+      const btn = (ev.target as HTMLElement).closest<HTMLButtonElement>('[data-pick]');
+      if (!btn) return;
+      const k = btn.dataset.game!, id = btn.dataset.pick!;
+      const [r, i] = k.slice(1).split('-').map(Number);
+      const [a, b] = teams(r - 1, i);
+      if (picks[k] === id) return;
+      picks[k] = id; clean(); save();
+      track('tool_choice', { tool_name: 'weed_bracket', choice: id, step_number: r });
+      vote(pairKey(a!, b!), id);
+      const last = D.rounds.length - 1;
+      if (r - 1 === last) vote('champ', id);
+      render();
+      if (complete(r - 1) && r - 1 < last) setTimeout(() => go(r, true), 650);
+    });
+    tabs.forEach((t, i) => t.addEventListener('click', () => { if (!t.disabled) go(i, false); }));
+    root.querySelector('[data-reset]')!.addEventListener('click', () => { picks = {}; save(); go(0, true); });
+    champ.addEventListener('click', async (ev) => {
+      if (!(ev.target as HTMLElement).closest('[data-share]')) return;
+      const w = byId[picks[key(D.rounds.length - 1, 0)]];
+      const text = `My pick for the worst lawn weed in America: ${w?.name}. Fill out your bracket:`;
+      const url = location.origin + location.pathname + '#bracket';
+      track('tool_choice', { tool_name: 'weed_bracket', choice: 'share' });
+      try { if (navigator.share) { await navigator.share({ title: 'The Lawn Weed Bracket', text, url }); return; } } catch { return; }
+      try { await navigator.clipboard.writeText(`${text} ${url}`); (ev.target as HTMLElement).textContent = 'Link Copied'; } catch {}
+    });
+
+    clean();
+    // Open on the first round that still needs picks.
+    for (let r = 0; r < D.rounds.length; r++) { current = r; if (!complete(r)) break; }
+    render();
+    fetch(`/api/bracket?b=${encodeURIComponent(D.b)}`).then((r) => (r.ok ? r.json() : Promise.reject())).then((j) => { counts = j; render(); })
+      .catch(() => { note.hidden = false; note.textContent = 'Couldn’t load everyone’s votes right now. Your bracket still saves on your phone.'; });
+  }
+</script>
+
+<style is:global>
+  .bk .bk-title { margin: 0 0 6px; }
+  .bk-tabs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 14px 0 10px; }
+  .bk-tab { display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 8px 4px; border: 2px solid rgba(238, 245, 230, 0.6); border-radius: 8px; background: transparent; color: var(--paper); font: inherit; font-weight: 700; font-size: 0.92rem; cursor: pointer; touch-action: manipulation; }
+  .bk-tab[aria-selected='true'] { background: var(--paper); color: var(--ink); border-color: var(--paper); }
+  .bk-tab:disabled { opacity: 0.4; cursor: not-allowed; }
+  .bk-tab-count { font-size: 0.78rem; font-weight: 600; opacity: 0.85; }
+  .bk-round { margin: 4px 0 10px; font-weight: 800; font-family: var(--display); font-size: 1.15rem; color: var(--sun); }
+  .bk-games { display: grid; gap: 14px; }
+  .bk-game { background: var(--paper); color: var(--ink); border: 3px solid #0a2414; border-radius: 10px; padding: 10px; }
+  .prose .bk-game p { margin: 0; }
+  .bk-label { font-size: 0.78rem; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; color: #3d6a4b; margin: 0 0 8px !important; }
+  .bk-vs { text-align: center; font-weight: 800; font-size: 0.8rem; color: #5b7a63; margin: 4px 0 !important; }
+  .bk-team { position: relative; overflow: hidden; display: grid; grid-template-columns: 56px 1fr auto; gap: 10px; align-items: center; width: 100%; padding: 8px; text-align: left; border: 2px solid #b9cdb0; border-radius: 8px; background: #fff; color: var(--ink); font: inherit; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  .bk-team > * { position: relative; }
+  .bk-team img { width: 56px; height: 56px; border-radius: 6px; object-fit: cover; display: block; margin: 0; }
+  .bk-team.is-pick { border-color: var(--red); box-shadow: 0 0 0 2px var(--red); }
+  .bk-team.is-out { opacity: 0.72; }
+  .bk-fill { position: absolute !important; inset: 0 auto 0 0; background: rgba(159, 211, 106, 0.32); transition: width 0.5s ease-out; }
+  .bk-team.is-pick .bk-fill { background: rgba(200, 55, 45, 0.16); }
+  .bk-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .bk-name { font-weight: 800; font-size: 1rem; line-height: 1.2; }
+  .bk-seed { display: inline-block; min-width: 1.4em; margin-right: 6px; padding: 0 4px; border-radius: 4px; background: var(--ink); color: var(--paper); font-size: 0.75rem; text-align: center; vertical-align: 2px; }
+  .bk-line { font-size: 0.85rem; line-height: 1.3; color: #3b5443; }
+  .bk-side { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .bk-badge { background: var(--red); color: #fff; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; }
+  .bk-pct { font-weight: 800; font-size: 1rem; }
+  .bk-champ { margin-top: 16px; background: var(--paper); color: var(--ink); border: 3px solid #0a2414; border-radius: 10px; padding: 16px; text-align: center; }
+  .prose .bk-champ p { margin: 0; }
+  .bk-champ-k { font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--red); }
+  .bk-champ img { width: 96px; height: 96px; border-radius: 10px; object-fit: cover; margin: 10px auto 6px; display: block; border: 3px solid var(--sun); }
+  .bk-champ-name { font-family: var(--display); font-weight: 800; font-size: 1.5rem; line-height: 1.1; }
+  .bk-champ-line { margin: 6px 0 12px !important; font-size: 0.95rem; }
+  .bk-champ .bk-share { margin: 0 auto; }
+  .bk-champ-link { display: block; margin-top: 10px; font-weight: 700; color: var(--ink) !important; }
+  .bk-people { margin-top: 16px; padding-top: 12px; border-top: 2px dashed #b9cdb0; text-align: left; }
+  .bk-people-h { font-weight: 800; margin-bottom: 6px !important; }
+  .prose .bk-people ol { list-style: none; padding: 0; margin: 0; }
+  .prose .bk-people li { display: grid; grid-template-columns: 32px 1fr auto; gap: 8px; align-items: center; padding: 4px 0; margin: 0; }
+  .prose .bk-people li::before { content: none; }
+  .bk-people li img { width: 32px; height: 32px; margin: 0; border: 0; border-radius: 4px; }
+  .bk-people-n { font-size: 0.85rem; color: #4d6656; margin-top: 6px !important; }
+  .bk-note { margin: 10px 0 0; font-size: 0.9rem; color: var(--paper-dim); }
+  .bk-foot { margin-top: 12px; text-align: right; }
+  .bk .linkish { background: none; border: 0; padding: 4px 0; font: inherit; font-size: 0.92rem; color: var(--leaf); text-decoration: underline; cursor: pointer; }
+</style>

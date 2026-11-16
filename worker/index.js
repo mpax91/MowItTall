@@ -39,6 +39,9 @@ async function init(db) {
         // Search Console / Bing exports uploaded in HQ (rank tracker), one row per upload
         // Short links: mowittall.com/<slug> -> any page or outside URL, managed in HQ → Short Links
         db.prepare(`CREATE TABLE IF NOT EXISTS shortlinks (slug TEXT PRIMARY KEY, target TEXT NOT NULL, note TEXT, permanent INTEGER NOT NULL DEFAULT 0, clicks INTEGER NOT NULL DEFAULT 0, last_click INTEGER, created INTEGER NOT NULL, updated INTEGER NOT NULL)`),
+        // Lawn Weed Bracket (blog post widget): one pick per pairing per phone. pair = the two weed ids sorted
+        // and joined with "~", or "champ" for the final winner.
+        db.prepare(`CREATE TABLE IF NOT EXISTS bracket_votes (bracket TEXT NOT NULL, pair TEXT NOT NULL, device TEXT NOT NULL, pick TEXT NOT NULL, at INTEGER NOT NULL, PRIMARY KEY (bracket, pair, device))`),
         db.prepare(`CREATE TABLE IF NOT EXISTS seo_snap (id INTEGER PRIMARY KEY AUTOINCREMENT, source TEXT, label TEXT, kind TEXT, rows TEXT, at INTEGER)`),
       ]);
       const now = Date.now();
@@ -172,6 +175,34 @@ async function admin(env, req, url) {
 const RESERVED = new Set(['api', 'admin', 'og', 'img', 'icons', '_astro', 'pagefind', 'data', 'robots.txt', 'llms.txt', 'rss.xml', 'sitemap-index.xml', 'sitemap-0.xml', 'manifest.webmanifest', 'favicon.svg']);
 const SLUG_RE = /^[a-z0-9][a-z0-9-]{0,39}$/;
 let linkCache = { at: 0, map: null };
+// ---------- Lawn Weed Bracket (keep in sync with src/data/bracket.js)
+const BRACKET_IDS = { weeds: new Set(['dandelion', 'violet', 'creeping-charlie', 'clover', 'crabgrass', 'annual-bluegrass', 'nutsedge', 'rough-bluegrass',
+  'plantain', 'deadnettle', 'oxalis', 'chickweed', 'stiltgrass', 'cannabis', 'nimblewill', 'moss']) };
+async function bracketList(env, url) {
+  const b = url.searchParams.get('b') || '';
+  if (!BRACKET_IDS[b]) return bad('No such bracket.', 404);
+  const { results } = await env.DB.prepare('SELECT pair, pick, COUNT(*) AS n FROM bracket_votes WHERE bracket = ? GROUP BY pair, pick').bind(b).all();
+  const pairs = {}, champ = {};
+  for (const r of results || []) { const t = r.pair === 'champ' ? champ : (pairs[r.pair] ||= {}); t[r.pick] = r.n; }
+  const v = await env.DB.prepare('SELECT COUNT(DISTINCT device) AS n FROM bracket_votes WHERE bracket = ?').bind(b).first();
+  return json({ pairs, champ, voters: v?.n || 0 }, 200, { 'cache-control': 'public, max-age=20' });
+}
+async function bracketVote(env, req) {
+  const { b, pair, pick, device } = await req.json().catch(() => ({}));
+  const ids = BRACKET_IDS[b];
+  if (!ids) return bad('No such bracket.', 404);
+  if (!isDevice(device)) return bad('Missing device.');
+  if (!ids.has(pick)) return bad('Bad pick.');
+  if (pair !== 'champ') {
+    const parts = String(pair || '').split('~');
+    if (parts.length !== 2 || parts[0] >= parts[1] || !parts.every((p) => ids.has(p)) || !parts.includes(pick)) return bad('Bad matchup.');
+  }
+  await env.DB.prepare(`INSERT INTO bracket_votes (bracket, pair, device, pick, at) VALUES (?, ?, ?, ?, ?)
+    ON CONFLICT (bracket, pair, device) DO UPDATE SET pick = excluded.pick, at = excluded.at`).bind(b, pair, device, pick, Date.now()).run();
+  const { results } = await env.DB.prepare('SELECT pick, COUNT(*) AS n FROM bracket_votes WHERE bracket = ? AND pair = ? GROUP BY pick').bind(b, pair).all();
+  return json({ pair, counts: Object.fromEntries((results || []).map((r) => [r.pick, r.n])) });
+}
+
 async function shortlinks(env) {
   if (!linkCache.map || Date.now() - linkCache.at > 60000) {
     const { results } = await env.DB.prepare('SELECT slug, target, permanent FROM shortlinks').all();
@@ -331,6 +362,8 @@ export default {
       if (p === '/api/hall/submit' && req.method === 'POST') return await submit(env, req);
       if (p.startsWith('/api/hall/img/') && req.method === 'GET') return await image(env, p.split('/').pop(), url);
       if (p === '/api/hall/admin') return await admin(env, req, url);
+      if (p === '/api/bracket' && req.method === 'GET') return await bracketList(env, url);
+      if (p === '/api/bracket/vote' && req.method === 'POST') return await bracketVote(env, req);
       if (p.startsWith('/api/admin/')) return await dash(env, req, url);
       return bad('Not found.', 404);
     } catch (e) {
