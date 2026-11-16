@@ -241,7 +241,7 @@ export function initHQ({ root, api, show }) {
     if (!st.google) html += `<div class="dash-card seo-setup"><p><b>To turn on the Google part</b> (free, one time): create a service account in Google Cloud (project “Mow It Tall Analytics”), add its email as a user in Search Console, and save its JSON key as the <code>GSC_SERVICE_ACCOUNT</code> secret in Cloudflare (Workers &amp; Pages → mowittall → Settings → Variables and Secrets). Claude can do the first two in your Chrome.</p></div>`;
     else html += `<p class="dash-fine">Service account: <code>${esc(st.account)}</code> on <code>${esc(st.site)}</code>${st.backfill ? ` · history ${st.backfill.done ? 'loaded' : `loading (back to ${esc(st.backfill.until)})`}` : ''}</p>`;
     if (!st.bing) html += `<p class="dash-fine">Bing: add a <code>BING_API_KEY</code> secret (Bing Webmaster Tools → Settings → API access → API key) to pull Bing’s numbers too.</p>`;
-    if (st.errors?.length) html += `<details class="dash-more"><summary>Problems (${st.errors.length})</summary><ul class="dash-log">${st.errors.map((e) => `<li><b>${esc(e.task)}</b> · ${ago(e.at)}: ${esc(e.msg)}</li>`).join('')}</ul></details>`;
+    if (st.errors?.length) html += `<details class="dash-more"><summary>Problems (${st.errors.length})</summary><ul class="dash-log">${st.errors.map((e) => `<li><b>${esc(e.task)}</b> · ${ago(e.at)}${e.n > 1 ? ` (${e.n} times)` : ''}: ${esc(e.msg)}${/Throttle/i.test(e.msg) ? ' <small>Bing is refusing requests from Cloudflare’s servers right now. It retries every hour.</small>' : ''}</li>`).join('')}</ul></details>`;
     const g = r.google;
     if (g) {
       const t = g.totals, p = g.prevTotals;

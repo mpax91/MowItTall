@@ -57,7 +57,11 @@ async function getState(db, k) { const r = await db.prepare('SELECT v FROM seo_s
 async function setState(db, k, v) { await db.prepare('INSERT INTO seo_state (k, v, at) VALUES (?, ?, ?) ON CONFLICT (k) DO UPDATE SET v = excluded.v, at = excluded.at').bind(k, JSON.stringify(v), Date.now()).run(); }
 async function logError(db, task, err) {
   const list = (await getState(db, 'errors')) || [];
-  list.unshift({ task, msg: String(err?.message || err).slice(0, 300), at: Date.now() });
+  const msg = String(err?.message || err).slice(0, 300);
+  // The same problem again just bumps its time and count, so one stuck step can't flood the list.
+  const same = list.findIndex((e) => e.task === task && e.msg.replace(/\d+/g, '#') === msg.replace(/\d+/g, '#'));
+  if (same >= 0) { const e = list.splice(same, 1)[0]; list.unshift({ ...e, msg, at: Date.now(), n: (e.n || 1) + 1 }); }
+  else list.unshift({ task, msg, at: Date.now() });
   await setState(db, 'errors', list.slice(0, 15));
 }
 
@@ -298,8 +302,13 @@ export async function seoTick(env, { force = false } = {}) {
   const due = (k, hours) => force || !runs[k] || Date.now() - runs[k] > hours * 3600000;
   const did = {};
   const step = async (k, fn) => {
-    try { did[k] = await fn(); runs[k] = Date.now(); runs[`${k}:ok`] = Date.now(); }
-    catch (e) { did[k] = { error: String(e.message || e) }; runs[k] = Date.now(); await logError(db, k, e); }
+    try {
+      did[k] = await fn(); runs[k] = Date.now(); runs[`${k}:ok`] = Date.now();
+      const errs = (await getState(db, 'errors')) || [];
+      if (errs.some((e) => e.task === k)) await setState(db, 'errors', errs.filter((e) => e.task !== k));
+    }
+    // A failed step tries again next hour (runs[k] only moves on success).
+    catch (e) { did[k] = { error: String(e.message || e) }; runs[`${k}:fail`] = Date.now(); await logError(db, k, e); }
   };
   await step('audit', () => syncAudit(env));
   if (serviceAccount(env)) {
