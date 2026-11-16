@@ -74,8 +74,8 @@ const NAV = [
 <html lang="en">
   <head>
     <script is:inline define:vars={{ pageDL }}>window.dataLayer = window.dataLayer || []; window.dataLayer.push(pageDL);
-    // GA4: page fields go on every hit (page_view included) via a gtag 'set' command. Don't define window.gtag here.
-    (function () { var s = {}; ['page_type', 'content_group', 'post_tag', 'post_topics'].forEach(function (k) { var v = pageDL[k]; if (v !== undefined && v !== null && v !== '') s[k] = String(v).slice(0, 100); }); (function () { window.dataLayer.push(arguments); })('set', s); })();</script>
+    // GA4: page fields for every event (window.mitPage, merged in mitTrack). The 'set' is ignored by the GA4 Google tag container, so page_view itself doesn't get them. Don't define window.gtag here.
+    (function () { var s = {}; ['page_type', 'content_group', 'post_tag', 'post_topics'].forEach(function (k) { var v = pageDL[k]; if (v !== undefined && v !== null && v !== '') s[k] = String(v).slice(0, 100); }); window.mitPage = s; (function () { window.dataLayer.push(arguments); })('set', s); })();</script>
     {!isAdminPage && (<Fragment>
     <!-- Microsoft Clarity page tags (Clarity itself loads through GTM). Queued with Clarity's standard stub, so they apply whenever Clarity loads. Filter recordings by these in Clarity → Filters → Custom tags. -->
     <script is:inline define:vars={{ pageDL }}>(function(c){c.clarity=c.clarity||function(){(c.clarity.q=c.clarity.q||[]).push(arguments)};['page_type','content_group','post_tag','post_topics'].forEach(function(k){var v=pageDL[k];if(v)c.clarity('set',k,String(v).slice(0,255))})})(window);</script>
@@ -134,7 +134,7 @@ const NAV = [
       var MIT_KEYS = 'quiz_name step_number question_id step_type answer effort_level lawn_profile grass_pick task_count game_name level_name score new_best coverage tool_name choice file_name file_extension search_term search_location results_count topic method content_type item_id cta_location cta_text link_url link_text link_area link_domain nav_area card_id question form_id form_location percent read_seconds zip3 yard_size area_count vote board amount platform target page_path page_referrer error_message error_source program_name value currency'.split(' ');
       window.mitTrack = function (event, params) {
         try { var reset = {}; MIT_KEYS.forEach(function (k) { reset[k] = undefined; }); window.dataLayer.push(reset); window.dataLayer.push(Object.assign({ event: event }, params || {})); } catch (e) {}
-        try { var gp = {}; for (var k in (params || {})) { var v = params[k]; if (v !== undefined && v !== null && v !== '') gp[k] = v; } (function () { window.dataLayer.push(arguments); })('event', event, gp); } catch (e) {}
+        try { var gp = {}; for (var k in (params || {})) { var v = params[k]; if (v !== undefined && v !== null && v !== '') gp[k] = v; } (function () { window.dataLayer.push(arguments); })('event', event, Object.assign({}, window.mitPage || {}, gp)); } catch (e) {}
         try { if (window.mitLog) window.mitLog(event, params); } catch (e) {}
       };
       // Mike's own event log (worker/events.js → Cloudflare D1, kept forever, free). Every mitTrack event, plus
