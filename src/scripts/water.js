@@ -8,9 +8,9 @@ const GAUGE_KEY = 'mit-gauge';
 const DAY = 864e5;
 
 export const VERDICTS = {
-  asleep: { label: 'Not needed', tone: 'ok' },
-  skip: { label: 'Not needed', tone: 'ok' },
-  wait: { label: 'Wait for rain', tone: 'wait' },
+  asleep: { label: 'Not Needed', tone: 'ok' },
+  skip: { label: 'Not Needed', tone: 'ok' },
+  wait: { label: 'Wait for Rain', tone: 'wait' },
   maybe: { label: 'Recommended', tone: 'maybe' },
   water: { label: 'Needed', tone: 'water' },
 };
