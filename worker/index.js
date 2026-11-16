@@ -348,6 +348,11 @@ async function dash(env, req, url) {
 export default {
   async fetch(req, env, ctx) {
     const url = new URL(req.url);
+    // The old workers.dev preview address forwards to the real domain (same path + query), so old links
+    // keep working and Google only sees one copy. Static files skip the worker, but they're not pages.
+    if (url.hostname.endsWith('.workers.dev') && (req.method === 'GET' || req.method === 'HEAD')) {
+      return Response.redirect(`https://mowittall.com${url.pathname}${url.search}`, 301);
+    }
     if (!url.pathname.startsWith('/api/')) {
       if (req.method === 'GET' || req.method === 'HEAD') {
         try { await init(env.DB); const r = await shortRedirect(req, env, ctx, url); if (r) return r; } catch { /* fall through to the page */ }
