@@ -6,7 +6,7 @@ import { TASKS, MONTHS_LONG, windowText } from '../data/tasks.js';
 interface Props { compact?: boolean }
 // compact (homepage): no heading/summary, task names only, at most SHOW (2) per month with "+N more"
 const { compact = false } = Astro.props;
-const SHOW = 2;
+const SHOW = 1;
 const list = TASKS.filter((t) => t.level <= 2);
 // each month lists tasks that start in it, then tasks still running from an earlier month ("Still going")
 const SMALL = new Set(['a', 'an', 'the', 'and', 'or', 'of', 'to', 'in', 'on', 'at', 'by', 'for', 'up', 'as']);
@@ -87,7 +87,7 @@ const months = MONTHS_LONG.map((name, i) => ({
           </article>
         ))}
         {compact && m.tasks.length > SHOW && (
-          <button type="button" class="cal-more" data-cal-more>+{m.tasks.length - SHOW} more</button>
+          <button type="button" class="cal-more" data-cal-more aria-expanded="false" data-more={`Show ${m.tasks.length - SHOW} More`}><span>Show {m.tasks.length - SHOW} More</span> <i aria-hidden="true">▾</i></button>
         )}
       </div>
     ))}
@@ -138,7 +138,11 @@ const months = MONTHS_LONG.map((name, i) => ({
     track.addEventListener('scroll', () => { clearTimeout(loopT); loopT = setTimeout(wrap, 140); }, { passive: true });
 
     for (const b of root.querySelectorAll('[data-cal-more]')) {
-      b.addEventListener('click', () => { b.parentElement.classList.add('is-open'); b.remove(); });
+      b.addEventListener('click', () => {
+        const open = b.parentElement.classList.toggle('is-open');
+        b.setAttribute('aria-expanded', String(open));
+        b.querySelector('span').textContent = open ? 'Show Less' : b.dataset.more;
+      });
     }
 
     const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;

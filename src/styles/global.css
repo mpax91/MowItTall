@@ -2191,3 +2191,9 @@ main > section.gp { margin-left: 16px; margin-right: 16px; }
 @media (prefers-reduced-motion: reduce) { .cal-flip, .cal-flipcard { transition: none; } }
 /* calendar: room for last month to peek in, built into the snap spacing (no snap toggling, which ate the first vertical swipe) */
 .cal-track { scroll-padding-inline: calc(var(--col) + 40px) var(--col); }
+/* calendar: sideways only (inner overflow from flips/folds made the row scroll vertically and steal page swipes); one card per month + Show N More */
+.cal-track { overflow-y: hidden; }
+.calendar.is-compact .cal-more { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: auto; border-style: solid; border-color: rgba(238, 245, 230, 0.3); background: rgba(0, 0, 0, 0.15); }
+.calendar.is-compact .cal-more i { font-style: normal; transition: transform 0.2s; }
+.calendar.is-compact .cal-month.is-open .cal-more i { transform: rotate(180deg); }
+.calendar.is-compact .cal-month.is-open .cal-more { margin-top: 2px; }
