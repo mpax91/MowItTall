@@ -13,8 +13,8 @@ import { SOCIALS_MAIN, SAME_AS, MIKE_PROFILES, X_HANDLE, CONTACT_EMAIL } from '.
 const OG = allOgPages();
 const FOOT_TOPICS = ['mowing', 'feeding', 'seeding', 'weeds', 'soil', 'gear'].map((slug) => TOPICS.find((t) => t.slug === slug)).filter(Boolean);
 const FOOTER = [
-  { title: 'Start Here', links: [['/plan/', 'Free Lawn Plan'], ['/lawn-101/', 'Lawn 101'], ['/calendar/', 'Lawn Calendar'], ['/guides/', 'Lawn Guides'], ['/search/', 'Search the Site']] },
-  { title: 'Free Tools', links: [['/weeds/', 'What’s That Weed?'], ['/measure/', 'Measure Your Yard'], ['/resources/#dx', 'What’s Wrong With My Lawn?'], ['/resources/#water-h', 'Should I Water?'], ['/resources/#seed', 'Can I Seed Now?'], ['/resources/#calc', 'Lawn Calculator'], ['/resources/', 'All Free Tools']] },
+  { title: 'Start Here', links: [['/plan/', 'Free Lawn Plan'], ['/lawn-101/', 'Lawn 101'], ['/calendar/', 'Lawn Calendar'], ['/guides/', 'Lawn Guides'], ['/lawn-care/', 'Lawn Care by Town'], ['/search/', 'Search the Site']] },
+  { title: 'Free Tools', links: [['/weeds/', 'What’s That Weed?'], ['/measure/', 'Measure Your Yard'], ['/resources/whats-wrong-with-my-lawn/', 'What’s Wrong With My Lawn?'], ['/resources/should-i-water-my-lawn/', 'Should I Water?'], ['/resources/can-i-seed-now/', 'Can I Seed Now?'], ['/resources/lawn-calculator/', 'Lawn Calculator'], ['/resources/', 'All Free Tools']] },
   { title: 'The Blog', links: [['/blog/', 'All Posts'], ...FOOT_TOPICS.map((t) => [`/blog/topic/${t.slug}/`, t.name.replace(/\b(\w)/g, (m) => m.toUpperCase()).replace(' For ', ' for ')])] },
   { title: 'Just for Fun', links: [['/games/', 'Lawn Games'], ['/hall/', 'Hall of Fame & Shame'], ['/yards/', 'Mike’s Yard'], ['/neighbor/', 'Send to a Neighbor'], ['/merch/', 'Merch']] },
 ];
@@ -51,8 +51,9 @@ const imageSize = card ? [1200, 630] : image.includes('-1400') ? [1400, 1050] : 
 const crumbs = crumbsProp === false || path === '/' ? [] : crumbsProp || [];
 // GA4 content grouping, pushed to the dataLayer before GTM loads (see the Analytics tab in HQ).
 const pageType = path === '/' ? 'home' : path.startsWith('/blog/topic/') ? 'topic' : /^\/(blog|guides)\/$/.test(path) ? 'hub' : path.startsWith('/blog/') ? 'post' : path.startsWith('/guides/') ? 'guide'
-  : ['/plan/', '/measure/', '/calendar/', '/weeds/', '/resources/'].includes(path) ? 'tool' : ['/games/', '/hall/'].includes(path) ? 'fun' : 'page';
-const pageDL = { page_type: pageType, content_group: { home: 'Home', topic: 'Blog topics', hub: 'Hubs', post: 'Blog posts', guide: 'Guides', tool: 'Tools', fun: 'Games & Hall', page: 'Pages' }[pageType], ...dl };
+  : ['/plan/', '/measure/', '/calendar/', '/weeds/', '/resources/'].includes(path) || path.startsWith('/resources/') ? 'tool' : ['/games/', '/hall/'].includes(path) ? 'fun'
+  : path.startsWith('/weeds/') ? 'weed' : path.startsWith('/calendar/') ? 'month' : path.startsWith('/lawn-care/') ? 'town' : 'page';
+const pageDL = { page_type: pageType, content_group: { home: 'Home', topic: 'Blog topics', hub: 'Hubs', post: 'Blog posts', guide: 'Guides', tool: 'Tools', fun: 'Games & Hall', weed: 'Weed pages', month: 'Month pages', town: 'Town pages', page: 'Pages' }[pageType], ...dl };
 const isAdminPage = path.startsWith('/admin');
 const crumbLd = crumbs.length ? [{ '@type': 'BreadcrumbList', '@id': `${url}#breadcrumb`, itemListElement: [['Home', '/'], ...crumbs].map(([name, href], i) => ({ '@type': 'ListItem', position: i + 1, name, item: site + href })) }] : [];
 // Site-wide entities on every page, merged with the page's own structured data (deduped by @id).

@@ -30,6 +30,7 @@ import { WAITS, PREPOST, MULCHBAG, COMPLIMENTS, TRAINING, HIRE, PITCH } from '..
 import { TUNEUP } from '../data/tuneup.js';
 import { GIFTS, RESOLUTIONS, OPENING_DAY, ROBOT, TREES } from '../data/pickers3.js';
 import WeedBracket from '../components/WeedBracket.astro';
+import StripePicker from '../components/StripePicker.astro';
 const { frontmatter, url } = Astro.props;
 const { title, description, tag, widget, extra, faq } = frontmatter;
 const rawPath = new URL(url || Astro.url.pathname, 'https://mowittall.com').pathname;
@@ -159,6 +160,9 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [posting, crumbs, .
     )}
     {widget === 'trees' && (
       <div class="post-widget" data-widget="trees"><ChipPicker id="trees" title="What’s Dropping on Your Lawn?" sub="Tap your tree. Get the verdict and the game plan." items={TREES} prompt="Tap a tree." /></div>
+    )}
+    {widget === 'stripe-picker' && (
+      <div class="post-widget" data-widget="stripe-picker"><StripePicker id="stripes-post" /></div>
     )}
     {widget === 'bracket' && (
       <div class="post-widget" data-widget="bracket"><WeedBracket /></div>

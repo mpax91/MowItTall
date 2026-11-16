@@ -9,7 +9,7 @@ answer: "<b>Late August through September is the best time to overseed</b> in Ne
 date: 2026-11-15
 minutes: 4
 topics: [seeding]
-tools: [["/resources/#seed", "Can I seed now?"], ["/resources/#calc", "How much seed do I need?"], ["/lawn-101/#grass", "Pick your grass seed"], ["/resources/#seedwatch", "Is my seed working?"]]
+tools: [["/resources/can-i-seed-now/", "Can I seed now?"], ["/resources/lawn-calculator/", "How much seed do I need?"], ["/lawn-101/#grass", "Pick your grass seed"], ["/resources/can-i-seed-now/#seedwatch", "Is my seed working?"]]
 faq:
   - q: "Is October too late to overseed?"
     a: "Early October is usually OK in the Lower Hudson Valley if you use fast grass like perennial ryegrass. By mid-October the soil is cooling and young grass may not be tough enough for winter. If you missed it, wait for next August or try spring."
@@ -39,17 +39,17 @@ New grass also gets two cool seasons (fall and spring) to build roots before its
 - **Early October:** OK with fast grass (perennial ryegrass). Getting risky.
 - **Mid-October on:** too late for most lawns. Save the seed for next year.
 
-My [Can I seed now?](/resources/#seed) tool checks your soil temperature and gives a straight yes or no.
+My [Can I seed now?](/resources/can-i-seed-now/) tool checks your soil temperature and gives a straight yes or no.
 
 ## How to Overseed, Step by Step
 
 1. **Pick the right seed.** Match it to your sun and how you use the yard. [Pick your grass](/lawn-101/#grass) in four taps.
 2. **Mow short.** Drop the mower to about 2 to 2.5 inches for this one mow, and bag the clippings.
 3. **Get seed to soil.** Core aerate, or rake hard with a metal rake until you see dirt between the grass. Seed sitting on top of thatch won't grow.
-4. **Spread the seed.** Use about half the new-lawn rate on the bag. Go in two directions so you don't miss stripes. [How much do I need?](/resources/#calc)
+4. **Spread the seed.** Use about half the new-lawn rate on the bag. Go in two directions so you don't miss stripes. [How much do I need?](/resources/lawn-calculator/)
 5. **Feed it.** Use a starter fertilizer (the middle number on the bag is bigger). [How to read a bag](/blog/how-to-read-a-fertilizer-bag/).
 6. **Water lightly and often.** Keep the top inch damp, one to three short waterings a day, until it's up.
-7. **Wait.** Ryegrass shows up in about a week. Fescue in one to two. Bluegrass can take three or four. [Is my seed working?](/resources/#seedwatch)
+7. **Wait.** Ryegrass shows up in about a week. Fescue in one to two. Bluegrass can take three or four. [Is my seed working?](/resources/can-i-seed-now/#seedwatch)
 8. **First mow** when the new grass hits about 4 inches. Sharp blade, dry soil.
 
 ## Don't Do These

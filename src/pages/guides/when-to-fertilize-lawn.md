@@ -9,7 +9,7 @@ answer: "<b>Early September is the most important feeding</b> for a Northeast la
 date: 2026-11-15
 minutes: 3
 topics: [feeding]
-tools: [["/blog/holiday-lawn-fertilizer-schedule/", "Holiday feeding schedule"], ["/blog/how-to-read-a-fertilizer-bag/", "Fertilizer bag decoder"], ["/resources/#calc", "How many bags?"]]
+tools: [["/blog/holiday-lawn-fertilizer-schedule/", "Holiday feeding schedule"], ["/blog/how-to-read-a-fertilizer-bag/", "Fertilizer bag decoder"], ["/resources/lawn-calculator/", "How many bags?"]]
 faq:
   - q: "Should I fertilize my lawn in early spring?"
     a: "Usually no. Cool-season grass already grows fast in April and May on stored energy. Feeding early pushes leaf growth over roots and means more mowing. Wait until late May."

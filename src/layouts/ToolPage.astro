@@ -1,0 +1,62 @@
+---
+// Dedicated tool pages (/resources/<tool>/). Resources stays the hub; these are built to rank:
+// question-style H1, short answer box, the live tool, how it works, FAQ, sources.
+// Props: seo, description, slug, h1, crumb, answer (HTML), appName, faq [[q, a]], sources [[name, url]]
+import Base from './Base.astro';
+import { TOOL_PAGES } from '../data/toolPages.js';
+const { seo, description, slug, h1, crumb, answer, appName, faq = [], sources = [] } = Astro.props;
+const site = 'https://mowittall.com';
+const path = `/resources/${slug}/`;
+const title = seo.length + 14 <= 65 ? `${seo} | Mow It Tall` : seo;
+const jsonLd = { '@graph': [
+  {
+    '@type': 'WebApplication', '@id': `${site}${path}#app`, name: appName, url: `${site}${path}`, description,
+    applicationCategory: 'UtilitiesApplication', operatingSystem: 'Any (web browser)', isAccessibleForFree: true,
+    offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' }, author: { '@id': `${site}/#mike` }, publisher: { '@id': `${site}/#org` },
+  },
+  ...(faq.length ? [{ '@type': 'FAQPage', '@id': `${site}${path}#faq`, mainEntity: faq.map(([q, a]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: a } })) }] : []),
+] };
+---
+<Base title={title} description={description} path={path} jsonLd={jsonLd} crumbs={[['Resources', '/resources/'], [crumb, path]]} dl={{ tool_name: slug }}>
+  <main id="main" class="post guide tp">
+    <header class="post-head">
+      <span class="clip-tag">Free Tool</span>
+      <h1>{h1}</h1>
+      <p class="post-meta">By <a href="/yards/">Mike</a>, Bedford, NY. Free, no sign-up, works on your phone.</p>
+    </header>
+    <section class="window guide-answer" aria-labelledby="qa-h">
+      <h2 id="qa-h">The Short Answer</h2>
+      <p set:html={answer} />
+    </section>
+    <div class="tp-tool"><slot name="tool" /></div>
+    <article class="prose">
+      <slot />
+    </article>
+    {faq.length > 0 && (
+      <section class="guide-faq" aria-labelledby="faq-h">
+        <h2 id="faq-h">Common Questions</h2>
+        {faq.map(([q, a]) => <details><summary>{q}</summary><p>{a}</p></details>)}
+      </section>
+    )}
+    <nav class="guide-tools" aria-label="More free tools" data-pagefind-ignore>
+      <h2>More Free Tools</h2>
+      <ul>
+        {TOOL_PAGES.filter(([s]) => s !== slug).map(([s, t]) => <li><a class="bf-chip" href={`/resources/${s}/`}>{t}</a></li>)}
+        <li><a class="bf-chip" href="/measure/">Measure My Lawn</a></li>
+        <li><a class="bf-chip" href="/resources/">All Resources</a></li>
+      </ul>
+    </nav>
+    {sources.length > 0 && (
+      <aside class="guide-sources" data-pagefind-ignore>
+        <h2>Where This Comes From</h2>
+        <p>My yard, plus university extension research for cool-season lawns:</p>
+        <ul>{sources.map(([n, u]) => <li><a href={u} rel="noopener" target="_blank">{n}</a></li>)}</ul>
+      </aside>
+    )}
+    <aside class="window post-cta" data-pagefind-ignore data-cta-loc="tool_end">
+      <h2>Want the Whole Year Planned?</h2>
+      <p>Nine quick questions, two minutes, one plan with phone reminders.</p>
+      <a class="btn" href="/plan/">Get My Free Lawn Plan</a>
+    </aside>
+  </main>
+</Base>

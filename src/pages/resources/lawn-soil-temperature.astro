@@ -1,0 +1,37 @@
+---
+import ToolPage from '../../layouts/ToolPage.astro';
+import SoilGauge from '../../components/SoilGauge.astro';
+const faq = [
+  ['What soil temperature should I put down crabgrass preventer?', 'When the soil holds around 55°F for a few days in spring. That’s when crabgrass seeds start sprouting. Around Westchester it’s usually April, about when the forsythia blooms.'],
+  ['What soil temperature does grass seed need?', 'Cool-season grass seed sprouts best with soil between about 50 and 70°F. That’s why late summer into early fall is the best time to seed.'],
+  ['When does grass start growing in spring?', 'Roots start working once soil gets into the 40s, and blades really get going when it’s consistently above 50°F. Your first real mow usually follows a week or two later.'],
+  ['How deep is the soil temperature measured?', 'This reading is a few inches down, about the depth where grass roots and weed seeds live. It comes from a weather model, so it’s close but not a probe in your yard.'],
+  ['Why go by soil temperature instead of the calendar?', 'Because weeds and grass do. A warm March or a cold April can shift things by weeks. Soil temperature tells you what’s actually happening underground this year.'],
+];
+const sources = [
+  ['Cornell Cooperative Extension Nassau County: Crabgrass control', 'https://ccenassau.org/resources/crabgrass-control'],
+  ['Penn State Extension: Lawn management through the seasons', 'https://extension.psu.edu/lawn-management-through-the-seasons'],
+];
+---
+<ToolPage seo="Lawn Soil Temperature Today: Live Reading by ZIP" crumb="Soil Temperature" slug="lawn-soil-temperature" appName="Live Lawn Soil Temperature"
+  h1="Lawn Soil Temperature, Right Now"
+  description="Live soil temperature for your ZIP, updated hourly, with what it means for crabgrass preventer, seeding, feeding and mowing. Free, no sign-up."
+  answer="<b>Soil temperature tells you when to do almost everything: crabgrass preventer around 55°F in spring, seeding between about 50 and 70°F, and nothing much below 40°F.</b> The live reading below is for Bedford, NY by default. Tap the place to switch to your ZIP."
+  faq={faq} sources={sources}>
+  <Fragment slot="tool"><SoilGauge /></Fragment>
+
+  <h2>What Each Soil Temperature Means</h2>
+  <table>
+    <thead><tr><th>Soil</th><th>What’s Happening</th><th>What to Do</th></tr></thead>
+    <tbody>
+      <tr><td>Under 40°F</td><td>Lawn is asleep</td><td>Nothing. Stay off it when it’s frozen</td></tr>
+      <tr><td>40–50°F</td><td>Roots waking up (spring) or winding down (fall)</td><td>Spring cleanup, sharpen the blade. Fall: last mow, last feeding</td></tr>
+      <tr><td>50–55°F</td><td>Grass growing, crabgrass about to sprout</td><td>Spring: crabgrass preventer now. Fall: still OK to seed</td></tr>
+      <tr><td>55–68°F</td><td>Prime growing</td><td>Mow every week, keep it tall. Fall: best seeding</td></tr>
+      <tr><td>68°F and up</td><td>Heat stress for cool-season grass</td><td>Mow tall, water deep, no fertilizer</td></tr>
+    </tbody>
+  </table>
+  <h2>Why Soil Beats the Calendar</h2>
+  <p>Crabgrass doesn’t own a calendar. It goes by how warm the dirt is. Same for grass seed and grubs. A warm spring can put everything two weeks early, and a cold one two weeks late. That’s why the date windows on this site are “usually” and this reading is “right now.”</p>
+  <p>Want it month by month? See <a href="/calendar/">the lawn calendar</a>. Timing for crabgrass: <a href="/guides/crabgrass-preventer-timing/">the preventer guide</a>.</p>
+</ToolPage>

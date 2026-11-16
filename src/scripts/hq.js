@@ -514,8 +514,8 @@ export function initHQ({ root, api, show }) {
   /* ================================================================ SHORT LINKS */
   const ORIGIN = 'https://mowittall.com';
   const STARTER = [
-    ['quiz', '/plan/', 'The quiz'], ['water', '/resources/#water-h', 'Should I water?'], ['seed', '/resources/#seed', 'Can I seed now?'],
-    ['calc', '/resources/#calc', 'Lawn calculator'], ['help', '/resources/#dx', 'What’s wrong with my lawn?'], ['weeds', '/weeds/', 'Weed ID'],
+    ['quiz', '/plan/', 'The quiz'], ['water', '/resources/should-i-water-my-lawn/', 'Should I water?'], ['seed', '/resources/can-i-seed-now/', 'Can I seed now?'],
+    ['calc', '/resources/lawn-calculator/', 'Lawn calculator'], ['help', '/resources/whats-wrong-with-my-lawn/', 'What’s wrong with my lawn?'], ['weeds', '/weeds/', 'Weed ID'],
     ['bio', '/links/?utm_source=bio&utm_medium=social', 'Generic bio link'], ['door', '/plan/?utm_source=door_note&utm_medium=qr', 'Door-note QR code'],
     ['vote', '/hall/', 'Hall of Fame'], ['calendar', '/calendar/', 'Lawn calendar'],
   ];

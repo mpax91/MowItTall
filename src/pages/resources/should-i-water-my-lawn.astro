@@ -1,0 +1,45 @@
+---
+import ToolPage from '../../layouts/ToolPage.astro';
+import RainMeter from '../../components/RainMeter.astro';
+const faq = [
+  ['How much water does a lawn need per week?', 'About an inch a week from rain and watering combined in summer, a bit less in spring and fall. Less when it’s cool and cloudy, more in a heat wave. The rain meter does this math for you from real rain and the forecast.'],
+  ['How do I know if my lawn needs water?', 'Walk on it. If your footprints stay pressed down instead of springing back, or the grass turns a dull blue-gray, it’s thirsty. Another test: a screwdriver should slide into the soil easily.'],
+  ['What time of day should I water my lawn?', 'Early morning, before about 9am. Less water evaporates, and the grass dries off during the day, which keeps disease down. Watering at night leaves it wet for hours.'],
+  ['Should I water every day?', 'No. Water deep and less often, about once or twice a week, so roots grow down. A little bit every day keeps roots shallow and invites crabgrass and disease. New seed is the exception.'],
+  ['Is it OK to let my lawn go brown in summer?', 'Yes. Cool-season grass goes dormant in heat and drought to protect itself, and usually greens up a couple of weeks after real rain. Just don’t switch back and forth between watering and not. Pick one.'],
+];
+const sources = [
+  ['Penn State Extension: Lawn management through the seasons', 'https://extension.psu.edu/lawn-management-through-the-seasons'],
+  ['Iowa State Extension: Late summer and fall lawn care', 'https://yardandgarden.extension.iastate.edu/how-to/late-summer-and-fall-lawn-care'],
+];
+---
+<ToolPage seo="Should I Water My Lawn Today? Free Rain Meter" crumb="Should I Water?" slug="should-i-water-my-lawn" appName="Should I Water My Lawn? (Rain Meter)"
+  h1="Should I Water My Lawn?"
+  description="A free rain meter for your ZIP: last week’s rain vs. what your lawn used, plus the forecast, turned into a straight answer. Water, wait, or skip."
+  answer="<b>Water when rain has fallen short of what the lawn used by about half an inch or more, and no real rain is coming in the next few days.</b> Then water deep, about half an inch to an inch, early in the morning, once or twice a week. The rain meter below checks your rain and forecast and tells you which."
+  faq={faq} sources={sources}>
+  <Fragment slot="tool"><RainMeter /></Fragment>
+
+  <h2>How the Rain Meter Works</h2>
+  <ol>
+    <li><strong>It adds up the rain.</strong> Last 7 days for your ZIP, from a free weather service.</li>
+    <li><strong>It figures out what your lawn drank.</strong> Grass loses water to sun, heat and wind every day. Weather folks call it evapotranspiration. I call it the lawn sweating.</li>
+    <li><strong>It checks the next 3 days.</strong> If real rain is likely, it tells you to wait and let the sky do it for free.</li>
+    <li><strong>It gives you one answer.</strong> Not Needed, Wait for Rain, Recommended, or Needed.</li>
+  </ol>
+  <p>Weather models miss pop-up thunderstorms. Got a rain gauge? Type in what it says and the meter uses your number instead.</p>
+
+  <h2>The Watering Cheat Sheet</h2>
+  <table>
+    <thead><tr><th>Situation</th><th>What to Do</th></tr></thead>
+    <tbody>
+      <tr><td>Normal summer week</td><td>About 1 inch total, rain included, in 1 or 2 deep waterings</td></tr>
+      <tr><td>Heat wave (90°F+)</td><td>Same inch, early morning. Don’t fertilize. Mow tall or skip a week</td></tr>
+      <tr><td>New seed</td><td>Keep the top inch damp: light watering once or twice a day until it’s up</td></tr>
+      <tr><td>Spring and fall</td><td>Usually nothing. Rain covers it</td></tr>
+      <tr><td>Winter</td><td>Nothing. The lawn is asleep</td></tr>
+    </tbody>
+  </table>
+  <p>How long is an inch? Put a few empty tuna cans on the lawn, run the sprinkler, and time how long it takes to fill them about an inch deep. Most sprinklers take 45 minutes to over an hour.</p>
+  <p>More detail in the straight-answer guide: <a href="/guides/how-often-to-water-lawn/">how often to water your lawn</a>.</p>
+</ToolPage>

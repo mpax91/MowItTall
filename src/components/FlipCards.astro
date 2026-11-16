@@ -62,6 +62,7 @@ const H = headingLevel;
         </div>
       </div>
       <button type="button" class="flip-btn" aria-expanded="false" aria-label={`${it.title}: show details`}></button>
+      {it.more && <a class="flip-more" href={it.more.href}>{it.more.text} <span aria-hidden="true">→</span></a>}
     </li>
   ))}
 </ul>

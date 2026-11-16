@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import FlipCards from '../components/FlipCards.astro';
 import { WEEDS, WEED_GROUPS } from '../data/weeds.js';
+import { WEED_PAGES } from '../data/weedPages.js';
 
 const title = 'Common Lawn Weeds in the Northeast, With Photos | Mow It Tall';
 const description =
@@ -14,7 +15,7 @@ const jsonLd = {
     '@type': 'ListItem',
     position: i + 1,
     name: w.name,
-    url: `https://mowittall.com/weeds/#${w.id}`,
+    url: WEED_PAGES[w.id] ? `https://mowittall.com/weeds/${w.id}/` : `https://mowittall.com/weeds/#${w.id}`,
   })),
 };
 const card = (w) => ({
@@ -28,6 +29,7 @@ const card = (w) => ({
     { label: 'Mike’s fix: ', text: w.mike },
     { label: 'Or just let it be: ', text: w.chill },
   ],
+  more: WEED_PAGES[w.id] && { href: `/weeds/${w.id}/`, text: `Full Guide: ${w.name.split(' (')[0]}` },
 });
 const groups = WEED_GROUPS.map((g) => ({ ...g, items: WEEDS.filter((w) => w.group === g.id).map(card) }));
 ---

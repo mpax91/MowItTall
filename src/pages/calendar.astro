@@ -3,6 +3,8 @@
 // filtered by effort level, starting today. The homepage keeps the sideways month strip.
 import Base from '../layouts/Base.astro';
 import { agendaHTML, yearMonths, LEVELS, KINDS } from '../scripts/agenda.js';
+import { MONTH_PAGES } from '../data/monthPages.js';
+import { MONTHS_LONG } from '../data/tasks.js';
 
 const title = 'Lawn Care Calendar for the Northeast: What to Do Each Month';
 const description =
@@ -58,6 +60,11 @@ const jsonLd = {
 
       <a class="ag-jump" href="#today" data-jump hidden>Today ▴</a>
     </section>
+
+    <nav class="mo-index" aria-labelledby="mo-index-h">
+      <h2 id="mo-index-h">Month by Month</h2>
+      <ul>{MONTH_PAGES.map((m, i) => <li><a class="bf-chip" href={`/calendar/${m.slug}/`}>{MONTHS_LONG[i]}</a></li>)}</ul>
+    </nav>
 
     <section class="faq" aria-labelledby="faq-h">
       <h2 id="faq-h">Quick Answers</h2>

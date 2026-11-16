@@ -1,0 +1,37 @@
+---
+import ToolPage from '../../layouts/ToolPage.astro';
+import LawnCalc from '../../components/LawnCalc.astro';
+const faq = [
+  ['How much grass seed do I need?', 'It depends on the grass. For a brand-new lawn, Kentucky bluegrass and rye mixes run about 3 to 4 pounds per 1,000 square feet and tall fescue about 6 to 8. Overseeding an existing lawn takes about half that. The calculator does it for your size and grass.'],
+  ['How much fertilizer do I need for my lawn?', 'Aim for about 1 pound of actual nitrogen per 1,000 square feet per feeding, or less. Every bag lists how many square feet it covers at the right rate, so divide your lawn size by that number and round up.'],
+  ['How do I find my lawn’s square footage?', 'Measure it on a satellite map with the free measure tool: tap the corners of each grass area and it adds them up. The number then fills in this calculator automatically.'],
+  ['How much lime does my lawn need?', 'Only what a soil test says. Never more than about 50 pounds per 1,000 square feet at once. Split bigger amounts between spring and fall.'],
+  ['How long does it take to mow my lawn?', 'Roughly a quarter acre takes about 35 to 40 minutes with a push mower and 20 or so with a riding mower. The calculator estimates it for your size.'],
+];
+const sources = [
+  ['Penn State Extension: Lawn management through the seasons', 'https://extension.psu.edu/lawn-management-through-the-seasons'],
+  ['UMass Extension: Soil pH and liming', 'https://www.umass.edu/agriculture-food-environment/turf/fact-sheets/soil-ph-liming'],
+];
+---
+<ToolPage seo="Lawn Calculator: Grass Seed, Fertilizer and Lime by Square Foot" crumb="Lawn Calculator" slug="lawn-calculator" appName="Lawn Calculator"
+  h1="Lawn Calculator: How Much Seed, Fertilizer and Lime?"
+  description="Put in your lawn size and grass type. Get how much seed, fertilizer, crabgrass preventer, lime, straw, compost and water you need, plus how long it takes to mow."
+  answer="<b>Start with your lawn’s square footage.</b> Overseeding takes about half the new-lawn seed rate, fertilizer goes on at about 1 pound of nitrogen per 1,000 square feet per feeding, and lime only goes down if a soil test says so. Put your size and grass in below and it does every number for you."
+  faq={faq} sources={sources}>
+  <Fragment slot="tool"><LawnCalc /></Fragment>
+
+  <h2>Don’t Know Your Square Footage?</h2>
+  <p><a href="/measure/">Measure your lawn on a map</a>. Tap the corners, and it writes the square feet inside each area. When you come back here, the number fills in by itself.</p>
+  <p>Rough guide if you just want a ballpark: a quarter acre is about 10,900 square feet, but most quarter-acre lots have more like 5,000 to 7,000 square feet of actual grass once you take out the house, driveway and beds.</p>
+  <h2>Seed Rates at a Glance</h2>
+  <table>
+    <thead><tr><th>Grass</th><th>New Lawn (lb per 1,000 sq ft)</th><th>Overseed</th></tr></thead>
+    <tbody>
+      <tr><td>Kentucky bluegrass + rye</td><td>3–4</td><td>About half</td></tr>
+      <tr><td>Perennial ryegrass</td><td>3–5</td><td>About half</td></tr>
+      <tr><td>Tall fescue</td><td>6–8</td><td>About half</td></tr>
+      <tr><td>Shade mix (fine fescue)</td><td>4–6</td><td>About half</td></tr>
+    </tbody>
+  </table>
+  <p>Trust the bag over me. Every bag lists its own rate. Which grass? <a href="/lawn-101/#grass">Pick it in four questions</a>. Putting it down: <a href="/resources/spreader-settings/">spreader settings</a>.</p>
+</ToolPage>

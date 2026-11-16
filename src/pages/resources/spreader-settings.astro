@@ -1,0 +1,30 @@
+---
+import ToolPage from '../../layouts/ToolPage.astro';
+import SpreaderHelper from '../../components/SpreaderHelper.astro';
+const faq = [
+  ['What setting should my fertilizer spreader be on?', 'Start with the setting printed on the bag for your spreader model. Then, for no stripes, set it to about half that and cover the lawn twice, the second time going across the first. Same total product, much more even.'],
+  ['Why does my lawn have stripes after fertilizing?', 'Your passes didn’t overlap right. Missed strips stay pale and doubled strips can burn. Half rate in two directions fixes it.'],
+  ['What if my spreader isn’t listed on the bag?', 'Check the spreader maker’s website for a chart, or use a similar model’s setting. Then test: weigh what’s left after a known area and adjust.'],
+  ['Should I use a broadcast or drop spreader?', 'A broadcast (rotary) spreader is easiest for most lawns and blends edges well. A drop spreader is more precise near beds and driveways but stripes easily if you miss by an inch.'],
+  ['Do I spread the edges first?', 'Yes. Do a lap around the outside first (use the edge guard if your spreader has one), then fill in the middle. That gives you room to turn without dumping product.'],
+];
+---
+<ToolPage seo="Fertilizer Spreader Settings Calculator (No Stripes)" crumb="Spreader Settings" slug="spreader-settings" appName="Spreader Settings Helper"
+  h1="Spreader Settings Without the Stripes"
+  description="Put in the setting from the bag and your lawn size. Get the half-rate setting, how much to use per pass, and how many bags to buy. No more striped fertilizer."
+  answer="<b>Use about half the bag’s spreader setting and go over the lawn twice, the second pass across the first.</b> You put down the same total amount, but the misses and overlaps cancel out, so no stripes. Type the bag’s setting and your lawn size below for the exact numbers."
+  faq={faq}>
+  <Fragment slot="tool"><SpreaderHelper /></Fragment>
+
+  <h2>How to Spread, Step by Step</h2>
+  <ol>
+    <li><strong>Find your setting on the bag.</strong> Look for your spreader brand and model in the chart on the back.</li>
+    <li><strong>Set it to about half.</strong> The helper above does the math.</li>
+    <li><strong>Edges first.</strong> One lap around the outside.</li>
+    <li><strong>Pass 1.</strong> Walk back and forth across the lawn at a steady pace, like you’re mowing stripes.</li>
+    <li><strong>Pass 2.</strong> Same thing, crossways to pass 1.</li>
+    <li><strong>Close the hopper when you stop.</strong> Every time. Standing still with it open makes a burn spot.</li>
+    <li><strong>Sweep the driveway.</strong> Blow or sweep granules back onto the grass so they don’t wash into the street.</li>
+  </ol>
+  <p>The full story, with jokes: <a href="/blog/spreader-settings-half-rate-twice/">half rate, twice</a>. What to put in the spreader: <a href="/blog/how-to-read-a-fertilizer-bag/">how to read a fertilizer bag</a> and <a href="/blog/holiday-lawn-fertilizer-schedule/">the holiday feeding schedule</a>.</p>
+</ToolPage>

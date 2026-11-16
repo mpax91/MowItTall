@@ -1,0 +1,28 @@
+---
+import Base from '../../layouts/Base.astro';
+import { TOWNS, TIMING } from '../../data/towns.js';
+const title = 'Lawn Care by Town: Westchester and Nearby | Mow It Tall';
+const description = 'Local lawn care timing and live soil temperature for Bedford, Katonah, Pound Ridge, Mount Kisco, Somers, Lewisboro, Yorktown, Montclair and more.';
+const groups = [['Westchester County, NY', TOWNS.filter((t) => t.state === 'NY')], ['New Jersey', TOWNS.filter((t) => t.state === 'NJ')]];
+const jsonLd = { '@type': 'ItemList', name: 'Lawn care by town', itemListElement: TOWNS.map((t, i) => ({ '@type': 'ListItem', position: i + 1, name: `Lawn care in ${t.name}, ${t.state}`, url: `https://mowittall.com/lawn-care/${t.slug}/` })) };
+---
+<Base title={title} description={description} path="/lawn-care/" jsonLd={jsonLd} crumbs={[['Lawn Care by Town', '/lawn-care/']]}>
+  <main id="main" class="post guide tw">
+    <header class="post-head">
+      <span class="clip-tag">Local</span>
+      <h1>Lawn Care by Town</h1>
+      <p class="post-dek">Same grass, slightly different clocks. Each town page has a live soil reading for that town, what’s different about lawns there, and when to do what.</p>
+    </header>
+    {groups.map(([g, list]) => list.length > 0 && (
+      <section class="tw-group" aria-label={g}>
+        <h2>{g}</h2>
+        <ul class="clip-list">
+          {list.map((t) => (
+            <li><a class="clip" href={`/lawn-care/${t.slug}/`}><span class="clip-tag">{t.name}, {t.state}</span><span class="clip-title">Lawn care in {t.name}</span><span class="tw-sub">{TIMING[t.timing]}</span></a></li>
+          ))}
+        </ul>
+      </section>
+    ))}
+    <p class="page-note">Don’t see your town? If you’re anywhere with cool-season grass in the Northeast, the site works for you. Put your ZIP in the <a href="/resources/lawn-soil-temperature/">soil thermometer</a> or <a href="/plan/">the plan</a>.</p>
+  </main>
+</Base>

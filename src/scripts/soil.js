@@ -22,6 +22,7 @@ function advice(temp, month) {
 }
 
 export function initSoil(el) {
+  if (el.dataset.fixed) { load(el, JSON.parse(el.dataset.fixed)); return; }
   load(el, getPlace());
   window.addEventListener('mit:place', (e) => load(el, e.detail));
 }

@@ -9,7 +9,7 @@ answer: "<b>Figure out why the spot died, loosen the soil, add a thin layer of c
 date: 2026-11-15
 minutes: 3
 topics: [seeding, dogs-kids]
-tools: [["/blog/dog-pee-kids-bouncy-houses-lawn/", "Damage report picker"], ["/lawn-101/#grass", "Pick your grass seed"], ["/resources/#seedwatch", "Seed countdown"]]
+tools: [["/blog/dog-pee-kids-bouncy-houses-lawn/", "Damage report picker"], ["/lawn-101/#grass", "Pick your grass seed"], ["/resources/can-i-seed-now/#seedwatch", "Seed countdown"]]
 faq:
   - q: "Can I just throw grass seed on bare spots?"
     a: "It rarely works. Seed sitting on hard soil dries out or gets eaten by birds. Loosen the soil first, press the seed in, and keep it damp."
@@ -54,7 +54,7 @@ More causes and fixes: the [damage report](/blog/dog-pee-kids-bouncy-houses-lawn
 - **Water lightly once to three times a day** so it never dries out, until the new grass is up and growing. [Watering guide](/guides/how-often-to-water-lawn/).
 - **Keep feet and dogs off** for a few weeks.
 - **First mow** when the new grass reaches about 4 inches.
-- **Watch the timer:** my [seed countdown](/resources/#seedwatch) tells you when to expect sprouts.
+- **Watch the timer:** my [seed countdown](/resources/can-i-seed-now/#seedwatch) tells you when to expect sprouts.
 
 ## Timing
 

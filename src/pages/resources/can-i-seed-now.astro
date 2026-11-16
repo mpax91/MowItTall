@@ -1,0 +1,44 @@
+---
+import ToolPage from '../../layouts/ToolPage.astro';
+import CanISeed from '../../components/CanISeed.astro';
+import SeedWatch from '../../components/SeedWatch.astro';
+const faq = [
+  ['What is the best time to plant grass seed in the Northeast?', 'Mid-August through September. The soil is still warm, so seed sprouts fast, the air is cooling off, and weeds are slowing down. Spring is the backup, but new grass has to survive its first summer.'],
+  ['What soil temperature does grass seed need?', 'Cool-season grass seed sprouts best with soil between about 50 and 70°F. Below 50°F it barely moves. Very hot soil and air make it hard to keep seedlings alive.'],
+  ['Is it too late to plant grass seed in October?', 'Early October can still work with fast seed like perennial ryegrass or tall fescue if the soil is above about 50°F. After mid-October, wait for spring or try dormant seeding once the ground is cold.'],
+  ['What is dormant seeding?', 'Spreading seed on bare spots in late fall or winter, once the ground is too cold for it to sprout. It sits there until spring and comes up early. It works, but some seed gets eaten or washed away.'],
+  ['Can I seed in spring and use crabgrass preventer?', 'Usually not in the same spot. Most crabgrass preventers stop grass seed too. Skip the preventer where you seed, or use a product labeled safe for new seed.'],
+];
+const sources = [
+  ['Penn State Extension: Lawn management through the seasons', 'https://extension.psu.edu/lawn-management-through-the-seasons'],
+  ['Iowa State Extension: Late summer and fall lawn care', 'https://yardandgarden.extension.iastate.edu/how-to/late-summer-and-fall-lawn-care'],
+];
+---
+<ToolPage seo="Can I Plant Grass Seed Now? Live Answer by ZIP" crumb="Can I Seed Now?" slug="can-i-seed-now" appName="Can I Seed Now?"
+  h1="Can I Plant Grass Seed Now?"
+  description="A live yes-or-no answer on planting grass seed this week, from your soil temperature and 7-day forecast. Plus germination times and a seed countdown."
+  answer="<b>In the Northeast, the best time to plant grass seed is mid-August through September, when soil is 50 to 70°F and the air is cooling off.</b> Spring works as a backup once the soil hits 50°F. The live checker below looks at your soil temperature and this week’s forecast and gives you a straight yes or no."
+  faq={faq} sources={sources}>
+  <Fragment slot="tool"><CanISeed /><div class="tp-extra"><SeedWatch guide={false} /></div></Fragment>
+
+  <h2>How It Decides</h2>
+  <ul>
+    <li><strong>Time of year.</strong> Late summer and early fall beat everything. Spring is fine. Summer is a fight. Late fall is for dormant seeding.</li>
+    <li><strong>Soil temperature now and next week.</strong> Seed wants about 50 to 70°F.</li>
+    <li><strong>Heat.</strong> Highs in the upper 80s cook baby grass.</li>
+    <li><strong>Rain.</strong> Some rain is free watering. A downpour washes seed into the gutter.</li>
+  </ul>
+
+  <h2>How Long Until It Comes Up</h2>
+  <table>
+    <thead><tr><th>Grass</th><th>Sprouts In</th><th>First Mow</th></tr></thead>
+    <tbody>
+      <tr><td>Perennial ryegrass</td><td>5 to 10 days</td><td>About 4 weeks</td></tr>
+      <tr><td>Tall fescue</td><td>7 to 14 days</td><td>4 to 5 weeks</td></tr>
+      <tr><td>Fine fescue (shade mixes)</td><td>7 to 14 days</td><td>4 to 6 weeks</td></tr>
+      <tr><td>Kentucky bluegrass</td><td>14 to 30 days</td><td>6 weeks or more</td></tr>
+    </tbody>
+  </table>
+  <p>Already seeded? Use the “Is My Grass Seed Working?” countdown up top and I’ll tell you when to stop worrying.</p>
+  <p>Not sure which seed to buy? <a href="/lawn-101/#grass">Pick your grass in four questions</a>. Full steps: <a href="/guides/when-to-overseed-lawn/">when and how to overseed</a> and <a href="/guides/fix-bare-spots-in-lawn/">fixing bare spots</a>.</p>
+</ToolPage>

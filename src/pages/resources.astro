@@ -11,6 +11,7 @@ import SpreaderHelper from '../components/SpreaderHelper.astro';
 import { DX, DX_GROUPS } from '../data/diagnose.js';
 import { OPS, OPS_GROUPS } from '../data/orderOps.js';
 import { NEEDS, NEED_GROUPS } from '../data/doINeed.js';
+import { TOOL_PAGES } from '../data/toolPages.js';
 
 const title = 'Free Lawn Care Tools and Calculators | Mow It Tall';
 const description =
@@ -28,6 +29,7 @@ const jump = [
       <nav class="shed-jump" aria-label="Jump to a tool">
         {jump.map(([h, t]) => <a class="bf-chip" href={h}>{t}</a>)}
       </nav>
+      <p class="res-pages">Want one tool on its own page? {TOOL_PAGES.map(([sl, t], i) => <>{i > 0 && ' · '}<a href={`/resources/${sl}/`}>{t}</a></>)}</p>
     </section>
 
     <section class="plan plan-mid" aria-labelledby="quiz-h">

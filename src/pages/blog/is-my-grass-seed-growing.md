@@ -78,4 +78,4 @@ Fix the cause, rake the spot lightly, and seed again. Around here, fall seed can
 
 Water it, stay off it, and stop staring at it. Grass has been doing this for millions of years without your supervision. Trust the process.
 
-Haven’t planted yet? Find out [if it’s a good week to seed](/resources/#seed) and [which grass to buy](/blog/grass-types-northeast/).
+Haven’t planted yet? Find out [if it’s a good week to seed](/resources/can-i-seed-now/) and [which grass to buy](/blog/grass-types-northeast/).

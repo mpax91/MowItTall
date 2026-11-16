@@ -1,0 +1,136 @@
+---
+// "Pick your pattern": stripe pattern picker for the stripes post (and the guide).
+// Each pattern is drawn as a little SVG lawn at build time; tapping a chip swaps it and redraws the passes.
+// Colors match the site's mowed-lawn band. Mike reviews all copy.
+const { id = 'stripes' } = Astro.props;
+const W = 320, H = 210;
+const LT = '#8ccf6c', MD = '#5fa860', DK = '#3f8a4f', DD = '#2f7440';
+
+type Band = { d: string; fill: string };
+function straight(): Band[] {
+  const n = 10, w = W / n;
+  return Array.from({ length: n }, (_, i) => ({ d: `M${i * w} 0h${w}v${H}h${-w}z`, fill: i % 2 ? DK : LT }));
+}
+function diagonal(): Band[] {
+  // bands at 45°, drawn wide and clipped to the lawn
+  const w = 30, out: Band[] = [];
+  for (let i = -12, k = 0; i < 16; i++, k++) {
+    const x = i * w * Math.SQRT2;
+    out.push({ d: `M${x} 0L${x + w * Math.SQRT2} 0L${x + w * Math.SQRT2 - H} ${H}L${x - H} ${H}z`, fill: k % 2 ? DK : LT });
+  }
+  return out;
+}
+function checker(): Band[] {
+  const s = 35, out: Band[] = [];
+  for (let r = 0; r * s < H; r++) for (let c = 0; c * s < W; c++) {
+    const a = c % 2, b = r % 2;
+    out.push({ d: `M${c * s} ${r * s}h${s}v${s}h${-s}z`, fill: a && b ? DD : !a && !b ? LT : a ? DK : MD });
+  }
+  return out;
+}
+function diamond(): Band[] {
+  // a checkerboard turned 45°: squares around the lawn's center, rotated (the clip trims the overflow)
+  const s = 30, out: Band[] = [], cx = W / 2, cy = H / 2, c45 = Math.SQRT1_2;
+  const rot = (x: number, y: number) => [cx + (x - cx) * c45 - (y - cy) * c45, cy + (x - cx) * c45 + (y - cy) * c45].map((v) => v.toFixed(1)).join(' ');
+  for (let r = -1; r < 14; r++) for (let c = -1; c < 14; c++) {
+    const x = c * s - 40, y = r * s - 100, a = ((c % 2) + 2) % 2, b = ((r % 2) + 2) % 2;
+    out.push({ d: `M${rot(x, y)}L${rot(x + s, y)}L${rot(x + s, y + s)}L${rot(x, y + s)}z`, fill: a && b ? DD : !a && !b ? LT : a ? DK : MD });
+  }
+  return out;
+}
+function spiral(): Band[] {
+  // concentric square rings mowed clockwise: left side moves away (light), right side toward you (dark)
+  const i = 15, out: Band[] = [];
+  let k = 0;
+  for (; H - 2 * k * i >= 2 * i; k++) {
+    const x0 = k * i, y0 = k * i, x1 = W - k * i, y1 = H - k * i;
+    out.push({ d: `M${x0} ${y0}L${x1} ${y0}L${x1 - i} ${y0 + i}L${x0 + i} ${y0 + i}z`, fill: MD });
+    out.push({ d: `M${x1} ${y0}L${x1} ${y1}L${x1 - i} ${y1 - i}L${x1 - i} ${y0 + i}z`, fill: DK });
+    out.push({ d: `M${x1} ${y1}L${x0} ${y1}L${x0 + i} ${y1 - i}L${x1 - i} ${y1 - i}z`, fill: DD });
+    out.push({ d: `M${x0} ${y1}L${x0} ${y0}L${x0 + i} ${y0 + i}L${x0 + i} ${y1 - i}z`, fill: LT });
+  }
+  // the last strip down the middle
+  out.push({ d: `M${k * i} ${k * i}H${W - k * i}V${H - k * i}H${k * i}z`, fill: MD });
+  return out;
+}
+
+const PATTERNS = [
+  { k: 'straight', name: 'Straight', bands: straight(), diff: 1, time: 'Normal mow', word: 'THE CLASSIC',
+    take: 'The one everybody wants and the one that looks best from the street. Run the stripes toward the house so they point at your front door.',
+    steps: ['Mow two laps around the edge first. That’s where you turn.', 'Pick something straight to aim at: the sidewalk, the driveway, the side of the house.', 'Mow your first stripe dead straight. Every other stripe copies it.', 'Turn around in the edge strip and come back the other way, overlapping a few inches.', 'Finish with one more lap around the edge to clean up the turns.'] },
+  { k: 'diagonal', name: 'Diagonal', bands: diagonal(), diff: 2, time: 'About 10% longer', word: 'SHOWING OFF',
+    take: 'Same as straight, just turned 45 degrees. Looks fancier than it is. Great for square lawns, where straight stripes can look a little boring.',
+    steps: ['Mow two laps around the edge.', 'Start in a corner and aim at the opposite corner. That’s your first stripe.', 'Work out from that line in both directions, overlapping a few inches.', 'The stripes get short near the corners. That’s normal.', 'Clean up with a final edge lap.'] },
+  { k: 'checker', name: 'Checkerboard', bands: checker(), diff: 3, time: 'About twice as long', word: 'BALLPARK',
+    take: 'The ballpark look. Mow straight stripes one way, then mow the whole thing again crossways. Twice the mowing, four times the compliments.',
+    steps: ['Edge laps first.', 'Mow straight stripes one way, like the classic.', 'Now mow the whole lawn again, at a right angle to the first stripes.', 'Keep your stripes the same width both directions or the squares turn into rectangles.', 'Mow on a dry day. Wet grass smears the squares.'] },
+  { k: 'diamond', name: 'Diamond', bands: diamond(), diff: 4, time: 'About twice as long', word: 'COUNTRY CLUB',
+    take: 'A checkerboard turned 45 degrees. Two diagonal passes that cross. This is the one people stop their car for.',
+    steps: ['Edge laps first.', 'Mow diagonal stripes corner to corner.', 'Mow the whole lawn again on the opposite diagonal.', 'Use a fixed point (a tree, a light post) for both first stripes so they cross square.', 'Worth it before a party. Not worth it every week.'] },
+  { k: 'spiral', name: 'Spiral', bands: spiral(), diff: 3, time: 'Normal mow, more turning', word: 'THE BOX',
+    take: 'Start on the outside and work your way in, lap after lap. Each side of the box catches the light differently, so it looks framed, like a picture. Best on square-ish lawns.',
+    steps: ['Start at the outside edge and mow a full lap.', 'Keep going around, each lap just inside the last, overlapping a few inches.', 'Make clean square corners. Slow down and pivot instead of swinging wide.', 'Keep going until you hit the middle.', 'Mow your way out across the box once to get the mower out, or mow the last lap backwards.'] },
+];
+---
+<section class="window tool sp" id={id} aria-labelledby={`${id}-h`} data-stripe-picker>
+  <h2 id={`${id}-h`}>Pick Your Pattern</h2>
+  <p class="sp-sub">Tap a pattern. See what it looks like, how hard it is, and exactly how to mow it.</p>
+  <div class="sp-chips" role="tablist" aria-label="Stripe patterns">
+    {PATTERNS.map((p, i) => (
+      <button type="button" role="tab" class="sp-chip" id={`${id}-tab-${p.k}`} aria-controls={`${id}-p-${p.k}`} aria-selected={i === 0 ? 'true' : 'false'} tabindex={i === 0 ? 0 : -1} data-k={p.k}>{p.name}</button>
+    ))}
+  </div>
+  {PATTERNS.map((p, i) => (
+    <div class="sp-panel" role="tabpanel" id={`${id}-p-${p.k}`} aria-labelledby={`${id}-tab-${p.k}`} data-panel={p.k} hidden={i !== 0}>
+      <div class="sp-lawn">
+        <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${p.name} stripe pattern`}>
+          <defs><clipPath id={`${id}-clip-${p.k}`}><rect width={W} height={H} rx="6" /></clipPath></defs>
+          <g clip-path={`url(#${id}-clip-${p.k})`}>
+            <rect width={W} height={H} fill={MD} />
+            {p.bands.map((b, j) => <path d={b.d} fill={b.fill} stroke={p.k === 'spiral' ? 'rgba(10,36,20,0.18)' : undefined} stroke-width="0.6" style={`--d:${Math.min(j, 60) * 18}ms`} />)}
+          </g>
+          <rect x="1.5" y="1.5" width={W - 3} height={H - 3} rx="6" fill="none" stroke="#0a2414" stroke-width="3" />
+        </svg>
+      </div>
+      <p class="sp-word">{p.word}</p>
+      <div class="sp-stats">
+        <div><span>Difficulty</span><b aria-label={`${p.diff} out of 5`}>{'●'.repeat(p.diff)}<i>{'●'.repeat(5 - p.diff)}</i></b></div>
+        <div><span>Time</span><b>{p.time}</b></div>
+      </div>
+      <p class="sp-take">{p.take}</p>
+      <h3 class="sp-h">How to Mow It</h3>
+      <ol class="sp-steps">{p.steps.map((s) => <li>{s}</li>)}</ol>
+    </div>
+  ))}
+  <p class="sp-fine">Switch patterns every week or two. Same tracks every week leave ruts and lean the grass one way for good.</p>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-stripe-picker]').forEach((root) => {
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('.sp-chip')];
+    const show = (k: string, focus = false) => {
+      tabs.forEach((t) => {
+        const on = t.dataset.k === k;
+        t.setAttribute('aria-selected', String(on));
+        t.tabIndex = on ? 0 : -1;
+        if (on && focus) t.focus();
+      });
+      root.querySelectorAll<HTMLElement>('[data-panel]').forEach((p) => {
+        const on = p.dataset.panel === k;
+        p.hidden = !on;
+        if (on) { p.classList.remove('is-drawn'); void p.offsetWidth; p.classList.add('is-drawn'); }
+      });
+      (window as any).mitTrack?.('tool_choice', { tool_name: 'stripe_picker', choice: k });
+    };
+    tabs.forEach((t, i) => {
+      t.addEventListener('click', () => show(t.dataset.k!));
+      t.addEventListener('keydown', (e) => {
+        if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+        e.preventDefault();
+        const n = tabs[(i + (e.key === 'ArrowRight' ? 1 : tabs.length - 1)) % tabs.length];
+        show(n.dataset.k!, true);
+      });
+    });
+    root.querySelector('[data-panel]:not([hidden])')?.classList.add('is-drawn');
+  });
+</script>

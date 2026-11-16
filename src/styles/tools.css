@@ -557,3 +557,72 @@ main.nb-page > section.nb-rules { padding: 26px 0 0; }
 .seo-h small { font: 600 0.8rem var(--body, inherit); color: var(--paper-dim); }
 .seo-setup { margin: 8px 0; padding-bottom: 12px; }
 .ag-grid .linkish { margin-top: 8px; font-size: 0.8rem; }
+
+/* ---------- Nov 16: weed pages, tool pages, month pages, town pages, stripe picker */
+.flip-more { display: inline-flex; align-items: center; gap: 6px; margin: 8px 2px 4px; font-weight: 800; color: var(--sun); text-decoration: underline; text-underline-offset: 3px; }
+/* weed pages */
+.wd-photos { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 calc(-1 * var(--gutter)) 6px; padding: 0 var(--gutter) 6px; scrollbar-width: none; }
+.wd-photos::-webkit-scrollbar { display: none; }
+.wd-photos figure { flex: 0 0 78%; max-width: 320px; margin: 0; scroll-snap-align: start; position: relative; }
+.wd-photos img { display: block; width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; border: 3px solid var(--win-edge); border-radius: 12px; background: #cfdcc7; }
+.wd-photos figcaption { position: absolute; left: 10px; bottom: 10px; font-size: 0.82rem; font-weight: 700; color: var(--ink); background: var(--paper); padding: 2px 8px; border-radius: 99px; }
+.wd-swipe { margin: 0 0 18px; font-size: 0.85rem; color: var(--paper-dim); }
+@media (min-width: 700px) { .wd-swipe { display: none; } }
+.prose .wd-like li, .prose .wd-steps li, .prose .tw-notes li, .prose .mo-jobs li { margin-bottom: 8px; }
+.wd-when { display: grid; gap: 6px; margin: 6px 0 12px; padding: 12px; background: rgba(0, 0, 0, 0.22); border-radius: 12px; }
+.wd-row { display: grid; grid-template-columns: 52px repeat(12, 1fr); gap: 3px; align-items: center; }
+.wd-lab { font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: var(--paper-dim); }
+.wd-m { text-align: center; font-size: 0.78rem; font-weight: 800; padding: 6px 0; border-radius: 5px; background: rgba(238, 245, 230, 0.08); color: rgba(238, 245, 230, 0.45); }
+.wd-m.on { background: var(--leaf); color: var(--ink); }
+.wd-m.fix.on { background: var(--sun); }
+.wd-chill { padding: 12px 14px; border-left: 4px solid var(--leaf); background: rgba(0, 0, 0, 0.18); border-radius: 0 10px 10px 0; }
+.wd-others { margin-top: 30px; }
+.wd-others h2 { font-size: 1.35rem; margin-bottom: 10px; }
+.wd-others ul { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+.wd-others a { display: flex; align-items: center; gap: 8px; padding: 6px 10px 6px 6px; font-weight: 700; font-size: 0.92rem; line-height: 1.2; color: var(--paper); text-decoration: none; background: rgba(0, 0, 0, 0.25); border: 2px solid rgba(238, 245, 230, 0.25); border-radius: 10px; }
+.wd-others img { width: 40px; height: 40px; border-radius: 6px; flex: none; object-fit: cover; }
+.wd-credits { font-size: 0.82rem; }
+/* tool pages */
+.tp-tool { margin: 0 0 24px; }
+.tp-tool > section, .tp-extra > section { margin-left: 0; margin-right: 0; }
+.tp-tool .soil, .post .tp-tool .soil { padding-left: 0; padding-right: 0; }
+.tp-extra { margin: 6px 0 18px; }
+.res-pages { margin: 14px 0 0; font-size: 0.95rem; color: var(--paper-dim); }
+.res-pages a { color: var(--paper); font-weight: 700; }
+/* month pages */
+.mo-when { display: inline-block; font-size: 0.82rem; font-weight: 700; color: var(--sun); }
+.prose .mo-skip li::marker { content: '✕  '; color: #ff8d84; }
+.mo-nav { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; margin: 28px 0 0; }
+.mo-index { margin: 26px 0 0; }
+.mo-index h2 { font-size: 1.35rem; margin-bottom: 10px; }
+.mo-index ul { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 0; }
+/* town pages */
+.tw-vs { margin: 10px 0 0; padding: 10px 14px; font-weight: 700; background: rgba(0, 0, 0, 0.25); border-radius: 10px; color: var(--leaf); }
+.tw-vs[hidden] { display: none; }
+.tw-group { margin-bottom: 24px; }
+.tw-group h2 { font-size: 1.35rem; margin-bottom: 10px; }
+.tw-sub { display: block; font-size: 0.85rem; color: var(--paper-dim); margin-top: 2px; }
+/* stripe pattern picker */
+.sp-sub { margin: 0 0 12px; }
+.sp-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+.sp-chip { min-height: 40px; padding: 6px 14px; font: inherit; font-weight: 800; font-size: 0.95rem; color: var(--paper); background: rgba(0, 0, 0, 0.25); border: 2px solid rgba(238, 245, 230, 0.35); border-radius: 999px; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.sp-chip[aria-selected='true'] { background: var(--sun); color: var(--ink); border-color: var(--sun); }
+.sp-chip:focus-visible { outline: 3px solid var(--paper); outline-offset: 2px; }
+.sp-panel[hidden] { display: none; }
+.sp-lawn svg { display: block; width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 0 rgba(5, 20, 10, 0.35); }
+.sp-panel.is-drawn path { animation: sp-in 0.35s var(--d) both; }
+@keyframes sp-in { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .sp-panel.is-drawn path { animation: none; } }
+.sp-word { display: table; margin: 14px 0 10px; padding: 4px 12px; font: 800 1.2rem/1.2 var(--display); letter-spacing: 0.02em; color: var(--ink); background: var(--leaf); border: 3px solid var(--ink); border-radius: 8px; }
+.sp-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 10px; }
+.sp-stats div { padding: 8px 10px; background: rgba(0, 0, 0, 0.25); border-radius: 10px; }
+.sp-stats span { display: block; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; color: var(--paper-dim); }
+.sp-stats b { font-size: 1rem; color: var(--sun); letter-spacing: 0.08em; }
+.sp-stats b i { font-style: normal; color: rgba(238, 245, 230, 0.2); }
+.sp-take { margin: 0 0 10px; }
+.sp-h { font-size: 1.1rem; margin: 12px 0 6px; }
+.sp-steps { margin: 0 0 12px; padding-left: 1.3em; }
+.prose .sp-steps li { padding: 0; margin-bottom: 4px; }
+.sp-fine { margin: 0; font-size: 0.85rem; color: var(--paper-dim); }
+.prose ol.sp-steps, .prose ol.wd-steps { padding-left: 1.5em; margin-left: 0; list-style: decimal; }
+.prose ol.sp-steps li { padding-left: 2px; }

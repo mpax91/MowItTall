@@ -9,7 +9,7 @@ answer: "<b>About 1 inch of water a week, counting rain</b>, given in one or two
 date: 2026-11-15
 minutes: 3
 topics: [mowing]
-tools: [["/resources/#water-h", "Should I water this week?"], ["/resources/#seedwatch", "Watering new seed"]]
+tools: [["/resources/should-i-water-my-lawn/", "Should I water this week?"], ["/resources/can-i-seed-now/#seedwatch", "Watering new seed"]]
 faq:
   - q: "How long should I run my sprinkler?"
     a: "Long enough to put down about half an inch per watering. Set out a few empty tuna cans, run the sprinkler, and time how long it takes to fill them half an inch deep. For many sprinklers that's 30 to 60 minutes per zone."
@@ -33,7 +33,7 @@ Most lawns around here get plenty of rain in spring and fall. Watering is mostly
 - **Folded blades.** The blades curl up to save water.
 - **The screwdriver test.** If a screwdriver won't push 6 inches into the soil easily, it's dry down deep.
 
-My [Should I water?](/resources/#water-h) tool does this math for you: rain in the last week versus what the lawn used, plus the forecast.
+My [Should I water?](/resources/should-i-water-my-lawn/) tool does this math for you: rain in the last week versus what the lawn used, plus the forecast.
 
 ## How to Water the Right Way
 

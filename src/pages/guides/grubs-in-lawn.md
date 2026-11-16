@@ -9,7 +9,7 @@ answer: "<b>Check before you treat: most lawns don't need grub control.</b> Peel
 date: 2026-11-15
 minutes: 4
 topics: [dogs-kids, weeds]
-tools: [["/resources/#dx", "What’s wrong with my lawn?"], ["/blog/animals-in-your-lawn/", "Who’s digging up my lawn?"]]
+tools: [["/resources/whats-wrong-with-my-lawn/", "What’s wrong with my lawn?"], ["/blog/animals-in-your-lawn/", "Who’s digging up my lawn?"]]
 faq:
   - q: "What are the signs of grubs in a lawn?"
     a: "Brown patches in late summer or fall that peel back like carpet because the roots are gone, plus skunks, raccoons or birds tearing up the turf at night looking for a snack."
@@ -39,7 +39,7 @@ Grub damage shows up from **late August through October** (and sometimes in spri
 - Brown patches that **peel back like a rug**, because there are no roots holding them down.
 - **Animals digging** at night: skunks, raccoons, crows and turkeys tearing up chunks of turf.
 
-Brown patches that don't lift easily are usually something else: drought, dog spots, disease or a dull blade. My [What’s wrong with my lawn?](/resources/#dx) tool helps sort it out.
+Brown patches that don't lift easily are usually something else: drought, dog spots, disease or a dull blade. My [What’s wrong with my lawn?](/resources/whats-wrong-with-my-lawn/) tool helps sort it out.
 
 ## Step 2: Count Them
 

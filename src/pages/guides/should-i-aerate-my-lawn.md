@@ -9,7 +9,7 @@ answer: "<b>Aerate in late August through September</b>, ideally right before yo
 date: 2026-11-15
 minutes: 3
 topics: [seeding, soil]
-tools: [["/resources/#ops", "Order of operations"], ["/resources/#seed", "Can I seed now?"]]
+tools: [["/resources/#ops", "Order of operations"], ["/resources/can-i-seed-now/", "Can I seed now?"]]
 faq:
   - q: "What month is best to aerate a lawn in New York?"
     a: "Late August through September, when cool-season grass recovers fastest. Early spring is a second choice. Avoid summer heat."

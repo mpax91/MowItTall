@@ -255,9 +255,9 @@ const seedJson = JSON.stringify(SEEDS);
       const ev = (n: number, title: string, body: string) =>
         `BEGIN:VEVENT\r\nUID:mit-seed-${n}-${day(0)}@mowittall.com\r\nDTSTAMP:${day(0)}T120000Z\r\nDTSTART;VALUE=DATE:${day(n)}\r\nSUMMARY:${title}\r\nDESCRIPTION:${body}\r\nEND:VEVENT\r\n`;
       const text = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Mow It Tall//Seed//EN\r\n' +
-        ev(sd.first[1], 'Look for grass sprouts', 'Get low and look across the yard in morning light. Keep it damp. mowittall.com/resources/#seedwatch') +
-        (sd.last[1] !== sd.first[1] ? ev(sd.last[1], 'Seed check: the slow ones', 'The bluegrass/fescue should be up by now. Ease watering to once a day. mowittall.com/resources/#seedwatch') : '') +
-        ev(30, 'First mow check', 'Is the new grass about 4 inches? Mower on high, sharp blade, dry ground. mowittall.com/resources/#seedwatch') +
+        ev(sd.first[1], 'Look for grass sprouts', 'Get low and look across the yard in morning light. Keep it damp. mowittall.com/resources/can-i-seed-now/#seedwatch') +
+        (sd.last[1] !== sd.first[1] ? ev(sd.last[1], 'Seed check: the slow ones', 'The bluegrass/fescue should be up by now. Ease watering to once a day. mowittall.com/resources/can-i-seed-now/#seedwatch') : '') +
+        ev(30, 'First mow check', 'Is the new grass about 4 inches? Mower on high, sharp blade, dry ground. mowittall.com/resources/can-i-seed-now/#seedwatch') +
         'END:VCALENDAR\r\n';
       const a = document.createElement('a');
       a.href = URL.createObjectURL(new Blob([text], { type: 'text/calendar' }));

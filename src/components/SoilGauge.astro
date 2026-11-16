@@ -9,11 +9,13 @@ const ZONES = [
   { id: 'heat', min: 68, max: 85, name: 'Heat stress', what: 'Cool-season grass struggles. Mow tall, water deep, skip fertilizer.' },
 ];
 const lo = 25, hi = 85;
+// place: optional fixed spot ({ name, lat, lon }) for town pages. No ZIP chip, no visitor location.
+const { place } = Astro.props;
 ---
-<section class="soil" aria-labelledby="soil-h" data-soil data-lo={lo} data-hi={hi}>
+<section class="soil" aria-labelledby="soil-h" data-soil data-lo={lo} data-hi={hi} data-fixed={place ? JSON.stringify(place) : undefined}>
   <div class="soil-card">
     <h2 id="soil-h">Soil Temperature, Right Now</h2>
-    <div class="soil-where"><span>Reading for</span> <PlaceChip id="soil-place" /></div>
+    {place ? <div class="soil-where"><span>Reading for</span> <strong>{place.name}</strong></div> : <div class="soil-where"><span>Reading for</span> <PlaceChip id="soil-place" /></div>}
     <p class="soil-note" data-soil-note hidden></p>
     <p class="soil-sub">Two inches down, updated hourly. Grass and weeds go by soil temperature, not the calendar.</p>
 

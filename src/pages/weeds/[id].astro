@@ -1,0 +1,128 @@
+---
+// One page per weed (/weeds/crabgrass/ …). Short facts + photos from weeds.js, long-form from weedPages.js.
+import Base from '../../layouts/Base.astro';
+import { WEEDS } from '../../data/weeds.js';
+import { WEED_PAGES, MONTH_ABBR } from '../../data/weedPages.js';
+import { MONTHS_LONG } from '../../data/tasks.js';
+
+export function getStaticPaths() {
+  return WEEDS.filter((w) => WEED_PAGES[w.id]).map((w) => ({ params: { id: w.id }, props: { w, p: WEED_PAGES[w.id] } }));
+}
+const { w, p } = Astro.props;
+const site = 'https://mowittall.com';
+const path = `/weeds/${w.id}/`;
+const byId = Object.fromEntries(WEEDS.map((x) => [x.id, x]));
+const others = WEEDS.filter((x) => WEED_PAGES[x.id] && x.id !== w.id);
+const months = (list) => list.slice().sort((a, b) => a - b).map((m) => MONTHS_LONG[m - 1]);
+const span = (list) => { const m = months(list); return m.length > 2 ? `${m.slice(0, -1).join(', ')} and ${m.at(-1)}` : m.join(' and '); };
+const faq = p.faq.map(([q, a]) => ({ q, a }));
+const title = p.seo.length + 14 <= 65 ? `${p.seo} | Mow It Tall` : p.seo;
+const imgs = w.photos.map((ph) => `${site}/img/weeds/${w.id}-${ph.n}-960.webp`);
+const jsonLd = { '@graph': [
+  {
+    '@type': 'Article', '@id': `${site}${path}#article`, headline: p.h1, description: p.desc, datePublished: '2026-11-16', dateModified: '2026-11-16', inLanguage: 'en-US',
+    image: imgs, author: { '@id': `${site}/#mike` }, publisher: { '@id': `${site}/#org` }, mainEntityOfPage: `${site}${path}`,
+    about: { '@type': 'Thing', name: w.name }, isPartOf: { '@type': 'CollectionPage', '@id': `${site}/weeds/#board`, name: 'The Weed Board', url: `${site}/weeds/` },
+  },
+  { '@type': 'FAQPage', '@id': `${site}${path}#faq`, mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
+] };
+---
+<Base title={title} description={p.desc} path={path} jsonLd={jsonLd} type="article" published="2026-11-16" modified="2026-11-16"
+  crumbs={[['Lawn Weeds', '/weeds/'], [w.name, path]]} dl={{ post_topics: 'weeds' }}>
+  <main id="main" class="post guide wd">
+    <header class="post-head">
+      <span class="clip-tag">Weed Guide</span>
+      <h1>{p.h1}</h1>
+      <p class="post-meta">By <a href="/yards/">Mike</a>, Bedford, NY. Updated <time datetime="2026-11-16">November 16, 2026</time>. 3 min read.</p>
+    </header>
+
+    <div class="wd-photos" role="group" aria-label={`Photos of ${w.name}`}>
+      {w.photos.map((ph, i) => (
+        <figure>
+          <img src={`/img/weeds/${w.id}-${ph.n}-480.webp`} srcset={`/img/weeds/${w.id}-${ph.n}-480.webp 480w, /img/weeds/${w.id}-${ph.n}-960.webp 960w`}
+            sizes="(min-width: 700px) 320px, 78vw" width="480" height="360" alt={ph.alt} loading={i ? 'lazy' : 'eager'} decoding="async" />
+          <figcaption>{ph.caption}</figcaption>
+        </figure>
+      ))}
+    </div>
+    {w.photos.length > 1 && <p class="wd-swipe" aria-hidden="true">Swipe for more photos →</p>}
+
+    <section class="window guide-answer" aria-labelledby="qa-h">
+      <h2 id="qa-h">The Short Answer</h2>
+      <p set:html={p.answer} />
+    </section>
+
+    <article class="prose">
+      <p>{p.intro}</p>
+
+      <h2>How to Spot {w.name.split(' (')[0]}</h2>
+      <ul>{p.id.map((t) => <li>{t}</li>)}</ul>
+
+      <h3>Don’t Confuse It With</h3>
+      <ul class="wd-like">
+        {p.like.map(([id, name, how]) => (
+          <li><strong>{id && byId[id] && WEED_PAGES[id] ? <a href={`/weeds/${id}/`}>{name}</a> : name}:</strong> {how}</li>
+        ))}
+      </ul>
+
+      <h2>When You’ll See It (and When to Act)</h2>
+      <div class="wd-when" role="img" aria-label={`You’ll notice ${w.name} in ${span(p.see)}. Best time to act: ${span(p.fix)}.`}>
+        <div class="wd-row"><span class="wd-lab">See it</span>{MONTH_ABBR.map((m, i) => <span class:list={['wd-m', { on: p.see.includes(i + 1) }]}>{m}</span>)}</div>
+        <div class="wd-row"><span class="wd-lab">Fix it</span>{MONTH_ABBR.map((m, i) => <span class:list={['wd-m fix', { on: p.fix.includes(i + 1) }]}>{m}</span>)}</div>
+      </div>
+      <p>You’ll notice it in <strong>{span(p.see)}</strong>. The best time to do something about it is <strong>{span(p.fix)}</strong>. Timing is for Westchester, the Lower Hudson Valley and similar Northeast lawns.</p>
+
+      <h2>Why It’s in Your Lawn</h2>
+      <p>{p.why}</p>
+
+      <h2>How to Get Rid of {w.name.split(' (')[0]}</h2>
+      <ol class="wd-steps">
+        {p.steps.map(([h, t]) => <li><strong>{h}.</strong> {t}</li>)}
+      </ol>
+      <p class="wd-chill"><strong>Or just let it be:</strong> {w.chill}</p>
+
+      <h2>Kids and Pets</h2>
+      <p>{p.kids}</p>
+      <p>Whatever you use, read the label and do what it says. The label wins every argument.</p>
+    </article>
+
+    <section class="guide-faq" aria-labelledby="faq-h">
+      <h2 id="faq-h">Common Questions</h2>
+      {faq.map((f) => <details><summary>{f.q}</summary><p>{f.a}</p></details>)}
+    </section>
+
+    <nav class="guide-tools" aria-label="Keep reading" data-pagefind-ignore>
+      <h2>Keep Reading</h2>
+      <ul>
+        {p.guides.map(([href, label]) => <li><a class="bf-chip" href={href}>{label}</a></li>)}
+        <li><a class="bf-chip" href={`/weeds/#${w.id}`}>Back to the weed board</a></li>
+      </ul>
+    </nav>
+
+    <nav class="wd-others" aria-labelledby="others-h" data-pagefind-ignore>
+      <h2 id="others-h">Other Lawn Weeds</h2>
+      <ul>
+        {others.map((x) => (
+          <li><a href={`/weeds/${x.id}/`}><img src={`/img/weeds/${x.id}-thumb.webp`} alt="" width="40" height="40" loading="lazy" /><span>{x.name}</span></a></li>
+        ))}
+      </ul>
+    </nav>
+
+    <aside class="guide-bio" data-pagefind-ignore>
+      <p><b>Who’s Mike?</b> A homeowner in Bedford, NY, known around town as the lawn guy because of the stripes. No lawn company, no products to sell you. <a href="/yards/">See the yard</a>.</p>
+    </aside>
+
+    <aside class="window post-cta" data-pagefind-ignore data-cta-loc="weed_end">
+      <h2>Want a Plan for Your Whole Lawn?</h2>
+      <p>Nine quick questions, two minutes, one plan with phone reminders. Weeds included.</p>
+      <a class="btn" href="/plan/">Get My Free Lawn Plan</a>
+    </aside>
+
+    <p class="page-note wd-credits" data-pagefind-ignore>
+      Photos:{' '}
+      {w.photos.map((ph, j) => (
+        <span>{j > 0 && '; '}{ph.caption.toLowerCase()} by <a href={ph.source} rel="noopener">{ph.by}</a>, {ph.licenseUrl ? <a href={ph.licenseUrl} rel="noopener license">{ph.license}</a> : ph.license}</span>
+      ))}. Cropped and resized.
+    </p>
+  </main>
+</Base>

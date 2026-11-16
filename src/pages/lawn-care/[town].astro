@@ -1,0 +1,112 @@
+---
+// Town pages (/lawn-care/katonah-ny/ …): live soil for the town's own coordinates, local notes, timing, FAQ.
+import Base from '../../layouts/Base.astro';
+import SoilGauge from '../../components/SoilGauge.astro';
+import { TOWNS, TIMING, TOWN_CAL } from '../../data/towns.js';
+
+export function getStaticPaths() {
+  return TOWNS.map((t) => ({ params: { town: t.slug }, props: { t } }));
+}
+const { t } = Astro.props;
+const site = 'https://mowittall.com';
+const path = `/lawn-care/${t.slug}/`;
+const full = `${t.name}, ${t.state}`;
+const bySlug = Object.fromEntries(TOWNS.map((x) => [x.slug, x]));
+const near = t.near.map((s) => bySlug[s]).filter(Boolean);
+const title = `Lawn Care in ${full}: Local Tips | Mow It Tall`;
+const description = `Lawn care in ${full}: live soil temperature, when to put down crabgrass preventer, seed and feed, and what’s different about local lawns.`;
+const faq = t.faq.map(([q, a]) => ({ q, a }));
+const compare = !t.home && !(t.lat === 41.2043 && t.lon === -73.6437);
+const jsonLd = { '@graph': [
+  { '@type': 'Article', '@id': `${site}${path}#article`, headline: `Lawn Care in ${full}`, description, datePublished: '2026-11-16', dateModified: '2026-11-16', inLanguage: 'en-US',
+    author: { '@id': `${site}/#mike` }, publisher: { '@id': `${site}/#org` }, mainEntityOfPage: `${site}${path}`,
+    about: { '@type': 'Place', name: full, address: { '@type': 'PostalAddress', addressLocality: t.name, addressRegion: t.state, postalCode: t.zip, addressCountry: 'US' }, geo: { '@type': 'GeoCoordinates', latitude: t.lat, longitude: t.lon } },
+    spatialCoverage: { '@type': 'Place', name: `${full} (${t.county})` } },
+  { '@type': 'FAQPage', '@id': `${site}${path}#faq`, mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
+] };
+---
+<Base title={title} description={description} path={path} jsonLd={jsonLd} crumbs={[['Lawn Care by Town', '/lawn-care/'], [full, path]]} dl={{ post_topics: 'local' }}>
+  <main id="main" class="post guide tw">
+    <header class="post-head">
+      <span class="clip-tag">{t.county}</span>
+      <h1>Lawn Care in {full}</h1>
+      <p class="post-meta">By <a href="/yards/">Mike</a>, a homeowner in Bedford, NY. {TIMING[t.timing]}</p>
+    </header>
+    <section class="window guide-answer" aria-labelledby="qa-h">
+      <h2 id="qa-h">The Short Answer</h2>
+      <p set:html={`<b>${t.answer.split('. ')[0]}.</b> ${t.answer.split('. ').slice(1).join('. ')}`} />
+    </section>
+
+    <article class="prose">
+      <p>{t.intro}</p>
+      <h2>Soil Temperature in {t.name} Right Now</h2>
+      <p>This is a live reading for {t.name} itself, a couple of inches down, where roots and weed seeds live. Grass and crabgrass go by this number, not the calendar.</p>
+    </article>
+
+    <div class="tp-tool">
+      <SoilGauge place={{ name: full, lat: t.lat, lon: t.lon, zip: t.zip }} />
+      {compare && <p class="tw-vs" data-vs data-lat={t.lat} data-lon={t.lon} data-name={t.name} hidden></p>}
+    </div>
+
+    <article class="prose">
+      <h2>What’s Different About Lawns in {t.name}</h2>
+      <ul class="tw-notes">{t.notes.map(([h, x]) => <li><strong>{h}.</strong> {x}</li>)}</ul>
+
+      <h2>The {t.name} Lawn Calendar</h2>
+      <p>{t.timing === 'early' ? `${t.name} usually runs about a week ahead of northern Westchester in spring, so lean toward the early side of each spring window.` : t.timing === 'late' ? `Higher, wooded parts of ${t.name} can run a few days behind Bedford in spring, so lean toward the late side of each spring window.` : `${t.name} runs on the same clock as Bedford, so these windows fit as is.`} Soil temperature beats the calendar every time.</p>
+      <table>
+        <thead><tr><th>Job</th><th>When</th></tr></thead>
+        <tbody>{TOWN_CAL.map(([j, w]) => <tr><td>{j}</td><td>{w}</td></tr>)}</tbody>
+      </table>
+      <p>See every job, month by month, on <a href="/calendar/">the lawn calendar</a>, or get one built for your yard with <a href="/plan/">the free plan</a>.</p>
+    </article>
+
+    <section class="guide-faq" aria-labelledby="faq-h">
+      <h2 id="faq-h">{t.name} Lawn Questions</h2>
+      {faq.map((f) => <details><summary>{f.q}</summary><p>{f.a}</p></details>)}
+    </section>
+
+    <nav class="guide-tools" aria-label="Free tools" data-pagefind-ignore>
+      <h2>Free Tools for Your {t.name} Lawn</h2>
+      <ul>
+        <li><a class="bf-chip" href="/resources/should-i-water-my-lawn/">Should I Water?</a></li>
+        <li><a class="bf-chip" href="/resources/can-i-seed-now/">Can I Seed Now?</a></li>
+        <li><a class="bf-chip" href="/measure/">Measure My Lawn</a></li>
+        <li><a class="bf-chip" href="/weeds/">What’s That Weed?</a></li>
+        <li><a class="bf-chip" href="/lawn-101/#grass">Pick Your Grass</a></li>
+      </ul>
+    </nav>
+
+    <nav class="guide-tools" aria-label="Nearby towns" data-pagefind-ignore>
+      <h2>Nearby</h2>
+      <ul>
+        {near.map((x) => <li><a class="bf-chip" href={`/lawn-care/${x.slug}/`}>{x.name}, {x.state}</a></li>)}
+        <li><a class="bf-chip" href="/lawn-care/">All Towns</a></li>
+      </ul>
+    </nav>
+
+    <aside class="window post-cta" data-pagefind-ignore data-cta-loc="town_end">
+      <h2>Get a Plan for Your {t.name} Lawn</h2>
+      <p>Nine quick questions, two minutes. Put in your ZIP and the plan uses your local soil reading.</p>
+      <a class="btn" href="/plan/">Get My Free Lawn Plan</a>
+    </aside>
+  </main>
+</Base>
+
+<script>
+  // "X° warmer than Bedford right now": one Open-Meteo call for both spots (free, no key).
+  const el = document.querySelector<HTMLElement>('[data-vs]');
+  if (el) {
+    const B = { lat: 41.2043, lon: -73.6437 };
+    const { lat, lon, name } = el.dataset;
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat},${B.lat}&longitude=${lon},${B.lon}&current=soil_temperature_6cm&temperature_unit=fahrenheit&timezone=America%2FNew_York`;
+    fetch(url).then((r) => (r.ok ? r.json() : Promise.reject(r.status))).then((j) => {
+      const [a, b] = j.map((x: any) => x.current?.soil_temperature_6cm);
+      if (a == null || b == null) return;
+      const d = Math.round(a - b);
+      el.textContent = d === 0 ? `Right now ${name} and Bedford are the same soil temperature.`
+        : `Right now ${name}’s soil is ${Math.abs(d)}° ${d > 0 ? 'warmer' : 'cooler'} than Bedford’s.${Math.abs(d) >= 3 ? (d > 0 ? ' Spring jobs here can come a bit sooner.' : ' Spring jobs here can come a bit later.') : ''}`;
+      el.hidden = false;
+    }).catch(() => {});
+  }
+</script>

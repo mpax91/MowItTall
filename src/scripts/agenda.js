@@ -41,7 +41,7 @@ const MORE = {
   'fall-weeds': ['/blog/fall-kill-weeds-or-plant-seed/', 'Weeds or seed first?'],
   'spot-weeds': ['/weeds/', 'Name that weed'],
   leaves: ['/blog/you-never-needed-a-leaf-blower/', 'Mulch, don’t blow'],
-  summer: ['/resources/#water-h', 'Should I water?'],
+  summer: ['/resources/should-i-water-my-lawn/', 'Should I water?'],
   winter: ['/blog/lawn-mower-maintenance-diy/', 'Mower care'],
 };
 

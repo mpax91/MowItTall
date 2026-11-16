@@ -108,7 +108,7 @@ export const TRAINING = [
     more: { href: '/blog/mowing-the-lawn-is-a-workout/', text: 'Mowing is a workout' } },
   { id: 'soiltemp', label: 'Checking soil temp', word: 'EASY, TIGER', tone: 'close', title: 'It’s 34°F. It will be 34°F tomorrow.',
     lede: 'You don’t need to check daily in January. I do. You don’t need to.',
-    more: { href: '/resources/#soil-h', text: 'Fine, here it is' } },
+    more: { href: '/resources/lawn-soil-temperature/', text: 'Fine, here it is' } },
   { id: 'plan', label: 'The game plan', word: 'DRAFT DAY', tone: 'yes', title: 'Make next year’s plan in February.',
     lede: 'Soil test results in hand, seed picked, holidays on the calendar. Championships are won in the off-season.',
     more: { href: '/plan/', text: 'Get your free plan' } },
@@ -134,7 +134,7 @@ export const HIRE = [
   { id: 'grubs', label: 'Grub control', word: 'MAYBE NOT AT ALL', tone: 'close',
     title: 'Grub control: check before anyone sells you anything.',
     lede: 'Lots of programs include grub control every year “just in case.” Most lawns don’t have a grub problem most years. Peel back a square foot of sod in late summer. A handful of grubs is normal. Lots of them is when you treat.',
-    more: { href: '/resources/#dx-grubs', text: 'Is it grubs?' } },
+    more: { href: '/resources/whats-wrong-with-my-lawn/#dx-grubs', text: 'Is it grubs?' } },
   { id: 'aeration', label: 'Core aeration', word: 'RENT OR HIRE', tone: 'close',
     title: 'Aeration: a fine one to hire out, or rent with a neighbor.',
     lede: 'Core aerators are heavy, and you need one for an afternoon. Hiring a one-time aeration (especially with overseeding) is reasonable. Splitting a rental with a neighbor is cheaper and more fun. Not every lawn needs it every year.' },
@@ -149,7 +149,7 @@ export const HIRE = [
   { id: 'disease', label: 'A lawn problem you can’t figure out', word: 'ASK FIRST', tone: 'close',
     title: 'A real mystery: get a diagnosis before a program.',
     lede: 'Strange spots, dying patches, something spreading? Your county extension office or a one-time visit is worth it. A one-time answer beats a yearly contract.',
-    more: { href: '/resources/#dx', text: 'What’s wrong with my lawn?' } },
+    more: { href: '/resources/whats-wrong-with-my-lawn/', text: 'What’s wrong with my lawn?' } },
 ];
 
 // "Their objection" → your comeback, for the significant-other post. Mike reviews.

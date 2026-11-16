@@ -1,0 +1,34 @@
+---
+import ToolPage from '../../layouts/ToolPage.astro';
+import ChipPicker from '../../components/ChipPicker.astro';
+import { DX, DX_GROUPS } from '../../data/diagnose.js';
+const faq = [
+  ['Why is my lawn turning brown?', 'The most common reasons are heat and drought (the lawn is dormant, not dead), grubs eating the roots, dog urine, a dull mower blade, or a summer fungus. Do the tug test: if the grass peels up like carpet, it’s grubs. If the roots hold, it’s probably dry.'],
+  ['How do I know if my lawn is dead or dormant?', 'Tug a handful. Dormant grass holds tight because the roots are alive, and the crowns at the base are still a little green. Dead grass pulls up easily and stays brown even after a week of real rain.'],
+  ['Why does my lawn have brown spots with green rings?', 'That’s almost always dog urine. The middle gets too much nitrogen and salt and burns, while the edge gets just enough and grows dark green. Water the spot right after, then rake and reseed.'],
+  ['What causes yellow or brown stripes in a lawn?', 'Usually the fertilizer spreader. Pale stripes got missed and brown stripes got a double dose. Spread at half the bag setting in two directions to avoid it.'],
+  ['When should I call a professional?', 'If large areas are dying fast and you can’t match it to anything here, or you see a lot of grubs and don’t want to treat it yourself. Your county’s Cornell Cooperative Extension office can also identify samples.'],
+];
+---
+<ToolPage seo="What’s Wrong With My Lawn? Free Lawn Problem Finder" crumb="What’s Wrong?" slug="whats-wrong-with-my-lawn" appName="What’s Wrong With My Lawn?"
+  h1="What’s Wrong With My Lawn?"
+  description="Brown patches, yellow stripes, mushrooms, bare spots or seed that won’t grow? Tap what you see and get the likely cause, how to check, and the fix."
+  answer="<b>Most lawn problems come down to a handful of causes: drought, grubs, dog urine, a dull mower blade, the fertilizer spreader, hunger, too much water, or shade.</b> Tap what your lawn is doing below and you’ll get the likely cause, a quick way to check, and the fix."
+  faq={faq}>
+  <Fragment slot="tool"><ChipPicker id="dx" title="Tap What You’re Seeing" sub="I’ll tell you the likely cause, how to check, and the fix." items={DX} groups={DX_GROUPS} prompt="Tap what your lawn is doing." /></Fragment>
+
+  <h2>Every Problem in the Finder</h2>
+  <p>Can’t tap right now? Here’s the whole list.</p>
+  {DX_GROUPS.map((g) => (
+    <>
+      <h3>{g.name}</h3>
+      <ul>{DX.filter((d) => d.group === g.id).map((d) => <li><strong>{d.label}:</strong> {d.title}</li>)}</ul>
+    </>
+  ))}
+  <h2>Two Tests That Solve Half of It</h2>
+  <ul>
+    <li><strong>The tug test.</strong> Grab a handful of brown grass and pull. Holds tight? It’s dry or dormant. Peels up like a rug? Grubs.</li>
+    <li><strong>The blade test.</strong> Look at the tip of a grass blade up close. Torn and frayed? Your mower blade is dull.</li>
+  </ul>
+  <p>Weeds instead? See <a href="/weeds/">the weed board</a> with photos. Brown patches in early spring? Check <a href="/guides/snow-mold-and-vole-damage/">snow mold and vole damage</a>. Patches that peel up? Read <a href="/guides/grubs-in-lawn/">the grub guide</a>.</p>
+</ToolPage>

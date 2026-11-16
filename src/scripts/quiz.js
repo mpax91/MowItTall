@@ -115,19 +115,19 @@ const STEPS = [
 const TOOLS = {
   blade: [['/blog/sharpen-your-mower-blade/', 'Is my blade dull?']],
   raise: [['/blog/one-third-rule-mowing/', 'The one-third rule']],
-  cleanup: [['/resources/#dx', 'What’s wrong with my lawn?']],
+  cleanup: [['/resources/whats-wrong-with-my-lawn/', 'What’s wrong with my lawn?']],
   crabgrass: [['/blog/pre-emergent-vs-post-emergent/', 'Pre vs. post'], ['/blog/spreader-settings-half-rate-twice/', 'Spreader settings']],
   'spring-feed': [['/blog/holiday-lawn-fertilizer-schedule/', 'Holiday schedule'], ['/blog/how-to-read-a-fertilizer-bag/', 'Bag decoder'], ['/blog/spreader-settings-half-rate-twice/', 'Spreader settings']],
-  'july4-feed': [['/blog/holiday-lawn-fertilizer-schedule/', 'Holiday schedule'], ['/resources/#water-h', 'Should I water?']],
+  'july4-feed': [['/blog/holiday-lawn-fertilizer-schedule/', 'Holiday schedule'], ['/resources/should-i-water-my-lawn/', 'Should I water?']],
   'fall-feed': [['/blog/holiday-lawn-fertilizer-schedule/', 'Holiday schedule'], ['/blog/how-to-read-a-fertilizer-bag/', 'Bag decoder']],
   'columbus-feed': [['/blog/halloween-is-the-lawn-super-bowl/', 'Why it peaks for Halloween'], ['/blog/how-to-read-a-fertilizer-bag/', 'Bag decoder']],
   'thanksgiving-feed': [['/blog/holiday-lawn-fertilizer-schedule/', 'Holiday schedule']],
   'spot-weeds': [['/weeds/', 'What’s that weed?']],
-  grubs: [['/resources/#dx-grubs', 'Is it really grubs?']],
-  summer: [['/resources/#water-h', 'Should I water? (live)'], ['/blog/mowing-the-lawn-is-a-workout/', 'Is mowing a workout?']],
+  grubs: [['/resources/whats-wrong-with-my-lawn/#dx-grubs', 'Is it really grubs?']],
+  summer: [['/resources/should-i-water-my-lawn/', 'Should I water? (live)'], ['/blog/mowing-the-lawn-is-a-workout/', 'Is mowing a workout?']],
   'soil-test': [['/blog/lawn-soil-test/', 'How to read your soil test']],
   aerate: [['/resources/#ops-aerate', 'Aerating, step by step']],
-  seed: [['/resources/#seed', 'Can I seed now? (live)'], ['/resources/#seedwatch', 'Is my seed working?'], ['/resources/#ops-overseed', 'Seeding, step by step']],
+  seed: [['/resources/can-i-seed-now/', 'Can I seed now? (live)'], ['/resources/can-i-seed-now/#seedwatch', 'Is my seed working?'], ['/resources/#ops-overseed', 'Seeding, step by step']],
   'fall-weeds': [['/blog/fall-kill-weeds-or-plant-seed/', 'Weeds or seed? Pick one']],
   leaves: [['/blog/mulching-vs-bagging/', 'Mulch or bag?']],
   lime: [['/blog/lawn-soil-test/', 'Soil test translator']],
@@ -137,10 +137,10 @@ const TOOLS = {
 // "What's bugging you" → the fixes on the site
 const FIXES = {
   weeds: { h: 'Weeds', p: 'Figure out what you’ve got first. The fix depends on the weed.', links: [['/weeds/', 'Weed ID with photos'], ['/blog/pre-emergent-vs-post-emergent/', 'Pre vs. post']] },
-  crabgrass: { h: 'Crabgrass', p: 'Stop it before it starts: a preventer around Tax Day, when soil hits about 55°F. Mowing tall does half the work.', links: [['/blog/pre-emergent-vs-post-emergent/', 'The bouncer and the hitman'], ['/resources/#seed', 'Live soil temperature']] },
-  bare: { h: 'Bare spots', p: 'Seed in late August through September. Pick the right grass, keep it damp, and don’t panic in week one.', links: [['/lawn-101/#grass', 'Pick your grass'], ['/resources/#seed', 'Can I seed now?'], ['/resources/#seedwatch', 'Is my seed working?']] },
-  brown: { h: 'Brown in summer', p: 'Mow tall and water deep, not daily. Some summer brown is just dormancy. It comes back.', links: [['/resources/#water-h', 'Should I water? (live)'], ['/resources/#dx-summer-brown', 'Dead or just sleeping?']] },
-  grubs: { h: 'Grubs', p: 'Check before you treat. Peel back a square foot of sod in late summer and count.', links: [['/resources/#dx-grubs', 'Is it really grubs?'], ['/blog/animals-in-your-lawn/', 'Who’s digging?']] },
+  crabgrass: { h: 'Crabgrass', p: 'Stop it before it starts: a preventer around Tax Day, when soil hits about 55°F. Mowing tall does half the work.', links: [['/blog/pre-emergent-vs-post-emergent/', 'The bouncer and the hitman'], ['/resources/can-i-seed-now/', 'Live soil temperature']] },
+  bare: { h: 'Bare spots', p: 'Seed in late August through September. Pick the right grass, keep it damp, and don’t panic in week one.', links: [['/lawn-101/#grass', 'Pick your grass'], ['/resources/can-i-seed-now/', 'Can I seed now?'], ['/resources/can-i-seed-now/#seedwatch', 'Is my seed working?']] },
+  brown: { h: 'Brown in summer', p: 'Mow tall and water deep, not daily. Some summer brown is just dormancy. It comes back.', links: [['/resources/should-i-water-my-lawn/', 'Should I water? (live)'], ['/resources/whats-wrong-with-my-lawn/#dx-summer-brown', 'Dead or just sleeping?']] },
+  grubs: { h: 'Grubs', p: 'Check before you treat. Peel back a square foot of sod in late summer and count.', links: [['/resources/whats-wrong-with-my-lawn/#dx-grubs', 'Is it really grubs?'], ['/blog/animals-in-your-lawn/', 'Who’s digging?']] },
   neighbor: { h: 'The neighbor', p: 'Follow this plan and the problem fixes itself. Or send a friendly, anonymous nudge.', links: [['/neighbor/', 'Send to a neighbor'], ['/blog/lawn-compliments/', 'How to take a compliment']] },
 };
 const PROFILES = [
@@ -322,7 +322,7 @@ export function initQuiz(root) {
           <p><span class="plan-k">Water?</span> <b data-now-water>Checking…</b> <small data-now-water-why></small></p>
           <p><span class="plan-k">Soil</span> <b data-now-soil>Checking…</b> <small data-now-soil-why></small></p>
         </div>
-        <p class="plan-links"><a href="/resources/#water-h">Rain meter</a><a href="/resources/#seed">Can I seed now?</a><a href="/#local">Your lawn this week</a></p>
+        <p class="plan-links"><a href="/resources/should-i-water-my-lawn/">Rain meter</a><a href="/resources/can-i-seed-now/">Can I seed now?</a><a href="/#local">Your lawn this week</a></p>
       </div>
 
       <div class="plan-box plan-grass">
@@ -368,7 +368,7 @@ export function initQuiz(root) {
       <div class="plan-box plan-kit">
         <h3>Everything else in your toolkit</h3>
         <p class="plan-links">
-          <a href="/resources/#dx">What’s wrong with my lawn?</a><a href="/weeds/">Weed ID</a><a href="/resources/#calc">Lawn calculator</a>
+          <a href="/resources/whats-wrong-with-my-lawn/">What’s wrong with my lawn?</a><a href="/weeds/">Weed ID</a><a href="/resources/lawn-calculator/">Lawn calculator</a>
           <a href="/blog/lawn-mowing-etiquette/">Can I mow right now?</a><a href="/blog/how-to-read-a-fertilizer-bag/">Bag decoder</a>
           <a href="/blog/lawn-soil-test/">Soil test translator</a><a href="/resources/#need">Do I need this?</a><a href="/blog/lawn-mower-maintenance-diy/">Mower tune-up</a>
           <a href="/blog/walk-behind-vs-riding-vs-zero-turn-mower/">Which mower?</a><a href="/blog/lawn-mowing-playlist/">Mowing playlist</a><a href="/games/">Games</a>
@@ -410,7 +410,7 @@ export function initQuiz(root) {
         tasks.some((t) => t.id === 'crabgrass') ? row('Crabgrass preventer (April)', `<b>${feed}</b>.`) : '',
         seedLb && (seeding || flags.includes('bare') || flags.includes('patchy')) ? row(`Seed (${g.name})`, `<b>${lb(seedLb[0])}–${lb(seedLb[1])} lb</b> ${answers.look === 'dirt' ? 'for a new lawn' : 'to overseed'}. Plus starter fertilizer: ${bags(a, 5000)} (5,000 size).`) : '',
         row('Push-mowing time', `About <b>${mins < 60 ? `${mins} min` : `${Math.floor(mins / 60)} hr ${mins % 60} min`}</b> a mow.`),
-        row('More math', '<a href="/resources/#calc">Lawn calculator</a> for lime, compost, straw and water.'),
+        row('More math', '<a href="/resources/lawn-calculator/">Lawn calculator</a> for lime, compost, straw and water.'),
       ].join('');
     }
     result.querySelector('[data-size]').addEventListener('input', amounts);
