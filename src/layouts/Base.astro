@@ -74,10 +74,7 @@ const NAV = [
 <html lang="en">
   <head>
     <script is:inline define:vars={{ pageDL }}>window.dataLayer = window.dataLayer || []; window.dataLayer.push(pageDL);
-    // GA4 gets events straight through gtag (the GA4 Google tag runs as its own Tag Manager container, GTM-MXGJGQH6, which
-    // ignores the GTM Google tag's settings; a GTM GA4 Event tag doubled every page_view). 'set' adds the page fields to every hit, page_view included.
-    window.gtag = window.gtag || function () { window.dataLayer.push(arguments); };
-    (function () { var s = {}; ['page_type', 'content_group', 'post_tag', 'post_topics'].forEach(function (k) { var v = pageDL[k]; if (v !== undefined && v !== null && v !== '') s[k] = String(v).slice(0, 100); }); window.gtag('set', s); })();</script>
+    window.gtag = window.gtag || function () { window.dataLayer.push(arguments); };</script>
     {!isAdminPage && (<Fragment>
     <!-- Microsoft Clarity page tags (Clarity itself loads through GTM). Queued with Clarity's standard stub, so they apply whenever Clarity loads. Filter recordings by these in Clarity → Filters → Custom tags. -->
     <script is:inline define:vars={{ pageDL }}>(function(c){c.clarity=c.clarity||function(){(c.clarity.q=c.clarity.q||[]).push(arguments)};['page_type','content_group','post_tag','post_topics'].forEach(function(k){var v=pageDL[k];if(v)c.clarity('set',k,String(v).slice(0,255))})})(window);</script>
