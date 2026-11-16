@@ -112,6 +112,7 @@ export function initWhack(root) {
     clearInterval(timer); clearTimeout(spawner);
     holes.forEach((h) => { clearTimeout(h._timeout); clear(h); });
     const prev = best();
+    window.mitTrack && window.mitTrack('game_complete', { game_name: 'whack_a_weed', score, new_best: score > prev ? 1 : 0 });
     if (score > prev) { try { localStorage.setItem('mit-whack', String(score)); } catch { /* private mode */ } }
     $('[data-w-total]').textContent = score;
     $('[data-w-grade]').textContent = GRADES.find(([min]) => score >= min)[1];

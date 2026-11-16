@@ -1,7 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 
-const title = 'Get your lawn game plan: a 2-minute quiz | Mow It Tall';
+const title = 'Free Lawn Care Plan: Take the 2-Minute Quiz | Mow It Tall';
 const description =
   'Nine quick questions about your yard and your effort level. Get a free lawn care plan with calendar reminders, timed for Westchester and the Northeast.';
 const jsonLd = {
@@ -13,7 +13,7 @@ const jsonLd = {
   isPartOf: { '@id': 'https://mowittall.com/#website' },
 };
 ---
-<Base title={title} description={description} path="/plan/" jsonLd={jsonLd}>
+<Base title={title} description={description} path="/plan/" crumbs={[["Free Lawn Plan", "/plan/"]]} jsonLd={jsonLd}>
   <main id="main" class="quiz" data-quiz>
     <div class="quiz-intro">
       <h1>Your Lawn Game Plan</h1>

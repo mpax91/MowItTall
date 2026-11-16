@@ -7,9 +7,12 @@ import '../styles/tools.css';
 import BeerCallout from '../components/BeerCallout.astro';
 import RedVest from '../components/RedVest.astro';
 import { TOPICS } from '../data/topics.js';
+import { allOgPages, ogSlug } from '../data/og.js';
+import { SOCIAL_PROFILES, SAME_AS, X_HANDLE } from '../data/site.js';
+const OG = allOgPages();
 const FOOT_TOPICS = ['mowing', 'feeding', 'seeding', 'weeds', 'soil', 'gear'].map((slug) => TOPICS.find((t) => t.slug === slug)).filter(Boolean);
 const FOOTER = [
-  { title: 'Start Here', links: [['/plan/', 'Free Lawn Plan'], ['/lawn-101/', 'Lawn 101'], ['/calendar/', 'Lawn Calendar'], ['/search/', 'Search the Site']] },
+  { title: 'Start Here', links: [['/plan/', 'Free Lawn Plan'], ['/lawn-101/', 'Lawn 101'], ['/calendar/', 'Lawn Calendar'], ['/guides/', 'Lawn Guides'], ['/search/', 'Search the Site']] },
   { title: 'Free Tools', links: [['/weeds/', 'What’s That Weed?'], ['/measure/', 'Measure Your Yard'], ['/resources/#dx', 'What’s Wrong With My Lawn?'], ['/resources/#water-h', 'Should I Water?'], ['/resources/#seed', 'Can I Seed Now?'], ['/resources/#calc', 'Lawn Calculator'], ['/resources/', 'All Free Tools']] },
   { title: 'The Blog', links: [['/blog/', 'All Posts'], ...FOOT_TOPICS.map((t) => [`/blog/topic/${t.slug}/`, t.name.replace(/\b(\w)/g, (m) => m.toUpperCase()).replace(' For ', ' for ')])] },
   { title: 'Just for Fun', links: [['/games/', 'Lawn Games'], ['/hall/', 'Hall of Fame & Shame'], ['/yards/', 'Mike’s Yard'], ['/neighbor/', 'Send to a Neighbor'], ['/merch/', 'Merch']] },
@@ -25,18 +28,36 @@ interface Props {
   type?: 'website' | 'article';
   published?: string;
   modified?: string;
+  noindex?: boolean;
+  crumbs?: [string, string][] | false;
+  dl?: Record<string, string | number>;
 }
-const { title, description, path = '/', jsonLd, image = '/img/backyard-stripes-1400.webp', imageAlt = 'Mike’s striped backyard lawn in Bedford, NY', type = 'website', published, modified } = Astro.props;
+const { title, description, path = '/', jsonLd, image: imageProp, imageAlt: altProp, type = 'website', published, modified, noindex = false, crumbs: crumbsProp, dl = {} } = Astro.props;
 const site = 'https://mowittall.com';
 const url = site + path;
+// Share image: the page's own 1200x630 card if it has one (src/data/og.js), else Mike's backyard photo.
+const card = !imageProp && OG[path];
+const image = imageProp || (card ? `/og/${ogSlug(path)}.png` : '/img/backyard-stripes-1400.webp');
+const imageAlt = altProp || (card ? `${card.title} | Mow It Tall` : 'Mike’s striped backyard lawn in Bedford, NY');
+const imageType = image.endsWith('.png') ? 'image/png' : image.endsWith('.jpg') ? 'image/jpeg' : 'image/webp';
+const imageSize = card ? [1200, 630] : image.includes('-1400') ? [1400, 1050] : null;
+// Breadcrumbs: pages pass crumbs={[[name, href], ...]} (last = this page). Posts draw their own (crumbs={false} from Post.astro).
+const crumbs = crumbsProp === false || path === '/' ? [] : crumbsProp || [];
+// GA4 content grouping, pushed to the dataLayer before GTM loads (see the Analytics tab in HQ).
+const pageType = path === '/' ? 'home' : path.startsWith('/blog/topic/') ? 'topic' : /^\/(blog|guides)\/$/.test(path) ? 'hub' : path.startsWith('/blog/') ? 'post' : path.startsWith('/guides/') ? 'guide'
+  : ['/plan/', '/measure/', '/calendar/', '/weeds/', '/resources/'].includes(path) ? 'tool' : ['/games/', '/hall/'].includes(path) ? 'fun' : 'page';
+const pageDL = { page_type: pageType, content_group: { home: 'Home', topic: 'Blog topics', hub: 'Hubs', post: 'Blog posts', guide: 'Guides', tool: 'Tools', fun: 'Games & Hall', page: 'Pages' }[pageType], ...dl };
+const isAdminPage = path.startsWith('/admin');
+const crumbLd = crumbs.length ? [{ '@type': 'BreadcrumbList', '@id': `${url}#breadcrumb`, itemListElement: [['Home', '/'], ...crumbs].map(([name, href], i) => ({ '@type': 'ListItem', position: i + 1, name, item: site + href })) }] : [];
 // Site-wide entities on every page, merged with the page's own structured data (deduped by @id).
 const siteGraph = [
   { '@type': 'WebSite', '@id': `${site}/#website`, url: `${site}/`, name: 'Mow It Tall', alternateName: 'mowittall.com', description: 'The easy guide to a better lawn: free lawn plans, tools and short, funny lawn care advice for Westchester and the Northeast.', inLanguage: 'en-US', publisher: { '@id': `${site}/#mike` } },
-  { '@type': 'Person', '@id': `${site}/#mike`, name: 'Mike', url: `${site}/`, description: 'Bedford, NY homeowner known locally as the lawn guy for his striped lawn.', homeLocation: { '@type': 'Place', name: 'Bedford, New York' }, knowsAbout: ['Lawn care', 'Cool-season grass', 'Lawn mowing', 'Lawn fertilizer', 'Overseeding'] },
+  { '@type': 'Person', '@id': `${site}/#mike`, name: 'Mike', url: `${site}/`, description: 'Bedford, NY homeowner known locally as the lawn guy for his striped lawn.', homeLocation: { '@type': 'Place', name: 'Bedford, New York' }, knowsAbout: ['Lawn care', 'Cool-season grass', 'Lawn mowing', 'Lawn fertilizer', 'Overseeding', 'Lawn striping'], worksFor: { '@id': `${site}/#org` }, ...(SAME_AS.length ? { sameAs: SAME_AS } : {}) },
+  { '@type': 'Organization', '@id': `${site}/#org`, name: 'Mow It Tall', url: `${site}/`, slogan: 'You don’t need to be a know-it-all. Just mow it tall.', logo: { '@type': 'ImageObject', url: `${site}/icons/icon-512.png`, width: 512, height: 512 }, founder: { '@id': `${site}/#mike` }, areaServed: ['Westchester County, NY', 'Northeastern United States'], ...(SAME_AS.length ? { sameAs: SAME_AS } : {}) },
 ];
 const pageItems = !jsonLd ? [] : Array.isArray(jsonLd) ? jsonLd.flatMap((j) => j['@graph'] || [j]) : jsonLd['@graph'] || [jsonLd];
 const seen = new Set();
-const graph = [...pageItems.map(({ '@context': _c, ...rest }) => rest), ...siteGraph].filter((n) => !n['@id'] || (seen.has(n['@id']) ? false : (seen.add(n['@id']), true)));
+const graph = [...pageItems.map(({ '@context': _c, ...rest }) => rest), ...crumbLd, ...siteGraph].filter((n) => !n['@id'] || (seen.has(n['@id']) ? false : (seen.add(n['@id']), true)));
 const ld = { '@context': 'https://schema.org', '@graph': graph };
 const NAV = [
   { href: '/lawn-101/', label: 'Lawn 101', match: (p) => p.startsWith('/lawn-101') || p.startsWith('/weeds') || p.startsWith('/yards') },
@@ -48,6 +69,8 @@ const NAV = [
 <!doctype html>
 <html lang="en">
   <head>
+    <script is:inline define:vars={{ pageDL }}>window.dataLayer = window.dataLayer || []; window.dataLayer.push(pageDL);</script>
+    {!isAdminPage && (<Fragment>
     <!-- Google Tag Manager -->
     <script is:inline>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
     new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -55,14 +78,21 @@ const NAV = [
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-PTSGH8QX');</script>
     <!-- End Google Tag Manager -->
+    </Fragment>)}
 
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    <link rel="canonical" href={url} />
+    {noindex ? <meta name="robots" content="noindex, follow" /> : <link rel="canonical" href={url} />}
+    {!noindex && <meta name="robots" content="max-image-preview:large, max-snippet:-1, max-video-preview:-1" />}
     <meta name="theme-color" content="#173d27" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="icon" href="/icons/icon-48.png" type="image/png" sizes="48x48" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="apple-mobile-web-app-title" content="Mow It Tall" />
+    <meta name="application-name" content="Mow It Tall" />
     <meta property="og:type" content={type} />
     <meta property="og:locale" content="en_US" />
     <meta property="og:site_name" content="Mow It Tall" />
@@ -70,6 +100,10 @@ const NAV = [
     <meta property="og:description" content={description} />
     <meta property="og:url" content={url} />
     <meta property="og:image" content={site + image} />
+    <meta property="og:image:secure_url" content={site + image} />
+    <meta property="og:image:type" content={imageType} />
+    {imageSize && <meta property="og:image:width" content={String(imageSize[0])} />}
+    {imageSize && <meta property="og:image:height" content={String(imageSize[1])} />}
     <meta property="og:image:alt" content={imageAlt} />
     {published && <meta property="article:published_time" content={published} />}
     {(modified || published) && <meta property="article:modified_time" content={modified || published} />}
@@ -78,14 +112,23 @@ const NAV = [
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={site + image} />
+    <meta name="twitter:image:alt" content={imageAlt} />
+    {X_HANDLE && <meta name="twitter:site" content={X_HANDLE} />}
+    {X_HANDLE && <meta name="twitter:creator" content={X_HANDLE} />}
     <meta name="author" content="Mike" />
     <link rel="alternate" type="application/rss+xml" title="Mow It Tall blog" href="/rss.xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />
+    <script is:inline>
+      // GA4 events go through Google Tag Manager's dataLayer. mitTrack('event_name', { param: 'value' }).
+      // Also: any element with data-track="event_name" (plus optional data-track-* params) sends that event on click.
+      window.dataLayer = window.dataLayer || [];
+      window.mitTrack = function (event, params) { try { window.dataLayer.push(Object.assign({ event: event }, params || {})); } catch (e) {} };
+    </script>
     <script type="application/ld+json" set:html={JSON.stringify(ld)} />
   </head>
   <body class={path === "/" ? "is-home" : undefined}>
     <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PTSGH8QX" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    {!isAdminPage && <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PTSGH8QX" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>}
     <!-- End Google Tag Manager (noscript) -->
     <a class="skip" href="#main" data-pagefind-ignore>Skip to content</a>
     <header class="top" data-pagefind-ignore>
@@ -103,6 +146,14 @@ const NAV = [
       </nav>
     </header>
 
+    {crumbs.length > 1 && (
+      <nav class="crumbs crumbs-top" aria-label="Breadcrumb" data-pagefind-ignore>
+        <ol>
+          <li><a href="/">Home</a></li>
+          {crumbs.map(([name, href], i) => i === crumbs.length - 1 ? <li aria-current="page">{name}</li> : <li><a href={href}>{name}</a></li>)}
+        </ol>
+      </nav>
+    )}
     <slot />
 
     <footer class="footer" data-pagefind-ignore>
@@ -118,6 +169,13 @@ const NAV = [
           </div>
         ))}
       </nav>
+      {SAME_AS.length > 0 && (
+        <ul class="foot-social" aria-label="Mow It Tall on social media">
+          {Object.entries(SOCIAL_PROFILES).filter(([, u]) => u).map(([k, u]) => (
+            <li><a href={u} rel="me noopener" target="_blank" data-track="social_profile_click" data-track-platform={k}>{({ instagram: 'Instagram', facebook: 'Facebook', youtube: 'YouTube', tiktok: 'TikTok', x: 'X', threads: 'Threads', pinterest: 'Pinterest', reddit: 'Reddit', nextdoor: 'Nextdoor' } as any)[k] || k}</a></li>
+          ))}
+        </ul>
+      )}
       <div class="foot-extra">
         <BeerCallout compact />
         <p>No gas leaf blowers were used in the making of this website.</p>
@@ -163,6 +221,43 @@ const NAV = [
           msg.textContent = r && r.status === 503 ? 'The password isn’t set up in Cloudflare yet.' : (j as any).error === 'Wrong key.' ? 'Wrong password.' : 'Couldn’t check right now.';
         });
       }
+    </script>
+    <script is:inline>
+      // Site-wide GA4 events (no edits needed in each tool). Names and params are documented in HQ → Analytics.
+      (function () {
+        var T = window.mitTrack, seen = {};
+        var slug = function (t) { return String(t || '').toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 40); };
+        var where = function (el) { var s = el.closest('[data-cta-loc], section[id], aside, header, footer, .sticky-cta, nav'); return s ? (s.getAttribute('data-cta-loc') || s.id || s.className.split(' ')[0] || s.tagName.toLowerCase()) : 'body'; };
+        document.addEventListener('click', function (e) {
+          var el = e.target.closest && e.target.closest('a, button, [data-track]'); if (!el) return;
+          var tr = el.closest('[data-track]');
+          if (tr) { var p = {}; for (var k in tr.dataset) if (k.indexOf('track') === 0 && k !== 'track') p[slug(k.slice(5))] = tr.dataset[k]; T(tr.dataset.track, p); }
+          var href = el.getAttribute && el.getAttribute('href');
+          if (href && /^\/plan\/?(\?|#|$)/.test(href) && location.pathname.indexOf('/plan') !== 0) T('plan_cta_click', { cta_location: where(el), cta_text: (el.textContent || '').trim().slice(0, 40) });
+          if (href && /^\/(guides|blog)\//.test(href) && el.closest('.related, .guide-more, .post-topics, .crumbs')) T('internal_link_click', { link_url: href, link_area: where(el) });
+        }, true);
+        // First real interaction with each tool on the page = tool_use (once per tool per page view)
+        var toolUse = function (e) {
+          var el = e.target.closest && e.target.closest('[data-tool], [data-widget], .tool, .window[id], section[id]'); if (!el) return;
+          var h = el.querySelector('h2, h3');
+          var name = el.getAttribute('data-tool') || el.getAttribute('data-widget') || el.id || slug(h && h.textContent);
+          if (!name || seen[name] || /^(main|plan)$/.test(name)) return; seen[name] = 1;
+          T('tool_use', { tool_name: slug(name) });
+        };
+        document.addEventListener('change', toolUse, true);
+        document.addEventListener('input', function (e) { if (e.target.type === 'range' || e.target.type === 'number' || e.target.type === 'text') toolUse(e); }, true);
+        document.addEventListener('click', function (e) { if (e.target.closest && e.target.closest('button, [role=button], .flip-btn, .flip-inner') && !e.target.closest('header.top, footer, .crumbs')) toolUse(e); }, true);
+        // Native share sheet + copy-to-clipboard
+        if (navigator.share) { var sh = navigator.share.bind(navigator); navigator.share = function (d) { T('share', { method: 'share_sheet', content_type: d && d.files ? 'image' : 'link', item_id: location.pathname }); return sh(d); }; }
+        if (navigator.clipboard && navigator.clipboard.writeText) { var wt = navigator.clipboard.writeText.bind(navigator.clipboard); navigator.clipboard.writeText = function (t) { T('share', { method: 'copy', content_type: /https?:/.test(t) ? 'link' : 'text', item_id: location.pathname }); return wt(t); }; }
+        // Downloads made in the browser (.ics calendars, saved images): anchors with a download attribute
+        var ac = HTMLAnchorElement.prototype.click;
+        HTMLAnchorElement.prototype.click = function () { if (this.download) { var ext = (this.download.split('.').pop() || '').toLowerCase(); T(ext === 'ics' ? 'calendar_download' : 'file_download', { file_name: this.download, file_extension: ext, tool_name: slug(location.pathname) || 'home' }); } return ac.apply(this, arguments); };
+        // Location and yard size (coarse only: first 3 ZIP digits, size bucket)
+        window.addEventListener('mit:place', function (e) { var z = e.detail && (e.detail.zip || ''); T('location_set', { zip3: String(z).slice(0, 3), method: e.detail && e.detail.source || 'zip' }); });
+        window.addEventListener('appinstalled', function () { T('app_installed', {}); });
+        window.addEventListener('mit:yard', function (e) { var t = e.detail && e.detail.total || 0; T('yard_measured', { yard_size: t < 2500 ? 'under_2500' : t < 5000 ? '2500_5000' : t < 10000 ? '5000_10000' : t < 21780 ? '10000_half_acre' : 'half_acre_plus' }); });
+      })();
     </script>
   </body>
 </html>

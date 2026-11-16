@@ -1,0 +1,38 @@
+---
+import Base from '../../layouts/Base.astro';
+import { allPosts } from '../../data/posts.js';
+import { TOPICS } from '../../data/topics.js';
+
+const guides = allPosts(import.meta.glob('./[a-z]*.md', { eager: true }));
+const title = 'Lawn Care Guides: Straight Answers | Mow It Tall';
+const description = 'Straight answers to common lawn questions for the Northeast: mowing height, when to overseed, crabgrass preventer, watering, grubs and aeration.';
+const groups = TOPICS.map((t) => ({ ...t, items: guides.filter((g) => (g.topics || [])[0] === t.slug) })).filter((g) => g.items.length);
+const site = 'https://mowittall.com';
+const jsonLd = {
+  '@type': 'CollectionPage', '@id': `${site}/guides/#guides`, name: 'Mow It Tall lawn guides', url: `${site}/guides/`, description,
+  mainEntity: { '@type': 'ItemList', itemListElement: guides.map((g, i) => ({ '@type': 'ListItem', position: i + 1, url: site + g.url, name: g.title })) },
+};
+---
+<Base title={title} description={description} path="/guides/" jsonLd={jsonLd} crumbs={[['Guides', '/guides/']]}>
+  <main id="main" class="page">
+    <header class="page-head">
+      <h1>Lawn Guides</h1>
+      <p class="lede">The straight answers. No jokes (well, fewer). Each one starts with the short answer, then the how-to. For the fun stuff, head to <a href="/blog/">the blog</a>.</p>
+    </header>
+    {groups.map((g) => (
+      <section class="guide-group" aria-labelledby={`g-${g.slug}`}>
+        <h2 id={`g-${g.slug}`}>{g.name}</h2>
+        <ul class="clip-list">
+          {g.items.map((p) => (
+            <li><a class="clip" href={p.url}><span class="clip-tag">Guide</span><span class="clip-title">{p.title}</span><span class="clip-dek">{p.description}</span></a></li>
+          ))}
+        </ul>
+      </section>
+    ))}
+    <aside class="window post-cta" data-cta-loc="guides_index">
+      <h2>Rather Skip the Reading?</h2>
+      <p>Answer nine questions and get the few things your yard needs, in order, with reminders.</p>
+      <a class="btn" href="/plan/">Get My Free Lawn Plan</a>
+    </aside>
+  </main>
+</Base>

@@ -1,10 +1,10 @@
 ---
 import Base from '../layouts/Base.astro';
 import { NOTES } from '../data/neighborNotes.js';
-const title = 'Send Mow It Tall to a neighbor (anonymously, if you want)';
+const title = 'Send a Neighbor a Free Lawn Plan (Anonymously) | Mow It Tall';
 const description = 'Know a lawn that needs help? Send your neighbor a free lawn plan. Print an anonymous door note with a QR code, or text it from your phone.';
 ---
-<Base title={title} description={description} path="/neighbor/">
+<Base title={title} description={description} path="/neighbor/" crumbs={[["Send to a Neighbor", "/neighbor/"]]}>
   <main id="main" class="page nb-page">
     <header class="page-head nb-head">
       <h1>Send This to a Neighbor</h1>

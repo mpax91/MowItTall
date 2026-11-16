@@ -1,4 +1,7 @@
+# Mow It Tall. Search engines and AI answer engines are welcome on everything public.
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /api/
 
 Sitemap: https://mowittall.com/sitemap-index.xml

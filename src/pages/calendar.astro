@@ -30,7 +30,7 @@ const jsonLd = {
   mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
 };
 ---
-<Base title={title} description={description} path="/calendar/" jsonLd={jsonLd}>
+<Base title={title} description={description} path="/calendar/" crumbs={[["Resources", "/resources/"], ["Lawn Calendar", "/calendar/"]]} jsonLd={jsonLd}>
   <main id="main">
     <section class="page-head page-head-hub">
       <h1>The Lawn Calendar</h1>

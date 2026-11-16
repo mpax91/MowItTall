@@ -707,6 +707,7 @@ export function initGame(root) {
     const key = `mit-best-${level.id}`;
     const prevBest = store.get(key);
     if (total > prevBest) store.set(key, total);
+    window.mitTrack && window.mitTrack('game_complete', { game_name: 'stripe_game', level_name: level.id, score: total, new_best: total > prevBest ? 1 : 0 });
     const stars = total >= 900 ? 3 : total >= 750 ? 2 : total >= 550 ? 1 : 0;
     ui.grade.textContent = GRADES.find(([min]) => total >= min)[1];
     ui.total.textContent = total;

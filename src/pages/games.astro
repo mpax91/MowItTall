@@ -2,10 +2,10 @@
 import Base from '../layouts/Base.astro';
 import StripeGame from '../components/StripeGame.astro';
 import WhackAWeed from '../components/WhackAWeed.astro';
-const title = 'Lawn games: stripe the yard and whack the weeds | Mow It Tall';
+const title = 'Free Lawn Games: Mow Stripes, Whack Weeds | Mow It Tall';
 const description = 'Two quick lawn games: mow perfectly straight stripes, then whack dandelions without hurting the bees. Learn a real lawn tip every round.';
 ---
-<Base title={title} description={description} path="/games/">
+<Base title={title} description={description} path="/games/" crumbs={[["Games", "/games/"]]}>
   <main id="main" class="page page-games">
     <header class="page-head">
       <h1>The Games</h1>

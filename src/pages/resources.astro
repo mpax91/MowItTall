@@ -14,13 +14,13 @@ import { NEEDS, NEED_GROUPS } from '../data/doINeed.js';
 
 const title = 'Free Lawn Care Tools and Calculators | Mow It Tall';
 const description =
-  'Free lawn tools: can I seed now, is my grass seed working, what’s wrong with my lawn, order of operations, lawn calculator, spreader settings, should I water and soil temperature.';
+  'Free lawn tools: can I seed now, is my seed working, what’s wrong with my lawn, a lawn calculator, spreader settings, should I water and live soil temperature.';
 const jump = [
   ['#seed', 'Can I seed now?'], ['#seedwatch', 'Is my seed working?'], ['#dx', 'What’s wrong?'], ['#ops', 'Order of operations'], ['#calc', 'Lawn calculator'],
   ['#spreader', 'Spreader settings'], ['#need', 'Do I need this?'], ['#water-h', 'Should I water?'], ['#measure-h', 'Measure'], ['#grass-h', 'Pick grass'],
 ];
 ---
-<Base title={title} description={description} path="/resources/">
+<Base title={title} description={description} path="/resources/" crumbs={[["Resources", "/resources/"]]}>
   <main id="main">
     <section class="page-head page-head-hub">
       <h1>Free Lawn Resources</h1>

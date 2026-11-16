@@ -2,10 +2,10 @@
 import Base from '../layouts/Base.astro';
 import { PHOTOS } from '../data/photos.js';
 
-const title = 'The yards: lawn stripe photos from Bedford, NY | Mow It Tall';
+const title = 'Lawn Stripe Photos From Bedford, NY | Mow It Tall';
 const description = 'Real lawns, real stripes, no filters. Photos from Mike’s yard in Bedford, NY, plus the Lawn Hall of Fame where you can post yours.';
 ---
-<Base title={title} description={description} path="/yards/">
+<Base title={title} description={description} path="/yards/" crumbs={[["Lawn 101", "/lawn-101/"], ["Mike’s Yard", "/yards/"]]}>
   <main id="main" class="page">
     <header class="page-head">
       <h1>The Yards</h1>

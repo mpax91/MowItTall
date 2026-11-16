@@ -1,3 +1,4 @@
+import { PLAYBOOK } from './playbook.js';
 // Mow It Tall API (Cloudflare Worker). Everything that isn't /api/* is served straight from ./dist.
 // Lawn Hall of Fame / Hall of Shame: anyone can upload, Mike approves before anything shows,
 // Reddit-style up/down votes, one vote per photo per phone (random device id, no spam check by Mike's call).
@@ -30,6 +31,13 @@ async function init(db) {
         // dashboard: when each piece of social copy was last posted, per platform
         db.prepare(`CREATE TABLE IF NOT EXISTS social_log (
           id INTEGER PRIMARY KEY AUTOINCREMENT, item TEXT NOT NULL, platform TEXT NOT NULL, at INTEGER NOT NULL)`),
+        // HQ to-do list: done state for the built-in items (playbook.js) + Mike's own items
+        db.prepare(`CREATE TABLE IF NOT EXISTS todo_state (id TEXT PRIMARY KEY, done_at INTEGER, note TEXT)`),
+        db.prepare(`CREATE TABLE IF NOT EXISTS todo_custom (id TEXT PRIMARY KEY, grp TEXT, title TEXT NOT NULL, created INTEGER NOT NULL)`),
+        // HQ settings and saved results (audit runs, Looker embed URL, profile links): small JSON blobs by key
+        db.prepare(`CREATE TABLE IF NOT EXISTS kv (k TEXT PRIMARY KEY, v TEXT, at INTEGER)`),
+        // Search Console / Bing exports uploaded in HQ (rank tracker), one row per upload
+        db.prepare(`CREATE TABLE IF NOT EXISTS seo_snap (id INTEGER PRIMARY KEY AUTOINCREMENT, source TEXT, label TEXT, kind TEXT, rows TEXT, at INTEGER)`),
       ]);
       const now = Date.now();
       await db.batch(SEED.map(([id, board, caption, name, town, url, w, h], i) =>
@@ -193,6 +201,60 @@ async function dash(env, req, url) {
     const at = Date.now();
     const r = await env.DB.prepare('INSERT INTO social_log (item, platform, at) VALUES (?, ?, ?)').bind(item, platform, at).run();
     return json({ ok: true, id: r.meta.last_row_id, at });
+  }
+  /* ----- to-do list */
+  if (p === '/api/admin/todos' && req.method === 'GET') {
+    const [st, cu] = await env.DB.batch([
+      env.DB.prepare('SELECT id, done_at, note FROM todo_state'),
+      env.DB.prepare('SELECT id, grp, title, created FROM todo_custom ORDER BY created'),
+    ]);
+    return json({ playbook: PLAYBOOK, state: st.results, custom: cu.results });
+  }
+  if (p === '/api/admin/todos' && req.method === 'POST') {
+    const { action, id, done, note, title, grp } = await req.json().catch(() => ({}));
+    if (action === 'add') {
+      const t = clean(title, 200); if (!t) return bad('Type something.');
+      const nid = 'c-' + crypto.randomUUID().slice(0, 8);
+      await env.DB.prepare('INSERT INTO todo_custom (id, grp, title, created) VALUES (?, ?, ?, ?)').bind(nid, clean(grp, 40) || 'mine', t, Date.now()).run();
+      return json({ ok: true, id: nid });
+    }
+    if (typeof id !== 'string' || id.length > 60) return bad('Bad id.');
+    if (action === 'remove') { await env.DB.batch([env.DB.prepare('DELETE FROM todo_custom WHERE id = ?').bind(id), env.DB.prepare('DELETE FROM todo_state WHERE id = ?').bind(id)]); return json({ ok: true }); }
+    await env.DB.prepare(`INSERT INTO todo_state (id, done_at, note) VALUES (?, ?, ?)
+      ON CONFLICT (id) DO UPDATE SET done_at = excluded.done_at, note = COALESCE(excluded.note, todo_state.note)`)
+      .bind(id, done ? Date.now() : null, note === undefined ? null : clean(note, 500)).run();
+    return json({ ok: true });
+  }
+  /* ----- small saved settings/results */
+  if (p === '/api/admin/kv' && req.method === 'GET') {
+    const k = url.searchParams.get('k');
+    const row = await env.DB.prepare('SELECT v, at FROM kv WHERE k = ?').bind(String(k)).first();
+    return json({ k, v: row ? JSON.parse(row.v) : null, at: row ? row.at : null });
+  }
+  if (p === '/api/admin/kv' && req.method === 'POST') {
+    const { k, v } = await req.json().catch(() => ({}));
+    if (typeof k !== 'string' || !/^[a-z0-9:_-]{1,60}$/.test(k)) return bad('Bad key.');
+    const txt = JSON.stringify(v ?? null);
+    if (txt.length > 900_000) return bad('Too big to save.');
+    await env.DB.prepare('INSERT INTO kv (k, v, at) VALUES (?, ?, ?) ON CONFLICT (k) DO UPDATE SET v = excluded.v, at = excluded.at').bind(k, txt, Date.now()).run();
+    return json({ ok: true });
+  }
+  /* ----- rank tracker snapshots */
+  if (p === '/api/admin/snaps' && req.method === 'GET') {
+    const id = url.searchParams.get('id');
+    if (id) { const r = await env.DB.prepare('SELECT * FROM seo_snap WHERE id = ?').bind(Number(id)).first(); return json({ snap: r ? { ...r, rows: JSON.parse(r.rows) } : null }); }
+    const { results } = await env.DB.prepare('SELECT id, source, label, kind, at, length(rows) size FROM seo_snap ORDER BY at DESC LIMIT 200').all();
+    return json({ snaps: results });
+  }
+  if (p === '/api/admin/snaps' && req.method === 'POST') {
+    const { action, id, source, label, kind, rows } = await req.json().catch(() => ({}));
+    if (action === 'delete') { await env.DB.prepare('DELETE FROM seo_snap WHERE id = ?').bind(Number(id)).run(); return json({ ok: true }); }
+    if (!Array.isArray(rows) || !rows.length) return bad('No rows found in that file.');
+    const txt = JSON.stringify(rows.slice(0, 5000));
+    if (txt.length > 1_800_000) return bad('That export is too big. Try a shorter date range.');
+    const r = await env.DB.prepare('INSERT INTO seo_snap (source, label, kind, rows, at) VALUES (?, ?, ?, ?, ?)')
+      .bind(clean(source, 20) || 'gsc', clean(label, 80), kind === 'pages' ? 'pages' : 'queries', txt, Date.now()).run();
+    return json({ ok: true, id: r.meta.last_row_id });
   }
   return bad('Not found.', 404);
 }

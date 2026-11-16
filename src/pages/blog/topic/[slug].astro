@@ -9,7 +9,7 @@ export function getStaticPaths() {
 }
 const { topic } = Astro.props;
 const posts = allPosts(import.meta.glob('../[a-z]*.md', { eager: true })).filter((p) => (p.topics || []).includes(topic.slug));
-const title = `${topic.name}: lawn care posts | Mow It Tall`;
+const title = `${topic.name} Tips and Lawn Care Posts | Mow It Tall`;
 const description = `${topic.blurb} Short, funny lawn care posts from Bedford, NY.`;
 const jsonLd = {
   '@context': 'https://schema.org',
@@ -24,7 +24,7 @@ const jsonLd = {
 };
 const others = TOPICS.filter((t) => t.slug !== topic.slug);
 ---
-<Base title={title} description={description} path={`/blog/topic/${topic.slug}/`} jsonLd={jsonLd}>
+<Base title={title} description={description} path={`/blog/topic/${topic.slug}/`} crumbs={[["Blog", "/blog/"], [topic.name, `/blog/topic/${topic.slug}/`]]} jsonLd={jsonLd}>
   <main id="main" class="page">
     <header class="page-head">
       <a class="post-back" href="/blog/" data-pagefind-ignore>Blog</a>

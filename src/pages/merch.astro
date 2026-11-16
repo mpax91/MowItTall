@@ -1,7 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import BeerCallout from '../components/BeerCallout.astro';
-const title = 'Mow It Tall merch (coming soon)';
+const title = 'Mow It Tall Merch (Coming Soon)';
 const description = 'Hats and shirts for people who mow tall. The Mow It Tall merch store is coming soon.';
 // Placeholder designs. Swap in real products and links when the store opens.
 const items = [
@@ -11,7 +11,7 @@ const items = [
   { name: '“Leave the clippings” tee', note: 'Free fertilizer. Every mow.', kind: 'tee', line1: 'LEAVE THE', line2: 'CLIPPINGS' },
 ];
 ---
-<Base title={title} description={description} path="/merch/">
+<Base title={title} description={description} path="/merch/" noindex crumbs={[["Merch", "/merch/"]]}>
   <main id="main" class="page">
     <header class="page-head">
       <h1>Merch</h1>

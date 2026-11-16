@@ -289,6 +289,7 @@ export function initHeroMower(root) {
     const best = Number(localStorage.getItem(BEST_KEY) || 0);
     const isBest = score > best;
     if (isBest) try { localStorage.setItem(BEST_KEY, String(score)); } catch {}
+    window.mitTrack && window.mitTrack('game_complete', { game_name: 'hero_stripe', score, new_best: isBest ? 1 : 0, coverage: Math.round(cov * 100) });
     const [, title, tip] = RATINGS.find(([min]) => score >= min);
     result.querySelector('[data-score]').textContent = String(score);
     result.querySelector('[data-title]').textContent = title + (isBest && best ? ' New best!' : '');

@@ -1,0 +1,44 @@
+---
+// Link-in-bio page for Instagram, TikTok, X and Threads (instead of Linktree). Not for search: noindex.
+// Bio links carry utm tags (see HQ → Social → Setup Plan), and each button sends a GA4 event.
+import Base from '../layouts/Base.astro';
+import { allPosts } from '../data/posts.js';
+import { SOCIAL_PROFILES, TIPS_ON, tipLink } from '../data/site.js';
+const latest = allPosts(import.meta.glob('./blog/[a-z]*.md', { eager: true }))[0];
+const LINKS = [
+  ['/plan/', 'Get My Free Lawn Plan', '2 minutes. No email needed.', 'plan', true],
+  [latest.url, `New: ${latest.title}`, 'The latest from the blog', 'latest'],
+  ['/calendar/', 'What Should I Do This Month?', 'The lawn calendar', 'calendar'],
+  ['/weeds/', 'What’s That Weed?', 'Photos and easy fixes', 'weeds'],
+  ['/guides/', 'Straight Answers', 'Mowing, seed, watering, grubs and more', 'guides'],
+  ['/hall/', 'Hall of Fame (and Shame)', 'Post your stripes. Vote.', 'hall'],
+  ['/measure/', 'How Big Is My Lawn?', 'Measure it on a map', 'measure'],
+];
+const names = { instagram: 'Instagram', facebook: 'Facebook', youtube: 'YouTube', tiktok: 'TikTok', x: 'X', threads: 'Threads', pinterest: 'Pinterest', reddit: 'Reddit', nextdoor: 'Nextdoor' };
+---
+<Base title="Mow It Tall Links" description="Free lawn plan, the latest post, the lawn calendar, weed ID and more from Mike, Bedford NY’s lawn guy." path="/links/" noindex>
+  <main id="main" class="page links-page">
+    <header class="page-head">
+      <h1>Hi, I’m Mike.</h1>
+      <p class="lede">Bedford, NY’s lawn guy. Small changes, big stripes. Start here:</p>
+    </header>
+    <ul class="links-list">
+      {LINKS.map(([href, t, sub, id, main]) => (
+        <li><a class:list={['links-btn', main && 'is-main']} href={href} data-track="link_page_click" data-track-target={id}><b>{t}</b><span>{sub}</span></a></li>
+      ))}
+      {TIPS_ON && <li><a class="links-btn" href={tipLink(5)} target="_blank" rel="noopener" data-track="tip_click" data-track-amount="5"><b>Buy Me a Beer</b><span>If the site helped</span></a></li>}
+    </ul>
+    {Object.values(SOCIAL_PROFILES).some(Boolean) && (
+      <p class="links-social">{Object.entries(SOCIAL_PROFILES).filter(([, u]) => u).map(([k, u]) => <a href={u} rel="me noopener" target="_blank">{(names as any)[k] || k}</a>)}</p>
+    )}
+  </main>
+</Base>
+<style>
+  .links-list { list-style: none; padding: 0; margin: 0 0 24px; display: grid; gap: 10px; }
+  .links-btn { display: block; text-decoration: none; background: var(--paper); color: var(--ink); border: 3px solid var(--ink); border-radius: 12px; padding: 14px 16px; box-shadow: 0 4px 0 rgba(5, 20, 10, 0.35); }
+  .links-btn b { display: block; font: 800 1.1rem/1.25 var(--display); }
+  .links-btn span { font-size: 0.9rem; color: #3c5a44; }
+  .links-btn.is-main { background: #c8372d; color: #fff; border-color: #7d1f19; }
+  .links-btn.is-main span { color: #ffe3df; }
+  .links-social { display: flex; flex-wrap: wrap; gap: 14px; font-weight: 700; }
+</style>

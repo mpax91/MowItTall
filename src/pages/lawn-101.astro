@@ -6,28 +6,33 @@ import { changeCards } from '../data/changes.js';
 import { WEEDS } from '../data/weeds.js';
 import { PHOTOS } from '../data/photos.js';
 
-const title = 'Lawn care 101 for beginners in the Northeast | Mow It Tall';
+const title = 'Lawn Care 101 for Beginners in the Northeast | Mow It Tall';
 const description =
   'Lawn care basics for beginners in Westchester and the Northeast: six small habits, which grass seed to buy, common weeds and real yard photos.';
 const faqs = [
   {
     q: 'How high should I mow my lawn?',
+    href: '/guides/how-high-to-mow-grass/',
     a: 'For most lawns in New York and the Northeast, 3.5 to 4 inches. Taller grass shades the soil so weed seeds can’t sprout, and it grows deeper roots so it stays green in summer.',
   },
   {
     q: 'When should I put down crabgrass preventer in Westchester?',
+    href: '/guides/crabgrass-preventer-timing/',
     a: 'When the soil warms to about 55°F, usually early to mid April around Bedford. A good clue: put it down when the forsythia bushes are blooming.',
   },
   {
     q: 'Should I bag my grass clippings?',
+    href: '/blog/mulching-vs-bagging/',
     a: 'No. Leave them on the lawn. They break down quickly and return nutrients to the soil. Bag only if the grass got very long and the clippings are clumping.',
   },
   {
     q: 'When is the best time to seed a lawn in New York?',
+    href: '/guides/when-to-overseed-lawn/',
     a: 'Late August through September. The soil is still warm, the air is cooler, and there are fewer weeds competing with new grass.',
   },
   {
     q: 'How often should I water my lawn?',
+    href: '/guides/how-often-to-water-lawn/',
     a: 'Once or twice a week, deeply, in the early morning. Aim for about an inch of water a week, counting rain. Short daily watering grows shallow roots.',
   },
 ];
@@ -37,7 +42,7 @@ const jsonLd = {
   mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
 };
 ---
-<Base title={title} description={description} path="/lawn-101/" jsonLd={jsonLd}>
+<Base title={title} description={description} path="/lawn-101/" crumbs={[["Lawn 101", "/lawn-101/"]]} jsonLd={jsonLd}>
   <main id="main">
     <section class="page-head page-head-hub">
       <h1>Lawn 101</h1>
@@ -113,9 +118,10 @@ const jsonLd = {
       {faqs.map((f) => (
         <details>
           <summary>{f.q}</summary>
-          <p>{f.a}</p>
+          <p>{f.a} {f.href && <a href={f.href}>Full answer</a>}</p>
         </details>
       ))}
+      <p class="faq-more"><a href="/guides/">All lawn guides: straight answers to common questions</a></p>
     </section>
   </main>
 </Base>

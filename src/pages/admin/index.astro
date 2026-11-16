@@ -23,10 +23,10 @@ const items = [
 ];
 const data = JSON.stringify({ items, baseTags: BASE_TAGS, topicTags: TOPIC_TAGS });
 const TABS = [
-  ['week', 'This Week'], ['social', 'Social'], ['photos', 'Photos'], ['seo', 'SEO & Traffic'], ['money', 'Tips & Payments'], ['members', 'Members & Email'],
+  ['week', 'This Week'], ['todo', 'To-Do'], ['seo', 'SEO & AEO'], ['analytics', 'Analytics'], ['social', 'Social'], ['photos', 'Photos'], ['build', 'Build Plan'], ['money', 'Tips & Payments'], ['members', 'Members & Email'],
 ];
 ---
-<Base title="HQ | Mow It Tall" description="Mow It Tall dashboard" path="/admin/">
+<Base title="HQ | Mow It Tall" description="Mow It Tall dashboard" path="/admin/" noindex>
   <main id="main" class="page dash" data-dash data-items={data}>
     <header class="page-head">
       <h1>Mow It Tall HQ</h1>
@@ -57,8 +57,34 @@ const TABS = [
         <p class="dash-fine">Tip: do this every Monday morning. Approve photos, copy this week’s posts into your scheduler, mark them posted.</p>
       </section>
 
+      <!-- ===== To-Do ===== -->
+      <section class="dash-panel" data-panel="todo" hidden>
+        <p class="dash-note" data-todo-sum>Loading…</p>
+        <div class="hall-sort" role="group" aria-label="Show" data-todo-filter>
+          <button type="button" class="cp-chip" data-f="open" aria-pressed="true">Open</button>
+          <button type="button" class="cp-chip" data-f="now" aria-pressed="false">Do First</button>
+          <button type="button" class="cp-chip" data-f="claude" aria-pressed="false">For Claude</button>
+          <button type="button" class="cp-chip" data-f="done" aria-pressed="false">Done</button>
+          <button type="button" class="cp-chip" data-f="all" aria-pressed="false">All</button>
+        </div>
+        <div data-todo-list></div>
+        <form class="td-add" data-todo-add>
+          <label class="hall-field"><span>Add your own to-do</span><input type="text" maxlength="200" placeholder="e.g. Film the overseeding video" data-todo-new /></label>
+          <select data-todo-grp aria-label="Group"><option value="mine">My own</option><option value="content">Articles</option><option value="social">Social</option><option value="site">Site</option><option value="seo">SEO</option></select>
+          <button type="submit" class="btn btn-small">Add</button>
+        </form>
+        <p class="dash-fine">“For Claude” = things I build when you say the word. Just tell me which ones in our chat.</p>
+      </section>
+
       <!-- ===== Social ===== -->
       <section class="dash-panel" data-panel="social" hidden>
+        <details class="dash-more pb">
+          <summary>Setup Plan: Names, Bios, Links and What to Post</summary>
+          <div data-pb="socialSetup"></div>
+          <h4>Your Profile Links</h4>
+          <form data-profiles-form><div class="pb-grid" data-profiles></div><button type="submit" class="btn btn-small">Save and Copy for Claude</button><p class="dash-fine" data-prof-msg></p></form>
+          <div data-mini="social"></div>
+        </details>
         <div class="dash-plat" role="group" aria-label="Platform">
           <button type="button" class="hall-tab" data-plat="instagram" aria-selected="true">Instagram</button>
           <button type="button" class="hall-tab" data-plat="facebook" aria-selected="false">Facebook</button>
@@ -95,26 +121,55 @@ const TABS = [
         <p class="dash-fine"><a href="/hall/">See the public Hall</a></p>
       </section>
 
-      <!-- ===== SEO & traffic ===== -->
+      <!-- ===== SEO & AEO ===== -->
       <section class="dash-panel" data-panel="seo" hidden>
-        <p class="dash-note">These light up at launch, once the site is on mowittall.com and open to search engines. The panels are ready; each one needs a one-time connection.</p>
-        <div class="dash-cards">
-          <article class="dash-card">
-            <h3>Google Search Console <span class="dash-pill" data-conn="gsc">Not connected</span></h3>
-            <p><b>Will show:</b> searches you rank for, your position, clicks and impressions, top pages, and which posts are climbing or slipping.</p>
-            <ol><li>Buy the domain and remove the “hide from search” settings (launch checklist).</li><li>Add mowittall.com in Search Console and verify it (Cloudflare does this in a click).</li><li>Create a Google Cloud service account, add its email as a user in Search Console, and save its key in Cloudflare as <code>GSC_SERVICE_ACCOUNT</code>.</li></ol>
-          </article>
-          <article class="dash-card">
-            <h3>Google Analytics <span class="dash-pill" data-conn="ga4">Not connected</span></h3>
-            <p><b>Will show:</b> visitors, entry pages, where people come from (including which social platform), quiz starts vs. finished plans (your conversion rate), calendar downloads and Hall uploads.</p>
-            <ol><li>Create a GA4 property and send me the Measurement ID (G-…). I add it to the site with the conversion events.</li><li>Add the same service account to GA4 as a Viewer and save the property ID in Cloudflare as <code>GA4_PROPERTY_ID</code>.</li></ol>
-          </article>
-          <article class="dash-card">
-            <h3>Bing Webmaster Tools <span class="dash-pill" data-conn="bing">Not connected</span></h3>
-            <p><b>Will show:</b> Bing and DuckDuckGo searches, clicks and crawl problems. Bing also feeds some AI search tools.</p>
-            <ol><li>Import the site from Search Console (one click).</li><li>Create an API key in Bing’s settings and save it in Cloudflare as <code>BING_API_KEY</code>.</li></ol>
-          </article>
+        <details class="dash-more pb" open><summary>Monday SEO Routine (15 Minutes)</summary><div data-pb="seoRoutine"></div></details>
+        <details class="dash-more pb"><summary>Quick Links</summary><div data-pb="seoLinks"></div></details>
+        <h2 class="dash-h">Agents</h2>
+        <div class="pb" data-pb="agents"></div>
+        <div class="ag-grid" data-agents>
+          <article class="dash-card"><h3>Page Check</h3><button type="button" class="btn btn-small" data-run="page">Run Page Check</button><div data-agent-out="page"></div></article>
+          <article class="dash-card"><h3>Link Check</h3><button type="button" class="btn btn-small" data-run="links">Run Link Check</button><div data-agent-out="links"></div></article>
+          <article class="dash-card"><h3>Sitemap Watch</h3><button type="button" class="btn btn-small" data-run="sitemap">Run Sitemap Watch</button><div data-agent-out="sitemap"></div></article>
+          <article class="dash-card"><h3>Share Card Check</h3><button type="button" class="btn btn-small" data-run="share">Run Share Card Check</button><div data-agent-out="share"></div></article>
+          <article class="dash-card"><h3>AEO Readiness</h3><button type="button" class="btn btn-small" data-run="aeo">Run AEO Readiness</button><div data-agent-out="aeo"></div></article>
         </div>
+        <h2 class="dash-h">Rank Tracker</h2>
+        <div class="pb" data-pb="rankHow"></div>
+        <label class="btn btn-small rk-up-btn">Upload Search Console or Bing export<input type="file" accept=".zip,.csv" data-rank-file hidden /></label>
+        <p class="dash-fine" data-rank-msg></p>
+        <div data-rank-out></div>
+        <h2 class="dash-h">AI Answer Log</h2>
+        <p class="dash-note" data-aeo-sum></p>
+        <ol class="aeo-list" data-aeo></ol>
+        <form class="td-add" data-aeo-add><label class="hall-field"><span>Add a question to track</span><input type="text" maxlength="160" data-aeo-new placeholder="e.g. how to stripe a lawn" /></label><button type="submit" class="btn btn-small">Add</button></form>
+        <h2 class="dash-h">AEO: Getting Quoted by AI</h2>
+        <div class="pb" data-pb="aeo"></div>
+        <h2 class="dash-h">When to Give a Section Its Own Page</h2>
+        <div class="pb" data-pb="movePages"></div>
+        <h2 class="dash-h">SEO To-Dos</h2>
+        <div data-mini="seo,pages,content"></div>
+      </section>
+
+      <!-- ===== Analytics ===== -->
+      <section class="dash-panel" data-panel="analytics" hidden>
+        <p class="dash-note">GA4 (through Tag Manager), Clarity and Looker Studio. Nothing here needs an API key.</p>
+        <details class="dash-more pb" open><summary>Events the Site Sends</summary><div data-pb="ga4Events"></div></details>
+        <details class="dash-more pb"><summary>GA4 + GTM Setup, Step by Step</summary><div data-pb="ga4Steps"></div></details>
+        <details class="dash-more pb"><summary>UTM Tags: How to Label Every Link</summary><div data-pb="utm"></div></details>
+        <details class="dash-more pb"><summary>Looker Studio Report</summary><div data-pb="looker"></div></details>
+        <h2 class="dash-h">Your Looker Studio Report</h2>
+        <form class="td-add" data-looker-form><label class="hall-field"><span>Embed URL</span><input type="url" data-looker-url placeholder="https://lookerstudio.google.com/embed/reporting/…" /></label><button type="submit" class="btn btn-small">Save</button></form>
+        <div class="looker-box" data-looker></div>
+        <h2 class="dash-h">Analytics To-Dos</h2>
+        <div data-mini="launch,analytics"></div>
+      </section>
+
+      <!-- ===== Build plan ===== -->
+      <section class="dash-panel" data-panel="build" hidden>
+        <p class="dash-note">The bigger projects: the app, the ebook and the course. The email and accounts plan lives on Members &amp; Email.</p>
+        <details class="dash-more pb" open><summary>The App: PWA, Then Play Store, Then App Store</summary><div data-pb="app"></div><div data-mini="app"></div></details>
+        <details class="dash-more pb"><summary>Ebook and Course</summary><div data-pb="products"></div><div data-mini="products"></div></details>
       </section>
 
       <!-- ===== Tips & payments ===== -->
@@ -142,11 +197,14 @@ const TABS = [
           <article class="dash-card"><h3>3. Newsletters and Courses</h3><p>Write a newsletter here, preview it, send it to everyone or a group (by town, effort level, grass type). Drip courses (like a 6-week “first lawn” email course) run on their own.</p></article>
           <article class="dash-card"><h3>4. Alerts</h3><p>Weekly “water or skip”, “soil hit 55°F: crabgrass preventer this weekend”, “Labor Day is Monday: feed”. Built from the tools the site already has.</p></article>
         </div>
+        <h2 class="dash-h">Members, Email, Reminders and Texts: To-Dos</h2>
+        <div data-mini="crm"></div>
       </section>
     </div>
   </main>
 
   <script>
+    import { initHQ } from '../../scripts/hq.js';
     const root = document.querySelector<HTMLElement>('[data-dash]');
     if (root) {
       const $ = <T extends Element = HTMLElement>(s: string) => root.querySelector<T>(s)!;
@@ -325,7 +383,6 @@ const TABS = [
         const check = [
           [n('pending') > 0, `Review ${n('pending')} photo${n('pending') === 1 ? '' : 's'} waiting for the Hall`, 'photos'],
           [socialLeft > 0, `Copy this week’s social posts (${socialLeft} in the queue) and mark them posted`, 'social'],
-          [!o.connected.gsc, 'At launch: connect Search Console, Google Analytics and Bing', 'seo'],
           [!o.connected.stripe, 'When ready: set up Stripe for tips', 'money'],
         ].filter((c) => c[0]);
         $('[data-check]').innerHTML = check.length
@@ -341,6 +398,7 @@ const TABS = [
           try { localStorage.setItem('mit-admin', key); } catch {}
           $('[data-msg]').textContent = ''; $('[data-key-form]').hidden = true; $('[data-app]').hidden = false;
           renderSocial(); await loadOverview(); show(tab);
+          initHQ({ root, api, show });
         } catch (err: any) { $('[data-msg]').textContent = err.message; }
       }
       $('[data-key-form]').addEventListener('submit', (e) => { e.preventDefault(); key = $<HTMLInputElement>('[data-key]').value.trim(); start(); });

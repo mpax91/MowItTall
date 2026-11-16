@@ -13,7 +13,7 @@ const jsonLd = {
   isPartOf: { '@id': 'https://mowittall.com/#website' },
 };
 ---
-<Base title={title} description={description} path="/hall/" jsonLd={jsonLd}>
+<Base title={title} description={description} path="/hall/" crumbs={[["Hall of Fame", "/hall/"]]} jsonLd={jsonLd}>
   <main id="main" class="page hall" data-hall>
     <header class="page-head">
       <h1>The Lawn Hall of Fame <span class="nowrap">(and Shame)</span></h1>
@@ -147,6 +147,7 @@ const jsonLd = {
           const j = await r.json();
           if (!r.ok) throw new Error(j.error);
           paint(j.vote, j.score);
+          (window as any).mitTrack?.('hall_vote', { vote: next === 1 ? 'up' : next === -1 ? 'down' : 'clear' });
         } catch { paint(cur, before); }
       });
       root.querySelectorAll<HTMLButtonElement>('[data-board]').forEach((b) => b.addEventListener('click', () => { board = b.dataset.board!; load(); }));
@@ -200,6 +201,7 @@ const jsonLd = {
           const r = await fetch('/api/hall/submit', { method: 'POST', body: fd });
           const j = await r.json();
           if (!r.ok) throw new Error(j.error);
+          (window as any).mitTrack?.('hall_upload', { board: String(fd.get('board') || 'fame') });
           status.textContent = 'Got it! I’ll take a look and it’ll show up here once it’s approved.';
           blob = null; preview.hidden = true; fileIn.value = ''; $('[data-drop-text]').textContent = 'Tap to pick a photo';
           ['[data-caption]', '[data-name]', '[data-town]'].forEach((s) => ($<HTMLInputElement>(s).value = ''));

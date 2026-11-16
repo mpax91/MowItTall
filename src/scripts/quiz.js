@@ -231,9 +231,11 @@ export function initQuiz(root) {
   function go(d) {
     // The quiz ZIP also sets the soil reading and location chips across the site.
     if (d > 0 && STEPS[step]?.type === 'zip' && answers.zip?.length === 5 && answers.zip !== getPlace().zip) setZip(answers.zip);
+    if (d > 0 && step === 0) window.mitTrack && window.mitTrack('quiz_start', { quiz_name: 'lawn_plan' });
+    if (d > 0 && STEPS[step]) window.mitTrack && window.mitTrack('quiz_step', { quiz_name: 'lawn_plan', step_number: step + 1, step_type: STEPS[step].type || 'choice' });
     step = Math.max(0, Math.min(STEPS.length, step + d));
     save();
-    if (step === STEPS.length) { answers.done = true; save(); showResult(); return; }
+    if (step === STEPS.length) { answers.done = true; save(); showResult(true); return; }
     render();
     card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
@@ -271,11 +273,12 @@ export function initQuiz(root) {
     return { level, tasks, notes, grassKey, flags };
   }
 
-  function showResult() {
+  function showResult(fresh) {
     card.hidden = true;
     root.querySelector('.quiz-intro').hidden = true;
     const { level, tasks, notes, grassKey, flags } = buildPlan();
     const profile = PROFILES[Math.min(3, level)];
+    if (fresh) window.mitTrack && window.mitTrack('quiz_complete', { quiz_name: 'lawn_plan', effort_level: level, lawn_profile: profile.name, grass_pick: grassKey, task_count: tasks.length });
     const today = new Date();
     const hours = Math.max(1, Math.round(tasks.reduce((a, t) => a + t.minutes, 0) / 60));
     const ordered = tasks

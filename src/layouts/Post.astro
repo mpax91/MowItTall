@@ -2,6 +2,8 @@
 import Base from './Base.astro';
 import BeerCallout from '../components/BeerCallout.astro';
 import { topicBySlug } from '../data/topics.js';
+import { ogSlug } from '../data/og.js';
+import { allPosts as allPostsFn } from '../data/posts.js';
 import MowCheck from '../components/MowCheck.astro';
 import MowWorkout from '../components/MowWorkout.astro';
 import Playlist from '../components/Playlist.astro';
@@ -28,7 +30,8 @@ import { WAITS, PREPOST, MULCHBAG, COMPLIMENTS, TRAINING, HIRE, PITCH } from '..
 import { TUNEUP } from '../data/tuneup.js';
 const { frontmatter, url } = Astro.props;
 const { title, description, tag, widget, extra, faq } = frontmatter;
-const path = new URL(url || Astro.url.pathname, 'https://mowittall.com').pathname;
+const rawPath = new URL(url || Astro.url.pathname, 'https://mowittall.com').pathname;
+const path = rawPath.endsWith('/') ? rawPath : rawPath + '/';
 const topics = (frontmatter.topics || []).filter((t) => topicBySlug[t]);
 const metaTitle = frontmatter.seoTitle ? (frontmatter.seoTitle.length + 14 <= 65 ? `${frontmatter.seoTitle} | Mow It Tall` : frontmatter.seoTitle) : `${title} | Mow It Tall`;
 const metaDesc = frontmatter.seoDescription || description;
@@ -37,11 +40,15 @@ const modified = frontmatter.updated ? (frontmatter.updated instanceof Date ? fr
 const all = Object.entries(import.meta.glob('../pages/blog/[a-z]*.md', { eager: true, import: 'frontmatter' }));
 const related = all
   .map(([k, fm]) => ({ ...fm, url: '/blog/' + k.split('/').pop().replace(/\.md$/, '') + '/' }))
-  .filter((p) => p.url !== (path.endsWith('/') ? path : path + '/'))
+  .filter((p) => p.url !== path)
   .map((p) => ({ ...p, score: (p.topics || []).filter((t) => topics.includes(t)).length }))
   .filter((p) => p.score > 0)
   .sort((a, b) => b.score - a.score || new Date(b.date) - new Date(a.date))
   .slice(0, 3);
+// Straight-answer guides on the same topics (internal links both ways: guides link back to posts)
+const guides = allPostsFn(import.meta.glob('../pages/guides/[a-z]*.md', { eager: true }))
+  .map((g) => ({ ...g, score: (g.topics || []).filter((t) => topics.includes(t)).length }))
+  .filter((g) => g.score > 0).sort((a, b) => b.score - a.score).slice(0, 2);
 const date = (frontmatter.date instanceof Date ? frontmatter.date.toISOString() : String(frontmatter.date)).slice(0, 10);
 const minutes = frontmatter.minutes || 2;
 const pretty = new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -54,7 +61,7 @@ const posting = {
   inLanguage: 'en-US',
   articleSection: tag,
   keywords: topics.map((t) => topicBySlug[t].name).join(', '),
-  image: 'https://mowittall.com/img/backyard-stripes-1400.webp',
+  image: [`https://mowittall.com/og/${ogSlug(path)}.png`, 'https://mowittall.com/img/backyard-stripes-1400.webp'],
   isPartOf: { '@type': 'Blog', '@id': 'https://mowittall.com/blog/#blog', name: 'The Mow It Tall blog', url: 'https://mowittall.com/blog/' },
   author: { '@type': 'Person', name: 'Mike', '@id': 'https://mowittall.com/#mike' },
   publisher: { '@id': 'https://mowittall.com/#website' },
@@ -76,7 +83,7 @@ const crumbs = {
 };
 const jsonLd = { '@context': 'https://schema.org', '@graph': [posting, crumbs, ...(faqLd ? [faqLd] : [])] };
 ---
-<Base title={metaTitle} description={metaDesc} path={path} jsonLd={jsonLd} type="article" published={date} modified={modified || undefined}>
+<Base title={metaTitle} description={metaDesc} path={path} jsonLd={jsonLd} type="article" published={date} modified={modified || undefined} crumbs={false} dl={{ post_tag: tag || '', post_topics: topics.join(','), published: date }}>
   <main id="main" class="post">
     <header class="post-head">
       <nav class="crumbs" aria-label="Breadcrumb" data-pagefind-ignore><a href="/blog/">Blog</a>{topics[0] && <> <span aria-hidden="true">›</span> <a href={`/blog/topic/${topics[0]}/`}>{topicBySlug[topics[0]].name}</a></>}</nav>
@@ -187,6 +194,14 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [posting, crumbs, .
       <nav class="post-topics" aria-label="More on these topics" data-pagefind-ignore>
         <span>More on:</span>
         {topics.map((t) => <a class="bf-chip" href={`/blog/topic/${t}/`}>{topicBySlug[t].name}</a>)}
+      </nav>
+    )}
+    {guides.length > 0 && (
+      <nav class="related guide-more" aria-labelledby="straight-h" data-pagefind-ignore>
+        <h2 id="straight-h">The Straight Answer</h2>
+        <ul class="clip-list">
+          {guides.map((g) => <li><a class="clip" href={g.url}><span class="clip-tag">Guide</span><span class="clip-title">{g.title}</span></a></li>)}
+        </ul>
       </nav>
     )}
     {related.length > 0 && (

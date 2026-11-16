@@ -8,7 +8,7 @@ const amounts = [5, 10];
 {compact ? (
   <p class="beer-line" id="beer">
     Site saved you a weekend? {TIPS_ON
-      ? <a href={tipLink(5)} target="_blank" rel="noopener">Buy me a beer</a>
+      ? <a href={tipLink(5)} target="_blank" rel="noopener" data-track="tip_click" data-track-amount="5">Buy me a beer</a>
       : <span>Buy me a beer <em>(tip jar coming soon)</em></span>}
   </p>
 ) : (
@@ -27,7 +27,7 @@ const amounts = [5, 10];
       <p>No ads, no paywall, no email required. If the site saved you a bag of fertilizer or a fight with your spouse, a beer keeps it going.</p>
       <div class="beer-btns">
         {amounts.map((a) => TIPS_ON
-          ? <a class="btn beer-btn" href={tipLink(a)} target="_blank" rel="noopener">${a} {a === 5 ? '· one beer' : '· a round'}</a>
+          ? <a class="btn beer-btn" href={tipLink(a)} target="_blank" rel="noopener" data-track="tip_click" data-track-amount={String(a)}>${a} {a === 5 ? '· one beer' : '· a round'}</a>
           : <span class="btn beer-btn is-off" aria-disabled="true">${a} {a === 5 ? '· one beer' : '· a round'}</span>)}
       </div>
       {!TIPS_ON && <p class="beer-soon">Tip jar opens soon. The thought counts. Slightly.</p>}

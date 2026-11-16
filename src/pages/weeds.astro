@@ -31,7 +31,7 @@ const card = (w) => ({
 });
 const groups = WEED_GROUPS.map((g) => ({ ...g, items: WEEDS.filter((w) => w.group === g.id).map(card) }));
 ---
-<Base title={title} description={description} path="/weeds/" jsonLd={jsonLd}>
+<Base title={title} description={description} path="/weeds/" crumbs={[["Lawn 101", "/lawn-101/"], ["Lawn Weeds", "/weeds/"]]} jsonLd={jsonLd}>
   <main id="main" class="page">
     <header class="page-head">
       <h1>The Weed Board</h1>
@@ -50,6 +50,13 @@ const groups = WEED_GROUPS.map((g) => ({ ...g, items: WEEDS.filter((w) => w.grou
     <p class="page-note">
       Before you spray anything: thick, tall grass is the best weed killer there is. Most weeds are just
       filling in where grass is thin. Always follow the product label.
+    </p>
+    <p class="page-note">
+      More help: <a href="/guides/crabgrass-preventer-timing/">when to put down crabgrass preventer</a>,
+      <a href="/blog/pre-emergent-vs-post-emergent/">pre-emergent vs. post-emergent</a>,
+      <a href="/guides/moss-in-lawn/">getting rid of moss</a>,
+      <a href="/blog/kid-and-pet-safe-lawn-care/">kid- and pet-safe weed control</a> and
+      <a href="/blog/fall-kill-weeds-or-plant-seed/">fall: kill weeds or plant seed first?</a>
     </p>
     <section class="weed-sec photo-credits" aria-labelledby="credits-h">
       <details>

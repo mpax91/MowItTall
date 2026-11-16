@@ -13,11 +13,11 @@ const jsonLd = {
     { '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Home', item: 'https://mowittall.com/' }, { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://mowittall.com/blog/' }] },
   ],
 };
-const title = 'The Mow It Tall blog: lawn takes, some hot, all short';
+const title = 'Lawn Care Blog: Short, Funny, Actually Useful | Mow It Tall';
 const description =
   'Short, funny lawn care posts from Bedford, NY. Search every post or browse by topic: mowing, fertilizer, seed, weeds, soil, dogs and kids, gear.';
 ---
-<Base title={title} description={description} path="/blog/" jsonLd={jsonLd}>
+<Base title={title} description={description} path="/blog/" crumbs={[["Blog", "/blog/"]]} jsonLd={jsonLd}>
   <main id="main" class="page">
     <header class="page-head">
       <h1>The Blog</h1>
