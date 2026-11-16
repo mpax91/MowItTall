@@ -12,19 +12,31 @@ export const TIP_10 = '';
 export const tipLink = (amt) => (amt === 5 ? TIP_5 : amt === 10 ? TIP_10 : '') || TIP_URL;
 export const TIPS_ON = Boolean(TIP_URL || TIP_5 || TIP_10);
 
-// Social profiles. Paste each full profile URL once the account exists (leave '' until then).
-// Filled-in profiles show as icons in the footer and go into the site's structured data (sameAs),
-// which is how Google and AI answer engines connect the website, the brand and Mike's accounts.
+// Social profiles (Mike's official @mowittall accounts). Paste each full profile URL once the account exists.
+// Filled-in profiles show in the footer, on /links/ and /contact/, in /llms.txt, and in the Organization
+// structured data (sameAs), which is how Google and AI answer engines connect the website and the brand's accounts.
+// Order here = order on the site.
 export const SOCIAL_PROFILES = {
-  instagram: '',   // https://www.instagram.com/mowittall/
-  facebook: '',    // https://www.facebook.com/mowittall
-  youtube: '',     // https://www.youtube.com/@mowittall
+  instagram: 'https://www.instagram.com/mowittall/',
+  youtube: 'https://www.youtube.com/@MowItTALL',
+  facebook: 'https://www.facebook.com/MowItTALL',
+  threads: 'https://www.threads.com/@mowittall',
+  x: 'https://x.com/MowItTALL',
   tiktok: '',      // https://www.tiktok.com/@mowittall
-  x: '',           // https://x.com/mowittall
-  threads: '',     // https://www.threads.com/@mowittall
   pinterest: '',   // https://www.pinterest.com/mowittall/
   reddit: '',      // https://www.reddit.com/user/mowittall/
+  bluesky: '',     // https://bsky.app/profile/mowittall.com
+  linkedin: '',    // https://www.linkedin.com/company/mowittall/
   nextdoor: '',    // Nextdoor business page URL
 };
-export const X_HANDLE = ''; // '@mowittall' once the X account exists (adds twitter:site to every page)
-export const SAME_AS = Object.values(SOCIAL_PROFILES).filter(Boolean);
+export const SOCIAL_NAMES = { instagram: 'Instagram', facebook: 'Facebook', youtube: 'YouTube', tiktok: 'TikTok', x: 'X', threads: 'Threads', pinterest: 'Pinterest', reddit: 'Reddit', bluesky: 'Bluesky', linkedin: 'LinkedIn', nextdoor: 'Nextdoor' };
+// [key, name, url, handle] for every filled-in profile, in order.
+export const SOCIALS = Object.entries(SOCIAL_PROFILES).filter(([, u]) => u).map(([k, u]) => {
+  const m = u.match(/@([\w.]+)|\.com\/([\w.]+)\/?$/);
+  return [k, SOCIAL_NAMES[k] || k, u, m ? '@' + (m[1] || m[2]) : ''];
+});
+export const X_HANDLE = '@MowItTALL'; // adds twitter:site to every page
+// Brand accounts go on the Organization. Mike's own personal profiles (if he ever wants them tied to the site)
+// go here instead and land on the Person entity. Keep the two separate: a brand page isn't a person.
+export const MIKE_PROFILES = [];
+export const SAME_AS = SOCIALS.map(([, , u]) => u);

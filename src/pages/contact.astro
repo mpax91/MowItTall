@@ -1,6 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
-import { CONTACT_EMAIL } from '../data/site.js';
+import { CONTACT_EMAIL, SOCIALS } from '../data/site.js';
 
 const title = 'Contact Mike | Mow It Tall';
 const description = 'Got a lawn question, a weird weed, a correction or a Hall photo to take down? Email Mike at Mow It Tall. Real person, Bedford, NY.';
@@ -34,6 +34,18 @@ const REASONS = [
       </div>
       <p class="contact-fine">I read everything. Replies can take a few days, longer in peak mowing season.</p>
     </section>
+
+    {SOCIALS.length > 0 && (
+      <section class="contact-follow" aria-labelledby="follow-h">
+        <h2 id="follow-h">Or Find Me on Social</h2>
+        <p>Stripes, quick tips and the occasional lawn rant. DMs are open, but email gets a faster answer.</p>
+        <ul class="social-chips">
+          {SOCIALS.map(([k, name, u, h]) => (
+            <li><a href={u} rel="me noopener" target="_blank" data-track="social_profile_click" data-track-platform={k} data-track-link_area="contact">{name}</a></li>
+          ))}
+        </ul>
+      </section>
+    )}
 
     <section class="contact-reasons" aria-labelledby="why-h">
       <h2 id="why-h">What to Send Me</h2>

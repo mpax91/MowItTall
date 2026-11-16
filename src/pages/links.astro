@@ -3,7 +3,7 @@
 // Bio links carry utm tags (see HQ → Social → Setup Plan), and each button sends a GA4 event.
 import Base from '../layouts/Base.astro';
 import { allPosts } from '../data/posts.js';
-import { SOCIAL_PROFILES, TIPS_ON, tipLink } from '../data/site.js';
+import { SOCIALS, TIPS_ON, tipLink } from '../data/site.js';
 const latest = allPosts(import.meta.glob('./blog/[a-z]*.md', { eager: true }))[0];
 const LINKS = [
   ['/plan/', 'Get My Free Lawn Plan', '2 minutes. No email needed.', 'plan', true],
@@ -14,7 +14,6 @@ const LINKS = [
   ['/hall/', 'Hall of Fame (and Shame)', 'Post your stripes. Vote.', 'hall'],
   ['/measure/', 'How Big Is My Lawn?', 'Measure it on a map', 'measure'],
 ];
-const names = { instagram: 'Instagram', facebook: 'Facebook', youtube: 'YouTube', tiktok: 'TikTok', x: 'X', threads: 'Threads', pinterest: 'Pinterest', reddit: 'Reddit', nextdoor: 'Nextdoor' };
 ---
 <Base title="Mow It Tall Links" description="Free lawn plan, the latest post, the lawn calendar, weed ID and more from Mike, Bedford NY’s lawn guy." path="/links/" noindex>
   <main id="main" class="page links-page">
@@ -28,8 +27,15 @@ const names = { instagram: 'Instagram', facebook: 'Facebook', youtube: 'YouTube'
       ))}
       {TIPS_ON && <li><a class="links-btn" href={tipLink(5)} target="_blank" rel="noopener" data-track="tip_click" data-track-amount="5"><b>Buy Me a Beer</b><span>If the site helped</span></a></li>}
     </ul>
-    {Object.values(SOCIAL_PROFILES).some(Boolean) && (
-      <p class="links-social">{Object.entries(SOCIAL_PROFILES).filter(([, u]) => u).map(([k, u]) => <a href={u} rel="me noopener" target="_blank">{(names as any)[k] || k}</a>)}</p>
+    {SOCIALS.length > 0 && (
+      <section class="links-follow" aria-labelledby="follow-h">
+        <h2 id="follow-h">Follow Along <span>@mowittall</span></h2>
+        <ul class="social-chips">
+          {SOCIALS.map(([k, name, u]) => (
+            <li><a href={u} rel="me noopener" target="_blank" data-track="social_profile_click" data-track-platform={k} data-track-link_area="links">{name}</a></li>
+          ))}
+        </ul>
+      </section>
     )}
   </main>
 </Base>
@@ -40,5 +46,6 @@ const names = { instagram: 'Instagram', facebook: 'Facebook', youtube: 'YouTube'
   .links-btn span { font-size: 0.9rem; color: #3c5a44; }
   .links-btn.is-main { background: #c8372d; color: #fff; border-color: #7d1f19; }
   .links-btn.is-main span { color: #ffe3df; }
-  .links-social { display: flex; flex-wrap: wrap; gap: 14px; font-weight: 700; }
+  .links-follow h2 { font: 800 1.05rem/1.2 var(--display); margin: 8px 0 10px; color: #eef5e6; }
+  .links-follow h2 span { font-weight: 600; color: #9fd36a; margin-left: 4px; }
 </style>

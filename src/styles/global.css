@@ -2462,3 +2462,13 @@ main > section.ag-wrap { padding-top: 6px; }
 .contact-reasons strong::after { content: ' →'; color: var(--red); }
 .contact-reasons span { display: block; font-size: 0.98rem; line-height: 1.4; }
 .contact-note h2 { margin-top: 0.4em; }
+
+/* Social profile chips (footer, /links/, /contact/) */
+.social-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.social-chips li { margin: 0; padding: 0; }
+.social-chips a { display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border: 2px solid #eef5e6; border-radius: 999px; color: #eef5e6; text-decoration: none; font-weight: 700; font-size: 0.95rem; background: rgba(10, 36, 20, 0.35); touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.social-chips a:hover, .social-chips a:focus-visible { background: #9fd36a; border-color: #9fd36a; color: #12301d; }
+.foot-social-wrap { margin: 22px 0 6px; }
+.contact-follow { margin: 28px 0; }
+.contact-follow h2 { margin: 0 0 6px; }
+.contact-follow p { margin: 0 0 12px; }

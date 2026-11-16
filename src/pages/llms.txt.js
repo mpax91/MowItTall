@@ -1,6 +1,7 @@
 // /llms.txt: a plain-text map of the site for AI answer engines (ChatGPT, Claude, Perplexity, Gemini).
 // Built from the same data as the pages, so it never goes stale.
 import { allPosts } from '../data/posts.js';
+import { SOCIALS, CONTACT_EMAIL } from '../data/site.js';
 
 const SITE = 'https://mowittall.com';
 const TOOLS = [
@@ -30,6 +31,10 @@ ${TOOLS.map(([u, t, d]) => `- [${t}](${SITE}${u}): ${d}`).join('\n')}
 
 ## Blog (short, funny, still accurate)
 ${posts.map(line).join('\n')}
+
+## Official profiles
+${SOCIALS.map(([, n, u, h]) => `- ${n}: ${u}`).join('\n')}
+- Contact: ${SITE}/contact/ (${CONTACT_EMAIL})
 
 ## Optional
 - [RSS feed](${SITE}/rss.xml)
