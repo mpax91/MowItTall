@@ -1,0 +1,68 @@
+---
+import Base from '../layouts/Base.astro';
+import { CONTACT_EMAIL } from '../data/site.js';
+
+const title = 'Contact Mike | Mow It Tall';
+const description = 'Got a lawn question, a weird weed, a correction or a Hall photo to take down? Email Mike at Mow It Tall. Real person, Bedford, NY.';
+const site = 'https://mowittall.com';
+const jsonLd = {
+  '@type': 'ContactPage', '@id': `${site}/contact/#page`, url: `${site}/contact/`, name: 'Contact Mow It Tall',
+  description, isPartOf: { '@id': `${site}/#website` }, about: { '@id': `${site}/#org` }, mainEntity: { '@id': `${site}/#org` },
+};
+const subject = (s) => `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(s)}`;
+const REASONS = [
+  ['Lawn Question', 'Stuck on something? Send a photo and your ZIP code. Photos help a lot.', 'Lawn question'],
+  ['Is This a Weed?', 'Snap a close-up of the leaves and one from standing height. I’ll take a guess.', 'Is this a weed?'],
+  ['I Got Something Wrong', 'If a tip, date or tool is off, tell me. I’d rather fix it than be wrong.', 'Correction'],
+  ['Take Down a Hall Photo', 'Your lawn ended up in the Hall and you want it gone? Send the link or describe it.', 'Remove a Hall photo'],
+  ['Press, Talks and Collabs', 'Local paper, garden club, podcast, brand? Happy to hear it.', 'Press / collab'],
+];
+---
+<Base title={title} description={description} path="/contact/" crumbs={[["Contact", "/contact/"]]} jsonLd={jsonLd}>
+  <main id="main" class="page">
+    <header class="page-head">
+      <h1>Contact Mike</h1>
+      <p class="lede">Real guy, real lawn, real inbox. Email is the best way to reach me.</p>
+    </header>
+
+    <section class="window contact-card" aria-labelledby="email-h">
+      <h2 id="email-h">Email Me</h2>
+      <p class="contact-email"><a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></p>
+      <div class="contact-btns">
+        <a class="btn" href={`mailto:${CONTACT_EMAIL}`}>Send an Email</a>
+        <button type="button" class="btn btn-quiet" data-copy={CONTACT_EMAIL}>Copy Address</button>
+      </div>
+      <p class="contact-fine">I read everything. Replies can take a few days, longer in peak mowing season.</p>
+    </section>
+
+    <section class="contact-reasons" aria-labelledby="why-h">
+      <h2 id="why-h">What to Send Me</h2>
+      <ul>
+        {REASONS.map(([h, p, s]) => (
+          <li><a href={subject(s)}><strong>{h}</strong><span>{p}</span></a></li>
+        ))}
+      </ul>
+    </section>
+
+    <section class="prose contact-note">
+      <h2>Before You Hit Send</h2>
+      <ul>
+        <li>I’m a homeowner, not a licensed pro or a lawn company. I can’t come look at your yard, and I don’t sell products or services.</li>
+        <li>Want a quick answer? The <a href="/plan/">free lawn plan</a> and <a href="/resources/#dx">What’s Wrong With My Lawn?</a> handle most questions in 2 minutes.</li>
+        <li>How I handle your email is on the <a href="/privacy/">Privacy page</a>. Short version: I use it to reply, and that’s it.</li>
+      </ul>
+    </section>
+  </main>
+</Base>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((b) => {
+    b.addEventListener('click', async () => {
+      const txt = b.dataset.copy || '';
+      try { await navigator.clipboard.writeText(txt); b.textContent = 'Copied!'; }
+      catch { b.textContent = txt; }
+      (window as any).mitTrack?.('contact_click', { method: 'copy', link_text: 'Copy Address' });
+      setTimeout(() => { b.textContent = 'Copy Address'; }, 2000);
+    });
+  });
+</script>

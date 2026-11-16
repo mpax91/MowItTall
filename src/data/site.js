@@ -1,5 +1,8 @@
 // Site-wide settings Mike fills in.
 
+// Public contact email (Contact page, Privacy page, structured data).
+export const CONTACT_EMAIL = 'MowItTall@gmail.com';
+
 // "Buy me a beer" tip links. Paste a Ko-fi, Buy Me a Coffee or Stripe Payment Link URL.
 // One link is fine (TIP_URL); if you make separate $5 / $10 Stripe links, fill TIP_5 / TIP_10 and they win.
 // While all three are empty, the beer buttons show "Tip jar coming soon" instead of linking anywhere.

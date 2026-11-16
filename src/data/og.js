@@ -17,6 +17,8 @@ export const OG_PAGES = {
   '/blog/': { title: 'Lawn Takes. Some Hot. All Short.', kicker: 'The Blog' },
   '/guides/': { title: 'Straight Answers to Lawn Questions', kicker: 'Lawn Guides' },
   '/neighbor/': { title: 'Send a Neighbor a Free Lawn Plan', kicker: 'Anonymous Option' },
+  '/privacy/': { title: 'Privacy: What Mow It Tall Collects (Not Much)', kicker: 'Privacy' },
+  '/contact/': { title: 'Got a Lawn Question? Email Mike.', kicker: 'Contact' },
   '/merch/': { title: 'Merch for People Who Mow Tall', kicker: 'Coming Soon' },
 };
 

@@ -2364,6 +2364,8 @@ main > section.ag-wrap { padding-top: 6px; }
   padding: 16px 48px 4px 0 !important; border-top: 1px solid rgba(238, 245, 230, 0.15); font-size: 0.85rem;
 }
 .foot-bottom p { margin: 0 !important; }
+.foot-copy a { color: var(--paper); font-weight: 700; display: inline-block; padding: 6px 2px; }
+.foot-copy a:hover, .foot-copy a:focus-visible { color: var(--sun); }
 .red-vest-credit { display: inline-flex; align-items: center; gap: 8px; font-family: var(--display); font-weight: 750; letter-spacing: 0.02em; color: var(--paper); }
 .red-vest { flex: none; }
 .foot-bottom .footer-lock { right: 0; bottom: auto; top: 50%; transform: translateY(-40%); }
@@ -2436,3 +2438,26 @@ main > section.ag-wrap { padding-top: 6px; }
   .photo-strip { margin-inline: var(--col); padding: 6px 0 14px; scroll-padding-inline: 0; }
   .photo-strip .photo { flex: 0 0 calc(50% - 7px); max-width: none; }
 }
+
+/* Privacy + Contact pages */
+.legal-date { font-size: 0.9rem; opacity: 0.75; margin: -14px 0 22px; }
+.legal .legal-short { padding: 18px 20px 6px; margin: 0 0 26px; }
+.legal .legal-short h2 { margin-top: 0; font-size: 1.35rem; }
+.legal .legal-short ul { padding-left: 1.1em; }
+.legal h2 { scroll-margin-top: 80px; }
+.legal a { overflow-wrap: anywhere; }
+.contact-card { padding: 20px 20px 16px; margin: 0 0 30px; }
+.contact-card h2 { margin: 0 0 6px; font-size: 1.35rem; }
+.contact-email { margin: 0 0 14px; font-family: var(--display); font-weight: 800; font-size: clamp(1.25rem, 6.2vw, 1.7rem); letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.contact-email a { color: var(--sun); text-decoration: underline; text-underline-offset: 4px; }
+.contact-btns { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; }
+.contact-btns .btn { flex: 1 1 150px; text-align: center; }
+.contact-fine { margin: 0; font-size: 0.92rem; opacity: 0.85; }
+.contact-reasons h2 { font-size: 1.6rem; margin: 0 0 12px; letter-spacing: -0.02em; }
+.contact-reasons ul { list-style: none; margin: 0 0 26px; padding: 0; display: grid; gap: 10px; }
+.contact-reasons a { display: block; background: var(--paper); color: var(--ink); border-radius: 10px; padding: 14px 16px; text-decoration: none; box-shadow: 0 4px 0 rgba(5, 20, 10, 0.35); }
+.contact-reasons a:hover, .contact-reasons a:focus-visible { outline: 3px solid var(--sun); }
+.contact-reasons strong { display: block; font-family: var(--display); font-size: 1.15rem; margin-bottom: 2px; }
+.contact-reasons strong::after { content: ' →'; color: var(--red); }
+.contact-reasons span { display: block; font-size: 0.98rem; line-height: 1.4; }
+.contact-note h2 { margin-top: 0.4em; }

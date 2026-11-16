@@ -1,0 +1,108 @@
+---
+import Base from '../layouts/Base.astro';
+import { CONTACT_EMAIL } from '../data/site.js';
+
+const UPDATED = '2026-11-16';
+const updatedText = 'November 16, 2026';
+const title = 'Privacy Policy | Mow It Tall';
+const description = 'What Mow It Tall collects (not much): Google Analytics and Microsoft Clarity visit stats, Hall of Fame photos you choose to post, and tools that keep your data on your own phone.';
+const site = 'https://mowittall.com';
+const jsonLd = {
+  '@type': 'WebPage', '@id': `${site}/privacy/#page`, url: `${site}/privacy/`, name: 'Privacy Policy',
+  description, dateModified: UPDATED, isPartOf: { '@id': `${site}/#website` }, publisher: { '@id': `${site}/#org` },
+};
+---
+<Base title={title} description={description} path="/privacy/" crumbs={[["Privacy", "/privacy/"]]} jsonLd={jsonLd} modified={UPDATED}>
+  <main id="main" class="page">
+    <header class="page-head">
+      <h1>Privacy Policy</h1>
+      <p class="lede">Short version: I count visits so I know what’s working. I don’t sell anything about you. Most of the tools keep your stuff on your own phone.</p>
+      <p class="legal-date">Last updated {updatedText}</p>
+    </header>
+
+    <article class="prose legal">
+      <section class="window legal-short" aria-labelledby="short-h">
+        <h2 id="short-h">The Short Version</h2>
+        <ul>
+          <li><strong>Visit stats:</strong> Google Analytics and Microsoft Clarity show me how people use the site. They use cookies.</li>
+          <li><strong>Your lawn stuff stays on your phone:</strong> quiz answers, ZIP code, yard outlines and scores are saved in your browser, not sent to me.</li>
+          <li><strong>Hall of Fame photos</strong> are public once I approve them. I strip the location data first.</li>
+          <li><strong>No selling, no ads.</strong> I don’t sell or rent your info to anyone.</li>
+          <li><strong>Questions or delete requests:</strong> <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a></li>
+        </ul>
+      </section>
+
+      <p>Mow It Tall (mowittall.com) is a free lawn care site run by Mike, a homeowner in Bedford, NY. This page explains what information the site collects, why, and what you can do about it. “I,” “me” and “Mow It Tall” all mean the same guy.</p>
+
+      <h2 id="visits">What Gets Collected When You Visit</h2>
+      <p>I use two tools to understand how people use the site, which pages help, and where things break. Both are loaded through Google Tag Manager and set cookies in your browser.</p>
+      <ul>
+        <li><strong>Google Analytics 4.</strong> Counts visits and things like which pages you view, which buttons and tools you use, how far you scroll, which quiz step you reach, and roughly where you’re visiting from (city level). If you type a ZIP code in the quiz, analytics only gets the first 3 digits. Google explains how it uses this data at <a href="https://policies.google.com/technologies/partner-sites" rel="noopener" target="_blank">How Google uses information from sites that use its services</a>.</li>
+        <li><strong>Microsoft Clarity.</strong> I partner with Microsoft Clarity and Microsoft Advertising to see how you use and interact with the site through behavioral metrics, heatmaps and session replay (a recording of taps, clicks, scrolls and mouse movement on the page). Clarity hides what you type into text boxes by default. Site usage data is collected using first- and third-party cookies and similar tech to figure out how popular pages and features are and to improve the site. Microsoft may also use it for its own purposes. See the <a href="https://privacy.microsoft.com/privacystatement" rel="noopener" target="_blank">Microsoft Privacy Statement</a>.</li>
+        <li><strong>Hosting.</strong> The site runs on Cloudflare. Like any web host, Cloudflare handles your IP address and basic request info to deliver pages and block attacks. See <a href="https://www.cloudflare.com/privacypolicy/" rel="noopener" target="_blank">Cloudflare’s privacy policy</a>.</li>
+      </ul>
+      <p>I use these stats to make the site better. I don’t use them to figure out who you are, and I don’t run ads.</p>
+
+      <h2 id="phone">Stuff That Stays on Your Phone</h2>
+      <p>Most of the tools save your info in your own browser (called local storage) so it’s there next time. It isn’t sent to me, and I can’t see it. That includes:</p>
+      <ul>
+        <li>Quiz answers and your lawn plan</li>
+        <li>Your ZIP code or chosen location</li>
+        <li>Yard outlines and square footage from <a href="/measure/">Measure Your Yard</a></li>
+        <li>Your grass pick, seeding date, calendar level and rain gauge reading</li>
+        <li>Game high scores</li>
+      </ul>
+      <p>To wipe it, clear this site’s data in your browser settings (or use the Start Over buttons in the tools).</p>
+
+      <h2 id="tools">Live Tools That Talk to Other Services</h2>
+      <p>A few tools fetch live data. When they do, your browser connects straight to these free services:</p>
+      <ul>
+        <li><strong>Weather and soil temperature</strong> (soil thermometer, rain meter, seed tools) come from <a href="https://open-meteo.com/" rel="noopener" target="_blank">Open-Meteo</a>. It gets the map coordinates for your ZIP code or location, not your name or address.</li>
+        <li><strong>Maps and address search</strong> in Measure Your Yard use Esri (ArcGIS). If you search an address, the text you type goes to Esri to find it on the map. I don’t store it, and I never see your address.</li>
+        <li><strong>“Use My Location”</strong> only asks for your phone’s GPS when you tap it, and only uses it to look up local conditions or center the map. It isn’t sent to me.</li>
+      </ul>
+
+      <h2 id="hall">Hall of Fame and Shame Uploads</h2>
+      <p>If you post a photo to the <a href="/hall/">Hall of Fame or Shame</a>:</p>
+      <ul>
+        <li>I store the photo, your caption and the name and town you choose to add (both optional).</li>
+        <li>Your phone shrinks the photo before it uploads, which also removes hidden location (GPS) and camera data.</li>
+        <li>I review every photo. If I approve it, it’s public on the site for anyone to see.</li>
+        <li>Your browser keeps a random ID (not tied to your name) so you get one vote per photo and to cap uploads at 10 a day. Votes are stored with that ID.</li>
+        <li>Only post lawns that are yours or that you have the owner’s OK to share. No faces, house numbers or street signs.</li>
+        <li>Want a photo taken down? Email me and I’ll remove it.</li>
+      </ul>
+
+      <h2 id="email">Email</h2>
+      <p>If you email me, I use your address to reply and that’s it. There’s no email sign-up on the site yet. If I add reminders or a newsletter, it’ll be opt-in only, every email will have a one-click unsubscribe, and I’ll update this page first.</p>
+
+      <h2 id="links">Short Links and Shared Links</h2>
+      <p>Some links I share (like mowittall.com/something) count how many times they’re clicked. That count isn’t tied to you. Links I post on social media carry tags that tell analytics which platform you came from.</p>
+
+      <h2 id="sell">What I Don’t Do</h2>
+      <ul>
+        <li>I don’t sell, rent or trade your personal info.</li>
+        <li>I don’t run ads or ad tracking on the site.</li>
+        <li>I don’t ask for your name, email or address to use any tool.</li>
+      </ul>
+      <p>If I ever add things like tips, merch or affiliate links, payments would be handled by the payment company (I’d never see your card), and I’ll update this page.</p>
+
+      <h2 id="choices">Your Choices</h2>
+      <ul>
+        <li>Block or delete cookies in your browser settings, or use a privacy browser or blocker. The site still works.</li>
+        <li>Turn off Google Analytics everywhere with Google’s <a href="https://tools.google.com/dlpage/gaoptout" rel="noopener" target="_blank">opt-out browser add-on</a>.</li>
+        <li>Clear this site’s data to erase anything the tools saved on your phone.</li>
+        <li>Email me to remove a Hall photo or ask what I have about you. I’ll help.</li>
+      </ul>
+
+      <h2 id="kids">Kids</h2>
+      <p>This site is for adults with lawns. It isn’t meant for kids under 13, and I don’t knowingly collect info from them. If you think a kid posted something, email me and I’ll delete it.</p>
+
+      <h2 id="changes">Changes</h2>
+      <p>If this page changes, I’ll update the date at the top. Big changes (like adding email sign-ups) will be spelled out here.</p>
+
+      <h2 id="contact">Contact</h2>
+      <p>Questions about privacy, or anything else: <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>. More ways to reach me are on the <a href="/contact/">Contact page</a>.</p>
+    </article>
+  </main>
+</Base>
