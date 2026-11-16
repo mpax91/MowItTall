@@ -36,7 +36,7 @@ export const SOCIALS = Object.entries(SOCIAL_PROFILES).filter(([, u]) => u).map(
   return [k, SOCIAL_NAMES[k] || k, u, m ? '@' + (m[1] || m[2]) : ''];
 });
 // The ones shown as buttons on the site. Every filled-in profile still goes into sameAs and /llms.txt.
-export const SOCIAL_MAIN = ['instagram', 'youtube', 'facebook', 'threads', 'x'];
+export const SOCIAL_MAIN = ['instagram', 'youtube', 'facebook', 'pinterest', 'threads', 'x'];
 export const SOCIALS_MAIN = SOCIALS.filter(([k]) => SOCIAL_MAIN.includes(k));
 export const SOCIALS_MORE = SOCIALS.filter(([k]) => !SOCIAL_MAIN.includes(k));
 export const X_HANDLE = '@MowItTALL'; // adds twitter:site to every page
