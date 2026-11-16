@@ -222,9 +222,19 @@ const zonesJson = JSON.stringify(ZONES);
     const cards = [...root.querySelectorAll<HTMLElement>('[data-flip]')];
     // fronts all share the tallest front's natural height (same size cards); a flipped card grows to fit its back
     const front = (c: HTMLElement) => c.querySelector<HTMLElement>('.lw-front')!;
+    const wide = matchMedia('(min-width: 1024px)');
     const fitAll = () => {
       const fronts = cards.map(front);
+      const backs = cards.map((c) => c.querySelector<HTMLElement>('.lw-back')!);
       fronts.forEach((f) => (f.style.minHeight = ''));
+      backs.forEach((b) => (b.style.minHeight = ''));
+      // desktop: every card is as tall as the tallest side of any card, so flipping never changes the layout
+      if (wide.matches) {
+        const tallest = Math.max(...fronts.map((f) => f.offsetHeight), ...backs.map((b) => b.offsetHeight));
+        [...fronts, ...backs].forEach((f) => (f.style.minHeight = `${tallest}px`));
+        cards.forEach((c) => (c.style.height = `${tallest}px`));
+        return;
+      }
       const tallest = Math.max(...fronts.map((f) => f.offsetHeight));
       fronts.forEach((f) => (f.style.minHeight = `${tallest}px`));
       cards.forEach((c) => {
@@ -291,7 +301,7 @@ const zonesJson = JSON.stringify(ZONES);
       const trend = $('[data-soil-trend]').textContent || '';
       el.innerHTML = `<p class="lw-label">Soil zones</p>
         ${trend ? `<p>${esc(trend)}</p>` : ''}
-        <ul class="lw-zones">${ZONES.map((z: any) => `<li class="${Number.isFinite(t) && ((t >= z.min && t < z.max) || (z.id === 'asleep' && t < z.min) || (z.id === 'heat' && t >= z.max)) ? 'is-now' : ''}"><i class="zone-${z.id}"></i><b>${z.name}</b> <span>${z.min}–${z.max}°F</span><br>${esc(z.what)}</li>`).join('')}</ul>
+        <ul class="lw-zones">${ZONES.map((z: any) => `<li class="${Number.isFinite(t) && ((t >= z.min && t < z.max) || (z.id === 'asleep' && t < z.min) || (z.id === 'heat' && t >= z.max)) ? 'is-now' : ''}"><i class="zone-${z.id}"></i><b>${z.name}</b> <span>${z.min}–${z.max}°F</span><br><span class="lw-zone-what">${esc(z.what)}</span></li>`).join('')}</ul>
         <p class="lw-back-small">Measured about 2 inches down, where roots and weed seeds live.</p>
         <span class="lw-tap" aria-hidden="true"></span>`;
     };

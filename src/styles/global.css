@@ -2372,3 +2372,67 @@ main > section.ag-wrap { padding-top: 6px; }
   .footer > .foot-top, .footer > .foot-extra, .footer > .foot-bottom { max-width: 960px; }
 }
 @media (max-width: 699px) { .footer { padding-bottom: 96px; } }   /* clears the sticky plan bar */
+
+/* =========================================================================
+   Desktop cleanup (Nov 15 evening). Everything here is ≥1024px only, so phones and tablets are untouched.
+   - Header: one row (wordmark · nav · search + Get Plan) in the same 960px column as the footer, on every page.
+   - Homepage: every section in that 960px column (no full-bleed rows); calendar shows 4 months with arrow buttons;
+     "Your Lawn This Week" cards share one height front and back, so tapping flips without stretching the card.
+   - Inner pages keep the 680px reading column; Lawn 101's photo strip stops running edge to edge.
+   ========================================================================= */
+.cal-arrows { display: none; }
+@media (min-width: 1024px) {
+  :root { --wide: max(var(--gutter), calc((100% - 960px) / 2)); }
+
+  /* header: single row */
+  .top {
+    display: grid; grid-template-columns: auto 1fr auto; align-items: center; column-gap: 24px;
+    padding: 16px var(--wide) 10px;
+  }
+  .top-bar { display: contents; }
+  .top .wordmark { grid-column: 1; grid-row: 1; }
+  .top-nav { grid-column: 2; grid-row: 1; display: flex; justify-content: center; gap: 34px; margin: 0; max-width: none; }
+  .top-nav a { font-size: 1.05rem; padding: 10px 2px 16px; }
+  .top-right { grid-column: 3; grid-row: 1; }
+
+  /* homepage: one 960px column for every section */
+  body.is-home { --col: var(--wide); }
+  .is-home main > section > :is(h2, .lw-grid, .trend-grid, .plan-card, .hero-tag) { max-width: 960px; }
+  .is-home .hero2 h1 { font-size: 2.9rem; }
+
+  /* Your Lawn This Week: wider cards, same height front and back (set in LawnThisWeek's script) */
+  .is-home .lw-grid { gap: 16px; }
+  .is-home .lw-face { padding: 16px 18px 14px; }
+  .is-home .lw-flipcard { transition: none; }
+  /* soil back: only the zone you're in keeps its description, so that card's back isn't twice as tall as the others */
+  .is-home .lw-zones li:not(.is-now) :is(br, .lw-zone-what) { display: none; }
+
+  /* calendar: confined to the column, 4 months at a time, arrows beside View All */
+  .calendar.is-compact .cal-head.row-head { gap: 10px; }
+  .calendar.is-compact .cal-head .cal-mini-h { margin-right: auto; }
+  .cal-arrows { display: flex; gap: 8px; }
+  .cal-arrow {
+    display: grid; place-items: center; width: 44px; height: 44px; padding: 0; cursor: pointer;
+    color: var(--paper); background: transparent; border: 2px solid var(--paper); border-radius: 8px;
+    font: 800 1.7rem/1 var(--display); padding-bottom: 3px;
+  }
+  .cal-arrow:hover { background: rgba(238, 245, 230, 0.12); color: var(--sun); border-color: var(--sun); }
+  .cal-arrow:focus-visible { outline: 3px solid var(--sun); outline-offset: 2px; }
+  .calendar.is-compact .cal-track {
+    margin-inline: var(--col); padding: 4px 0 6px; scroll-padding-inline: 0; scrollbar-width: none;
+  }
+  .calendar.is-compact .cal-track::-webkit-scrollbar { display: none; }
+  .calendar.is-compact .cal-month { flex: 0 0 calc((100% - 24px) / 3); max-width: none; }
+
+  /* What's Trending: one row of four */
+  .is-home .trend-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+  .is-home .trend-card { padding: 16px 16px 18px; }
+  .is-home .trend-card:hover { transform: translateY(-2px); box-shadow: 0 7px 0 rgba(5, 20, 10, 0.35); }
+
+  /* closing plan card */
+  .is-home .plan-end .plan-card { padding: 30px 28px; }
+
+  /* Lawn 101 photo strip: inside the 680px column, two photos at a time */
+  .photo-strip { margin-inline: var(--col); padding: 6px 0 14px; scroll-padding-inline: 0; }
+  .photo-strip .photo { flex: 0 0 calc(50% - 7px); max-width: none; }
+}

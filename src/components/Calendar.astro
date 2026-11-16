@@ -36,6 +36,10 @@ const months = MONTHS_LONG.map((name, i) => ({
   {compact ? (
   <div class="cal-head row-head">
     <h2 id="cal-h" class="cal-mini-h">The Lawn Year at a Glance</h2>
+    <div class="cal-arrows">
+      <button type="button" class="cal-arrow" data-cal-step="-1" aria-label="Earlier months">‹</button>
+      <button type="button" class="cal-arrow" data-cal-step="1" aria-label="Later months">›</button>
+    </div>
     <a class="row-all" href="/calendar/" aria-label="See the full lawn calendar">View All</a>
   </div>
   ) : (<Fragment>
@@ -167,6 +171,13 @@ const months = MONTHS_LONG.map((name, i) => ({
       else if (track.scrollLeft > w * 1.95) track.scrollLeft -= w;
     };
     track.addEventListener('scroll', () => { clearTimeout(loopT); loopT = setTimeout(wrap, 140); }, { passive: true });
+    // desktop arrows (hidden on phones): one month per click
+    for (const b of root.querySelectorAll('[data-cal-step]')) {
+      b.addEventListener('click', () => {
+        const step = orig[1] ? orig[1].offsetLeft - orig[0].offsetLeft : track.clientWidth / 4;
+        track.scrollBy({ left: step * Number(b.dataset.calStep), behavior: 'smooth' });
+      });
+    }
 
     for (const b of root.querySelectorAll('[data-cal-more]')) {
       b.addEventListener('click', () => {
@@ -214,11 +225,16 @@ const months = MONTHS_LONG.map((name, i) => ({
       c.style.height = `${side.offsetHeight}px`;
     };
     // every card front shares the tallest front's height (same-size cards); a flipped card grows to fit its back
+    const wide = matchMedia('(min-width: 1024px)');
     const fitCards = () => {
       const fronts = flips.map((c) => c.querySelector('.cal-front'));
+      const backs = flips.map((c) => c.querySelector('.cal-back'));
       fronts.forEach((f) => (f.style.minHeight = ''));
-      const tallest = Math.max(0, ...fronts.filter((f) => f.offsetParent).map((f) => f.offsetHeight));
-      fronts.forEach((f) => (f.style.minHeight = `${tallest}px`));
+      backs.forEach((f) => (f.style.minHeight = ''));
+      // desktop: fronts and backs all share the tallest side, so flipping a card never changes its size
+      const sides = wide.matches ? [...fronts, ...backs] : fronts;
+      const tallest = Math.max(0, ...sides.filter((f) => f.closest('.cal-flipcard').offsetParent).map((f) => f.offsetHeight));
+      (wide.matches ? sides : fronts).forEach((f) => (f.style.minHeight = `${tallest}px`));
       flips.forEach(fitCard);
       // month boxes all match the tallest collapsed month (with or without a Show More button); an expanded month grows on its own
       const monthsEls = [...track.children];

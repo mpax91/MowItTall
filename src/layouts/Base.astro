@@ -84,7 +84,7 @@ const NAV = [
     <link rel="sitemap" href="/sitemap-index.xml" />
     <script type="application/ld+json" set:html={JSON.stringify(ld)} />
   </head>
-  <body>
+  <body class={path === "/" ? "is-home" : undefined}>
     <a class="skip" href="#main" data-pagefind-ignore>Skip to content</a>
     <header class="top" data-pagefind-ignore>
       <div class="top-bar">
