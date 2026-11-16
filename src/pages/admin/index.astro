@@ -123,22 +123,32 @@ const TABS = [
 
       <!-- ===== SEO & AEO ===== -->
       <section class="dash-panel" data-panel="seo" hidden>
-        <details class="dash-more pb" open><summary>Monday SEO Routine (15 Minutes)</summary><div data-pb="seoRoutine"></div></details>
+        <h2 class="dash-h">SEO Autopilot</h2>
+        <p class="dash-note">Runs by itself, no clicking: Search Console and Bing numbers every day, every page’s Google indexing checked daily, and the SEO checks on every deploy.</p>
+        <div class="cp-chips ev-range" data-seo-range>
+          <button type="button" class="cp-chip" data-days="7" aria-pressed="true">7 Days</button>
+          <button type="button" class="cp-chip" data-days="28" aria-pressed="false">28 Days</button>
+          <button type="button" class="cp-chip" data-days="90" aria-pressed="false">90 Days</button>
+        </div>
+        <div data-seo-auto><p class="dash-fine">Loading…</p></div>
         <details class="dash-more pb"><summary>Quick Links</summary><div data-pb="seoLinks"></div></details>
-        <h2 class="dash-h">Agents</h2>
+        <details class="dash-more pb"><summary>What’s Still Manual (Optional)</summary><div data-pb="seoRoutine"></div></details>
+        <h2 class="dash-h">SEO Checks</h2>
         <div class="pb" data-pb="agents"></div>
         <div class="ag-grid" data-agents>
-          <article class="dash-card"><h3>Page Check</h3><button type="button" class="btn btn-small" data-run="page">Run Page Check</button><div data-agent-out="page"></div></article>
-          <article class="dash-card"><h3>Link Check</h3><button type="button" class="btn btn-small" data-run="links">Run Link Check</button><div data-agent-out="links"></div></article>
-          <article class="dash-card"><h3>Sitemap Watch</h3><button type="button" class="btn btn-small" data-run="sitemap">Run Sitemap Watch</button><div data-agent-out="sitemap"></div></article>
-          <article class="dash-card"><h3>Share Card Check</h3><button type="button" class="btn btn-small" data-run="share">Run Share Card Check</button><div data-agent-out="share"></div></article>
-          <article class="dash-card"><h3>AEO Readiness</h3><button type="button" class="btn btn-small" data-run="aeo">Run AEO Readiness</button><div data-agent-out="aeo"></div></article>
+          <article class="dash-card"><h3>Page Check</h3><div data-agent-out="page"></div><button type="button" class="linkish" data-run="page">Re-run in this browser</button></article>
+          <article class="dash-card"><h3>Link Check</h3><div data-agent-out="links"></div><button type="button" class="linkish" data-run="links">Re-run in this browser</button></article>
+          <article class="dash-card"><h3>Sitemap Watch</h3><div data-agent-out="sitemap"></div><button type="button" class="linkish" data-run="sitemap">Re-run in this browser</button></article>
+          <article class="dash-card"><h3>Share Card Check</h3><div data-agent-out="share"></div><button type="button" class="linkish" data-run="share">Re-run in this browser</button></article>
+          <article class="dash-card"><h3>AEO Readiness</h3><div data-agent-out="aeo"></div><button type="button" class="linkish" data-run="aeo">Re-run in this browser</button></article>
         </div>
         <h2 class="dash-h">Rank Tracker</h2>
-        <div class="pb" data-pb="rankHow"></div>
-        <label class="btn btn-small rk-up-btn">Upload Search Console or Bing export<input type="file" accept=".zip,.csv" data-rank-file hidden /></label>
-        <p class="dash-fine" data-rank-msg></p>
         <div data-rank-out></div>
+        <details class="dash-more pb"><summary>Upload an Export by Hand (Optional)</summary>
+          <div data-pb="rankHow"></div>
+          <label class="btn btn-small rk-up-btn">Upload Search Console or Bing export<input type="file" accept=".zip,.csv" data-rank-file hidden /></label>
+          <p class="dash-fine" data-rank-msg></p>
+        </details>
         <h2 class="dash-h">AI Answer Log</h2>
         <p class="dash-note" data-aeo-sum></p>
         <ol class="aeo-list" data-aeo></ol>

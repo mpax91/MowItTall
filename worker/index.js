@@ -1,5 +1,6 @@
 import { PLAYBOOK } from './playbook.js';
 import { ingest, summary, exportRows, nightly, rollup, evInit, etDate } from './events.js';
+import { seoTick, seoReport } from './seo.js';
 // Mow It Tall API (Cloudflare Worker). Everything that isn't /api/* is served straight from ./dist.
 // Lawn Hall of Fame / Hall of Shame: anyone can upload, Mike approves before anything shows,
 // Reddit-style up/down votes, one vote per photo per phone (random device id, no spam check by Mike's call).
@@ -323,6 +324,9 @@ async function dash(env, req, url) {
     for (let i = 0; i < n; i++) await rollup(env.EV, etDate(Date.now() - i * 86400000));
     return json({ ok: true, days: n });
   }
+  /* ----- SEO autopilot (worker/seo.js): Search Console, indexing, Bing, deploy audits */
+  if (p === '/api/admin/seo' && req.method === 'GET') return await seoReport(env, url);
+  if (p === '/api/admin/seo/run' && req.method === 'POST') return json({ ok: true, did: await seoTick(env, { force: true }) });
   /* ----- small saved settings/results */
   if (p === '/api/admin/kv' && req.method === 'GET') {
     const k = url.searchParams.get('k');
@@ -365,6 +369,8 @@ export default {
     if (url.hostname.endsWith('.workers.dev') && (req.method === 'GET' || req.method === 'HEAD')) {
       return Response.redirect(`https://mowittall.com${url.pathname}${url.search}`, 301);
     }
+    // The build's SEO audit report is for HQ only (read by the hourly job through ASSETS).
+    if (url.pathname.startsWith('/_audit/')) return new Response('Not found', { status: 404 });
     if (!url.pathname.startsWith('/api/')) {
       if (req.method === 'GET' || req.method === 'HEAD') {
         try { await init(env.DB); const r = await shortRedirect(req, env, ctx, url); if (r) return r; } catch { /* fall through to the page */ }
@@ -393,8 +399,12 @@ export default {
       return json({ error: 'Something broke on our end. Try again in a minute.' }, 500);
     }
   },
-  // Nightly (see "triggers" in wrangler.jsonc): rebuild the event log's daily tables for the last 3 days.
+  // Hourly (see "triggers" in wrangler.jsonc). One cron, two jobs: the SEO autopilot every hour (it decides
+  // what's due), and the event log's nightly rebuild at 7:17 UTC (~2:17am Eastern).
   async scheduled(event, env, ctx) {
-    ctx.waitUntil(nightly(env));
+    ctx.waitUntil((async () => {
+      try { await init(env.DB); await seoTick(env); } catch (e) { console.log('seo tick failed', e?.message); }
+      if (new Date(event.scheduledTime || Date.now()).getUTCHours() === 7) await nightly(env);
+    })());
   },
 };

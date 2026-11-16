@@ -75,7 +75,8 @@ export const TODOS = [
   { id: 'so-reddit', group: 'social', pri: 'later', who: 'You', time: 'ongoing', title: 'Be helpful on Reddit (r/lawncare, r/Westchester)', body: 'AI answer engines quote Reddit constantly. Answer questions with real help; link to a guide only when it’s the best answer (rule of thumb: 9 helpful comments for every 1 link). Never post the same link twice in a week.' },
 
   /* ---------- seo / aeo */
-  { id: 's-weekly', group: 'seo', pri: 'now', who: 'You', time: '15 min / week', link: 'seo', title: 'Do the Monday SEO routine', body: 'Export Search Console, upload to the Rank Tracker, run the agents, check the indexing report. The checklist is at the top of the SEO & AEO tab. Uncheck this each week if you like it as a reminder.' },
+  { id: 's-weekly', group: 'seo', pri: 'soon', who: 'You', time: '2 min / week', link: 'seo', title: 'Monday: glance at the SEO Autopilot', body: 'Everything that used to be the 15-minute routine now runs by itself (Search Console + Bing numbers daily, indexing checked daily, SEO checks on every deploy). Open SEO & AEO, look at the tiles, anything under “not indexed” or “Changes”, and the Slipping list in the Rank Tracker. Uncheck this each week if you like it as a reminder.' },
+  { id: 's-autopilot', group: 'seo', pri: 'now', who: 'Both', time: '10 min, once', link: 'seo', title: 'Connect the SEO Autopilot to Google and Bing', body: 'Free. (1) Google Cloud project “Mow It Tall Analytics” → IAM → Service accounts → create one (no roles) → Keys → Add key → JSON. (2) Search Console → Settings → Users and permissions → Add user → the service account’s email, Full. (3) Cloudflare → Workers & Pages → mowittall → Settings → Variables and Secrets → Add → Secret GSC_SERVICE_ACCOUNT = the whole JSON file. (4) Bing Webmaster Tools → Settings → API access → generate key → secret BING_API_KEY. Then HQ → SEO & AEO → Check now.' },
   { id: 's-aeo-log', group: 'seo', pri: 'soon', who: 'You', time: '20 min / month', link: 'seo', title: 'Log whether AI engines quote you (monthly)', body: 'SEO & AEO tab → AI Answer Log. One-tap links ask ChatGPT, Perplexity, Google, Copilot and Claude your target questions; tick when they cite mowittall.com. Track it monthly.' },
   { id: 's-backlinks', group: 'seo', pri: 'soon', who: 'You', time: 'ongoing', title: 'Earn local links', body: '<ul><li>The Bedford Bee: a link to Mow It Tall in a story or the footer (fair game, it’s yours).</li><li>Local garden clubs, the library, Katonah/Bedford community groups and PTA newsletters: offer a free “lawn in 10 minutes” talk or tip sheet.</li><li>Patch, Westchester Magazine, The Journal News, River Journal: pitch the Halloween Super Bowl or mowing etiquette as a fun seasonal story.</li><li>Answer reporter requests on Qwoted, Featured.com or Help a B2B Writer as a homeowner lawn expert.</li><li>YouTube descriptions and Pinterest pins link back too.</li></ul>' },
   { id: 's-competitors', group: 'seo', pri: 'soon', who: 'You', time: 'read 5 min', title: 'Know who you’re up against (and how to beat them)', body: '<p>Who ranks today for your core searches (checked Nov 15):</p><ul>' +
@@ -180,15 +181,12 @@ const bio = (src, camp = 'bio') => `${SITE}/links/?utm_source=${src}&amp;utm_med
 export const GUIDES = {
   /* ===== SEO tab ===== */
   seoRoutine: `
+<p>The SEO Autopilot covers Search Console, Bing, indexing and the SEO checks. What’s left can’t be automated for free, and none of it is urgent:</p>
 <ol class="pb-steps">
-<li><b>Search Console → Performance → Search results.</b> Date: Compare → last 7 days vs previous 7. Sort Queries by Clicks. Then the Pages tab. Look for anything that jumped or fell.</li>
-<li><b>Export it:</b> Export (top right) → Download CSV. Upload the .zip right here in the <b>Rank Tracker</b>. It works out the movers, new and lost searches and what to fix.</li>
-<li><b>Indexing → Pages:</b> is “Indexed” going up? Open any “Why pages aren’t indexed” reason that’s growing.</li>
-<li><b>Run the agents</b> below: Page Check and Link Check. Fix anything red.</li>
-<li><b>Bing Webmaster Tools:</b> Search Performance (same idea as Google), and <b>Recommendations</b> (Bing’s free SEO checklist for your site).</li>
-<li><b>GA4 → Reports → Engagement → Landing page:</b> which pages people arrive on, and their key event rate.</li>
-<li><b>Clarity → Dashboard:</b> rage clicks, dead clicks, quick backs. Watch 3 recordings of your top landing page on a phone.</li>
-<li><b>Monthly:</b> the AI Answer Log, one new guide or post, and one link-building ask.</li>
+<li><b>Clarity → Dashboard</b> (monthly or after a redesign): rage clicks, dead clicks, quick backs. Watch 3 phone recordings of your top landing page.</li>
+<li><b>Bing Webmaster → Recommendations</b> (monthly): Bing’s own SEO suggestions.</li>
+<li><b>AI Answer Log</b> (monthly, below): ask the tracked questions in ChatGPT, Perplexity and friends, tick whether you’re quoted. The event log already counts visits from AI assistants.</li>
+<li><b>Monthly:</b> one new guide or post, and one link-building ask.</li>
 </ol>`,
   seoLinks: [
     ['Search Console: Performance', 'https://search.google.com/search-console/performance/search-analytics?resource_id=sc-domain%3Amowittall.com'],
@@ -210,7 +208,7 @@ export const GUIDES = {
   ],
   seoNote: 'The Search Console links assume a <b>Domain</b> property (sc-domain:mowittall.com), which is what Cloudflare sets up. If you made a URL-prefix property instead, pick it from the property menu after the link opens.',
   rankHow: `
-<p><b>How it works (no API, no tokens):</b> you export from Search Console (or Bing) and upload the file here. Each upload is saved as a snapshot. The tracker compares the newest snapshot with the one before it.</p>
+<p><b>Only needed if the autopilot isn’t connected</b> (or for a one-off date range): export from Search Console (or Bing) and upload the file here. Each upload is saved as a snapshot. The tracker compares the newest snapshot with the one before it.</p>
 <ul>
 <li><b>Search Console:</b> Performance → set the date (Last 7 days or Last 28 days; use the same range every time) → Export → Download CSV → upload the .zip (it reads Queries.csv and Pages.csv).</li>
 <li><b>Bing:</b> Search Performance → Keywords or Pages → Export → upload the CSV.</li>
@@ -262,15 +260,14 @@ export const GUIDES = {
     'how to get rid of moss in lawn',
   ],
   agents: `
-<p>These run in your browser right now: they read your live pages the way a search engine does and check them against a list of rules. No AI, no API keys, nothing to install. Results are saved here so phone and laptop see the same thing.</p>
+<p>These run by themselves on every deploy (the only time results can change): they read every built page the way a search engine does and check it against a list of rules. No AI, no API keys. Anything new since the deploy before gets a yellow <b>New</b> tag.</p>
 <ul>
-<li><b>Page Check:</b> every page in the sitemap: title and description length, one H1, canonical, noindex, share image, structured data, missing alt text, thin content, few internal links, duplicate titles.</li>
-<li><b>Link Check:</b> every internal link on every page: broken links, redirect hops, and orphan pages nothing links to.</li>
-<li><b>Sitemap Watch:</b> what’s in the sitemap, what was added or removed since last run, robots.txt and llms.txt checks.</li>
-<li><b>Share Card Check:</b> every page’s share image loads, is the right size, and has a title and description.</li>
+<li><b>Page Check:</b> title and description length, one H1, canonical, noindex, share image, structured data, missing alt text, thin content, few internal links, duplicate titles.</li>
+<li><b>Link Check:</b> every internal link: broken links, redirect hops, and orphan pages nothing links to.</li>
+<li><b>Sitemap Watch:</b> what was added or removed since the last deploy, robots.txt and llms.txt.</li>
+<li><b>Share Card Check:</b> every page’s share image exists, is the right size, and has a title and description.</li>
 <li><b>AEO Readiness:</b> answer-first opening, FAQ data, question headings, author, dates and sources on posts and guides.</li>
-</ul>
-<p>Run Page Check and Link Check weekly and after any big change.</p>`,
+</ul>`,
 
   /* ===== Analytics tab ===== */
   ga4Events: [

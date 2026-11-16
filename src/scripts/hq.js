@@ -1,6 +1,7 @@
 // Mow It Tall HQ: To-Do, SEO & AEO (agents, rank tracker, AI answer log), Analytics, Social setup, Build Plan.
 // Content comes from /api/admin/todos (worker/playbook.js), so none of it is in the public page.
-// Agents run in the browser against the live pages: no AI, no API keys.
+// SEO autopilot (Nov 16): Search Console / Bing / indexing data comes from worker/seo.js (hourly job), and the
+// SEO checks run at build time (scripts/audit.mjs). The browser versions of the checks stay as a fallback.
 
 import qrcode from 'qrcode-generator';
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
@@ -200,11 +201,13 @@ export function initHQ({ root, api, show }) {
   function renderAgent(name, r) {
     const box = $(`[data-agent-out="${name}"]`); if (!r) { box.innerHTML = '<p class="dash-fine">Not run yet.</p>'; return; }
     const n = (s) => r.issues.filter((i) => i.sev === s).length;
-    const sorted = [...r.issues].sort((a, b) => ['error', 'warn', 'info'].indexOf(a.sev) - ['error', 'warn', 'info'].indexOf(b.sev));
+    const sorted = [...r.issues].sort((a, b) => (b.fresh ? 1 : 0) - (a.fresh ? 1 : 0) || ['error', 'warn', 'info'].indexOf(a.sev) - ['error', 'warn', 'info'].indexOf(b.sev));
     const extra = name === 'page' ? '<p class="dash-fine">Speed: <a href="https://pagespeed.web.dev/analysis?url=https%3A%2F%2Fmowittall.com%2F&form_factor=mobile" target="_blank" rel="noopener">PageSpeed for the homepage</a> (swap in any URL).</p>' : '';
-    box.innerHTML = `<p class="ag-sum"><span class="ag-n ag-error">${n('error')} errors</span><span class="ag-n ag-warn">${n('warn')} warnings</span><span class="ag-n ag-info">${n('info')} notes</span> <small>${r.checked} checked · ${ago(r.at)}</small></p>
+    const how = r.auto ? `from the deploy ${ago(r.at)}` : `ran in a browser ${ago(r.at)}`;
+    const delta = r.auto && (r.newCount || r.fixed) ? `<p class="dash-fine">${r.newCount ? `<b class="rk-down">${r.newCount} new</b>` : ''}${r.newCount && r.fixed ? ' · ' : ''}${r.fixed ? `<b class="rk-up">${r.fixed} fixed</b>` : ''} since the deploy before.</p>` : '';
+    box.innerHTML = `<p class="ag-sum"><span class="ag-n ag-error">${n('error')} errors</span><span class="ag-n ag-warn">${n('warn')} warnings</span><span class="ag-n ag-info">${n('info')} notes</span> <small>${r.checked} checked · ${how}</small></p>${delta}
       ${r.note ? `<p class="dash-fine">${esc(r.note)}</p>` : ''}${extra}
-      ${sorted.length ? `<ul class="ag-list">${sorted.slice(0, 300).map((i) => `<li class="ag-${i.sev}"><a href="${esc(i.path.split(',')[0])}" target="_blank" rel="noopener">${esc(i.path)}</a><span>${esc(i.msg)}</span></li>`).join('')}</ul>${sorted.length > 300 ? `<p class="dash-fine">…and ${sorted.length - 300} more.</p>` : ''}` : '<p class="hall-msg">All clear. Nice.</p>'}`;
+      ${sorted.length ? `<ul class="ag-list">${sorted.slice(0, 300).map((i) => `<li class="ag-${i.sev}"><a href="${esc(i.path.split(',')[0])}" target="_blank" rel="noopener">${esc(i.path)}</a><span>${i.fresh ? '<b class="ag-new">New</b> ' : ''}${esc(i.msg)}</span></li>`).join('')}</ul>${sorted.length > 300 ? `<p class="dash-fine">…and ${sorted.length - 300} more.</p>` : ''}` : '<p class="hall-msg">All clear. Nice.</p>'}`;
   }
   root.querySelector('[data-agents]').addEventListener('click', async (e) => {
     const b = e.target.closest('[data-run]'); if (!b) return;
@@ -212,10 +215,75 @@ export function initHQ({ root, api, show }) {
     const out = $(`[data-agent-out="${name}"]`);
     try {
       const r = await AGENTS[name]((d, t) => { b.textContent = `Running… ${d}/${t}`; });
-      r.at = Date.now(); renderAgent(name, r);
-      await kvSet(`agent:${name}`, { ...r, issues: r.issues.slice(0, 1500) });
+      r.at = Date.now(); r.auto = false; renderAgent(name, r);
+      await kvSet(`agent:${name}`, { ...r, issues: r.issues.slice(0, 1500), build: (await kvGet('agent:build').catch(() => null)) });
     } catch (err) { out.innerHTML = `<p class="hall-msg">Couldn’t run: ${esc(err.message || err)}. (Agents read the live site; run them on mowittall.com.)</p>`; }
     b.disabled = false; b.textContent = label;
+  });
+
+  /* ================================================================ SEO AUTOPILOT (worker/seo.js) */
+  let seoData = null, seoDays = 7;
+  const COVER = { 'Submitted and indexed': 'Indexed', 'Indexed, not submitted in sitemap': 'Indexed (not in sitemap)', 'URL is unknown to Google': 'Google hasn’t seen it yet', 'Discovered - currently not indexed': 'Found, not crawled yet', 'Crawled - currently not indexed': 'Crawled, not indexed' };
+  const cover = (c) => COVER[c] || c || 'Not checked yet';
+  const n0 = (x) => Math.round(x || 0).toLocaleString();
+  const dlt = (a, b, lowerBetter, f = (x) => n0(x)) => { if (!b) return ''; const d = a - b; if (Math.abs(d) < 0.05) return '<em>no change</em>'; const good = lowerBetter ? d < 0 : d > 0; return `<em class="${good ? 'ev-up' : 'ev-down'}">${d > 0 ? '▲' : '▼'} ${f(Math.abs(d))}</em>`; };
+  async function loadSeo() {
+    const box = $('[data-seo-auto]');
+    try { seoData = await api(`/api/admin/seo?days=${seoDays}`); } catch (err) { box.innerHTML = `<p class="hall-msg">Couldn’t load: ${esc(err.message)}</p>`; return; }
+    renderSeo(); loadRank().catch(() => {});
+  }
+  function renderSeo() {
+    const box = $('[data-seo-auto]'), r = seoData;
+    if (!r?.ready) { box.innerHTML = '<p class="hall-msg">The analytics database shows up after the next deploy.</p>'; return; }
+    const st = r.status, runs = st.runs || {};
+    const pill = (on, yes, no) => `<span class="ag-n ${on ? 'ag-ok' : 'ag-warn'}">${on ? yes : no}</span>`;
+    let html = `<p class="ag-sum">${pill(st.google, 'Google connected', 'Google not connected')} ${pill(st.bing, 'Bing connected', 'Bing not connected')} <small>Last run ${ago(Math.max(runs.audit || 0, runs.inspect || 0, runs.search || 0))} · data ${ago(runs['search:ok'])}</small> <button type="button" class="linkish" data-seo-run>Check now</button></p>`;
+    if (!st.google) html += `<div class="dash-card seo-setup"><p><b>To turn on the Google part</b> (free, one time): create a service account in Google Cloud (project “Mow It Tall Analytics”), add its email as a user in Search Console, and save its JSON key as the <code>GSC_SERVICE_ACCOUNT</code> secret in Cloudflare (Workers &amp; Pages → mowittall → Settings → Variables and Secrets). Claude can do the first two in your Chrome.</p></div>`;
+    else html += `<p class="dash-fine">Service account: <code>${esc(st.account)}</code> on <code>${esc(st.site)}</code>${st.backfill ? ` · history ${st.backfill.done ? 'loaded' : `loading (back to ${esc(st.backfill.until)})`}` : ''}</p>`;
+    if (!st.bing) html += `<p class="dash-fine">Bing: add a <code>BING_API_KEY</code> secret (Bing Webmaster Tools → Settings → API access → API key) to pull Bing’s numbers too.</p>`;
+    if (st.errors?.length) html += `<details class="dash-more"><summary>Problems (${st.errors.length})</summary><ul class="dash-log">${st.errors.map((e) => `<li><b>${esc(e.task)}</b> · ${ago(e.at)}: ${esc(e.msg)}</li>`).join('')}</ul></details>`;
+    const g = r.google;
+    if (g) {
+      const t = g.totals, p = g.prevTotals;
+      const max = Math.max(1, ...g.daily.map((d) => d.impressions));
+      html += `<h3 class="seo-h">Google, ${esc(g.cur.from)} to ${esc(g.cur.to)} <small>vs the ${r.days} days before</small></h3>
+        <div class="dash-tiles ev-tiles"><div><b>${n0(t.clicks)}</b><span>Clicks</span>${dlt(t.clicks, p.days && p.clicks)}</div>
+        <div><b>${n0(t.impressions)}</b><span>Impressions</span>${dlt(t.impressions, p.days && p.impressions)}</div>
+        <div><b>${t.position ? t.position.toFixed(1) : '–'}</b><span>Avg. position</span>${p.position ? dlt(t.position, p.position, true, (x) => x.toFixed(1)) : ''}</div>
+        <div><b>${(t.ctr * 100).toFixed(1)}%</b><span>Click rate</span>${p.days ? dlt(t.ctr * 100, p.ctr * 100, false, (x) => x.toFixed(1) + ' pts') : ''}</div></div>
+        ${g.daily.length > 1 ? `<div class="ev-bars" role="img" aria-label="Impressions per day">${g.daily.map((d) => `<i style="height:${Math.max(3, Math.round((d.impressions / max) * 100))}%" title="${d.date}: ${d.impressions} impressions, ${d.clicks} clicks, position ${d.position.toFixed(1)}"></i>`).join('')}</div><p class="dash-fine ev-axis"><span>${g.daily[0].date}</span><span>Google impressions per day</span><span>${g.daily.at(-1).date}</span></p>` : ''}
+        <p class="dash-fine">Google’s numbers run 2–3 days behind. Searches and pages, with what moved, are in the Rank Tracker below.</p>`;
+    }
+    // Indexing
+    const ix = r.index, pages = ix.pages || [];
+    if (st.google || pages.length) {
+      const checked = pages.filter((x) => x.verdict);
+      const ok = checked.filter((x) => x.verdict === 'PASS');
+      const bad = checked.filter((x) => x.verdict !== 'PASS');
+      const groups = {}; bad.forEach((x) => (groups[cover(x.coverage)] ||= []).push(x));
+      const canon = checked.filter((x) => x.google_canonical && x.user_canonical && x.google_canonical !== x.user_canonical);
+      html += `<h3 class="seo-h">Google Indexing</h3>
+        <p class="ag-sum"><span class="ag-n ag-ok">${ok.length} indexed</span><span class="ag-n ag-warn">${bad.length} not indexed</span><span class="ag-n ag-info">${Math.max(0, (ix.total || pages.length) - checked.length)} not checked yet</span> <small>of ${ix.total || pages.length} pages in the sitemap · each checked once a day</small></p>`;
+      if (bad.length) html += Object.entries(groups).map(([k, list]) => `<details class="dash-more" ${list.length < 15 ? 'open' : ''}><summary>${esc(k)} (${list.length})</summary><ul class="ag-list">${list.map((x) => `<li class="ag-warn"><a href="${esc(x.path)}" target="_blank" rel="noopener">${esc(x.path)}</a><span>${x.last_crawl ? `Last crawled ${esc(x.last_crawl.slice(0, 10))}` : 'Never crawled'}${x.robots && x.robots !== 'ALLOWED' ? ` · robots.txt: ${esc(x.robots)}` : ''}${x.fetch && x.fetch !== 'SUCCESSFUL' ? ` · fetch: ${esc(x.fetch)}` : ''}</span></li>`).join('')}</ul></details>`).join('')
+        + `<p class="dash-fine">New pages usually take days to a few weeks. If one sits in “Crawled, not indexed” for a month, beef it up and link to it from 2–3 related posts.</p>`;
+      if (canon.length) html += `<details class="dash-more" open><summary>Google picked a different canonical (${canon.length})</summary><ul class="ag-list">${canon.map((x) => `<li class="ag-error"><a href="${esc(x.path)}" target="_blank" rel="noopener">${esc(x.path)}</a><span>Google uses ${esc(x.google_canonical)}</span></li>`).join('')}</ul></details>`;
+      const errs = pages.filter((x) => x.error);
+      if (errs.length) html += `<details class="dash-more"><summary>Couldn’t check (${errs.length})</summary><ul class="dash-log">${errs.slice(0, 20).map((x) => `<li>${esc(x.path)}: ${esc(x.error)}</li>`).join('')}</ul></details>`;
+      const LBL = { first: 'First check', verdict: 'Verdict', coverage: 'Status', indexing: 'Indexing allowed', robots: 'robots.txt', fetch: 'Fetch', google_canonical: 'Google’s canonical' };
+      const changes = (ix.log || []).filter((l) => l.field !== 'first');
+      if (changes.length) html += `<details class="dash-more" open><summary>Changes, last 30 days (${changes.length})</summary><ul class="dash-log">${changes.slice(0, 60).map((l) => `<li>${ago(l.at)} · <a href="${esc(l.path)}" target="_blank" rel="noopener">${esc(l.path)}</a>: ${LBL[l.field] || esc(l.field)} ${esc(l.field === 'coverage' ? cover(l.before) : l.before || '–')} → <b>${esc(l.field === 'coverage' ? cover(l.after) : l.after || '–')}</b></li>`).join('')}</ul></details>`;
+      if (st.sitemaps?.length) html += `<p class="dash-fine">Sitemaps Google has: ${st.sitemaps.map((m) => `${esc(m.path.replace(/^https?:\/\/[^/]+/, ''))} (read ${m.lastDownloaded ? esc(m.lastDownloaded.slice(0, 10)) : 'not yet'}${m.errors ? `, <b class="rk-down">${m.errors} errors</b>` : ''}${m.warnings ? `, ${m.warnings} warnings` : ''})`).join(' · ')}</p>`;
+      else if (st.google && runs['sitemaps:ok']) html += `<p class="dash-fine"><b class="rk-down">Google has no sitemap on file.</b> Search Console → Sitemaps → add <code>sitemap-index.xml</code>.</p>`;
+    }
+    box.innerHTML = html;
+  }
+  $('[data-seo-range]').addEventListener('click', (e) => { const b = e.target.closest('[data-days]'); if (!b) return; seoDays = Number(b.dataset.days); $('[data-seo-range]').querySelectorAll('[data-days]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); loadSeo(); });
+  $('[data-seo-auto]').addEventListener('click', async (e) => {
+    const b = e.target.closest('[data-seo-run]'); if (!b) return;
+    b.disabled = true; b.textContent = 'Checking… (up to a minute)';
+    try { await api('/api/admin/seo/run', { method: 'POST' }); } catch (err) { alert(err.message); }
+    await loadSeo();
+    for (const n of Object.keys(AGENT_NAMES)) kvGet(`agent:${n}`).then((v) => renderAgent(n, v)).catch(() => {});
   });
 
   /* ================================================================ RANK TRACKER */
@@ -286,13 +354,17 @@ export function initHQ({ root, api, show }) {
     const list = snaps.filter((s) => s.kind === kind && s.source === source);
     if (!list.length) return '';
     const [a, b] = await Promise.all(list.slice(0, 2).map((s) => api(`/api/admin/snaps?id=${s.id}`).then((r) => r.snap)));
+    return compareRows(kind, source, a, b);
+  }
+  // a = newest period, b = the one before (or null). Rows: { k, c (clicks), i (impressions), ctr, p (position) }.
+  function compareRows(kind, source, a, b, live) {
     const now = new Map(a.rows.map((r) => [r.k, r])), was = b ? new Map(b.rows.map((r) => [r.k, r])) : new Map();
     const both = a.rows.filter((r) => was.has(r.k)).map((r) => ({ ...r, prev: was.get(r.k), d: was.get(r.k).p - r.p, dc: r.c - was.get(r.k).c }));
     const label = kind === 'pages' ? 'Page' : 'Search';
     const keyCell = (r) => (kind === 'pages' ? `<a href="${esc(r.k)}" target="_blank" rel="noopener">${esc(r.k)}</a>` : esc(r.k));
     const tot = (rs) => rs.reduce((s, r) => s + r.c, 0), totI = (rs) => rs.reduce((s, r) => s + r.i, 0);
     let html = `<h4>${source === 'bing' ? 'Bing' : 'Google'}: ${kind === 'pages' ? 'Pages' : 'Searches'}</h4>
-      <p class="dash-fine">Latest: ${esc(a.label || '')} (${ago(a.at)}) · ${a.rows.length} rows · ${tot(a.rows)} clicks · ${totI(a.rows)} impressions${b ? ` · vs ${esc(b.label || '')}: ${tot(b.rows)} clicks, ${totI(b.rows)} impressions` : ' · upload another export next week to see changes'}</p>`;
+      <p class="dash-fine">${live ? 'Automatic' : 'Upload'}: ${esc(a.label || '')}${a.at ? ` (${ago(a.at)})` : ''} · ${a.rows.length} rows · ${tot(a.rows)} clicks · ${totI(a.rows)} impressions${b ? ` · vs ${esc(b.label || '')}: ${tot(b.rows)} clicks, ${totI(b.rows)} impressions` : live ? ' · changes show up once there’s an earlier period to compare' : ' · upload another export next week to see changes'}</p>`;
     if (b) {
       const up = both.filter((r) => r.d >= 3 && r.i >= 10).sort((x, y) => y.d - x.d).slice(0, 15);
       const down = both.filter((r) => r.d <= -3 && r.i >= 10).sort((x, y) => x.d - y.d).slice(0, 15);
@@ -321,10 +393,12 @@ export function initHQ({ root, api, show }) {
   async function loadRank() {
     snaps = (await api('/api/admin/snaps')).snaps;
     const out = $('[data-rank-out]');
-    if (!snaps.length) { out.innerHTML = '<p class="dash-fine">No uploads yet. Export from Search Console and drop the zip above.</p>'; return; }
+    const seo = seoData || {};
+    const live = { gsc: seo.google?.snaps, bing: seo.bing?.snaps };
+    if (!snaps.length && !live.gsc && !live.bing) { out.innerHTML = `<p class="dash-fine">${seo.status?.google ? 'Search Console is connected. The numbers fill in after the next hourly run (Google’s data runs 2–3 days behind).' : 'Fills in by itself once Search Console is connected (see SEO Autopilot above).'}</p>`; return; }
     out.innerHTML = '<p class="dash-fine">Comparing…</p>';
-    const parts = await Promise.all([['queries', 'gsc'], ['pages', 'gsc'], ['queries', 'bing'], ['pages', 'bing']].map(([k, s]) => compare(k, s)));
-    out.innerHTML = parts.join('') + `<details class="dash-more"><summary>All uploads (${snaps.length})</summary><ul class="dash-log">${snaps.map((s) => `<li>${s.source === 'bing' ? 'Bing' : 'Google'} ${s.kind} · ${esc(s.label || '')} · ${ago(s.at)} <button type="button" class="linkish" data-snap-del="${s.id}">Delete</button></li>`).join('')}</ul></details>`;
+    const parts = await Promise.all([['queries', 'gsc'], ['pages', 'gsc'], ['queries', 'bing'], ['pages', 'bing']].map(([k, s]) => (live[s] ? compareRows(k, s, live[s][k].a, live[s][k].b, true) : compare(k, s))));
+    out.innerHTML = parts.join('') + (!snaps.length ? '' : `<details class="dash-more"><summary>All uploads (${snaps.length})</summary><ul class="dash-log">${snaps.map((s) => `<li>${s.source === 'bing' ? 'Bing' : 'Google'} ${s.kind} · ${esc(s.label || '')} · ${ago(s.at)} <button type="button" class="linkish" data-snap-del="${s.id}">Delete</button></li>`).join('')}</ul></details>`);
   }
   $('[data-rank-out]').addEventListener('click', async (e) => {
     const d = e.target.closest('[data-snap-del]'); if (!d || !confirm('Delete this upload?')) return;
@@ -590,7 +664,7 @@ export function initHQ({ root, api, show }) {
       PB = r.playbook; custom = r.custom; state = Object.fromEntries(r.state.map((s) => [s.id, s]));
       renderTodos(); renderGuides();
       for (const n of Object.keys(AGENT_NAMES)) kvGet(`agent:${n}`).then((v) => renderAgent(n, v)).catch(() => {});
-      loadRank().catch(() => {}); loadLinks().catch(() => {}); loadAeo().catch(() => {}); loadSettings().catch(() => {});
+      loadSeo().catch(() => {}); loadLinks().catch(() => {}); loadAeo().catch(() => {}); loadSettings().catch(() => {});
     } catch (err) { $('[data-todo-list]').innerHTML = `<p class="hall-msg">Couldn’t load the playbook: ${esc(err.message)}</p>`; }
   })();
 }

@@ -18,7 +18,8 @@
     { "binding": "DB", "database_name": "mowittall-hall" },
     { "binding": "EV", "database_name": "mowittall-events" }
   ],
-  // 7:17 UTC ≈ 2:17am Eastern: rebuild the event log's daily tables.
-  "triggers": { "crons": ["17 7 * * *"] },
+  // Hourly at :17. The SEO autopilot (worker/seo.js) runs every hour and decides what's due; the event
+  // log's nightly rebuild runs on the 7:17 UTC run (~2:17am Eastern).
+  "triggers": { "crons": ["17 * * * *"] },
   "workers_dev": true
 }
