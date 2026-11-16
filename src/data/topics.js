@@ -8,6 +8,7 @@ export const TOPICS = [
   { slug: 'soil', name: 'Soil', blurb: 'Soil tests, pH, lime and what is going on under the grass.' },
   { slug: 'dogs-kids', name: 'Dogs, kids & critters', blurb: 'Pee spots, bouncy houses, safety, and the animals that visit.' },
   { slug: 'gear', name: 'Gear', blurb: 'Mowers, spreaders, sprayers and the stuff you don’t need.' },
+  { slug: 'got-a-guy', name: 'Got a Guy', blurb: 'For people with a landscaper or lawn service: what to hire, what to do yourself, and what to say.' },
   { slug: 'fun', name: 'Just for fun', blurb: 'Jokes, playlists, rankings and Bedford nonsense.' },
 ];
 export const topicBySlug = Object.fromEntries(TOPICS.map((t) => [t.slug, t]));

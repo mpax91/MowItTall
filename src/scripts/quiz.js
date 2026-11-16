@@ -2,6 +2,7 @@ import { planFor, statusOf, windowText, fmt } from '../data/tasks.js';
 import { RESULTS as GRASS, pick as pickGrass } from '../data/grassPicker.js';
 import { yardTotal, num, fmt as fmtN, round1 } from './yard.js';
 import { fetchWater, verdict as waterVerdict, getGauge, VERDICTS } from './water.js';
+import { CREW_TASKS, CREW_PLAN_ASKS } from '../data/crew.js';
 
 const STEPS = [
   {
@@ -104,7 +105,7 @@ const STEPS = [
     type: 'one',
     options: [
       { v: 'me', t: 'Me', s: 'Every week. Mostly.' },
-      { v: 'crew', t: 'A landscaping crew', s: 'They show up, they leave, things are shorter.' },
+      { v: 'crew', t: 'A landscaper or lawn service', s: 'They show up, they leave, things are shorter.' },
       { v: 'kid', t: 'A kid I pay', s: 'Cash and guilt, in roughly equal amounts.' },
       { v: 'robot', t: 'A robot', s: 'It’s the future and it lives in my yard.' },
     ],
@@ -274,7 +275,7 @@ export function initQuiz(root) {
     if (kids || dogs) notes.push(`${kids && dogs ? 'Kids and dogs' : kids ? 'Kids' : 'Dogs'} on the lawn: spot-treat weeds instead of blanket spraying, keep everyone off until it dries, and water in granules. <a href="/blog/kid-and-pet-safe-lawn-care/">The kid and pet safe playbook</a>.`);
     if (dogs) notes.push('Yellow dog spots: water the spot right after, and reseed the worst ones in fall. <a href="/blog/dog-pee-kids-bouncy-houses-lawn/">Fix dog spots</a>.');
     if (answers.water === 'never') notes.push('No watering is fine. Pick tough grass (tall fescue), mow tall, and let it go brown in a dry August. It comes back.');
-    if (answers.mower === 'crew') notes.push('Show this plan to your crew. The biggest ask: have them mow at 3.5 inches or higher.');
+    if (answers.mower === 'crew') notes.push('You’ve got a guy. Great. Every job below says <b>Your guy</b> (what to ask him) or <b>You</b> (the cheap 15-minute stuff worth doing yourself).');
     if (answers.mower === 'kid') notes.push('Tip for your employee: pay a bonus for straight stripes. Watch quality skyrocket.');
     if (answers.mower === 'robot') notes.push('Set the robot to its highest cut height. It mows often, so tall and frequent is perfect.');
     // grass recommendation: same rules as the grass picker
@@ -292,7 +293,9 @@ export function initQuiz(root) {
     const profile = PROFILES[Math.min(3, level)];
     if (fresh) window.mitTrack && window.mitTrack('quiz_complete', { quiz_name: 'lawn_plan', effort_level: level, lawn_profile: profile.name, grass_pick: grassKey, task_count: tasks.length });
     const today = new Date();
-    const hours = Math.max(1, Math.round(tasks.reduce((a, t) => a + t.minutes, 0) / 60));
+    const crew = answers.mower === 'crew';
+    const mine = crew ? tasks.filter((t) => (CREW_TASKS[t.id] || {}).who !== 'guy') : tasks;
+    const hours = Math.max(1, Math.round(mine.reduce((a, t) => a + t.minutes, 0) / 60));
     const ordered = tasks
       .map((t) => ({ t, s: statusOf(t, today) }))
       .sort((a, b) => rank(a) - rank(b));
@@ -311,10 +314,17 @@ export function initQuiz(root) {
       <p>${profile.blurb}</p>
       <ul class="plan-stats">
         <li><b>${tasks.length}</b>things to do all year</li>
-        <li><b>~${hours} ${hours === 1 ? 'hour' : 'hours'}</b>a year, not counting mowing</li>
+        <li><b>~${hours} ${hours === 1 ? 'hour' : 'hours'}</b>a year${crew ? ' of your time. Your guy does the rest' : ', not counting mowing'}</li>
         <li><b data-size-stat>${mapped ? fmtN(mapped) : '—'}</b>sq ft of lawn</li>
       </ul>
       ${notes.length ? `<ul class="plan-notes">${notes.map((n) => `<li>${n}</li>`).join('')}</ul>` : ''}
+      ${crew ? `
+      <div class="plan-box plan-guy">
+        <h3>Got a Guy? Here’s the Split</h3>
+        <p><b>${tasks.length - mine.length} jobs</b> for your guy, <b>${mine.length}</b> for you. Pay for the time, keep the timing: he mows, you feed.</p>
+        <a class="btn plan-guy-btn" href="/blog/what-to-tell-your-landscaper/?asks=${CREW_PLAN_ASKS.join(',')}#crewtext">Write the Text to My Guy</a>
+        <p class="plan-links"><a href="/blog/is-my-landscaper-doing-a-good-job/">Grade your landscaper</a><a href="/blog/pay-a-guy-or-diy-lawn-jobs/">Pay a guy or DIY?</a><a href="/blog/lawn-treatment-program-explained/">Lawn programs, decoded</a></p>
+      </div>` : ''}
 
       <div class="plan-box plan-now" data-now>
         <h3>Right now in ${place.name}</h3>
@@ -356,6 +366,7 @@ export function initQuiz(root) {
             <h3>${t.title}</h3>
             <p>${t.short}</p>
             <p class="plan-why">${t.why}</p>
+            ${crew && CREW_TASKS[t.id] ? `<p class="plan-who" data-who="${CREW_TASKS[t.id].who}"><b>${CREW_TASKS[t.id].who === 'guy' ? 'Your guy' : 'You'}</b> ${CREW_TASKS[t.id].line}</p>` : ''}
             <p class="plan-amt" data-amt="${t.id}" hidden></p>
             ${TOOLS[t.id] ? `<p class="plan-links">${links(t.id)}</p>` : ''}
             <p class="cal-status">${
@@ -432,7 +443,7 @@ export function initQuiz(root) {
       } catch { result.querySelector('[data-now-soil]').textContent = 'Can’t tell right now'; }
     })();
 
-    result.querySelector('[data-ics]').addEventListener('click', () => downloadIcs(ordered, profile));
+    result.querySelector('[data-ics]').addEventListener('click', () => downloadIcs(ordered, profile, crew));
     result.querySelector('[data-print]').addEventListener('click', () => { window.mitTrack && window.mitTrack('quiz_print', { quiz_name: 'lawn_plan' }); window.print(); });
     result.addEventListener('click', (e) => { const a = e.target.closest('a[href]'); if (a) window.mitTrack && window.mitTrack('quiz_result_click', { link_url: a.getAttribute('href'), link_text: (a.textContent || '').trim().slice(0, 60) }); });
     result.querySelector('[data-restart]').addEventListener('click', () => {
@@ -448,7 +459,7 @@ export function initQuiz(root) {
   function rank({ s }) { return s.state === 'now' ? -1000 + s.daysLeft : s.days; }
 }
 
-function downloadIcs(ordered, profile) {
+function downloadIcs(ordered, profile, crew = false) {
   const pad = (n) => String(n).padStart(2, '0');
   const ymd = (d) => `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}`;
   const esc = (s) => s.replace(/[\\;,]/g, (m) => `\\${m}`).replace(/\n/g, '\\n');
@@ -465,7 +476,7 @@ function downloadIcs(ordered, profile) {
       `DTSTART;VALUE=DATE:${ymd(d)}`,
       `DTEND;VALUE=DATE:${ymd(end)}`,
       `SUMMARY:${esc('Lawn: ' + t.title)}`,
-      `DESCRIPTION:${esc(`${t.short} ${t.why}\nGood window: ${windowText(t)}.\nFrom your Mow It Tall plan (${profile.name}).`)}`,
+      `DESCRIPTION:${esc(`${crew && CREW_TASKS[t.id] ? `${CREW_TASKS[t.id].who === 'guy' ? 'Your guy' : 'You'}: ${CREW_TASKS[t.id].line}\n` : ''}${t.short} ${t.why}\nGood window: ${windowText(t)}.\nFrom your Mow It Tall plan (${profile.name}).`)}`,
       'BEGIN:VALARM', 'ACTION:DISPLAY', 'TRIGGER:PT9H', `DESCRIPTION:${esc(t.title)}`, 'END:VALARM',
       'END:VEVENT',
     ].join('\r\n');

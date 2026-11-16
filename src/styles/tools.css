@@ -626,3 +626,78 @@ main.nb-page > section.nb-rules { padding: 26px 0 0; }
 .sp-fine { margin: 0; font-size: 0.85rem; color: var(--paper-dim); }
 .prose ol.sp-steps, .prose ol.wd-steps { padding-left: 1.5em; margin-left: 0; list-style: decimal; }
 .prose ol.sp-steps li { padding-left: 2px; }
+/* ---------- Got a Guy: pay a guy or DIY (.cs-*) ---------- */
+.cs-size .mc-seg button { display: flex; flex-direction: column; align-items: center; gap: 1px; line-height: 1.1; }
+.cs-size .mc-seg button small { font-family: var(--body); font-weight: 400; font-size: 0.72rem; opacity: 0.8; }
+.cs-list { list-style: none; margin: 16px 0 0 !important; display: grid; gap: 10px; }
+.cs-job { padding: 12px 12px 12px; background: var(--paper); color: var(--ink); border: 3px solid var(--win-edge); border-radius: 10px; }
+.cs-job[data-who='skip'] { opacity: 0.7; }
+.cs-head { display: flex; gap: 10px; align-items: flex-start; }
+.cs-rank { flex: none; width: 30px; height: 30px; display: grid; place-items: center; font: 800 1rem/1 var(--display); color: var(--paper); background: var(--ink); border-radius: 6px; }
+.cs-name { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-width: 0; }
+.tool .cs-name h3 { font: 800 1.12rem/1.15 var(--display); letter-spacing: -0.01em; color: var(--ink); margin: 0; }
+.cs-word { font-size: 0.78rem; padding: 2px 7px 3px; border-width: 2px; letter-spacing: 0.02em; }
+.tool .cs-line { margin: 8px 0 10px; font-size: 0.95rem; line-height: 1.4; color: #24402c; }
+.tool .cs-fixed { margin: 0; font-size: 0.85rem; font-weight: 700; color: #7d1a14; }
+.cs-seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+.cs-seg button { min-height: 40px; padding: 4px 2px; font: 750 0.92rem/1.1 var(--display); color: var(--ink); background: #e2ecd9; border: 2px solid #b7c9ad; border-radius: 8px; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.cs-seg button[aria-pressed='true'] { color: #fff; background: #2f6e47; border-color: var(--ink); }
+.cs-seg button[data-who-btn='skip'][aria-pressed='true'] { background: #6b7a66; }
+.tool .cs-cost { display: flex; justify-content: space-between; gap: 8px; margin: 8px 0 0; font-size: 0.85rem; color: #3d5a45; }
+.cs-cost b { color: var(--ink); }
+.cs-job[data-who='guy'] [data-cs-hire], .cs-job[data-who='me'] [data-cs-diy] { background: var(--sun); padding: 0 4px; border-radius: 4px; }
+.cs-out { position: sticky; bottom: 8px; margin-top: 16px; min-height: 0; background: #0f2c19; box-shadow: 0 4px 0 rgba(5, 20, 10, 0.4); }
+.cs-out .mc-word { font-size: 1.3rem; }
+.cs-out .mc-line { font-size: 0.95rem; margin-top: 6px; }
+.cs-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin: 10px 0 0; }
+.cs-stats div { padding: 6px 8px; background: rgba(0, 0, 0, 0.28); border-radius: 8px; }
+.cs-stats dt { font-size: 0.7rem; line-height: 1.2; color: #b9d8b4; }
+.cs-stats dd { margin: 2px 0 0; font: 800 0.98rem/1.15 var(--display); color: var(--sun); }
+.cs-presets { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.cs-presets .cp-chip { min-height: 36px; padding: 5px 11px; font-size: 0.88rem; }
+@media (max-width: 400px) { .cs-out { position: static; } }
+
+/* ---------- Got a Guy: text builder (.ct-*) ---------- */
+.ct .cp-set { margin-bottom: 12px; }
+.ct-name { display: block; margin-top: 14px; }
+.ct-name span { display: block; font-weight: 700; font-size: 0.95rem; color: #e3efdc; margin-bottom: 6px; }
+.ct-name input { width: 100%; font: inherit; font-size: 1rem; padding: 9px 11px; border-radius: 8px; border: 2px solid rgba(238, 245, 230, 0.5); background: rgba(0, 0, 0, 0.25); color: #fff; }
+.ct-out { margin-top: 16px; }
+.tool .ct-empty { margin: 0; font-weight: 700; color: var(--sun); }
+.ct-bubble { position: relative; margin: 0 0 12px auto; max-width: 92%; padding: 12px 14px; white-space: pre-wrap; font-size: 0.98rem; line-height: 1.42; color: #fff; background: #2b7de9; border-radius: 18px 18px 4px 18px; box-shadow: 0 3px 0 rgba(5, 20, 10, 0.35); user-select: text; -webkit-user-select: text; }
+.ct-bubble[hidden], .ct-actions[hidden], .ct-tip[hidden], .ct-empty[hidden] { display: none; }
+.ct-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ct-actions .btn { width: 100%; text-align: center; font-size: 0.98rem; padding-inline: 6px; }
+.tool .ct-tip { margin: 10px 0 0; font-size: 0.92rem; font-weight: 700; color: var(--sun); }
+
+/* ---------- Got a Guy: grade your landscaper (.cg-*) ---------- */
+.cg-bar { height: 10px; border-radius: 6px; background: rgba(0, 0, 0, 0.3); border: 2px solid var(--win-edge); overflow: hidden; }
+.cg-bar span { display: block; height: 100%; width: 0; background: var(--leaf); transition: width 0.2s; }
+.tool .cg-count { margin: 6px 0 12px; font-size: 0.88rem; font-weight: 700; color: #cfe3c6; }
+.cg-qs { list-style: none; display: grid; gap: 10px; counter-reset: cg; }
+.cg-q { counter-increment: cg; padding: 11px 12px 12px; background: rgba(0, 0, 0, 0.22); border: 2px solid rgba(238, 245, 230, 0.25); border-radius: 10px; }
+.cg-q[data-done='true'] { border-color: rgba(159, 211, 106, 0.6); }
+.tool .cg-ask { margin: 0 0 8px; font-weight: 700; }
+.cg-ask::before { content: counter(cg) '. '; color: var(--sun); }
+.cg-opts { display: grid; gap: 6px; }
+.cg-opts button { min-height: 42px; padding: 7px 12px; text-align: left; font: 650 0.95rem/1.25 var(--body); color: #fff; background: rgba(0, 0, 0, 0.25); border: 2px solid rgba(238, 245, 230, 0.35); border-radius: 8px; cursor: pointer; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.cg-opts button[aria-pressed='true'] { color: var(--ink); background: var(--paper); border-color: var(--sun); box-shadow: 0 0 0 2px var(--sun); }
+.cg-card { margin-top: 14px; padding: 14px; background: var(--paper); color: var(--ink); border: 3px solid var(--win-edge); border-radius: 10px; scroll-margin-top: 12px; animation: mow-pop-in 0.2s ease; }
+.cg-card[hidden] { display: none; }
+.tool .cg-label { margin: 0 0 8px; font-size: 0.78rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; color: #2f6e47; }
+.cg-top { display: flex; gap: 14px; align-items: center; }
+.cg-letter { flex: none; width: 74px; height: 74px; display: grid; place-items: center; font: 800 3rem/1 var(--display); color: #fff; background: #2f6e47; border: 3px solid var(--ink); border-radius: 12px; transform: rotate(-4deg); }
+.cg-letter[data-tone='close'] { background: #c99a1c; }
+.cg-letter[data-tone='no'], .cg-letter[data-tone='never'] { background: var(--red); }
+.cg-word { font-size: 1.1rem; padding: 3px 9px 4px; border-width: 2px; }
+.tool .cg-line { margin: 6px 0 0; font-size: 0.95rem; line-height: 1.4; color: #24402c; }
+.tool .cg-fix-h { margin: 14px 0 4px; font-size: 0.8rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: #2f6e47; }
+.cg-fixes { list-style: none; }
+.cg-fixes li { position: relative; padding-left: 18px; margin: 5px 0; font-size: 0.95rem; line-height: 1.4; color: #1d3524; }
+.cg-fixes li::before { content: ''; position: absolute; left: 3px; top: 0.5em; width: 8px; height: 8px; border-radius: 2px; background: var(--sun); border: 1px solid #3a2a05; }
+.cg-fixes li[data-bad='true']::before { background: var(--red); border-color: #5a120c; }
+.cg-btn { display: block; width: 100%; margin-top: 14px; text-align: center; }
+.cg-btn[hidden] { display: none; }
+.tool .cg-reset { display: block; margin: 10px auto 0; background: none; border: 0; padding: 4px; font: inherit; font-size: 0.9rem; color: #2f6e47; text-decoration: underline; cursor: pointer; }
+.prose .cs-list li, .prose .cg-qs li { margin-bottom: 0; }
+.prose .cg-btn, .prose .cg-btn:hover, .prose .ct-actions .btn, .prose .ct-actions .btn:hover { color: #fff; text-decoration: none; }

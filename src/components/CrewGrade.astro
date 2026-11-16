@@ -1,0 +1,86 @@
+---
+// "Grade your landscaper." Nine quick questions → letter grade, what to fix, and a pre-filled text.
+import { GRADE_QS, GRADES } from '../data/crew.js';
+const { id = 'grade', textHref = '/blog/what-to-tell-your-landscaper/' } = Astro.props;
+const data = JSON.stringify({ qs: GRADE_QS.map(({ id, ask, fix }) => ({ id, ask, fix })), grades: GRADES, textHref });
+---
+<section class="window tool cg" id={id} aria-labelledby={`${id}-h`} data-crew-grade data-json={data}>
+  <h2 id={`${id}-h`}>Grade Your Landscaper</h2>
+  <p class="tool-sub">Nine questions. Answer what you’ve actually seen, not what you hope.</p>
+  <div class="cg-bar"><span data-cg-bar></span></div>
+  <p class="cg-count" data-cg-count>0 of {GRADE_QS.length} answered</p>
+  <ol class="cg-qs">
+    {GRADE_QS.map((q) => (
+      <li class="cg-q" data-cg-q={q.id}>
+        <p class="cg-ask">{q.q}</p>
+        <div class="cg-opts" role="group" aria-label={q.q}>
+          {q.a.map((a, i) => <button type="button" aria-pressed="false" data-score={2 - i}>{a}</button>)}
+        </div>
+      </li>
+    ))}
+  </ol>
+  <div class="cg-card" data-cg-card hidden aria-live="polite">
+    <p class="cg-label">Report card</p>
+    <div class="cg-top">
+      <span class="cg-letter" data-cg-letter>B</span>
+      <div>
+        <span class="mc-word cg-word" data-cg-word data-tone="yes">SOLID</span>
+        <p class="cg-line" data-cg-line></p>
+      </div>
+    </div>
+    <div data-cg-fixes></div>
+    <a class="btn cg-btn" data-cg-text href="#">Write the Text for Me</a>
+    <button type="button" class="linkish cg-reset" data-cg-reset>Start Over</button>
+  </div>
+  <p class="tool-fine">Be fair: one bad week in a heat wave isn’t a pattern. Grade the season.</p>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-crew-grade]').forEach((root) => {
+    const { qs, grades, textHref } = JSON.parse(root.dataset.json!);
+    const $ = <T extends HTMLElement = HTMLElement>(s: string) => root.querySelector<T>(s)!;
+    const ans: Record<string, number> = {};
+    let sent = false;
+    function update() {
+      const n = Object.keys(ans).length;
+      $('[data-cg-count]').textContent = n === qs.length ? 'All done. Here’s the grade.' : `${n} of ${qs.length} answered`;
+      $('[data-cg-bar]').style.width = `${(n / qs.length) * 100}%`;
+      const card = $('[data-cg-card]');
+      if (n < qs.length) { card.hidden = true; return; }
+      const pct = Object.values(ans).reduce((a, b) => a + b, 0) / (qs.length * 2);
+      const g = grades.find((x: any) => pct >= x.min);
+      $('[data-cg-letter]').textContent = g.g;
+      $('[data-cg-letter]').dataset.tone = g.tone;
+      const w = $('[data-cg-word]'); w.textContent = g.word; w.dataset.tone = g.tone;
+      $('[data-cg-line]').textContent = g.line;
+      const weak = qs.filter((q: any) => ans[q.id] < 2).sort((a: any, b: any) => ans[a.id] - ans[b.id]);
+      $('[data-cg-fixes]').innerHTML = weak.length
+        ? `<p class="cg-fix-h">Fix these first</p><ul class="cg-fixes">${weak.slice(0, 5).map((q: any) => `<li data-bad="${ans[q.id] === 0}">${q.fix}</li>`).join('')}</ul>`
+        : '<p class="cg-fix-h">Nothing to fix. Go tell them that. People never hear it.</p>';
+      const asks = weak.map((q: any) => q.ask).filter(Boolean).slice(0, 3);
+      const link = $<HTMLAnchorElement>('[data-cg-text]');
+      link.hidden = !asks.length;
+      link.href = `${textHref}?asks=${asks.join(',')}#crewtext`;
+      const wasHidden = card.hidden;
+      card.hidden = false;
+      if (wasHidden) card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      if (!sent) { sent = true; (window as any).mitTrack?.('tool_use', { tool_name: 'crew_grade', choice: g.g }); }
+    }
+    root.querySelectorAll<HTMLElement>('[data-cg-q]').forEach((li) => {
+      li.querySelectorAll<HTMLButtonElement>('button').forEach((b) => b.addEventListener('click', () => {
+        li.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+        ans[li.dataset.cgQ!] = Number(b.dataset.score);
+        li.dataset.done = 'true';
+        update();
+      }));
+    });
+    $('[data-cg-reset]').addEventListener('click', () => {
+      Object.keys(ans).forEach((k) => delete ans[k]);
+      root.querySelectorAll('[data-cg-q] button').forEach((b) => b.setAttribute('aria-pressed', 'false'));
+      root.querySelectorAll<HTMLElement>('[data-cg-q]').forEach((li) => delete li.dataset.done);
+      update();
+      root.scrollIntoView({ block: 'start', behavior: 'smooth' });
+    });
+    update();
+  });
+</script>

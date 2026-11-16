@@ -31,6 +31,10 @@ import { TUNEUP } from '../data/tuneup.js';
 import { GIFTS, RESOLUTIONS, OPENING_DAY, ROBOT, TREES } from '../data/pickers3.js';
 import WeedBracket from '../components/WeedBracket.astro';
 import StripePicker from '../components/StripePicker.astro';
+import CrewSplit from '../components/CrewSplit.astro';
+import CrewText from '../components/CrewText.astro';
+import CrewGrade from '../components/CrewGrade.astro';
+import { PROGRAM, PROGRAM_GROUPS } from '../data/crew.js';
 const { frontmatter, url } = Astro.props;
 const { title, description, tag, widget, extra, faq } = frontmatter;
 const rawPath = new URL(url || Astro.url.pathname, 'https://mowittall.com').pathname;
@@ -163,6 +167,18 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [posting, crumbs, .
     )}
     {widget === 'stripe-picker' && (
       <div class="post-widget" data-widget="stripe-picker"><StripePicker id="stripes-post" /></div>
+    )}
+    {widget === 'crew-split' && (
+      <div class="post-widget" data-widget="crew-split"><CrewSplit /></div>
+    )}
+    {widget === 'crew-text' && (
+      <div class="post-widget" data-widget="crew-text"><CrewText /></div>
+    )}
+    {widget === 'crew-grade' && (
+      <div class="post-widget" data-widget="crew-grade"><CrewGrade /></div>
+    )}
+    {widget === 'program-decoder' && (
+      <div class="post-widget" data-widget="program-decoder"><ChipPicker id="program" title="Decode Your Lawn Program" sub="Tap a visit, an add-on or a question. Get my honest call." items={PROGRAM} groups={PROGRAM_GROUPS} prompt="Tap one." fine="Most programs run 5 to 7 visits. Names and timing vary by company. Ask for yours in writing." /></div>
     )}
     {widget === 'bracket' && (
       <div class="post-widget" data-widget="bracket"><WeedBracket /></div>

@@ -8,7 +8,7 @@ seoDescription: "Westchester mowing runs about $45 to $65 a cut for a quarter ac
 answer: "For a typical quarter-acre lot in Westchester, <b>a mowing service runs roughly $45 to $65 per cut</b>, or about <b>$1,300 to $1,900 a season</b>. Add a fertilizer and weed program (often $400 to $900 a year), a fall cleanup and aeration, and full service lands around <b>$2,000 to $3,500+ a year</b>. <b>Doing it yourself costs about $250 to $450 a year</b> in products and gas, plus a mower and spreader you buy once. These are ballpark ranges from cost sites and local quotes. Get three quotes for your yard."
 date: 2026-11-16
 minutes: 4
-topics: [gear, feeding]
+topics: [got-a-guy, gear, feeding]
 tools: [["/measure/", "Measure your lawn"], ["/blog/should-i-hire-a-lawn-service/", "Hire it or DIY? picker"], ["/plan/", "Free lawn plan"]]
 faq:
   - q: "How much does lawn mowing cost in Westchester?"

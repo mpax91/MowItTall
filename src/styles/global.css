@@ -2492,3 +2492,10 @@ main > section.ag-wrap { padding-top: 6px; }
 .contact-follow { margin: 28px 0; }
 .contact-follow h2 { margin: 0 0 6px; }
 .contact-follow p { margin: 0 0 12px; }
+/* Quiz plan: Got a Guy split (crew mode) */
+.plan-guy { border-color: rgba(246, 201, 69, 0.55); }
+.plan-guy-btn { display: block; width: 100%; text-align: center; margin: 4px 0 12px; }
+.plan-item .plan-who { margin: 8px 0 0; padding: 7px 10px; font-size: 0.92rem; line-height: 1.35; border-radius: 8px; background: #e2ecd9; color: #1d3524; }
+.plan-item .plan-who b { display: inline-block; margin-right: 4px; padding: 1px 7px; font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.03em; text-transform: uppercase; color: #fff; background: #2f6e47; border-radius: 5px; }
+.plan-item .plan-who[data-who='guy'] { background: #f6ecc9; }
+.plan-item .plan-who[data-who='guy'] b { color: var(--ink); background: var(--sun); }

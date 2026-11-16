@@ -1,0 +1,133 @@
+---
+// "Pay a guy or DIY?" Every lawn job ranked, with a My guy / Me / Skip toggle per job and a yearly cost total.
+import { SPLIT, SPLIT_SIZES } from '../data/crew.js';
+const { id = 'split' } = Astro.props;
+const money = (n: number) => `$${n.toLocaleString('en-US')}`;
+const range = ([a, b]: number[]) => (b === 0 ? 'Free' : a === b ? money(a) : `${money(a)}–${money(b)}`);
+const data = JSON.stringify({ jobs: SPLIT.filter((j) => !j.fixed).map(({ id, hire, diy, hrs, def }) => ({ id, hire, diy, hrs, def })), sizes: SPLIT_SIZES });
+---
+<section class="window tool cs" id={id} aria-labelledby={`${id}-h`} data-crew-split data-json={data}>
+  <h2 id={`${id}-h`}>Pay a Guy or DIY?</h2>
+  <p class="tool-sub">Ranked from “pay someone, no shame” to “never pay for this.” Set who does each job and see your yearly bill.</p>
+
+  <fieldset class="mc-group cs-size">
+    <legend>Your yard</legend>
+    <div class="mc-seg mc-seg-3">
+      {SPLIT_SIZES.map((s) => <button type="button" aria-pressed={String(s.id === 'quarter')} data-cs-size={s.id}>{s.name}<small>{s.note}</small></button>)}
+    </div>
+  </fieldset>
+
+  <ol class="cs-list">
+    {SPLIT.map((j, i) => (
+      <li class="cs-job" data-cs-job={j.id} data-who={j.fixed ? 'guy' : j.def}>
+        <div class="cs-head">
+          <span class="cs-rank">{i + 1}</span>
+          <div class="cs-name">
+            <h3>{j.name}</h3>
+            <span class="mc-word cs-word" data-tone={j.tone}>{j.word}</span>
+          </div>
+        </div>
+        <p class="cs-line">{j.line}</p>
+        {j.fixed ? (
+          <p class="cs-fixed">Not up for debate. Not in the totals.</p>
+        ) : (
+          <>
+            <div class="cs-seg" role="group" aria-label={`Who does ${j.name.toLowerCase()}?`}>
+              <button type="button" data-who-btn="guy" aria-pressed={String(j.def === 'guy')}>My guy</button>
+              <button type="button" data-who-btn="me" aria-pressed={String(j.def === 'me')}>Me</button>
+              <button type="button" data-who-btn="skip" aria-pressed={String(j.def === 'skip')}>Skip</button>
+            </div>
+            <p class="cs-cost"><span>Hire: <b data-cs-hire>{range(j.hire!)}</b></span><span>DIY: <b data-cs-diy>{range(j.diy!)}</b></span></p>
+          </>
+        )}
+      </li>
+    ))}
+  </ol>
+
+  <div class="mc-verdict cs-out" aria-live="polite">
+    <span class="mc-word" data-tone="close" data-cs-word>FULL VALET</span>
+    <p class="mc-line" data-cs-line></p>
+    <dl class="cs-stats">
+      <div><dt>You pay a year</dt><dd data-cs-total>—</dd></div>
+      <div><dt>vs. hiring it all</dt><dd data-cs-save>—</dd></div>
+      <div><dt>Your hours a year</dt><dd data-cs-hrs>—</dd></div>
+    </dl>
+    <div class="cs-presets">
+      <button type="button" class="cp-chip" data-cs-preset="smart">Show me the smart split</button>
+      <button type="button" class="cp-chip" data-cs-preset="reset">Hire it all</button>
+    </div>
+  </div>
+  <p class="tool-fine">Ballpark yearly ranges for Westchester and the Lower Hudson Valley, from cost sites and local quotes. Your quotes will differ. DIY doesn’t count a mower or spreader you buy once. <a href="/guides/lawn-care-cost-westchester/">Where the numbers come from</a>.</p>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-crew-split]').forEach((root) => {
+    const { jobs, sizes } = JSON.parse(root.dataset.json!);
+    const $ = <T extends HTMLElement = HTMLElement>(s: string) => root.querySelector<T>(s)!;
+    let k = 1;
+    const money = (n: number) => `$${Math.round(n).toLocaleString('en-US')}`;
+    const round = (n: number) => (n < 100 ? Math.round(n / 5) * 5 : Math.round(n / 50) * 50);
+    const range = (a: number, b: number) => (b === 0 ? 'Free' : a === b ? money(round(a)) : `${money(round(a))}–${money(round(b))}`);
+    const who = (id: string) => root.querySelector<HTMLElement>(`[data-cs-job="${id}"]`)!.dataset.who!;
+    function set(id: string, w: string) {
+      const li = root.querySelector<HTMLElement>(`[data-cs-job="${id}"]`)!;
+      li.dataset.who = w;
+      li.querySelectorAll<HTMLButtonElement>('[data-who-btn]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.whoBtn === w)));
+    }
+    function update() {
+      let lo = 0, hi = 0, allLo = 0, allHi = 0, hrs = 0;
+      for (const j of jobs) {
+        const li = root.querySelector<HTMLElement>(`[data-cs-job="${j.id}"]`)!;
+        li.querySelector('[data-cs-hire]')!.textContent = range(j.hire[0] * k, j.hire[1] * k);
+        li.querySelector('[data-cs-diy]')!.textContent = range(j.diy[0] * k, j.diy[1] * k);
+        allLo += j.hire[0] * k; allHi += j.hire[1] * k;
+        const w = who(j.id);
+        if (w === 'guy') { lo += j.hire[0] * k; hi += j.hire[1] * k; }
+        if (w === 'me') { lo += j.diy[0] * k; hi += j.diy[1] * k; hrs += j.hrs * k; }
+      }
+      $('[data-cs-total]').textContent = range(lo, hi);
+      const s = [(allLo + allHi) / 2 - (lo + hi) / 2];
+      $('[data-cs-save]').textContent = s[0] < 25 ? '$0 saved' : `~${money(round(s[0]))} saved`;
+      $('[data-cs-hrs]').textContent = hrs ? `~${Math.round(hrs)}` : '0';
+      const mow = who('mow'), prog = who('program');
+      const mine = jobs.filter((j: any) => who(j.id) === 'me').length;
+      const skips = jobs.filter((j: any) => who(j.id) === 'skip').length;
+      const guys = jobs.filter((j: any) => who(j.id) === 'guy').length;
+      let word = 'FULL VALET', tone = 'close', line = 'Nothing wrong with it. You’re just paying top dollar for the parts that take 15 minutes. Start by doing the fertilizer yourself.';
+      if (guys === 0 && mine >= 5) { word = 'SELF-EMPLOYED'; tone = 'yes'; line = 'You do everything. Respect. Just hire the tree guy. Please.'; }
+      else if (mow === 'me' && prog === 'guy') { word = 'BACKWARDS'; tone = 'no'; line = 'You do the sweaty part and pay for the 15-minute part. Flip it: the fertilizer is the easiest job here.'; }
+      else if (mow === 'guy' && prog === 'me') { word = 'THE SMART SPLIT'; tone = 'yes'; line = 'Pay for the time-eater. Do the cheap, important part yourself. This is the best deal in lawn care.'; }
+      else if (prog === 'me') { word = 'DIY LEANING'; tone = 'yes'; line = 'You kept the fertilizer, which is the big win. Everything else is just how you like your Saturdays.'; }
+      else if (prog === 'skip' && mow !== 'skip') { word = 'MOW AND PRAY'; tone = 'close'; line = 'Fine for a lawn you don’t care much about. Three feedings a year would change everything, though.'; }
+      else if (skips >= 5) { word = 'MEADOW MODE'; tone = 'close'; line = 'Bold. The bees thank you. The neighbors have questions.'; }
+      const wEl = $('[data-cs-word]');
+      wEl.textContent = word; wEl.dataset.tone = tone;
+      $('[data-cs-line]').textContent = line;
+    }
+    root.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement;
+      const b = t.closest<HTMLButtonElement>('[data-who-btn]');
+      if (b) {
+        const id = b.closest<HTMLElement>('[data-cs-job]')!.dataset.csJob!;
+        set(id, b.dataset.whoBtn!); update();
+        (window as any).mitTrack?.('tool_choice', { tool_name: 'crew_split', choice: `${id}:${b.dataset.whoBtn}` });
+        return;
+      }
+      const sz = t.closest<HTMLButtonElement>('[data-cs-size]');
+      if (sz) {
+        root.querySelectorAll<HTMLButtonElement>('[data-cs-size]').forEach((x) => x.setAttribute('aria-pressed', String(x === sz)));
+        k = sizes.find((s: any) => s.id === sz.dataset.csSize).k; update();
+        return;
+      }
+      const p = t.closest<HTMLButtonElement>('[data-cs-preset]');
+      if (p) {
+        const smart: Record<string, string> = { mow: 'guy', leaves: 'me', spring: 'guy', hedges: 'guy', aerate: 'guy', grubs: 'me', program: 'me' };
+        jobs.forEach((j: any) => set(j.id, p.dataset.csPreset === 'smart' ? smart[j.id] || 'guy' : 'guy'));
+        update();
+        (window as any).mitTrack?.('tool_choice', { tool_name: 'crew_split', choice: `preset:${p.dataset.csPreset}` });
+        root.querySelector('.cs-out')!.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    });
+    update();
+  });
+</script>

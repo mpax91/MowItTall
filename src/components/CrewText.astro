@@ -1,0 +1,92 @@
+---
+// "What to text your landscaper." Tap requests, pick a tone, get a polite text to copy, share or send.
+// Pre-fill from the URL: ?asks=tall,blades (used by CrewGrade and the quiz plan).
+import { ASKS, ASK_GROUPS, TONES } from '../data/crew.js';
+const { id = 'crewtext' } = Astro.props;
+const data = JSON.stringify({ asks: ASKS.map(({ id, say }) => ({ id, say })), tones: TONES });
+---
+<section class="window tool ct" id={id} aria-labelledby={`${id}-h`} data-crew-text data-json={data}>
+  <h2 id={`${id}-h`}>The Landscaper Text Builder</h2>
+  <p class="tool-sub">Tap what you want. I’ll write a text that gets it done without starting a war.</p>
+
+  {ASK_GROUPS.map((g) => (
+    <div class="cp-set">
+      <p class="cp-group">{g.name}</p>
+      <div class="cp-chips" role="group" aria-label={g.name}>
+        {ASKS.filter((a) => a.group === g.id).map((a) => (
+          <button type="button" class="cp-chip" aria-pressed="false" data-ct-ask={a.id}>{a.label}</button>
+        ))}
+      </div>
+    </div>
+  ))}
+
+  <fieldset class="mc-group">
+    <legend>Tone</legend>
+    <div class="mc-seg mc-seg-3">
+      {TONES.map((t, i) => <button type="button" aria-pressed={String(i === 0)} data-ct-tone={t.id}>{t.name}</button>)}
+    </div>
+  </fieldset>
+  <label class="ct-name"><span>Their first name (optional)</span><input type="text" maxlength="30" autocomplete="off" placeholder="e.g. Tony" data-ct-name /></label>
+
+  <div class="ct-out" aria-live="polite">
+    <p class="ct-empty" data-ct-empty>Tap a request or two to start.</p>
+    <div class="ct-bubble" data-ct-bubble hidden></div>
+    <div class="ct-actions" data-ct-actions hidden>
+      <button type="button" class="btn" data-ct-copy>Copy Text</button>
+      <a class="btn btn-quiet" data-ct-sms href="sms:">Open in Messages</a>
+    </div>
+    <p class="ct-tip" data-ct-tip hidden></p>
+  </div>
+  <p class="tool-fine">Nothing you type leaves your phone. Pro tip: send it right after a visit, not right before one.</p>
+</section>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-crew-text]').forEach((root) => {
+    const { asks, tones } = JSON.parse(root.dataset.json!);
+    const $ = <T extends HTMLElement = HTMLElement>(s: string) => root.querySelector<T>(s)!;
+    const chips = [...root.querySelectorAll<HTMLButtonElement>('[data-ct-ask]')];
+    let tone = tones[0].id;
+    let text = '';
+    function build() {
+      const on = chips.filter((c) => c.getAttribute('aria-pressed') === 'true').map((c) => c.dataset.ctAsk);
+      const picked = asks.filter((a: any) => on.includes(a.id));
+      const t = tones.find((x: any) => x.id === tone);
+      const nm = $<HTMLInputElement>('[data-ct-name]').value.trim().replace(/[<>]/g, '');
+      const open = t.open.replace('{name}', nm ? ` ${nm}` : '');
+      const body = picked.length === 1 ? picked[0].say : picked.map((a: any, i: number) => `${i + 1}. ${a.say}`).join('\n');
+      text = picked.length ? `${picked.length === 1 ? open.replace(/A couple of quick lawn requests|A few small requests, only if they’re easy|A few requests/, 'Quick lawn request') : open}\n\n${body}\n\n${t.close}` : '';
+      const bubble = $('[data-ct-bubble]');
+      bubble.textContent = text;
+      bubble.hidden = !text; $('[data-ct-actions]').hidden = !text; $('[data-ct-empty]').hidden = Boolean(text);
+      const tip = $('[data-ct-tip]');
+      tip.hidden = picked.length < 5;
+      tip.textContent = picked.length >= 5 ? `That’s ${picked.length} requests. Real talk: pick your top 2 or 3 this week and save the rest. Nobody likes a novel from a customer.` : '';
+      $<HTMLAnchorElement>('[data-ct-sms]').href = `sms:?&body=${encodeURIComponent(text)}`;
+    }
+    chips.forEach((c) => c.addEventListener('click', () => {
+      const on = c.getAttribute('aria-pressed') !== 'true';
+      c.setAttribute('aria-pressed', String(on)); build();
+      if (on) (window as any).mitTrack?.('tool_choice', { tool_name: 'crew_text', choice: c.dataset.ctAsk });
+    }));
+    root.querySelectorAll<HTMLButtonElement>('[data-ct-tone]').forEach((b) => b.addEventListener('click', () => {
+      tone = b.dataset.ctTone!;
+      root.querySelectorAll('[data-ct-tone]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      build();
+    }));
+    $('[data-ct-name]').addEventListener('input', build);
+    $('[data-ct-copy]').addEventListener('click', async () => {
+      const btn = $('[data-ct-copy]');
+      try { await navigator.clipboard.writeText(text); btn.textContent = 'Copied. Go Send It.'; }
+      catch { btn.textContent = 'Press and hold the text to copy'; }
+      setTimeout(() => { btn.textContent = 'Copy Text'; }, 2500);
+      (window as any).mitTrack?.('tool_use', { tool_name: 'crew_text', method: 'copy' });
+    });
+    $('[data-ct-sms]').addEventListener('click', () => (window as any).mitTrack?.('tool_use', { tool_name: 'crew_text', method: 'sms' }));
+    // pre-fill from ?asks=
+    try {
+      const pre = (new URLSearchParams(location.search).get('asks') || '').split(',').filter(Boolean);
+      if (pre.length) { chips.forEach((c) => c.setAttribute('aria-pressed', String(pre.includes(c.dataset.ctAsk!)))); }
+    } catch { /* */ }
+    build();
+  });
+</script>

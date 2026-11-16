@@ -7,7 +7,7 @@ seoDescription: "When a lawn service is worth it and when it isn’t. Why mowing
 date: 2026-11-15
 minutes: 4
 tag: Hot take
-topics: [feeding, weeds, gear]
+topics: [got-a-guy, feeding, weeds, gear]
 widget: hire-it
 faq:
   - q: "Is a lawn care service worth it?"
@@ -74,5 +74,7 @@ That’s it. One Saturday morning a month, tops.
 ## The bottom line
 
 Keep your man card. Hire the mowing if you want your Saturdays back. Fire the program, buy a spreader, and learn your own lawn. It’s cheaper, it’s better, and the first time a neighbor asks who does your lawn, you get to say “me.”
+
+Keeping your guy? Good. Here’s [every lawn job ranked, with a calculator](/blog/pay-a-guy-or-diy-lawn-jobs/), [what to text him](/blog/what-to-tell-your-landscaper/), and [what each visit of a lawn program actually does](/blog/lawn-treatment-program-explained/).
 
 Not sure what your lawn needs? [Get a free plan built for your yard](/plan/).

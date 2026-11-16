@@ -6,7 +6,7 @@ seoTitle: "Is Your Landscaper Mowing Too Short?"
 date: 2026-11-13
 minutes: 2
 tag: Hot take
-topics: [mowing]
+topics: [mowing, got-a-guy]
 ---
 
 Here’s a fun game. Next July, drive down any street in town and look at the lawns that are brown and crispy. Now look at how short they are.
@@ -30,6 +30,8 @@ So the deck stays low. Your lawn gets buzzed to about two inches every week. And
 Tell your crew: *"Please mow us at three and a half inches or higher."*
 
 That’s it. That’s the post. If they push back, show them this. If they push back again, find a new crew. There are plenty.
+
+Want it in writing? [I’ll write the text for you](/blog/what-to-tell-your-landscaper/). Wondering what else your crew is getting wrong? [Grade your landscaper](/blog/is-my-landscaper-doing-a-good-job/).
 
 Mowing yourself? Find the lever by the wheel, pull it up to the top notch or one below, and never touch it again until the last mow in November.
 
