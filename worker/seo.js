@@ -221,13 +221,22 @@ async function pullSitemaps(env) {
 /* ---------------------------------------------------------------- 4. Bing */
 const bingDate = (s) => { const m = /\((\d+)/.exec(String(s)); return m ? etDay(Number(m[1])) : null; };
 async function pullBing(env) {
-  const base = env.SEO_API_BASE ? `${env.SEO_API_BASE}/bing` : 'https://ssl.bing.com/webmaster/api.svc/json';
-  const q = (m) => fetch(`${base}/${m}?siteUrl=${encodeURIComponent(origin(env) + '/')}&apikey=${encodeURIComponent(env.BING_API_KEY)}`).then(async (r) => {
-    const j = await r.json().catch(() => ({}));
-    if (!r.ok || j.ErrorCode) throw new Error(`Bing ${m}: ${j.Message || r.status}`);
-    return j.d || [];
-  });
-  const [qs, ps] = await Promise.all([q('GetQueryStats'), q('GetPageStats')]);
+  // Bing sometimes answers "ThrottleIP" to requests from Cloudflare's shared addresses. Try both of Bing's
+  // API hosts, one call at a time; if both are throttled, the next hourly run tries again.
+  const bases = env.SEO_API_BASE ? [`${env.SEO_API_BASE}/bing`] : ['https://ssl.bing.com/webmaster/api.svc/json', 'https://www.bing.com/webmaster/api.svc/json', 'https://api.bing.com/webmaster/api.svc/json'];
+  const q = async (m) => {
+    let last;
+    for (const base of bases) {
+      const r = await fetch(`${base}/${m}?siteUrl=${encodeURIComponent(origin(env) + '/')}&apikey=${encodeURIComponent(env.BING_API_KEY)}`, { headers: { accept: 'application/json', 'user-agent': 'MowItTall-SEO/1.0 (+https://mowittall.com)' } }).catch((e) => ({ ok: false, status: 0, json: async () => ({ Message: e.message }) }));
+      const j = await r.json().catch(() => ({}));
+      if (r.ok && !j.ErrorCode) return j.d || [];
+      last = `Bing ${m}: ${j.Message || r.status}`;
+      if (!/Throttle/i.test(last) && r.status !== 0) break;
+    }
+    throw new Error(last);
+  };
+  const qs = await q('GetQueryStats');
+  const ps = await q('GetPageStats');
   const T = (rows, keyFn) => JSON.stringify(rows.map((r) => [bingDate(r.Date), keyFn(r.Query), r.Clicks || 0, r.Impressions || 0, r.AvgImpressionPosition > 0 ? r.AvgImpressionPosition : 0]).filter((r) => r[0] && r[1]));
   await env.EV.batch([
     env.EV.prepare(`INSERT OR REPLACE INTO bing_query (date, query, clicks, impressions, position) SELECT j.value->>0, j.value->>1, j.value->>2, j.value->>3, j.value->>4 FROM json_each(?) j`).bind(T(qs, (k) => String(k || '').toLowerCase())),
