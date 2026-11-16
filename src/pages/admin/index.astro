@@ -4,6 +4,9 @@
 import Base from '../../layouts/Base.astro';
 import { allPosts } from '../../data/posts.js';
 import { SOCIAL, BASE_TAGS, TOPIC_TAGS } from '../../data/social.js';
+import { allPins, pinUrl, PIN_BOARDS, PIN_BOARD_DEFAULT } from '../../data/pins.js';
+const PINS: any = allPins();
+const pinOf = (path: string) => { const p = PINS[path]; return p ? { img: pinUrl(p), title: p.pinterestTitle, desc: p.description, board: p.board, alt: p.alt } : null; };
 
 const posts = allPosts(import.meta.glob('../blog/[a-z]*.md', { eager: true }));
 const items = [
@@ -13,15 +16,20 @@ const items = [
     return {
       id: slug, kind: 'post', title: p.title, path: `/blog/${slug}/`, date: p.date, topics: p.topics || [],
       hook: s.hook || p.title, take: s.take || p.description, photo: s.photo || '', months: s.months || [],
-      nd: s.nd === null ? null : s.nd || '', needsCopy: !s.hook,
+      nd: s.nd === null ? null : s.nd || '', needsCopy: !s.hook, pin: pinOf(`/blog/${slug}/`),
     };
+  }),
+  // guides only go in the Pinterest queue (they're search answers, not social posts)
+  ...allPosts(import.meta.glob('../guides/[a-z]*.md', { eager: true })).map((g: any) => {
+    const slug = g.url.replace(/\/$/, '').split('/').pop();
+    return { id: `guide-${slug}`, kind: 'guide', title: g.title, path: `/guides/${slug}/`, date: g.date, topics: g.topics || [], hook: g.title, take: g.description, photo: '', months: [], nd: null, needsCopy: false, pin: pinOf(`/guides/${slug}/`) };
   }),
   ...Object.entries(SOCIAL).filter(([k]) => k.startsWith('tool-')).map(([id, s]: any) => ({
     id, kind: 'tool', title: s.title, path: s.path, date: null, topics: [], hook: s.hook, take: s.take,
     photo: s.photo || '', months: s.months || [], nd: s.nd === null ? null : s.nd || '', needsCopy: false,
   })),
 ];
-const data = JSON.stringify({ items, baseTags: BASE_TAGS, topicTags: TOPIC_TAGS });
+const data = JSON.stringify({ items, baseTags: BASE_TAGS, topicTags: TOPIC_TAGS, boards: [...new Set([PIN_BOARD_DEFAULT, ...Object.values(PIN_BOARDS)])] });
 const TABS = [
   ['week', 'This Week'], ['todo', 'To-Do'], ['seo', 'SEO & AEO'], ['analytics', 'Analytics'], ['social', 'Social'], ['photos', 'Photos'], ['links', 'Short Links'], ['build', 'Build Plan'], ['money', 'Tips & Payments'], ['members', 'Members & Email'],
 ];
@@ -89,6 +97,7 @@ const TABS = [
           <button type="button" class="hall-tab" data-plat="instagram" aria-selected="true">Instagram</button>
           <button type="button" class="hall-tab" data-plat="facebook" aria-selected="false">Facebook</button>
           <button type="button" class="hall-tab" data-plat="nextdoor" aria-selected="false">Nextdoor</button>
+          <button type="button" class="hall-tab" data-plat="pinterest" aria-selected="false">Pinterest</button>
           <button type="button" class="hall-tab" data-plat="x" aria-selected="false">X / Threads</button>
         </div>
         <p class="dash-note" data-plat-note></p>
@@ -284,6 +293,7 @@ const TABS = [
         facebook: 'Page post with the link. Facebook pulls in the preview card automatically.',
         nextdoor: 'Keep it neighborly: a tip first, the link second. Nextdoor frowns on ads in the main feed.',
         x: 'Short version for X and Threads. Same text works on both.',
+        pinterest: 'Save the pin image, then in Pinterest: Create Pin → upload it → paste the title, description and link → pick the board. Pins keep getting found for months, so 3 a week beats 20 in one day.',
       };
       // link with utm tags so Google Analytics can tell which platform sent the visit
       const link = (it: any, src: string) => {
@@ -304,7 +314,7 @@ const TABS = [
       function rankItems(p: string) {
         const m = new Date().getMonth() + 1, now = Date.now();
         return D.items
-          .filter((it: any) => !(p === 'nextdoor' && it.nd === null))
+          .filter((it: any) => (p === 'pinterest' ? !!it.pin : it.kind !== 'guide') && !(p === 'nextdoor' && it.nd === null))
           .map((it: any) => {
             const last = lastFor(it.id, p);
             const fresh = it.date && now - new Date(it.date).getTime() < 14 * DAY;
@@ -318,7 +328,32 @@ const TABS = [
           })
           .sort((a: any, b: any) => b.score - a.score);
       }
+      function pinCard(r: any) {
+        const it = r.it, pin = it.pin;
+        const chips = [r.fresh && 'New', r.inSeason && 'In season', it.kind === 'guide' && 'Guide'].filter(Boolean).map((c) => `<span class="dash-pill">${c}</span>`).join('');
+        const field = (label: string, key: string, val: string, rows = 1, max = 0) => `<div class="dash-pin-field"><span>${label}${max ? ` <small data-count-of="${key}">${val.length}/${max}</small>` : ''}</span>
+          ${rows > 1 ? `<textarea rows="${rows}" data-pin-text="${key}"${max ? ` maxlength="${max}"` : ''}>${esc(val)}</textarea>` : `<input type="text" value="${esc(val)}" data-pin-text="${key}"${max ? ` maxlength="${max}"` : ''} />`}
+          <button type="button" class="btn btn-small btn-quiet" data-copy-pin="${key}">Copy</button></div>`;
+        return `<li class="dash-item dash-pin" data-item="${it.id}">
+          <div class="dash-item-head"><a href="${it.path}" target="_blank" rel="noopener">${esc(it.title)}</a>${chips}</div>
+          <p class="dash-last">${r.last ? `Last pinned ${ago(r.last.at)}` : 'Never pinned'} · <b>Board:</b> ${esc(pin.board)}</p>
+          <div class="dash-pin-body">
+            <a class="dash-pin-img" href="${pin.img}" target="_blank" rel="noopener" title="Open full size"><img src="${pin.img}" alt="" width="120" height="180" loading="lazy" /></a>
+            <div class="dash-pin-fields">
+              ${field('Title', 'title', pin.title, 1, 100)}
+              ${field('Description', 'desc', pin.desc, 5, 500)}
+              ${field('Link', 'link', link(it, 'pinterest'))}
+              ${field('Alt text', 'alt', pin.alt, 1, 500)}
+            </div>
+          </div>
+          <p class="dash-item-actions">
+            <a class="btn btn-small" href="${pin.img}" download="${it.path.replace(/^\/|\/$/g, '').replace(/\//g, '-')}-pin.jpg">Save Pin Image</a>
+            <button type="button" class="btn btn-small btn-quiet" data-posted>Mark Pinned</button>
+          </p>
+        </li>`;
+      }
       function card(r: any) {
+        if (plat === 'pinterest') return pinCard(r);
         const it = r.it, text = copyFor(it, plat);
         const chips = [r.fresh && 'New', r.inSeason && 'In season', it.needsCopy && 'Needs copy'].filter(Boolean).map((c) => `<span class="dash-pill">${c}</span>`).join('');
         return `<li class="dash-item" data-item="${it.id}">
@@ -346,7 +381,7 @@ const TABS = [
           const it = D.items.find((x: any) => x.id === l.item);
           return `<li><span>${esc(it ? it.title : l.item)}</span> <small>${l.platform} · ${ago(l.at)}</small> <button type="button" class="linkish" data-undo="${l.id}">Undo</button></li>`;
         }).join('') || '<li class="hall-msg">Nothing posted yet.</li>';
-        const left = ['instagram', 'facebook', 'nextdoor', 'x'].reduce((n, p) => n + rankItems(p).filter((r: any) => r.score > 0).slice(0, 3).length, 0);
+        const left = ['instagram', 'facebook', 'nextdoor', 'x', 'pinterest'].reduce((n, p) => n + rankItems(p).filter((r: any) => r.score > 0).slice(0, 3).length, 0);
         $('[data-badge="social"]').textContent = left ? `(${left})` : '';
       }
       root.querySelectorAll<HTMLButtonElement>('[data-plat]').forEach((b) => b.addEventListener('click', () => { plat = b.dataset.plat!; renderSocial(); }));
@@ -354,6 +389,11 @@ const TABS = [
       root.addEventListener('click', async (e) => {
         const t = e.target as HTMLElement;
         const li = t.closest<HTMLElement>('[data-item]');
+        if (t.matches('[data-copy-pin]') && li) {
+          const el = li.querySelector<HTMLInputElement>(`[data-pin-text="${t.dataset.copyPin}"]`)!;
+          try { await navigator.clipboard.writeText(el.value); } catch { el.select(); document.execCommand('copy'); }
+          t.textContent = 'Copied!'; setTimeout(() => (t.textContent = 'Copy'), 1500);
+        }
         if (t.matches('[data-copy]') && li) {
           const text = li.querySelector<HTMLTextAreaElement>('[data-text]')!.value;
           try { await navigator.clipboard.writeText(text); } catch { li.querySelector<HTMLTextAreaElement>('[data-text]')!.select(); document.execCommand('copy'); }
@@ -371,6 +411,7 @@ const TABS = [
       });
       root.addEventListener('input', (e) => {
         const ta = e.target as HTMLTextAreaElement;
+        if (ta.matches('[data-pin-text]')) { const c = ta.closest('[data-item]')!.querySelector(`[data-count-of="${ta.dataset.pinText}"]`); if (c) c.textContent = c.textContent!.replace(/^\d+/, String(ta.value.length)); }
         if (ta.matches('[data-text]') && plat === 'x') ta.closest('[data-item]')!.querySelector('[data-count]')!.textContent = `${ta.value.replace(/https?:\/\/\S+/g, 'x'.repeat(23)).length}/280`;
       });
 

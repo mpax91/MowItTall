@@ -39,7 +39,7 @@ const jsonLd = { '@graph': [
     <div class="wd-photos" role="group" aria-label={`Photos of ${w.name}`}>
       {w.photos.map((ph, i) => (
         <figure>
-          <img src={`/img/weeds/${w.id}-${ph.n}-480.webp`} srcset={`/img/weeds/${w.id}-${ph.n}-480.webp 480w, /img/weeds/${w.id}-${ph.n}-960.webp 960w`}
+          <img data-pin-nopin="true" src={`/img/weeds/${w.id}-${ph.n}-480.webp`} srcset={`/img/weeds/${w.id}-${ph.n}-480.webp 480w, /img/weeds/${w.id}-${ph.n}-960.webp 960w`}
             sizes="(min-width: 700px) 320px, 78vw" width="480" height="360" alt={ph.alt} loading={i ? 'lazy' : 'eager'} decoding="async" />
           <figcaption>{ph.caption}</figcaption>
         </figure>

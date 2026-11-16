@@ -226,7 +226,7 @@ async function shortRedirect(req, env, ctx, url) {
 }
 
 /* ---------- admin dashboard (/admin/) */
-const PLATFORMS = ['instagram', 'facebook', 'nextdoor', 'x'];
+const PLATFORMS = ['instagram', 'facebook', 'nextdoor', 'x', 'pinterest'];
 async function dash(env, req, url) {
   if (!env.ADMIN_KEY) return bad('Set the ADMIN_KEY secret in Cloudflare first.', 503);
   const key = req.headers.get('x-admin-key') || url.searchParams.get('key');

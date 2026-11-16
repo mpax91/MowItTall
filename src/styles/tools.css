@@ -404,7 +404,7 @@ main.nb-page > section.nb-rules { padding: 26px 0 0; }
 .dash-fine { font-size: 0.88rem; color: var(--paper-dim); }
 .dash-fine a { color: var(--paper); }
 .dash-note { color: var(--paper-dim); font-size: 0.95rem; margin: 8px 0 12px; }
-.dash-plat { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.dash-plat { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 6px; }
 .dash-plat .hall-tab { font-size: 0.9rem; padding: 9px 4px; }
 .dash-queue { list-style: none; padding: 0; margin: 0 0 14px; display: grid; gap: 12px; }
 .dash-item { background: var(--paper); color: var(--ink); border: 3px solid var(--ink); border-radius: 12px; padding: 12px; }
@@ -701,3 +701,17 @@ main.nb-page > section.nb-rules { padding: 26px 0 0; }
 .tool .cg-reset { display: block; margin: 10px auto 0; background: none; border: 0; padding: 4px; font: inherit; font-size: 0.9rem; color: #2f6e47; text-decoration: underline; cursor: pointer; }
 .prose .cs-list li, .prose .cg-qs li { margin-bottom: 0; }
 .prose .cg-btn, .prose .cg-btn:hover, .prose .ct-actions .btn, .prose .ct-actions .btn:hover { color: #fff; text-decoration: none; }
+
+/* HQ → Social → Pinterest cards: pin image + copy fields */
+.dash-pin-body { display: flex; gap: 12px; align-items: flex-start; margin-top: 6px; }
+.dash-pin-img { flex: none; display: block; width: 96px; border: 3px solid var(--ink); border-radius: 8px; overflow: hidden; line-height: 0; }
+.dash-pin-img img { width: 100%; height: auto; }
+.dash-pin-fields { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.dash-pin-field { display: grid; grid-template-columns: 1fr auto; gap: 4px 6px; align-items: end; }
+.dash-pin-field > span { grid-column: 1 / -1; font-size: 0.8rem; font-weight: 700; display: flex; justify-content: space-between; }
+.dash-pin-field small { font-weight: 400; opacity: 0.7; }
+.dash-pin-field input, .dash-pin-field textarea { width: 100%; min-width: 0; font: inherit; font-size: 0.85rem; padding: 6px 8px; border: 2px solid var(--ink); border-radius: 6px; background: #fff; color: var(--ink); box-sizing: border-box; }
+.dash-pin-field textarea { resize: vertical; }
+@media (max-width: 480px) { .dash-pin-body { flex-direction: column; } .dash-pin-img { width: 120px; } .dash-pin-fields { width: 100%; } }
+.dash-pin-field .btn { padding: 6px 10px; font-size: 0.8rem; min-height: 0; line-height: 1.2; box-shadow: none; align-self: stretch; }
+.dash-pin .dash-item-actions .btn { flex: 1 1 auto; }

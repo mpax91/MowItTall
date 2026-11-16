@@ -1,6 +1,7 @@
 ---
 import Base from './Base.astro';
 import BeerCallout from '../components/BeerCallout.astro';
+import PinButton from '../components/PinButton.astro';
 import { topicBySlug } from '../data/topics.js';
 import { ogSlug } from '../data/og.js';
 import { allPosts as allPostsFn } from '../data/posts.js';
@@ -230,6 +231,7 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [posting, crumbs, .
         })();
       </script>
     )}
+    <PinButton path={path} />
     {topics.length > 0 && (
       <nav class="post-topics" aria-label="More on these topics" data-pagefind-ignore>
         <span>More on:</span>

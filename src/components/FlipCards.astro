@@ -29,7 +29,7 @@ const H = headingLevel;
               <div class="flip-photos-track" tabindex="0" aria-label={`${it.title} photos. Swipe for more.`}>
                 {it.photos.map((p, j) => (
                   <figure class="flip-photo-slide">
-                    <img class="flip-photo" src={`${p.src}-480.webp`} srcset={`${p.src}-480.webp 480w, ${p.src}-960.webp 960w`}
+                    <img class="flip-photo" data-pin-nopin="true" src={`${p.src}-480.webp`} srcset={`${p.src}-480.webp 480w, ${p.src}-960.webp 960w`}
                       sizes="(min-width: 700px) 640px, 92vw" width="960" height="720" alt={p.alt}
                       loading={i < 2 && j === 0 ? 'eager' : 'lazy'} decoding="async" />
                     {p.caption && <figcaption>{p.caption}{it.photos.length > 1 && <span> · {j + 1}/{it.photos.length}</span>}</figcaption>}

@@ -1,0 +1,21 @@
+---
+// "Save to Pinterest" row for posts and guides. A plain link to Pinterest's pin builder with our tall pin,
+// URL and description filled in (no Pinterest script on the page). Renders nothing if the page has no pin.
+import { siPinterest } from 'simple-icons';
+import { allPins, pinUrl } from '../data/pins.js';
+interface Props { path: string; note?: string }
+const { path, note = 'Saving this for later?' } = Astro.props;
+const pin = allPins()[path];
+const site = 'https://mowittall.com';
+const href = pin && `https://www.pinterest.com/pin/create/button/?${new URLSearchParams({ url: site + path, media: site + pinUrl(pin), description: pin.description })}`;
+---
+{pin && (
+  <aside class="pin-save" data-pagefind-ignore>
+    <img class="pin-save-thumb" src={pinUrl(pin)} alt="" width="60" height="90" loading="lazy" decoding="async" data-pin-nopin="true" />
+    <p><b>{note}</b> <span>Pin it so it’s there when you need it.</span></p>
+    <a class="pin-save-btn" href={href} target="_blank" rel="noopener" data-track="share" data-track-method="pinterest" data-track-content_type={path.startsWith('/guides/') ? 'guide' : 'post'}>
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><path d={siPinterest.path} fill="currentColor" /></svg>
+      Save to Pinterest
+    </a>
+  </aside>
+)}

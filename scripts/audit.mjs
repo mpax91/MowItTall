@@ -40,6 +40,21 @@ function resolve(path) {
   return null;
 }
 
+// JPEG width/height from the first SOF marker.
+function jpgSize(file) {
+  try {
+    const b = readFileSync(file);
+    if (b[0] !== 0xff || b[1] !== 0xd8) return null;
+    for (let i = 2; i < b.length - 9;) {
+      if (b[i] !== 0xff) { i++; continue; }
+      const m = b[i + 1], len = b.readUInt16BE(i + 2);
+      if (m >= 0xc0 && m <= 0xcf && ![0xc4, 0xc8, 0xcc].includes(m)) return [b.readUInt16BE(i + 7), b.readUInt16BE(i + 5)];
+      i += 2 + len;
+    }
+  } catch {}
+  return null;
+}
+
 function pngSize(file) {
   try {
     const b = readFileSync(file);
@@ -147,7 +162,21 @@ function shareCheck() {
     const dims = pngSize(file);
     if (dims && (dims[0] < 1200 || dims[1] < 600)) add('warn', `Share image is ${dims[0]}×${dims[1]} (1200×630 looks best)`);
     else if (!dims && !/\.jpe?g$/i.test(file)) add('info', 'Share image is not PNG/JPG; a few apps (older Outlook, some SMS) prefer those');
+    // Pinterest: every post and guide needs its tall pin (src/data/pins.js), wired up for the Save button.
+    if (/^\/(blog|guides)\/[^/]+\/$/.test(path) && !path.startsWith('/blog/topic/')) {
+      const pinEl = d.querySelector('img[data-pin-media]');
+      if (!pinEl) { add('warn', 'No Pinterest pin (hidden data-pin-media image)'); continue; }
+      const pinFile = join(DIST, decodeURIComponent((localPath(pinEl.getAttribute('data-pin-media')) || '').split('?')[0]));
+      if (!existsSync(pinFile)) { add('error', 'Pinterest pin image doesn’t exist'); continue; }
+      const pd = jpgSize(pinFile);
+      if (pd && pd[0] * 3 !== pd[1] * 2) add('warn', `Pinterest pin is ${pd[0]}×${pd[1]} (2:3, like 1000×1500, looks best)`);
+      const desc = pinEl.getAttribute('data-pin-description') || '';
+      if (desc.length < 50) add('warn', 'Pinterest description is missing or very short');
+      if (desc.length > 500) add('warn', `Pinterest description is ${desc.length} characters (500 max)`);
+      if (!d.querySelector('.pin-save-btn')) add('info', 'No “Save to Pinterest” button');
+    }
   }
+  if (pages.get('/') && !meta(pages.get('/'), 'meta[name="p:domain_verify"]')) issues.push({ path: '/', sev: 'warn', msg: 'Pinterest verification tag (p:domain_verify) is missing' });
   return { checked: urls.length, issues };
 }
 

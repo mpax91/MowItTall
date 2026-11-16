@@ -9,8 +9,10 @@ import SocialChips from '../components/SocialChips.astro';
 import RedVest from '../components/RedVest.astro';
 import { TOPICS } from '../data/topics.js';
 import { allOgPages, ogSlug } from '../data/og.js';
+import { allPins, pinUrl, PIN_W, PIN_H } from '../data/pins.js';
 import { SOCIALS_MAIN, SAME_AS, MIKE_PROFILES, X_HANDLE, CONTACT_EMAIL } from '../data/site.js';
 const OG = allOgPages();
+const PINS = allPins();
 const FOOT_TOPICS = ['mowing', 'feeding', 'seeding', 'weeds', 'soil', 'gear'].map((slug) => TOPICS.find((t) => t.slug === slug)).filter(Boolean);
 const FOOTER = [
   { title: 'Start Here', links: [['/plan/', 'Free Lawn Plan'], ['/lawn-101/', 'Lawn 101'], ['/calendar/', 'Lawn Calendar'], ['/guides/', 'Lawn Guides'], ['/lawn-care/', 'Lawn Care by Town'], ['/search/', 'Search the Site']] },
@@ -44,6 +46,10 @@ const url = site + path;
 const card = !imageProp && OG[path];
 // `v` in og.js busts Facebook/LinkedIn image caches when a card is redesigned (bump it on each redesign).
 const image = imageProp || (card ? `/og/${ogSlug(path)}.png${card.v ? `?v=${card.v}` : ''}` : '/img/backyard-stripes-1400.webp');
+// Pinterest: posts and guides have a tall pin (src/data/pins.js). A hidden copy with data-pin-media makes
+// Pinterest's Save button (browser extension, share sheet) save the tall pin with our description.
+const pin = PINS[path];
+const pinSrc = pin ? site + pinUrl(pin) : '';
 const imageAlt = altProp || (card ? `${card.title} | Mow It Tall` : 'Mike’s striped backyard lawn in Bedford, NY');
 const imageType = image.endsWith('.png') ? 'image/png' : image.endsWith('.jpg') ? 'image/jpeg' : 'image/webp';
 const imageSize = card ? [1200, 630] : image.includes('-1400') ? [1400, 1050] : null;
@@ -127,6 +133,7 @@ const NAV = [
     {X_HANDLE && <meta name="twitter:site" content={X_HANDLE} />}
     {X_HANDLE && <meta name="twitter:creator" content={X_HANDLE} />}
     <meta name="author" content="Mike" />
+    <meta name="p:domain_verify" content="973d0ea12fe385f3caf46f5786dd79e1" />
     <link rel="alternate" type="application/rss+xml" title="Mow It Tall blog" href="/rss.xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />
     <script is:inline>
@@ -209,6 +216,11 @@ const NAV = [
     {!isAdminPage && <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PTSGH8QX" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>}
     <!-- End Google Tag Manager (noscript) -->
     <a class="skip" href="#main" data-pagefind-ignore>Skip to content</a>
+    {pin && (
+      <div class="pin-hidden" hidden aria-hidden="true" data-pagefind-ignore>
+        <img src={pinUrl(pin)} alt={pin.alt} width={PIN_W} height={PIN_H} loading="lazy" decoding="async" data-pin-media={pinSrc} data-pin-url={url} data-pin-description={pin.description} />
+      </div>
+    )}
     <header class="top" data-pagefind-ignore>
       <div class="top-bar">
         <a class="wordmark" href="/" aria-label="Mow It Tall home">Mow It <span class="wordmark-tall" aria-label="TALL"><span class="g g-t" aria-hidden="true">T</span><span class="g g-a" aria-hidden="true">A</span><span class="g g-l" aria-hidden="true">L</span><span class="g g-l" aria-hidden="true">L</span></span></a>

@@ -2499,3 +2499,18 @@ main > section.ag-wrap { padding-top: 6px; }
 .plan-item .plan-who b { display: inline-block; margin-right: 4px; padding: 1px 7px; font-family: var(--display); font-size: 0.78rem; letter-spacing: 0.03em; text-transform: uppercase; color: #fff; background: #2f6e47; border-radius: 5px; }
 .plan-item .plan-who[data-who='guy'] { background: #f6ecc9; }
 .plan-item .plan-who[data-who='guy'] b { color: var(--ink); background: var(--sun); }
+
+/* Pinterest: hidden tall pin for the Save button, and the "Save to Pinterest" row on posts/guides */
+.pin-hidden { display: none !important; }
+.pin-save { display: flex; align-items: center; gap: 14px; margin: 28px 0 8px; padding: 12px 14px; background: rgba(10, 36, 20, 0.55); border: 2px solid rgba(238, 245, 230, 0.35); border-radius: 12px; }
+.pin-save-thumb { flex: none; width: 44px; height: 66px; border-radius: 6px; border: 2px solid #0a2414; object-fit: cover; box-shadow: 0 3px 0 #0a2414; }
+.pin-save p { flex: 1; min-width: 0; margin: 0; font-size: 0.95rem; line-height: 1.3; color: #eef5e6; }
+.pin-save p b { display: block; color: #fff; }
+.pin-save p span { opacity: 0.85; }
+.pin-save-btn { flex: none; display: inline-flex; align-items: center; gap: 7px; padding: 10px 14px; border-radius: 999px; background: #e60023; color: #fff !important; font-weight: 700; font-size: 0.92rem; text-decoration: none !important; border: 2px solid #0a2414; box-shadow: 0 3px 0 #0a2414; white-space: nowrap; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.pin-save-btn:active { transform: translateY(2px); box-shadow: 0 1px 0 #0a2414; }
+@media (max-width: 420px) {
+  .pin-save { flex-wrap: wrap; }
+  .pin-save p { flex-basis: calc(100% - 60px); }
+  .pin-save-btn { width: 100%; justify-content: center; padding: 12px; }
+}
