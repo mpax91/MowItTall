@@ -375,7 +375,7 @@ export const GUIDES = {
 <ul>
 <li>If Clarity isn’t in GTM yet: GTM → Tags → New → Tag Configuration → Discover more tag types in the Community Template Gallery → “Microsoft Clarity – Official” → your Clarity project ID → trigger All Pages.</li>
 <li>Clarity → Settings → Setup → <b>Google Analytics integration</b> → connect GA4. Adds Clarity session links into GA4.</li>
-<li>Page tags: GTM → New tag → Custom HTML → <code>&lt;script&gt;window.clarity &amp;&amp; clarity("set","page_type","{{DLV - page_type}}"); window.clarity &amp;&amp; clarity("set","content_group","{{DLV - content_group}}");&lt;/script&gt;</code> → trigger All Pages (DOM Ready). Now you can filter recordings to just guides or just tools.</li>
+<li>Page tags: <b>built into the site</b> (Base.astro sends <code>page_type</code>, <code>content_group</code>, <code>post_tag</code>, <code>post_topics</code> to Clarity on every page). No GTM tag needed. In Clarity → Recordings → Filters → Custom tags, pick e.g. content_group = Guides.</li>
 <li>Masking: keep the default (Balanced) so typed ZIP codes and the admin password field are hidden. HQ pages don’t load GTM at all.</li>
 <li>Clarity → Funnels: /plan/ visit → quiz result visible. Heatmaps: homepage, /plan/, /weeds/, your top guide.</li>
 </ul>
