@@ -1774,7 +1774,7 @@ main > section.gp { margin-left: 16px; margin-right: 16px; }
 .whats-grid span { font-size: 0.9rem; line-height: 1.35; }
 
 /* Your lawn this week */
-.lw { padding-bottom: 20px !important; }
+.lw { padding-bottom: 36px !important; }
 .lw-zip {
   max-width: 420px; margin: 0 auto 18px; padding: 14px 14px 10px; border-radius: 12px;
   background: var(--paper); color: var(--ink); border: 3px solid var(--ink); box-shadow: 0 5px 0 rgba(5, 20, 10, 0.35);
@@ -2204,3 +2204,8 @@ main > section.gp { margin-left: 16px; margin-right: 16px; }
 .calendar.is-compact .cal-flipcard.is-chill .cal-front .cal-window { color: #4f6651; }
 .calendar.is-compact .cal-task.is-chill .cal-face p.cal-brief { color: #3d5240; }
 .calendar.is-compact .cal-flipcard.is-chill .cal-back { background: #2b4a35; }
+/* Homepage rhythm (Nov 15): one even, tighter gap between sections (~56px) instead of 26 / 95 / 113px */
+.calendar.is-compact, main > .row-sec, main .row-sec { padding-top: 28px; padding-bottom: 28px; }
+.calendar.is-compact .cal-track { padding-bottom: 0; }
+/* each month is only as tall as its own cards (no empty boxes under short months) */
+.calendar.is-compact .cal-track { align-items: flex-start; }
