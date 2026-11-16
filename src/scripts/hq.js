@@ -403,7 +403,14 @@ export function initHQ({ root, api, show }) {
       parameter: [{ type: 'BOOLEAN', key: 'sendEcommerceData', value: 'false' }, T('eventName', '{{Event}}'), T('measurementIdOverride', '{{Const - GA4 Measurement ID}}'),
         { type: 'LIST', key: 'eventSettingsTable', list: params.map((n) => ({ type: 'MAP', map: [T('parameter', n), T('parameterValue', `{{DLV - ${n}}}`)] })) }],
       firingTriggerId: ['2'], tagFiringOption: 'ONCE_PER_EVENT' }];
-    return { exportFormatVersion: 2, exportTime: new Date().toISOString().replace('T', ' ').slice(0, 19), containerVersion: { accountId: '0', containerId: '0', containerVersionId: '0', tag, trigger, variable, builtInVariable: [{ accountId: '0', containerId: '0', type: 'EVENT', name: 'Event' }] } };
+    // GTM's importer needs a full-looking export: real-style numeric ids, a container block with usageContext, and fingerprints.
+    const A = '6000000000', C = '200000000', fp = String(Date.now());
+    const fix = (o) => ({ ...o, accountId: A, containerId: C, fingerprint: fp });
+    return { exportFormatVersion: 2, exportTime: new Date().toISOString().replace('T', ' ').slice(0, 19),
+      containerVersion: { path: `accounts/${A}/containers/${C}/versions/0`, accountId: A, containerId: C, containerVersionId: '0', fingerprint: fp,
+        container: { path: `accounts/${A}/containers/${C}`, accountId: A, containerId: C, name: 'Mow It Tall events', publicId: 'GTM-PTSGH8QX', usageContext: ['WEB'], fingerprint: fp, tagManagerUrl: 'https://tagmanager.google.com/' },
+        tag: tag.map(fix), trigger: trigger.map(fix), variable: variable.map(fix),
+        builtInVariable: [{ accountId: A, containerId: C, type: 'EVENT', name: 'Event' }] } };
   }
   $('[data-gtm-form]').addEventListener('submit', (e) => {
     e.preventDefault();
