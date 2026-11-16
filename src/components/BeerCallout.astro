@@ -3,7 +3,6 @@
 // compact: one-line version for the footer.
 import { tipLink, TIPS_ON, TIP_URL } from '../data/site.js';
 const { compact = false } = Astro.props;
-const amounts = [5, 10];
 ---
 {compact ? (
   <div class="beer-foot" id="beer">
@@ -39,9 +38,9 @@ const amounts = [5, 10];
       <h2 id="beer-h">Find This Helpful? Buy Me a Beer.</h2>
       <p>Totally optional. Just a way to say thanks.</p>
       <div class="beer-btns">
-        {amounts.map((a) => TIPS_ON
-          ? <a class="btn beer-btn" href={tipLink(a)} target="_blank" rel="noopener" data-track="tip_click" data-track-amount={String(a)}>${a} {a === 5 ? '· one beer' : '· a round'}</a>
-          : <span class="btn beer-btn is-off" aria-disabled="true">${a} {a === 5 ? '· one beer' : '· a round'}</span>)}
+        {TIPS_ON
+          ? <a class="btn beer-btn" href={TIP_URL || tipLink(5)} target="_blank" rel="noopener" data-track="tip_click" data-track-link_area="callout">Buy Me a Beer</a>
+          : <span class="btn beer-btn is-off" aria-disabled="true">Buy Me a Beer</span>}
       </div>
       {!TIPS_ON && <p class="beer-soon">Tip jar opens soon.</p>}
     </div>
