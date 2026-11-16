@@ -143,6 +143,10 @@ const NAV = [
           var ls = localStorage, host = location.hostname.replace(/^www\./, '');
           if (host !== 'mowittall.com' && ls.getItem('mit-log-test') !== '1') return;
           if (/^\/admin\//.test(location.pathname) || navigator.webdriver || navigator.globalPrivacyControl) return;
+          // Don't count Mike: any browser logged into HQ (mit-admin) is skipped unless he turns counting back on
+          // in HQ → Analytics (mit-nolog = '0'). mit-nolog = '1' skips even without the HQ login.
+          var nolog = ls.getItem('mit-nolog');
+          if (nolog === '1' || (nolog !== '0' && ls.getItem('mit-admin'))) return;
           var uid = function () { return crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 12); };
           var now = Date.now(), nv = 0, d = ls.getItem('mit-device');
           if (!d) { d = uid(); ls.setItem('mit-device', d); nv = 1; }

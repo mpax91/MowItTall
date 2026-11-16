@@ -575,6 +575,11 @@ export function initHQ({ root, api, show }) {
       try { const x = await api('/api/admin/events/rollup', { method: 'POST', body: JSON.stringify({ days: 400 }) }); msg.textContent = `Done (${x.days} days).`; loadEvents(); } catch (err) { msg.textContent = err.message; }
     }
   });
+  // "Don't count my visits": the site's logging snippet (Base.astro) skips browsers with mit-nolog = '1', or with the
+  // HQ login saved unless mit-nolog = '0'. Ticked by default; untick to count this device again.
+  const me = $('[data-ev-me]');
+  try { me.checked = localStorage.getItem('mit-nolog') !== '0'; if (me.checked) localStorage.setItem('mit-nolog', '1'); } catch {}
+  me.addEventListener('change', () => { try { localStorage.setItem('mit-nolog', me.checked ? '1' : '0'); } catch {} });
   root.querySelector('[data-tab="analytics"]').addEventListener('click', () => { if (!evLoaded) loadEvents(); });
   if (location.hash === '#analytics') loadEvents();
 
