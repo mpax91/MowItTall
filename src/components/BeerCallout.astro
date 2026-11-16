@@ -1,16 +1,29 @@
 ---
 // "Buy me a beer" tip callout. Links come from src/data/site.js (empty = "coming soon").
 // compact: one-line version for the footer.
-import { tipLink, TIPS_ON } from '../data/site.js';
+import { tipLink, TIPS_ON, TIP_URL } from '../data/site.js';
 const { compact = false } = Astro.props;
 const amounts = [5, 10];
 ---
 {compact ? (
-  <p class="beer-line" id="beer">
-    Site saved you a weekend? {TIPS_ON
-      ? <a href={tipLink(5)} target="_blank" rel="noopener" data-track="tip_click" data-track-amount="5">Buy me a beer</a>
-      : <span>Buy me a beer <em>(tip jar coming soon)</em></span>}
-  </p>
+  <div class="beer-foot" id="beer">
+    <div class="beer-mug beer-mug-sm" aria-hidden="true">
+      <svg viewBox="0 0 16 16" shape-rendering="crispEdges">
+        <rect x="2" y="3" width="9" height="2" fill="#f1f6ec" />
+        <rect x="2" y="5" width="9" height="9" fill="#f6c945" />
+        <rect x="3" y="6" width="1" height="6" fill="#ffe08a" />
+        <rect x="11" y="6" width="3" height="1" fill="#eef5e6" /><rect x="13" y="7" width="1" height="4" fill="#eef5e6" /><rect x="11" y="11" width="3" height="1" fill="#eef5e6" />
+        <rect x="2" y="14" width="9" height="1" fill="#0a2414" />
+      </svg>
+    </div>
+    <div class="beer-foot-text">
+      <p class="beer-foot-h">Site saved you a weekend?</p>
+      <p class="beer-foot-sub">No ads, no paywall. A beer keeps it that way.</p>
+    </div>
+    {TIPS_ON
+      ? <a class="beer-foot-btn" href={TIP_URL || tipLink(5)} target="_blank" rel="noopener" data-track="tip_click" data-track-link_area="footer">Buy Me a Beer</a>
+      : <span class="beer-foot-btn is-off" aria-disabled="true">Tip Jar Opening Soon</span>}
+  </div>
 ) : (
   <aside class="beer" aria-labelledby="beer-h" data-pagefind-ignore>
     <div class="beer-mug" aria-hidden="true">
