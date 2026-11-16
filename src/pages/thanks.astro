@@ -1,0 +1,65 @@
+---
+// Where Stripe sends people after a tip ("Buy Me a Beer" payment link → After payment → redirect).
+// Redirect URL: https://mowittall.com/thanks/?session_id={CHECKOUT_SESSION_ID}
+// Fires the GA4 `donate` key event once per Stripe checkout session (only when session_id is present,
+// so a random visit to /thanks/ never counts as a tip). Not for search: noindex + out of the sitemap.
+import Base from '../layouts/Base.astro';
+---
+<Base title="Thanks for the Beer | Mow It Tall" description="Cheers. Your beer is on its way to Mike." path="/thanks/" noindex beer={false}>
+  <main id="main" class="page thanks-page">
+    <header class="page-head thanks-head">
+      <div class="beer-mug thanks-mug" aria-hidden="true">
+        <svg viewBox="0 0 16 16" shape-rendering="crispEdges">
+          <rect x="2" y="3" width="9" height="2" fill="#f1f6ec" />
+          <rect x="2" y="5" width="9" height="9" fill="#f6c945" />
+          <rect x="3" y="6" width="1" height="6" fill="#ffe08a" />
+          <rect x="11" y="6" width="3" height="1" fill="#eef5e6" /><rect x="13" y="7" width="1" height="4" fill="#eef5e6" /><rect x="11" y="11" width="3" height="1" fill="#eef5e6" />
+          <rect x="2" y="14" width="9" height="1" fill="#0a2414" />
+        </svg>
+      </div>
+      <h1>Cheers. You’re a Legend.</h1>
+      <p class="lede">Thanks for the beer. It’s going straight toward blade sharpening and more free tools.</p>
+    </header>
+
+    <section class="window thanks-next" aria-labelledby="next-h">
+      <h2 id="next-h">Now Go Mow It Tall</h2>
+      <p>Want to help even more? Send the site to the neighbor whose lawn could use it. You know the one.</p>
+      <div class="thanks-btns">
+        <button type="button" class="btn" data-thanks-share>Share Mow It Tall</button>
+        <a class="btn btn-quiet" href="/plan/">Get My Free Lawn Plan</a>
+      </div>
+      <p class="thanks-small" data-thanks-msg role="status"></p>
+    </section>
+  </main>
+</Base>
+
+<script is:inline>
+  (function () {
+    var sid = new URLSearchParams(location.search).get('session_id');
+    if (sid && /^cs_/.test(sid)) {
+      try {
+        var seen = JSON.parse(localStorage.getItem('mit-tips') || '[]');
+        if (seen.indexOf(sid) === -1) {
+          seen.push(sid); localStorage.setItem('mit-tips', JSON.stringify(seen.slice(-20)));
+          if (window.mitTrack) window.mitTrack('donate', { method: 'stripe', currency: 'USD', link_area: 'thanks' });
+        }
+      } catch (e) {}
+    }
+    var btn = document.querySelector('[data-thanks-share]'), msg = document.querySelector('[data-thanks-msg]');
+    if (btn) btn.addEventListener('click', function () {
+      var data = { title: 'Mow It Tall', text: 'The easy guide to a better lawn. Free lawn plan, no email needed.', url: 'https://mowittall.com/?utm_source=share&utm_medium=referral&utm_campaign=thanks' };
+      if (window.mitTrack) window.mitTrack('share', { method: navigator.share ? 'share_sheet' : 'copy', link_area: 'thanks' });
+      if (navigator.share) { navigator.share(data).catch(function () {}); return; }
+      try { navigator.clipboard.writeText(data.url).then(function () { msg.textContent = 'Link copied. Paste it anywhere.'; }); } catch (e) { msg.textContent = data.url; }
+    });
+  })();
+</script>
+
+<style>
+  .thanks-head { text-align: center; }
+  .thanks-mug { width: 84px; height: 84px; margin: 0 auto 14px; background: #0a2414; border-radius: 14px; padding: 9px; }
+  .thanks-mug svg { width: 100%; height: 100%; display: block; }
+  .thanks-next { text-align: center; }
+  .thanks-btns { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 14px; }
+  .thanks-small { margin: 10px 0 0; font-size: 0.9rem; min-height: 1.2em; }
+</style>

@@ -85,7 +85,7 @@ const crumbs = {
 };
 const jsonLd = { '@context': 'https://schema.org', '@graph': [posting, crumbs, ...(faqLd ? [faqLd] : [])] };
 ---
-<Base title={metaTitle} description={metaDesc} path={path} jsonLd={jsonLd} type="article" published={date} modified={modified || undefined} crumbs={false} dl={{ post_tag: tag || '', post_topics: topics.join(','), published: date }}>
+<Base title={metaTitle} description={metaDesc} path={path} jsonLd={jsonLd} type="article" published={date} modified={modified || undefined} beer={false} crumbs={false} dl={{ post_tag: tag || '', post_topics: topics.join(','), published: date }}>
   <main id="main" class="post">
     <header class="post-head">
       <nav class="crumbs" aria-label="Breadcrumb" data-pagefind-ignore><a href="/blog/">Blog</a>{topics[0] && <> <span aria-hidden="true">›</span> <a href={`/blog/topic/${topics[0]}/`}>{topicBySlug[topics[0]].name}</a></>}</nav>
