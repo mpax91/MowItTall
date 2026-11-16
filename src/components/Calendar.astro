@@ -213,7 +213,14 @@ const months = MONTHS_LONG.map((name, i) => ({
       const side = c.querySelector(c.classList.contains('is-flipped') ? '.cal-back' : '.cal-front');
       c.style.height = `${side.offsetHeight}px`;
     };
-    const fitCards = () => flips.forEach(fitCard);
+    // every card front shares the tallest front's height (same-size cards); a flipped card grows to fit its back
+    const fitCards = () => {
+      const fronts = flips.map((c) => c.querySelector('.cal-front'));
+      fronts.forEach((f) => (f.style.minHeight = ''));
+      const tallest = Math.max(0, ...fronts.filter((f) => f.offsetParent).map((f) => f.offsetHeight));
+      fronts.forEach((f) => (f.style.minHeight = `${tallest}px`));
+      flips.forEach(fitCard);
+    };
     flips.forEach((c) => {
       const flip = () => {
         const on = !c.classList.contains('is-flipped');
