@@ -31,7 +31,7 @@ const STEPS = [
     type: 'one',
     options: [
       { v: 0, t: 'Couch Potato', s: 'I will mow. That’s the deal. Don’t make it weird.' },
-      { v: 1, t: 'Coffee & Cruise', s: 'One Saturday morning a month, coffee in hand, back inside by 10.' },
+      { v: 1, t: 'Good Enough Guy', s: 'A Saturday morning here and there. Nice lawn, no obsession.' },
       { v: 2, t: 'Curb Appeal Hunter', s: 'I want people to slow down when they drive by.' },
       { v: 3, t: 'Lawn Psycho', s: 'I’ve named my mower. I know my soil pH. Send help.' },
     ],

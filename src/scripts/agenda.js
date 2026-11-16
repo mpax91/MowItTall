@@ -5,11 +5,10 @@ import { TASKS, MONTHS, MONTHS_LONG, windowText } from '../data/tasks.js';
 
 export const LEVELS = [
   { name: 'Couch Potato', note: 'The bare minimum' },
-  { name: 'Coffee & Cruise', note: 'A little effort' },
+  { name: 'Good Enough Guy', note: 'A little effort' },
   { name: 'Curb Appeal Hunter', note: 'Nicest on the street' },
   { name: 'Lawn Psycho', note: 'Everything. All of it.' },
 ];
-const LEVEL_TAG = ['Everyone', 'Coffee & Cruise', 'Curb Appeal', 'Lawn Psycho'];
 
 // what kind of job each task is (color + legend)
 export const KINDS = {
@@ -86,15 +85,25 @@ const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
 const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 export const tasksFor = (level) => TASKS.filter((t) => t.level <= level);
+// "9 jobs · about 6 hours a year" for an effort level
+export function levelSummary(level) {
+  const list = tasksFor(level);
+  const mins = list.reduce((s, t) => s + (t.minutes || 0), 0);
+  const hrs = Math.round(mins / 60);
+  return `${plural(list.length, 'job')} · ${mins < 60 ? 'under an hour' : `about ${plural(hrs, 'hour')}`} a year`;
+}
 
 // status of a task's window in a given year, relative to today
 function status(t, y, today) {
   const start = new Date(y, t.start[0] - 1, t.start[1]);
   const end = new Date(y, t.end[0] - 1, t.end[1], 23, 59);
-  if (today < start) return { state: 'next', text: `In ${plural(Math.ceil((start - today) / DAY), 'day')}` };
-  if (today > end) return { state: 'past', text: 'Done for the year' };
+  if (today < start) {
+    const days = Math.ceil((start - today) / DAY);
+    return days <= 45 ? { state: 'next', text: `Starts in ${plural(days, 'day')}` } : null;
+  }
+  if (today > end) return null;
   const left = Math.ceil((end - today) / DAY);
-  return { state: 'now', text: `Happening now · ${plural(left, 'day')} left` };
+  return { state: 'now', text: `Do it now · ${plural(left, 'day')} left` };
 }
 
 function taskCard(t, y, today) {
@@ -104,7 +113,7 @@ function taskCard(t, y, today) {
   const mins = t.minutes ? ` · ${t.minutes >= 60 ? `${t.minutes / 60} hr` : `${t.minutes} min`}` : '';
   return `<details class="ag-ev is-${k}${s ? ` is-${s.state}` : ''}" id="t-${t.id}-${y}" data-task="${t.id}">
 <summary><span class="ag-ev-top"><b class="ag-ev-title">${esc(tc(t.title))}</b><i class="ag-ev-plus" aria-hidden="true"></i></span>
-<span class="ag-ev-meta">${windowText(t)}${mins}${t.level ? ` · <span class="ag-lv">${LEVEL_TAG[t.level]}</span>` : ''}</span>${s ? `<span class="ag-ev-status">${s.text}</span>` : ''}</summary>
+<span class="ag-ev-meta">${windowText(t)}${mins}</span>${s ? `<span class="ag-ev-status">${s.text}</span>` : ''}</summary>
 <div class="ag-ev-body"><p>${esc(t.short)}</p><p><b>How:</b> ${esc(t.why)}</p>${t.tip ? `<p><b>Tip:</b> ${esc(t.tip)}</p>` : ''}${more ? `<a class="ag-more" href="${more[0]}">${esc(more[1])} →</a>` : ''}</div>
 </details>`;
 }
@@ -117,7 +126,6 @@ function holidayChip(h) {
 export function agendaHTML({ months, today = null, level = 3 }) {
   const list = tasksFor(level);
   const todayKey = today ? ymd(today) : null;
-  let todayPlaced = false;
   let html = '';
   months.forEach(({ y, m }, idx) => {
     const isCur = today && today.getFullYear() === y && today.getMonth() + 1 === m;
@@ -133,25 +141,17 @@ export function agendaHTML({ months, today = null, level = 3 }) {
     const sorted = [...rows.values()].sort((a, b) => a.d - b.d);
     const jobs = sorted.reduce((n, r) => n + r.ev.length, 0);
     const label = `${MONTHS_LONG[m - 1]}${idx === 0 || m === 1 ? ` ${y}` : ''}`;
-    html += `<section class="ag-month${isCur ? ' is-current' : ''}" data-ym="${y}-${m}" aria-label="${MONTHS_LONG[m - 1]} ${y}">
+    html += `<section class="ag-month${isCur ? ' is-current' : ''}" id="m-${y}-${m}" data-ym="${y}-${m}" aria-label="${MONTHS_LONG[m - 1]} ${y}">
 <h2 class="ag-mhead"><span class="ag-mname">${label}</span><span class="ag-mood">${MOOD[m - 1]}${jobs ? ` · ${plural(jobs, 'job')}` : ''}</span></h2>`;
-    const nowLine = () => {
-      todayPlaced = true;
-      const going = list.filter((t) => status(t, today.getFullYear(), today).state === 'now');
-      const links = going.map((t) => `<a href="#t-${t.id}-${today.getFullYear()}">${esc(tc(t.title))}</a>`).join('');
-      return `<div class="ag-now" id="today" data-today><p class="ag-now-label"><span>Today</span> ${DOW[today.getDay()]}, ${MONTHS[today.getMonth()]} ${today.getDate()}</p>${going.length ? `<p class="ag-now-sub">Happening now:</p><div class="ag-now-list">${links}</div>` : '<p class="ag-now-sub">Nothing due right now. Enjoy it.</p>'}</div>`;
-    };
     if (!sorted.length) {
       const c = CHILL[m];
       html += c ? `<div class="ag-chill"><b>${c.title}</b><span>${c.text}</span></div>` : '<p class="ag-empty">Nothing new on your list this month. Keep mowing tall.</p>';
     }
     for (const r of sorted) {
-      if (isCur && !todayPlaced && ymd(r.d) >= todayKey) html += nowLine();
       const isToday = todayKey === ymd(r.d);
       html += `<div class="ag-day${isToday ? ' is-today' : ''}"><p class="ag-date"><span>${DOW[r.d.getDay()]}</span><b>${r.d.getDate()}</b></p><div class="ag-items">${r.hol.map(holidayChip).join('')}${r.ev.map((t) => taskCard(t, y, today)).join('')}</div></div>`;
     }
-    if (isCur && !todayPlaced) html += nowLine();
-    html += '</section>';
+    html += `<a class="ag-mlink" href="/calendar/${MONTHS_LONG[m - 1].toLowerCase()}/">More on ${MONTHS_LONG[m - 1]} lawn care →</a></section>`;
   });
   return html;
 }

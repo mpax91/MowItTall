@@ -1,147 +1,121 @@
 ---
-// Dedicated lawn calendar: a vertical schedule (like a phone calendar's Schedule view),
-// filtered by effort level, starting today. The homepage keeps the sideways month strip.
+// Dedicated lawn calendar. Step 1: pick an effort level. Step 2: the calendar builds below,
+// in the normal page scroll (no inner scroll box), from this month through last month.
 import Base from '../layouts/Base.astro';
-import { agendaHTML, yearMonths, LEVELS, KINDS } from '../scripts/agenda.js';
-import { MONTH_PAGES } from '../data/monthPages.js';
-import { MONTHS_LONG } from '../data/tasks.js';
+import { LEVELS, levelSummary } from '../scripts/agenda.js';
+import { MONTHS, MONTHS_LONG } from '../data/tasks.js';
 
 const title = 'Lawn Care Calendar for the Northeast: What to Do Each Month';
 const description =
-  'A month-by-month lawn care schedule for Westchester and the Northeast. Every job with its date window, starting today, sized to how much effort you want to put in.';
-const year = new Date().getFullYear();
-const serverHTML = agendaHTML({ months: yearMonths(year), level: 3 });
-
-const faqs = [
-  {
-    q: 'What should I do to my lawn each month?',
-    a: 'In the Northeast: sharpen the blade and raise the mower in March, crabgrass preventer in April, a light feeding around Memorial Day, mow tall and water deep all summer, seed and feed around Labor Day, feed again around Columbus Day, keep leaves off it in fall, and put the mower away in December. January and February: stay off it.',
-  },
-  {
-    q: 'When is the best time to fertilize a lawn in the Northeast?',
-    a: 'Labor Day. If you only feed once a year, feed then. Grass grows most of its roots in fall. Memorial Day and Columbus Day are the next two worth doing.',
-  },
-  {
-    q: 'Can I put this calendar on my phone?',
-    a: 'Yes. Tap “Add to My Phone Calendar” and it downloads a calendar file with a reminder for each job. It repeats every year, so you only do it once.',
-  },
-];
-const jsonLd = {
-  '@context': 'https://schema.org',
-  '@type': 'FAQPage',
-  mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
-};
+  'A month-by-month lawn care schedule for Westchester and the Northeast. Pick how much effort you want and get every job with its date window, starting this month.';
 ---
-<Base title={title} description={description} path="/calendar/" crumbs={[["Resources", "/resources/"], ["Lawn Calendar", "/calendar/"]]} jsonLd={jsonLd}>
+<Base title={title} description={description} path="/calendar/" crumbs={[["Resources", "/resources/"], ["Lawn Calendar", "/calendar/"]]}>
   <main id="main">
     <section class="page-head page-head-hub">
       <h1>The Lawn Calendar</h1>
-      <p class="lede">Every lawn job for the year, in order, starting today. Pick how much effort you want and the list shrinks to match. Timing is set for Westchester &amp; the Northeast.</p>
+      <p class="lede">Every lawn job for the year, in order, starting this month. Pick how much effort you want and I’ll build your calendar. Timing is set for Westchester &amp; the Northeast.</p>
     </section>
 
     <section class="ag-wrap" data-agenda-root>
-      <div class="ag-controls window">
-        <p class="ag-ctl-label" id="ag-lv-h">How Much Effort?</p>
+      <div class="ag-controls window" id="effort">
+        <h2 class="ag-ctl-label" id="ag-lv-h">How Much Effort Do You Want to Put In?</h2>
         <div class="ag-seg" role="group" aria-labelledby="ag-lv-h">
           {LEVELS.map((l, i) => (
-            <button type="button" data-level={i} aria-pressed={i === 3 ? 'true' : 'false'}><b>{l.name}</b><span>{l.note}</span></button>
+            <button type="button" data-level={i} aria-pressed="false"><b>{l.name}</b><span>{l.note}</span><em>{levelSummary(i)}</em></button>
           ))}
         </div>
-        <p class="ag-count" data-count aria-live="polite"></p>
-        <ul class="ag-legend" aria-label="Colors">
-          {Object.entries(KINDS).map(([k, v]) => <li class={`is-${k}`}>{v.name}</li>)}
-        </ul>
-        <button type="button" class="btn ag-ics" data-ics>Add to My Phone Calendar</button>
       </div>
 
-      <button type="button" class="ag-earlier" data-earlier hidden>Show Earlier Months ▴</button>
-      <div class="ag-list" data-agenda set:html={serverHTML} />
-      <p class="ag-foot">That’s a full year. It all starts over in March. <a href="/plan/">Get your free lawn plan</a> for one built around your yard.</p>
-
-      <a class="ag-jump" href="#today" data-jump hidden>Today ▴</a>
-    </section>
-
-    <nav class="mo-index" aria-labelledby="mo-index-h">
-      <h2 id="mo-index-h">Month by Month</h2>
-      <ul>{MONTH_PAGES.map((m, i) => <li><a class="bf-chip" href={`/calendar/${m.slug}/`}>{MONTHS_LONG[i]}</a></li>)}</ul>
-    </nav>
-
-    <section class="faq" aria-labelledby="faq-h">
-      <h2 id="faq-h">Quick Answers</h2>
-      {faqs.map((f) => (
-        <details>
-          <summary>{f.q}</summary>
-          <p>{f.a}</p>
-        </details>
-      ))}
+      <div class="ag-cal" data-cal hidden>
+        <div class="ag-cal-head">
+          <h2 class="ag-cal-title" data-cal-title tabindex="-1">Your Lawn Year</h2>
+          <p class="ag-cal-sub" data-cal-sub></p>
+        </div>
+        <nav class="ag-pills" aria-label="Jump to a month">
+          <ul data-pills>
+            {MONTHS_LONG.map((name, i) => <li><a href={`/calendar/${name.toLowerCase()}/`} data-m={i + 1}>{MONTHS[i]}</a></li>)}
+          </ul>
+        </nav>
+        <div class="ag-months" data-agenda></div>
+        <div class="ag-end window">
+          <h2 class="ag-end-h">Put It on Your Phone</h2>
+          <p>One reminder for each job. It repeats every year, so you only do this once.</p>
+          <button type="button" class="btn ag-ics" data-ics>Add to My Phone Calendar</button>
+          <div class="ag-nudge" data-nudge></div>
+        </div>
+      </div>
     </section>
   </main>
 </Base>
 
 <script>
-  import { agendaHTML, rollingMonths, tasksFor, icsFor } from '../scripts/agenda.js';
+  import { agendaHTML, rollingMonths, icsFor, levelSummary, LEVELS } from '../scripts/agenda.js';
 
   const root = document.querySelector('[data-agenda-root]');
+  const cal = root.querySelector('[data-cal]');
   const listEl = root.querySelector('[data-agenda]');
-  const earlier = root.querySelector('[data-earlier]');
-  const jump = root.querySelector('[data-jump]');
-  const count = root.querySelector('[data-count]');
+  const titleEl = root.querySelector('[data-cal-title]');
+  const subEl = root.querySelector('[data-cal-sub]');
+  const pills = root.querySelector('[data-pills]');
+  const nudge = root.querySelector('[data-nudge]');
   const buttons = [...root.querySelectorAll('[data-level]')];
   const today = new Date();
   const y = today.getFullYear(), m = today.getMonth() + 1;
+  const months = rollingMonths(y, m, 12); // this month first, last month at the bottom
+  const track = (name, p) => { try { (window as any).mitTrack?.(name, p); } catch { /* ignore */ } };
+  let level = -1;
 
-  // effort: last pick on this page, else the quiz answer, else Curb Appeal Hunter
-  let level = 2;
-  try {
-    const saved = localStorage.getItem('mit-cal-level');
-    const q = JSON.parse(localStorage.getItem('mit-quiz') || '{}');
-    if (saved != null) level = Number(saved);
-    else if (q && q.effort != null) level = Number(q.effort);
-  } catch { /* private mode */ }
-  level = Math.min(3, Math.max(0, level || 0));
-  let showEarlier = false;
-
-  function render() {
-    const months = showEarlier ? rollingMonths(y, 1, m - 1 + 12) : rollingMonths(y, m, 12);
-    listEl.innerHTML = agendaHTML({ months, today, level });
-    earlier.hidden = showEarlier || m === 1;
-    buttons.forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.level) === level)));
-    const n = tasksFor(level).length;
-    const mins = tasksFor(level).reduce((s, t) => s + (t.minutes || 0), 0);
-    const hrs = Math.round(mins / 60);
-    count.textContent = `${n} jobs a year. ${mins < 60 ? 'Under an hour of work' : `About ${hrs} hour${hrs === 1 ? '' : 's'} of work`}, total (plus mowing).`;
-    watchToday();
-  }
-
-  // the floating "Today" pill shows once the today line is off screen
-  let io;
-  function watchToday() {
-    io?.disconnect();
-    const line = listEl.querySelector('[data-today]');
-    if (!line || !('IntersectionObserver' in window)) return;
-    io = new IntersectionObserver(([e]) => { jump.hidden = e.isIntersecting || e.boundingClientRect.top > innerHeight; });
-    io.observe(line);
-  }
-  jump.addEventListener('click', (e) => {
+  // month pills in calendar order (this month first), each jumps to its month
+  const byM = Object.fromEntries([...pills.querySelectorAll('li')].map((li) => [li.querySelector('a').dataset.m, li]));
+  months.forEach(({ y: yy, m: mm }) => {
+    const li = byM[mm];
+    const a = li.querySelector('a');
+    a.dataset.target = `m-${yy}-${mm}`;
+    if (mm === m && yy === y) a.classList.add('is-now');
+    pills.append(li);
+  });
+  pills.addEventListener('click', (e) => {
+    const a = (e.target as HTMLElement).closest('a');
+    if (!a) return;
+    const sec = document.getElementById(a.dataset.target);
+    if (!sec) return;
     e.preventDefault();
-    listEl.querySelector('[data-today]')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
 
-  buttons.forEach((b) => b.addEventListener('click', () => {
-    level = Number(b.dataset.level);
-    try { localStorage.setItem('mit-cal-level', String(level)); } catch { /* private mode */ }
-    render();
-  }));
+  function nudgeHTML() {
+    const out = [];
+    if (level > 0) out.push(`<p><b>Too much?</b> <button type="button" data-go="${level - 1}">Try ${LEVELS[level - 1].name}</button> for something more manageable.</p>`);
+    if (level < 3) out.push(`<p><b>Too easy?</b> <button type="button" data-go="${level + 1}">Try ${LEVELS[level + 1].name}</button> to see what a little more effort looks like.</p>`);
+    return out.join('');
+  }
 
-  // reveal January..last month above, keeping the view where it was
-  earlier.addEventListener('click', () => {
-    const anchor = listEl.querySelector('.ag-month');
-    const before = anchor.getBoundingClientRect().top;
-    const key = anchor.dataset.ym;
-    showEarlier = true;
-    render();
-    const same = listEl.querySelector(`[data-ym="${key}"]`);
-    scrollBy(0, same.getBoundingClientRect().top - before);
+  function show(lv, { scroll = true } = {}) {
+    level = lv;
+    try { localStorage.setItem('mit-cal-level', String(level)); } catch { /* private mode */ }
+    buttons.forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.level) === level)));
+    listEl.innerHTML = agendaHTML({ months, today, level });
+    titleEl.textContent = `Your Lawn Year: ${LEVELS[level].name}`;
+    subEl.textContent = `${levelSummary(level).replace(/^./, (c) => c.toUpperCase())}, plus mowing.`;
+    nudge.innerHTML = nudgeHTML();
+    cal.hidden = false;
+    if (scroll) {
+      requestAnimationFrame(() => {
+        cal.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        titleEl.focus({ preventScroll: true });
+      });
+    }
+  }
+
+  buttons.forEach((b) => b.addEventListener('click', () => {
+    show(Number(b.dataset.level));
+    track('tool_choice', { tool_name: 'lawn_calendar', choice: LEVELS[level].name });
+  }));
+  nudge.addEventListener('click', (e) => {
+    const b = (e.target as HTMLElement).closest('[data-go]') as HTMLElement;
+    if (!b) return;
+    show(Number(b.dataset.go));
+    track('tool_choice', { tool_name: 'lawn_calendar', choice: LEVELS[level].name, method: 'nudge' });
   });
 
   root.querySelector('[data-ics]').addEventListener('click', () => {
@@ -151,19 +125,12 @@ const jsonLd = {
     a.download = 'mow-it-tall-lawn-calendar.ics';
     document.body.append(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    track('calendar_download', { tool_name: 'lawn_calendar', choice: LEVELS[level].name });
   });
 
-  // opening a "Happening now" link opens that job's card
-  listEl.addEventListener('click', (e) => {
-    const a = e.target.closest('.ag-now-list a');
-    if (!a) return;
-    e.preventDefault();
-    const id = a.getAttribute('href');
-    // started last month or earlier: bring the earlier months back first
-    if (!document.querySelector(id) && !showEarlier) { showEarlier = true; render(); }
-    const card = document.querySelector(id);
-    if (card) { e.preventDefault(); card.open = true; card.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
-  });
-
-  render();
+  // coming back: show the calendar you picked last time on this page (no jump)
+  try {
+    const saved = localStorage.getItem('mit-cal-level');
+    if (saved != null && /^[0-3]$/.test(saved)) show(Number(saved), { scroll: false });
+  } catch { /* private mode */ }
 </script>

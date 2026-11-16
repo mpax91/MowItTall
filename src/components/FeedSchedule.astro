@@ -10,8 +10,8 @@ const HOLIDAYS = [
   { id: 'columbus-feed', name: 'Columbus Day', what: 'Pre-game feed', note: 'Two weeks later, it peaks for Halloween.', rule: 'columbus' },
   { id: 'thanksgiving-feed', name: 'Thanksgiving', what: 'Last call', note: 'Grass stopped growing but still green. Before the freeze.', rule: 'thanks' },
 ].map((h) => ({ ...h, level: TASKS.find((t) => t.id === h.id)?.level ?? 0 }));
-const LEVELS = ['Couch Potato', 'Coffee & Cruise', 'Curb Appeal Hunter', 'Lawn Psycho'];
-const SHORT = ['Couch Potato', 'Coffee & Cruise', 'Curb Appeal', 'Lawn Psycho'];
+const LEVELS = ['Couch Potato', 'Good Enough Guy', 'Curb Appeal Hunter', 'Lawn Psycho'];
+const SHORT = ['Couch Potato', 'Good Enough Guy', 'Curb Appeal', 'Lawn Psycho'];
 ---
 <section class="window fs" aria-labelledby="fs-h" data-feed-schedule>
   <h2 id="fs-h">Your Holiday Schedule</h2>
@@ -38,7 +38,7 @@ const SHORT = ['Couch Potato', 'Coffee & Cruise', 'Curb Appeal', 'Lawn Psycho'];
 
 <script>
   const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-  const LEVELS = ['Couch Potato', 'Coffee & Cruise', 'Curb Appeal Hunter', 'Lawn Psycho'];
+  const LEVELS = ['Couch Potato', 'Good Enough Guy', 'Curb Appeal Hunter', 'Lawn Psycho'];
   // nth weekday (0 = Sunday) of a month; n = -1 means the last one
   function nth(y: number, m: number, dow: number, n: number) {
     if (n < 0) {
