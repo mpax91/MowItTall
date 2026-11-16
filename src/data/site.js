@@ -23,11 +23,11 @@ export const SOCIAL_PROFILES = {
   threads: 'https://www.threads.com/@mowittall',
   x: 'https://x.com/MowItTALL',
   tiktok: '',      // https://www.tiktok.com/@mowittall
-  pinterest: '',   // https://www.pinterest.com/mowittall/
-  reddit: '',      // https://www.reddit.com/user/mowittall/
-  bluesky: '',     // https://bsky.app/profile/mowittall.com
+  pinterest: 'https://www.pinterest.com/mowittall/',
+  reddit: 'https://www.reddit.com/user/MowItTALL/',
+  bluesky: 'https://bsky.app/profile/mowittall.bsky.social',
   linkedin: '',    // https://www.linkedin.com/company/mowittall/
-  nextdoor: '',    // Nextdoor business page URL
+  nextdoor: 'https://nextdoor.com/page/mowittall-bedford-hills-ny',
 };
 export const SOCIAL_NAMES = { instagram: 'Instagram', facebook: 'Facebook', youtube: 'YouTube', tiktok: 'TikTok', x: 'X', threads: 'Threads', pinterest: 'Pinterest', reddit: 'Reddit', bluesky: 'Bluesky', linkedin: 'LinkedIn', nextdoor: 'Nextdoor' };
 // [key, name, url, handle] for every filled-in profile, in order.
@@ -35,6 +35,10 @@ export const SOCIALS = Object.entries(SOCIAL_PROFILES).filter(([, u]) => u).map(
   const m = u.match(/@([\w.]+)|\.com\/([\w.]+)\/?$/);
   return [k, SOCIAL_NAMES[k] || k, u, m ? '@' + (m[1] || m[2]) : ''];
 });
+// The ones shown as buttons on the site. Every filled-in profile still goes into sameAs and /llms.txt.
+export const SOCIAL_MAIN = ['instagram', 'youtube', 'facebook', 'threads', 'x'];
+export const SOCIALS_MAIN = SOCIALS.filter(([k]) => SOCIAL_MAIN.includes(k));
+export const SOCIALS_MORE = SOCIALS.filter(([k]) => !SOCIAL_MAIN.includes(k));
 export const X_HANDLE = '@MowItTALL'; // adds twitter:site to every page
 // Brand accounts go on the Organization. Mike's own personal profiles (if he ever wants them tied to the site)
 // go here instead and land on the Person entity. Keep the two separate: a brand page isn't a person.
