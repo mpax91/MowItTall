@@ -25,7 +25,7 @@ export const SOCIAL_PROFILES = {
   tiktok: '',      // https://www.tiktok.com/@mowittall
   pinterest: 'https://www.pinterest.com/mowittall/',
   reddit: 'https://www.reddit.com/user/MowItTALL/',
-  bluesky: 'https://bsky.app/profile/mowittall.bsky.social',
+  bluesky: 'https://bsky.app/profile/mowittall.com',
   linkedin: '',    // https://www.linkedin.com/company/mowittall/
   nextdoor: 'https://nextdoor.com/page/mowittall-bedford-hills-ny',
 };
