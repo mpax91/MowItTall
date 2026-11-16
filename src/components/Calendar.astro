@@ -8,15 +8,16 @@ interface Props { compact?: boolean }
 const { compact = false } = Astro.props;
 const SHOW = 1;
 const list = TASKS.filter((t) => t.level <= 2);
-// each month lists tasks that start in it, then tasks still running from an earlier month ("Still going")
+// each month lists tasks still running from an earlier month ("Still going"), then tasks that start in it
 const SMALL = new Set(['a', 'an', 'the', 'and', 'or', 'of', 'to', 'in', 'on', 'at', 'by', 'for', 'up', 'as']);
 const tc = (x: string) => x.split(' ').map((w, i, a) => (i && i < a.length - 1 && SMALL.has(w.toLowerCase()) ? w.toLowerCase() : w.charAt(0).toUpperCase() + w.slice(1))).join(' ');
 const SHORT_M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'June', 'July', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'];
 const months = MONTHS_LONG.map((name, i) => ({
   name,
+  // tasks carried over from an earlier month come first: they started sooner, so they're the first thing to do
   tasks: [
-    ...list.filter((t) => t.start[0] === i + 1).map((t) => ({ t, cont: false })),
     ...list.filter((t) => t.start[0] < i + 1 && t.end[0] >= i + 1).map((t) => ({ t, cont: true })),
+    ...list.filter((t) => t.start[0] === i + 1).map((t) => ({ t, cont: false })),
   ],
 }));
 ---
