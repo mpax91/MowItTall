@@ -3,14 +3,7 @@ import Base from '../layouts/Base.astro';
 import Calendar from '../components/Calendar.astro';
 import HeroMower from '../components/HeroMower.astro';
 import LawnThisWeek from '../components/LawnThisWeek.astro';
-import CardRow from '../components/CardRow.astro';
 import TrendingGrid from '../components/TrendingGrid.astro';
-import { PHOTOS } from '../data/photos.js';
-import { changeCards } from '../data/changes.js';
-const posts = Object.values(import.meta.glob('./blog/[a-z]*.md', { eager: true }))
-  .map((p) => ({ ...p.frontmatter, url: p.url }))
-  .sort((a, b) => new Date(b.date) - new Date(a.date))
-  .slice(0, 8);
 
 
 const title = 'Mow It Tall: the easy guide to a better lawn';
@@ -41,17 +34,6 @@ const jsonLd = {
   ],
 };
 
-const lawn101 = [
-  { href: '/weeds/', img: '/img/weeds/dandelion-thumb.webp', title: 'What’s that weed?', sub: '16 usual suspects, with real photos and the easy fix.' },
-  { href: '/lawn-101/#grass', icon: changeCards[5].icon, title: 'Which grass should I plant?', sub: 'Four questions. One answer. No seed-aisle panic.' },
-  ...changeCards.map((c) => ({ href: '/lawn-101/#changes-h', icon: c.icon, title: c.title, sub: c.sub })),
-  { href: '/yards/', img: `/img/${PHOTOS[0].src}-800.webp`, title: 'Proof it works', sub: 'My yard. Push mower. No lawn company.' },
-];
-const hall = [
-  { href: '/hall/', img: `/img/${PHOTOS[0].src}-800.webp`, title: 'Hall of Fame', sub: 'The best lawns around. Vote them up.' },
-  { href: '/hall/?board=shame', icon: changeCards[1].icon, title: 'Hall of Shame', sub: 'Bald spots and dandelion farms. All in good fun.' },
-  { href: '/hall/#post', icon: changeCards[0].icon, title: 'Post a lawn', sub: 'Yours, or one you have the OK to post. I review every photo.' },
-];
 ---
 <Base title={title} description={description} path="/" jsonLd={jsonLd}>
     <main id="main">
@@ -60,9 +42,6 @@ const hall = [
       <Calendar compact />
 
       <TrendingGrid />
-      <CardRow id="l101" title="Lawn 101" lede="Everything a beginner actually needs. Start with one small change." href="/lawn-101/" more="Explore Lawn 101" items={lawn101} />
-      <CardRow id="blog" title="From the Blog" lede="Lawn takes. Some hot, all short." href="/blog/" more="Read the Blog" items={posts.map((p) => ({ href: p.url, tag: p.tag, title: p.title }))} kind="blog" />
-      <CardRow id="hall" title="Lawn Hall of Fame (and Shame)" lede="Post your stripes. Nominate a disaster. Vote like it’s Reddit." href="/hall/" more="See the Hall" items={hall} />
 
       <section class="plan plan-end" id="plan" aria-labelledby="plan-h">
         <div class="window plan-card">

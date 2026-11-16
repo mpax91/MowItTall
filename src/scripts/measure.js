@@ -97,7 +97,7 @@ export function initMeasure(root) {
     touchPitch: false,
   }).setView([place.lat, place.lon], 16);
   satLayer(L, { attribution: ATTRIBUTION, maxZoom: 22 }).addTo(map);
-  map.attributionControl.setPrefix('<a href="https://leafletjs.com">Leaflet</a>');
+  map.attributionControl.setPrefix(false);   // keep the credit short enough to read on a phone; Esri's credit stays
 
   // Page mode never grabs touches, so the page always scrolls. Full screen does.
   function setInteractive(on) {

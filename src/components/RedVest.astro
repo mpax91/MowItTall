@@ -1,0 +1,29 @@
+---
+// Red Vest studio mark: a 16-bit quilted red vest, drawn as crisp SVG.
+interface Props { size?: number }
+const { size = 22 } = Astro.props;
+const VEST = [
+'....DDD.DDD....',
+'...DrrDSDrrD...',
+'..krrrdSdrrrk..',
+'...kdddSdddk...',
+'...krrdsdrrk...',
+'...krrdSdrrk...',
+'...kdddSdddk...',
+'..krrrdSdrrrk..',
+'.krrrrdSdrrrrk.',
+'.ddddddSdddddd.',
+'.rrrrrdSdrrrrr.',
+'.rrkrrdSdrrkrr.',
+'.rrkrrdSdrrkrr.',
+'.ddddddSdddddd.',
+'.rrrrrdSdrrrrr.',
+'.rrrrrdSdrrrrr.',
+'.kkkkkkkkkkkkk.',
+];
+const C: Record<string, string> = { r: '#d23a30', d: '#a8261f', D: '#7e1b16', k: '#1a120d', S: '#c3c9ce', s: '#6f767c' };
+let rects = '';
+VEST.forEach((row, y) => [...row].forEach((ch, x) => { if (C[ch]) rects += `<rect x="${x}" y="${y}" width="1" height="1" fill="${C[ch]}"/>`; }));
+const w = VEST[0].length, h = VEST.length;
+---
+<svg class="red-vest" width={Math.round(size * w / h)} height={size} viewBox={`0 0 ${w} ${h}`} shape-rendering="crispEdges" aria-hidden="true" set:html={rects} />

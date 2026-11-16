@@ -1275,7 +1275,11 @@ html.mz-lock, html.mz-lock body { overflow: hidden; overscroll-behavior: none; }
 .mz-bar button:active { transform: translateY(2px); }
 .mz-bar button[disabled] { opacity: 0.45; cursor: default; transform: none; }
 .mz.is-full .leaflet-bottom { bottom: calc(env(safe-area-inset-bottom) + 78px); }
-.mz .leaflet-control-attribution { font-size: 10px; background: rgba(255, 255, 255, 0.7); }
+.mz .leaflet-control-attribution {
+  font-size: 11px; line-height: 1.3; white-space: normal; width: max-content; max-width: calc(100% - 16px); margin: 0 8px 8px 0 !important;
+  padding: 3px 8px; border-radius: 8px; background: rgba(241, 246, 236, 0.9); color: #12301d;
+}
+.mz .leaflet-control-attribution a { color: inherit; }
 
 /* Sheets: near the top so a phone keyboard never covers them. */
 .mz-sheet {
@@ -2337,3 +2341,32 @@ main > section.ag-wrap { padding-top: 6px; }
 .photo-credits summary::after { content: '▾'; color: var(--paper); font-size: 0.95rem; transition: transform 0.2s; }
 .photo-credits details[open] summary::after { transform: rotate(180deg); }
 .photo-credits details[open] summary { margin-bottom: 6px; }
+
+/* Footer (Nov 15 rebuild): brand, four grouped link columns, extras, Red Vest credit */
+.footer { text-align: left; padding: 44px var(--gutter) 22px; border-top: 3px solid var(--win-edge, #0a2414); background: rgba(5, 22, 12, 0.35); }
+.footer > .foot-cols { max-width: 960px; }
+.foot-top { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; margin-bottom: 26px !important; }
+.foot-mark { font-size: 1.7rem; color: var(--paper); text-decoration: none; }
+.foot-tag { margin: 0 !important; color: var(--paper-dim); font-size: 0.95rem; }
+.foot-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 26px 18px; margin-bottom: 30px !important; }
+.foot-h { margin: 0 0 8px; font-family: var(--display); font-size: 0.82rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--leaf); }
+.foot-col ul { list-style: none; margin: 0; padding: 0; }
+.foot-col li { margin: 0; padding: 0; }
+.foot-col a { display: inline-block; padding: 6px 0; color: var(--paper); font-weight: 700; font-size: 0.95rem; line-height: 1.25; text-decoration: none; }
+.foot-col a:hover, .foot-col a:focus-visible { color: var(--sun); text-decoration: underline; }
+.foot-extra { padding: 18px 0 !important; border-top: 1px solid rgba(238, 245, 230, 0.15); font-size: 0.9rem; }
+.foot-extra .beer-line { margin: 0 0 6px !important; text-align: left; }
+.foot-extra p { margin: 0 !important; }
+.foot-bottom {
+  position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding: 16px 48px 4px 0 !important; border-top: 1px solid rgba(238, 245, 230, 0.15); font-size: 0.85rem;
+}
+.foot-bottom p { margin: 0 !important; }
+.red-vest-credit { display: inline-flex; align-items: center; gap: 8px; font-family: var(--display); font-weight: 750; letter-spacing: 0.02em; color: var(--paper); }
+.red-vest { flex: none; }
+.foot-bottom .footer-lock { right: 0; bottom: auto; top: 50%; transform: translateY(-40%); }
+@media (min-width: 700px) {
+  .foot-cols { grid-template-columns: repeat(4, 1fr); }
+  .footer > .foot-top, .footer > .foot-extra, .footer > .foot-bottom { max-width: 960px; }
+}
+@media (max-width: 699px) { .footer { padding-bottom: 96px; } }   /* clears the sticky plan bar */
