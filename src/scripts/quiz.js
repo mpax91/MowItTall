@@ -232,7 +232,12 @@ export function initQuiz(root) {
     // The quiz ZIP also sets the soil reading and location chips across the site.
     if (d > 0 && STEPS[step]?.type === 'zip' && answers.zip?.length === 5 && answers.zip !== getPlace().zip) setZip(answers.zip);
     if (d > 0 && step === 0) window.mitTrack && window.mitTrack('quiz_start', { quiz_name: 'lawn_plan' });
-    if (d > 0 && STEPS[step]) window.mitTrack && window.mitTrack('quiz_step', { quiz_name: 'lawn_plan', step_number: step + 1, step_type: STEPS[step].type || 'choice' });
+    if (d > 0 && STEPS[step]) {
+      const a = answers[STEPS[step].id];
+      window.mitTrack && window.mitTrack('quiz_step', { quiz_name: 'lawn_plan', step_number: step + 1, question_id: STEPS[step].id, step_type: STEPS[step].type || 'choice',
+        answer: STEPS[step].type === 'zip' ? String(a || '').slice(0, 3) : Array.isArray(a) ? a.join(',').slice(0, 90) : String(a ?? '').slice(0, 90) });
+    }
+    if (d < 0 && STEPS[step]) window.mitTrack && window.mitTrack('quiz_back', { quiz_name: 'lawn_plan', step_number: step + 1, question_id: STEPS[step].id });
     step = Math.max(0, Math.min(STEPS.length, step + d));
     save();
     if (step === STEPS.length) { answers.done = true; save(); showResult(true); return; }
@@ -240,6 +245,13 @@ export function initQuiz(root) {
     card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
 
+  let abandonSent = false;
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden' && step > 0 && !answers.done && !abandonSent) {
+      abandonSent = true;
+      window.mitTrack && window.mitTrack('quiz_abandon', { quiz_name: 'lawn_plan', step_number: step + 1, question_id: STEPS[step]?.id || '' });
+    }
+  });
   $('[data-next]').addEventListener('click', () => go(1));
   $('[data-back]').addEventListener('click', () => go(-1));
 
@@ -421,8 +433,10 @@ export function initQuiz(root) {
     })();
 
     result.querySelector('[data-ics]').addEventListener('click', () => downloadIcs(ordered, profile));
-    result.querySelector('[data-print]').addEventListener('click', () => window.print());
+    result.querySelector('[data-print]').addEventListener('click', () => { window.mitTrack && window.mitTrack('quiz_print', { quiz_name: 'lawn_plan' }); window.print(); });
+    result.addEventListener('click', (e) => { const a = e.target.closest('a[href]'); if (a) window.mitTrack && window.mitTrack('quiz_result_click', { link_url: a.getAttribute('href'), link_text: (a.textContent || '').trim().slice(0, 60) }); });
     result.querySelector('[data-restart]').addEventListener('click', () => {
+      window.mitTrack && window.mitTrack('quiz_retake', { quiz_name: 'lawn_plan' });
       answers = {}; save(); step = 0;
       result.hidden = true; card.hidden = false; root.querySelector('.quiz-intro').hidden = false;
       render();

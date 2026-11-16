@@ -2,6 +2,7 @@
 // Content comes from /api/admin/todos (worker/playbook.js), so none of it is in the public page.
 // Agents run in the browser against the live pages: no AI, no API keys.
 
+import qrcode from 'qrcode-generator';
 const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 const ago = (t) => { if (!t) return 'never'; const m = Math.round((Date.now() - t) / 60000); return m < 2 ? 'just now' : m < 90 ? `${m} min ago` : m < 2880 ? `${Math.round(m / 60)} hours ago` : `${Math.round(m / 1440)} days ago`; };
 const PRI = { now: 'Do first', soon: 'Soon', later: 'Later' };
@@ -370,8 +371,8 @@ export function initHQ({ root, api, show }) {
     $('[data-pb="rankHow"]').innerHTML = G.rankHow;
     $('[data-pb="movePages"]').innerHTML = G.movePages;
     $('[data-pb="aeo"]').innerHTML = G.aeo;
-    $('[data-pb="ga4Events"]').innerHTML = `<p class="dash-fine">${G.ga4Page}</p><div class="rk-scroll"><table class="pb-table"><thead><tr><th>Event</th><th>When it fires</th><th>Parameters</th></tr></thead><tbody>${G.ga4Events.map(([n, w, p]) => `<tr><td><code>${n}</code></td><td>${w}</td><td><code>${p}</code></td></tr>`).join('')}</tbody></table></div>`;
-    $('[data-pb="ga4Steps"]').innerHTML = G.ga4Steps;
+    $('[data-pb="ga4Events"]').innerHTML = `<p class="dash-fine">${G.ga4Page}</p><div class="rk-scroll"><table class="pb-table"><thead><tr><th>Event</th><th>When it fires</th><th>Parameters</th></tr></thead><tbody>${G.ga4Events.map(([n, w, p]) => (!w ? `<tr class="pb-sec"><td colspan="3">${n.replace(/—/g, '').trim()}</td></tr>` : `<tr><td><code>${n}</code></td><td>${w}</td><td><code>${p}</code></td></tr>`)).join('')}</tbody></table></div>`;
+    $('[data-pb="ga4Steps"]').innerHTML = G.ga4Steps.replace('{{PARAMS}}', G.ga4Params.join(', ')).replace('{{DIMS}}', G.ga4Dims.join(', ')).replace('{{METRICS}}', G.ga4Metrics.join(', '));
     $('[data-pb="utm"]').innerHTML = G.utm;
     $('[data-pb="looker"]').innerHTML = G.looker;
     $('[data-pb="socialSetup"]').innerHTML = G.socialSetup;
@@ -384,6 +385,32 @@ export function initHQ({ root, api, show }) {
       el.innerHTML = `<ul class="td-mini">${its.map((t) => `<li class="${isDone(t) ? 'is-done' : ''}">${isDone(t) ? '✓' : '○'} ${esc(t.title)}</li>`).join('')}</ul><p><button type="button" class="linkish" data-go="todo">Check these off on the To-Do tab →</button></p>`;
     });
   }
+
+  /* ================================================================ GTM import file */
+  function gtmFile(gid) {
+    const T = (key, value) => ({ type: 'TEMPLATE', key, value });
+    const names = ['page_type', 'content_group', 'post_tag', 'post_topics', 'published', ...PB.guides.ga4Params];
+    let id = 10;
+    const variable = [
+      { accountId: '0', containerId: '0', variableId: String(id++), name: 'Const - GA4 Measurement ID', type: 'c', parameter: [T('value', gid)] },
+      ...names.map((n) => ({ accountId: '0', containerId: '0', variableId: String(id++), name: `DLV - ${n}`, type: 'v', parameter: [{ type: 'INTEGER', key: 'dataLayerVersion', value: '2' }, { type: 'BOOLEAN', key: 'setDefaultValue', value: 'false' }, T('name', n)] })),
+    ];
+    const trigger = [{ accountId: '0', containerId: '0', triggerId: '2', name: 'CE - Mow It Tall events', type: 'CUSTOM_EVENT',
+      customEventFilter: [{ type: 'MATCH_REGEX', parameter: [T('arg0', '{{_event}}'), T('arg1', '.*')] }],
+      filter: [{ type: 'STARTS_WITH', parameter: [T('arg0', '{{Event}}'), T('arg1', 'gtm.'), { type: 'BOOLEAN', key: 'negate', value: 'true' }] }] }];
+    const params = ['page_type', 'post_tag', 'post_topics', ...PB.guides.ga4Params];
+    const tag = [{ accountId: '0', containerId: '0', tagId: '3', name: 'GA4 - Event - Mow It Tall (all site events)', type: 'gaawe',
+      parameter: [{ type: 'BOOLEAN', key: 'sendEcommerceData', value: 'false' }, T('eventName', '{{Event}}'), T('measurementIdOverride', '{{Const - GA4 Measurement ID}}'),
+        { type: 'LIST', key: 'eventSettingsTable', list: params.map((n) => ({ type: 'MAP', map: [T('parameter', n), T('parameterValue', `{{DLV - ${n}}}`)] })) }],
+      firingTriggerId: ['2'], tagFiringOption: 'ONCE_PER_EVENT' }];
+    return { exportFormatVersion: 2, exportTime: new Date().toISOString().replace('T', ' ').slice(0, 19), containerVersion: { accountId: '0', containerId: '0', containerVersionId: '0', tag, trigger, variable, builtInVariable: [{ accountId: '0', containerId: '0', type: 'EVENT', name: 'Event' }] } };
+  }
+  $('[data-gtm-form]').addEventListener('submit', (e) => {
+    e.preventDefault();
+    const gid = $('[data-gtm-id]').value.trim().toUpperCase();
+    const blob = new Blob([JSON.stringify(gtmFile(gid), null, 2)], { type: 'application/json' });
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'mowittall-gtm-ga4-events.json'; a.click();
+  });
 
   /* ================================================================ settings: Looker + profile links */
   const PLATS = ['instagram', 'facebook', 'youtube', 'tiktok', 'x', 'threads', 'pinterest', 'reddit', 'nextdoor', 'bluesky', 'linkedin'];
@@ -403,6 +430,59 @@ export function initHQ({ root, api, show }) {
     };
   }
 
+  /* ================================================================ SHORT LINKS */
+  const ORIGIN = 'https://mowittall.com';
+  const STARTER = [
+    ['quiz', '/plan/', 'The quiz'], ['water', '/resources/#water-h', 'Should I water?'], ['seed', '/resources/#seed', 'Can I seed now?'],
+    ['calc', '/resources/#calc', 'Lawn calculator'], ['help', '/resources/#dx', 'What’s wrong with my lawn?'], ['weeds', '/weeds/', 'Weed ID'],
+    ['bio', '/links/?utm_source=bio&utm_medium=social', 'Generic bio link'], ['door', '/plan/?utm_source=door_note&utm_medium=qr', 'Door-note QR code'],
+    ['vote', '/hall/', 'Hall of Fame'], ['calendar', '/calendar/', 'Lawn calendar'],
+  ];
+  let links = [];
+  const slForm = $('[data-sl-form]');
+  function qrSvg(text) { const q = qrcode(0, 'M'); q.addData(text); q.make(); return q.createSvgTag({ cellSize: 6, margin: 2, scalable: true }); }
+  function renderLinks() {
+    $('[data-sl-list]').innerHTML = links.length ? links.map((l) => `<li class="sl-item" data-sl="${esc(l.slug)}">
+      <p class="sl-short"><b>mowittall.com/${esc(l.slug)}</b>${l.permanent ? ' <span class="dash-pill">301</span>' : ''}</p>
+      <p class="sl-to">→ <a href="${esc(l.target)}" target="_blank" rel="noopener">${esc(l.target)}</a></p>
+      ${l.note ? `<p class="dash-fine">${esc(l.note)}</p>` : ''}
+      <p class="dash-fine">${l.clicks} click${l.clicks === 1 ? '' : 's'}${l.last_click ? ` · last ${ago(l.last_click)}` : ''}</p>
+      <p class="sl-btns"><button type="button" class="btn btn-small" data-sl-copy>Copy</button><button type="button" class="btn btn-small btn-quiet" data-sl-edit>Edit</button><button type="button" class="btn btn-small btn-quiet" data-sl-qr>QR Code</button><button type="button" class="btn btn-small btn-quiet" data-sl-del>Delete</button></p>
+      <div class="sl-qr" hidden></div></li>`).join('') : '<li class="hall-msg">No short links yet. Make one above, or add the starter set.</li>';
+  }
+  async function loadLinks() { links = (await api('/api/admin/links')).links; renderLinks(); }
+  function resetForm() { slForm.reset(); $('[data-sl-old]').value = ''; $('[data-sl-cancel]').hidden = true; $('[data-sl-save]').textContent = 'Save Short Link'; }
+  slForm.addEventListener('submit', async (e) => {
+    e.preventDefault(); const msg = $('[data-sl-msg]');
+    const old = $('[data-sl-old]').value;
+    try {
+      await api('/api/admin/links', { method: 'POST', body: JSON.stringify({ action: old ? 'update' : 'create', oldSlug: old || undefined, slug: $('[data-sl-slug]').value, target: $('[data-sl-target]').value, note: $('[data-sl-note]').value, permanent: $('[data-sl-perm]').checked }) });
+      msg.textContent = 'Saved. Live within a minute.'; resetForm(); loadLinks();
+    } catch (err) { msg.textContent = err.message; }
+  });
+  $('[data-sl-cancel]').addEventListener('click', resetForm);
+  $('[data-sl-starter]').addEventListener('click', async () => {
+    const have = new Set(links.map((l) => l.slug)); let n = 0;
+    for (const [slug, target, note] of STARTER) if (!have.has(slug)) { try { await api('/api/admin/links', { method: 'POST', body: JSON.stringify({ action: 'create', slug, target, note }) }); n++; } catch { /* skip */ } }
+    $('[data-sl-msg]').textContent = n ? `Added ${n} short links.` : 'You already have them all.'; loadLinks();
+  });
+  $('[data-sl-list]').addEventListener('click', async (e) => {
+    const li = e.target.closest('[data-sl]'); if (!li) return; const l = links.find((x) => x.slug === li.dataset.sl); const full = `${ORIGIN}/${l.slug}`;
+    if (e.target.matches('[data-sl-copy]')) { try { await navigator.clipboard.writeText(full); e.target.textContent = 'Copied!'; setTimeout(() => (e.target.textContent = 'Copy'), 1500); } catch { prompt('Copy this:', full); } }
+    if (e.target.matches('[data-sl-edit]')) {
+      $('[data-sl-old]').value = l.slug; $('[data-sl-slug]').value = l.slug; $('[data-sl-target]').value = l.target; $('[data-sl-note]').value = l.note || ''; $('[data-sl-perm]').checked = !!l.permanent;
+      $('[data-sl-cancel]').hidden = false; $('[data-sl-save]').textContent = 'Save Changes'; slForm.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+    if (e.target.matches('[data-sl-del]') && confirm(`Delete mowittall.com/${l.slug}? Anyone using it will land on a 404.`)) { await api('/api/admin/links', { method: 'POST', body: JSON.stringify({ action: 'delete', slug: l.slug }) }); loadLinks(); }
+    if (e.target.matches('[data-sl-qr]')) {
+      const box = li.querySelector('.sl-qr'); box.hidden = !box.hidden;
+      if (!box.hidden && !box.innerHTML) {
+        const svg = qrSvg(full);
+        box.innerHTML = `${svg}<p><a download="mowittall-${esc(l.slug)}-qr.svg" href="data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}">Download QR (SVG, prints sharp at any size)</a></p>`;
+      }
+    }
+  });
+
   /* ================================================================ boot */
   (async () => {
     try {
@@ -410,7 +490,7 @@ export function initHQ({ root, api, show }) {
       PB = r.playbook; custom = r.custom; state = Object.fromEntries(r.state.map((s) => [s.id, s]));
       renderTodos(); renderGuides();
       for (const n of Object.keys(AGENT_NAMES)) kvGet(`agent:${n}`).then((v) => renderAgent(n, v)).catch(() => {});
-      loadRank().catch(() => {}); loadAeo().catch(() => {}); loadSettings().catch(() => {});
+      loadRank().catch(() => {}); loadLinks().catch(() => {}); loadAeo().catch(() => {}); loadSettings().catch(() => {});
     } catch (err) { $('[data-todo-list]').innerHTML = `<p class="hall-msg">Couldn’t load the playbook: ${esc(err.message)}</p>`; }
   })();
 }

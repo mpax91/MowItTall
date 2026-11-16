@@ -98,7 +98,7 @@ const tries = ['dog pee', 'crabgrass', 'spreader setting', 'when to seed', 'lime
       if (r === null || mine !== seq) return;
       hits = r.results;
       shown = 0;
-      clearTimeout((window as any).__mitSrch); (window as any).__mitSrch = setTimeout(() => (window as any).mitTrack?.('search', { search_term: q.trim().toLowerCase().slice(0, 80), results_count: hits.length }), 1200);
+      clearTimeout((window as any).__mitSrch); (window as any).__mitSrch = setTimeout(() => (window as any).mitTrack?.(hits.length ? 'search' : 'search_no_results', { search_term: q.trim().toLowerCase().slice(0, 80), search_location: 'site', results_count: hits.length }), 1200);
       status.textContent = hits.length ? `${hits.length} result${hits.length === 1 ? '' : 's'}` : 'Nothing. Either it’s not here yet or you spelled crabgrass wrong.';
       await renderMore();
     } catch {

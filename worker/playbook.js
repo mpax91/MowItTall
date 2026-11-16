@@ -24,14 +24,17 @@ export const TODOS = [
   { id: 'd-og', group: 'done', done: true, title: 'Share cards for every page', body: 'Every page, post and guide now has its own 1200×630 share image (green game-window card with the title), so links look great in iMessage, texts, email, Facebook, LinkedIn, X and Slack. Plus og:image size/type/alt tags and Twitter cards.' },
   { id: 'd-crumbs', group: 'done', done: true, title: 'Breadcrumbs', body: 'Visible breadcrumbs on pages two levels deep (Home › Lawn 101 › Lawn Weeds, Home › Guides › …) and BreadcrumbList structured data on every inner page.' },
   { id: 'd-guides', group: 'done', done: true, title: '10 SEO guides at /guides/', body: 'Straight-answer articles for big searches: mowing height, when to overseed, crabgrass preventer timing, watering, when to fertilize, grubs, aeration, when to stop mowing, bare spots, moss. Linked from the footer, Lawn 101 answers and the bottom of related blog posts, not the homepage. Each has a Short Answer box, FAQ, sources and links back to the funny posts.' },
-  { id: 'd-tech', group: 'done', done: true, title: 'Technical SEO cleanup', body: 'Fixed blog canonicals (they pointed at addresses without the trailing slash, which redirect). Search, merch, admin and 404 are now noindex. Sitemap has last-modified dates and skips those pages. robots.txt blocks /admin/ and /api/. Organization + Person structured data. Title-cased and keyword-first page titles. Caching and security headers.' },
+  { id: 'd-tech', group: 'done', done: true, title: 'Technical SEO cleanup', body: 'Fixed blog canonicals (they pointed at addresses without the trailing slash, which redirect). Search, admin, 404 and the link page are noindex. Sitemap has last-modified dates and skips those pages. robots.txt blocks /admin/ and /api/. Organization + Person structured data. Title-cased and keyword-first page titles. Caching and security headers.' },
   { id: 'd-aeo', group: 'done', done: true, title: 'llms.txt for AI answer engines', body: '<a href="/llms.txt" target="_blank">mowittall.com/llms.txt</a> lists every guide, tool and post with a one-line summary and your core advice, built automatically on every deploy.' },
   { id: 'd-pwa', group: 'done', done: true, title: 'App icons and install manifest', body: 'Home-screen icons (Android, iPhone), a web app manifest with shortcuts (Plan, Calendar, Weeds). Step one of the app.' },
   { id: 'd-ga4', group: 'done', done: true, title: 'GA4 events in the code', body: 'The site now sends 19 events into GTM’s dataLayer (quiz start/steps/complete, calendar downloads, tool use, games, shares, search, plan button clicks, Hall votes/uploads, tips, location, yard size) plus page_type and content_group on every page. <b>They reach GA4 only after you set up the GTM tag</b> (next group).' },
+  { id: 'd-shortlinks', group: 'done', done: true, title: 'Short links (HQ → Short Links)', body: 'Make mowittall.com/anything point anywhere: add, edit, delete, see clicks and download a print-ready QR code. No code needed. Try the starter set.' },
+  { id: 'd-ga4v2', group: 'done', done: true, title: 'Full event tracking (50+ events)', body: 'Every quiz question (with drop-off and abandon), blog and site searches (plus searches with no results), outbound clicks, forms, FAQs, scroll depth and finished articles, nav clicks, card flips, picker choices, measure tool steps, prints, 404s and script errors. Email, subscribe, sign-up, program and donate events are reserved and documented for when those features exist. Full list on the Analytics tab.' },
+  { id: 'd-merch', group: 'done', done: true, title: 'Merch page visible to Google again', body: 'Removed the noindex and put it back in the sitemap.' },
   { id: 'd-hq', group: 'done', done: true, title: 'HQ: to-dos, SEO agents, rank tracker, guides', body: 'This list, the SEO & AEO tab (agents, rank tracker, AI answer log), Analytics tab (GA4/GTM/Clarity/Looker steps), social setup plan and Build Plan tab.' },
 
   /* ---------- launch */
-  { id: 'l-gtm', group: 'launch', pri: 'now', who: 'You', time: '30 min', link: 'analytics', title: 'Set up the GA4 event tag in Google Tag Manager', body: 'The site is sending events, but GTM has to forward them to GA4. Follow <b>Analytics tab → Step 1–4</b>. Without this, GA4 only sees page views.' },
+  { id: 'l-gtm', group: 'launch', pri: 'now', who: 'You', time: '15 min', link: 'analytics', title: 'Set up the GA4 event tag in Google Tag Manager', body: 'The site is sending 50+ events, but GTM has to forward them to GA4. Fastest: Analytics tab → <b>GTM import file</b> → download → GTM Import Container (Merge). Then Preview and Publish. Without this, GA4 only sees page views.' },
   { id: 'l-ai-bots', group: 'launch', pri: 'now', who: 'You', time: '5 min', title: 'Make sure Cloudflare isn’t blocking AI search crawlers', body: 'Cloudflare can block AI bots by default on new domains, which would hide you from ChatGPT, Perplexity and Claude answers.<ol><li>Cloudflare dashboard → mowittall.com → <b>AI Crawl Control</b> (older accounts: Security → Bots).</li><li>Turn <b>off</b> “Block AI bots” and don’t let Cloudflare manage your robots.txt with AI blocks.</li><li>If you’d rather block AI <i>training</i> but allow AI <i>search</i>: allow OAI-SearchBot, ChatGPT-User, PerplexityBot, Claude-SearchBot, Claude-User; block GPTBot, ClaudeBot, CCBot, Google-Extended. For max AEO, allow all.</li><li>Open <a href="/robots.txt" target="_blank">mowittall.com/robots.txt</a> and confirm it only says Allow / plus Disallow /admin/ and /api/.</li></ol>' },
   { id: 'l-sitemap', group: 'launch', pri: 'now', who: 'You', time: '5 min', title: 'Submit the sitemap to Google and Bing', body: '<ol><li>Search Console → Indexing → Sitemaps → enter <code>sitemap-index.xml</code> → Submit. Status should say Success.</li><li>Bing Webmaster Tools → Sitemaps → Submit sitemap → <code>https://mowittall.com/sitemap-index.xml</code>.</li><li>Resubmitting isn’t needed after deploys: Google rereads it, and Bing gets every change through IndexNow automatically.</li></ol>' },
   { id: 'l-inspect', group: 'launch', pri: 'now', who: 'You', time: '10 min', title: 'Ask Google to index your best pages', body: 'Search Console → URL Inspection (top search bar) → paste a URL → Request indexing. Do about 10 a day (Google limits it): home, /plan/, /guides/, /weeds/, /calendar/, /measure/, then the guides and your best posts.' },
@@ -66,6 +69,26 @@ export const TODOS = [
   { id: 's-weekly', group: 'seo', pri: 'now', who: 'You', time: '15 min / week', link: 'seo', title: 'Do the Monday SEO routine', body: 'Export Search Console, upload to the Rank Tracker, run the agents, check the indexing report. The checklist is at the top of the SEO & AEO tab. Uncheck this each week if you like it as a reminder.' },
   { id: 's-aeo-log', group: 'seo', pri: 'soon', who: 'You', time: '20 min / month', link: 'seo', title: 'Log whether AI engines quote you (monthly)', body: 'SEO & AEO tab → AI Answer Log. One-tap links ask ChatGPT, Perplexity, Google, Copilot and Claude your target questions; tick when they cite mowittall.com. Track it monthly.' },
   { id: 's-backlinks', group: 'seo', pri: 'soon', who: 'You', time: 'ongoing', title: 'Earn local links', body: '<ul><li>The Bedford Bee: a link to Mow It Tall in a story or the footer (fair game, it’s yours).</li><li>Local garden clubs, the library, Katonah/Bedford community groups and PTA newsletters: offer a free “lawn in 10 minutes” talk or tip sheet.</li><li>Patch, Westchester Magazine, The Journal News, River Journal: pitch the Halloween Super Bowl or mowing etiquette as a fun seasonal story.</li><li>Answer reporter requests on Qwoted, Featured.com or Help a B2B Writer as a homeowner lawn expert.</li><li>YouTube descriptions and Pinterest pins link back too.</li></ul>' },
+  { id: 's-competitors', group: 'seo', pri: 'soon', who: 'You', time: 'read 5 min', title: 'Know who you’re up against (and how to beat them)', body: '<p>Who ranks today for your core searches (checked Nov 15):</p><ul>' +
+    '<li><b>Lawn service marketplaces with huge blogs:</b> Lawn Love (lawnlove.com) and LawnStarter: thousands of how-to and state-by-state pages (“best time to plant grass in the Northeast”). Biggest competitors on almost every term.</li>' +
+    '<li><b>Programmatic city sites:</b> lawnbyseason.com has an auto-generated page per city (Manhattan, Brooklyn, Poughkeepsie, Stamford…) for overseeding, aeration and pre-emergent timing. Direct competitor on “when to overseed in [town]”. Their weakness: generic, no real person, no photos.</li>' +
+    '<li><b>Brands selling product:</b> Jonathan Green (“When to Overseed Lawn in New York”), Scotts, Pennington, The Andersons, GreenView, Sunday. Strong domains, but every answer ends in “buy our bag”.</li>' +
+    '<li><b>Big home publishers:</b> Bob Vila, The Spruce, HGTV, Home Depot, Angi, Tom’s Guide, House Digest. Win on broad terms like “how to stripe your lawn” and “lawn care calendar”.</li>' +
+    '<li><b>DIY lawn sites:</b> Lawn Phix (a New England lawn calendar), DoMyOwn, plus YouTube creators like the Lawn Care Nut. Closest to your audience.</li>' +
+    '<li><b>Universities:</b> Cornell, Penn State, UConn and UMass extension pages. Trusted by Google; you cite them rather than fight them.</li>' +
+    '<li><b>Local landscapers’ blogs</b> on Westchester terms (“crabgrass Westchester County NY”), and Reddit threads.</li></ul>' +
+    '<p><b>Where you win:</b> 1) <i>local</i> (Bedford/Westchester/Lower Hudson Valley timing with the live soil reading; nobody national does that well), 2) <i>tools</i> (calculator, seed-now, rain meter, quiz: things people bookmark and link to), 3) <i>a real person with real stripes</i> (photos, video, first-person proof that Google’s “experience” signals reward), 4) <i>funny and shareable</i> (gets links and social shares the brands can’t). Don’t chase “lawn care tips” head-on yet. Go after local and long-tail searches first (“when to overseed in Westchester”, “crabgrass preventer Bedford NY”, “holiday lawn fertilizer schedule”), then broader ones as links build up.</p>' +
+    '<p>Check yourself monthly: search your target terms in a private window and note who’s above you in the AI Answer Log.</p>' },
+  { id: 's-linkplan', group: 'seo', pri: 'soon', who: 'You', time: '2 hr / month', title: 'External link plan: get other sites to link to you', body: '<p>Links from other sites are the biggest thing between you and page one. In order of payoff:</p><ol>' +
+    '<li><b>Local first (easiest, most relevant):</b> The Bedford Bee (a story or footer link), Katonah/Bedford/Pound Ridge community Facebook groups and newsletters, the Katonah Village Library, garden clubs (Bedford Garden Club, Katonah Garden Club), the Bedford Historical Society, PTA newsletters, the American Legion post site, local Patch and River Journal. Offer a free tip sheet, a “Lawn in 10 Minutes” talk, or the Halloween Super Bowl bit as a fun seasonal piece.</li>' +
+    '<li><b>Local press pitches (twice a year):</b> spring (“The neighbor-approved rules of mowing etiquette”) and fall (“Why Halloween is the Super Bowl of lawns”) to The Journal News/lohud, Westchester Magazine, Patch, News 12 Westchester. Short email, your photo, the post link.</li>' +
+    '<li><b>Be the quote:</b> sign up as a source on Qwoted, Featured.com and Help a B2B Writer. Reporters at Bob Vila, The Spruce, House Digest and Real Simple constantly need a homeowner “lawn expert” quote, and they link the site.</li>' +
+    '<li><b>Linkable assets (I build, you promote):</b> the lawn calculator, holiday feeding schedule, mowing etiquette checker, the soil-temperature tracker and a yearly “Westchester Lawn Report” with your Hall votes and soil data. Original data and free tools are what bloggers link to.</li>' +
+    '<li><b>Communities (links + AI citations):</b> helpful answers on Reddit (r/lawncare, r/Westchester, r/homeowners), the Lawn Care Nut Facebook group, and Quora. Link only when your page is the best answer.</li>' +
+    '<li><b>Your own channels:</b> YouTube descriptions, Pinterest pins (each pin is a link), Instagram link-in-bio, Nextdoor posts, your LinkedIn and Bedford Bee bios.</li>' +
+    '<li><b>Partners:</b> local hardware and garden centers (a printed QR card by the seed aisle pointing to mowittall.com/seed), and friendly lawn YouTubers (guest video or a stripe challenge).</li>' +
+    '<li><b>Fix lost links:</b> when the 404 report in GA4 (page_not_found) shows a broken incoming link, add a short link or redirect.</li></ol>' +
+    '<p><b>Never:</b> buy links, join link swaps or “guest post” farms, or use blog networks. Google penalizes them. Five real local links beat 500 junk ones. Track every link you earn in a to-do so you remember to thank them.</p>' },
   { id: 's-gsc-fix', group: 'seo', pri: 'soon', who: 'Both', time: 'as needed', title: 'Fix anything in Search Console → Indexing → Pages', body: '“Crawled, currently not indexed” on a guide or post = make it more useful or link to it more. “Duplicate without user-selected canonical” = tell me the URL. “Not found (404)” = tell me; I add a redirect.' },
   { id: 's-speed', group: 'seo', pri: 'later', who: 'Both', time: '15 min', title: 'Run PageSpeed on the top 5 pages', body: 'Run the agent’s PageSpeed links (SEO tab → Page Check → results) for home, /plan/, /weeds/, /measure/ and your top post. Send me anything under 90 on mobile.' },
   { id: 's-refresh', group: 'seo', pri: 'later', who: 'Both', time: 'seasonal', title: 'Refresh seasonal posts before their season', body: 'Six weeks before each season, update the matching posts and guides (crabgrass in March, overseeding in July, Halloween in September) and bump their <code>updated:</code> date. Only when something real changed.' },
@@ -107,6 +130,7 @@ export const TODOS = [
   /* ---------- crm */
   { id: 'm-service', group: 'crm', pri: 'soon', who: 'You', time: '10 min', link: 'members', title: 'Pick the email service', body: 'Resend (simplest, free to ~3,000 emails/month) or Postmark (best delivery). Or a newsletter tool (beehiiv, Kit) if you mostly want newsletters. This unlocks everything below.' },
   { id: 'm-address', group: 'crm', pri: 'soon', who: 'You', time: '', title: 'Choose a mailing address for emails', body: 'Marketing emails need a physical address in the footer. A PO box or a virtual mailbox works.' },
+  { id: 'm-ping', group: 'crm', pri: 'soon', who: 'Claude', time: '1 hr', title: 'Get pinged when someone signs up for a program', body: '<p><b>My recommendation:</b> build it into the CRM rather than as a separate Apps Script project. When someone joins (email plan, drip course, alerts, texts), the Worker already has the sign-up in hand, so it can (1) email you instantly through the same email service, (2) add a line to the Members tab, and (3) optionally post a row to a Google Sheet.</p><p><b>If you want the Sheet now</b> (before the CRM): make a Google Sheet → Extensions → Apps Script → paste a 15-line <code>doPost</code> script I write that appends a row and emails you with <code>MailApp</code> → Deploy as a web app (“Anyone”) → send me the URL. The Worker posts each sign-up to it. Free, no API keys (just that private URL, which I store as a Cloudflare secret). Hall uploads can use the same hook.</p>' },
   { id: 'm-phase1', group: 'crm', pri: 'soon', who: 'Claude', time: '1 day', title: 'Phase 1: “Email me my plan + reminders”', body: 'On the quiz results. Sends their plan, then holiday feeding, crabgrass and seeding reminders. Double opt-in, one-click unsubscribe. Sign-ups show on the Members tab. Becomes the main GA4 key event (generate_lead).' },
   { id: 'm-drip', group: 'crm', pri: 'soon', who: 'Both', time: '', title: 'Drip: “Your First Great Lawn” 6-week email course', body: 'One short email a week after signing up, matched to the season. I draft, you edit. Doubles as the free course (see Ebook and Course).' },
   { id: 'm-accounts', group: 'crm', pri: 'later', who: 'Claude', time: '2–3 days', title: 'Phase 2: Accounts and profiles', body: 'Magic-link sign-in (no passwords). Saves their plan, yard map, grass, done list, ZIP and progress photos across devices. Members list, search and delete on the Members tab.' },
@@ -128,6 +152,7 @@ export const TODOS = [
 
   /* ---------- money */
   { id: '$-stripe', group: 'money', pri: 'soon', who: 'You', time: '20 min', link: 'money', title: 'Stripe tip link', body: 'Make a “Buy Mike a beer” Payment Link and send it to me. Every beer box on the site lights up.' },
+  { id: '$-thanks', group: 'money', pri: 'soon', who: 'Claude', time: '20 min', title: 'Thank-you page so paid tips are tracked', body: 'When the Stripe Payment Link exists, set its “after payment” redirect to mowittall.com/thanks/. I build that page (funny, with a share prompt) and fire the <code>donate</code> event with the amount, so GA4 shows real tips, not just clicks.' },
   { id: '$-affiliate', group: 'money', pri: 'later', who: 'Both', time: '', title: 'Affiliate links (gear shelf)', body: 'Amazon Associates and Home Depot (through Impact). Needs a disclosure line on any page with links, and the Esri map terms checked before commercial use. Start with a “Mike’s gear shelf” page.' },
   { id: '$-merch', group: 'money', pri: 'later', who: 'Both', time: '', title: 'Merch', body: 'Print-on-demand (Printful or Printify) through Stripe or Shopify Starter. “Mow It TALL” hats first.' },
 
@@ -240,45 +265,93 @@ export const GUIDES = {
 
   /* ===== Analytics tab ===== */
   ga4Events: [
-    ['quiz_start', 'Tapped Next on the first quiz question', 'quiz_name'],
-    ['quiz_step', 'Answered each quiz question (funnel)', 'quiz_name, step_number, step_type'],
-    ['quiz_complete', '<b>Finished the quiz and saw their plan (main conversion)</b>', 'quiz_name, effort_level, lawn_profile, grass_pick, task_count'],
-    ['calendar_download', 'Downloaded an .ics calendar (quiz plan, /calendar/, holiday schedule, seed tracker)', 'file_name, tool_name'],
-    ['file_download', 'Saved another file made on the page (yard map image)', 'file_name, file_extension'],
-    ['tool_use', 'First real interaction with a tool or widget on that page view', 'tool_name'],
-    ['game_complete', 'Finished a game round', 'game_name, level_name, score, new_best, coverage'],
-    ['share', 'Used the share sheet or copied a link/text', 'method, content_type, item_id'],
-    ['search', 'Searched the site (after they stop typing)', 'search_term, results_count'],
-    ['plan_cta_click', 'Tapped any button or link to the quiz', 'cta_location, cta_text'],
-    ['internal_link_click', 'Tapped a related post/guide/topic link', 'link_url, link_area'],
-    ['location_set', 'Set their ZIP or used GPS', 'zip3, method'],
+    ['— Quiz (the funnel) —', '', ''],
+    ['quiz_start', 'Tapped Next on the first question', 'quiz_name'],
+    ['quiz_step', 'Answered a question (one per question, so you see drop-off at each)', 'quiz_name, step_number, question_id, step_type, answer (ZIP → first 3 digits)'],
+    ['quiz_back', 'Went back a question', 'quiz_name, step_number, question_id'],
+    ['quiz_abandon', 'Left the page mid-quiz', 'quiz_name, step_number, question_id'],
+    ['quiz_complete', '<b>Finished and saw their plan (main conversion)</b>', 'quiz_name, effort_level, lawn_profile, grass_pick, task_count'],
+    ['quiz_result_click', 'Tapped a link in their plan', 'link_url, link_text'],
+    ['quiz_print', 'Printed / saved the plan as PDF', 'quiz_name'],
+    ['quiz_retake', 'Started over', 'quiz_name'],
+    ['— Tools —', '', ''],
+    ['tool_use', 'First real interaction with any tool on the page', 'tool_name'],
+    ['tool_choice', 'Tapped an option in a picker (damage report, hire it, do I need, etc.)', 'tool_name, choice'],
+    ['card_flip', 'Flipped a tip card, calendar card or weed card', 'card_id'],
+    ['calendar_download', '<b>Downloaded an .ics calendar</b> (plan, /calendar/, holidays, seed tracker)', 'file_name, tool_name'],
+    ['file_download', 'Saved another file (yard map image)', 'file_name, file_extension'],
+    ['measure_open', 'Opened the full-screen yard measurer', 'area_count'],
+    ['measure_area_added', 'Finished drawing an area', 'area_count'],
     ['yard_measured', 'Saved a yard measurement', 'yard_size'],
+    ['location_set', 'Set their ZIP or used GPS', 'zip3, method'],
+    ['— Search —', '', ''],
+    ['search', 'Searched (site search page or the blog search box), after they stop typing', 'search_term, search_location (site / blog), results_count, topic'],
+    ['search_no_results', 'Searched and got nothing: your next article ideas', 'search_term, search_location'],
+    ['blog_filter', 'Tapped a topic chip on the blog', 'topic'],
+    ['— Reading and navigation —', '', ''],
+    ['scroll_depth', 'Read 25 / 50 / 75 / 90% of a post or guide', 'percent'],
+    ['article_complete', 'Reached the end of a post or guide', 'read_seconds'],
+    ['faq_open', 'Opened an FAQ answer', 'question'],
+    ['details_open', 'Opened any other expandable section', 'question'],
+    ['internal_link_click', 'Tapped a related post / guide / topic link', 'link_url, link_area'],
+    ['nav_click', 'Tapped a header, footer or breadcrumb link', 'nav_area, link_text, link_url'],
+    ['plan_cta_click', 'Tapped any button or link to the quiz', 'cta_location, cta_text'],
+    ['outbound_click', 'Clicked out to another website', 'link_domain, link_url, link_text, link_area'],
+    ['contact_click', 'Tapped an email, phone or text link', 'method, link_text'],
+    ['print_page', 'Printed any page', '(none)'],
+    ['— Community and sharing —', '', ''],
+    ['share', 'Used the share sheet or copied a link/text', 'method, content_type, item_id'],
+    ['form_submit', 'Submitted any form', 'form_id, form_location'],
+    ['hall_upload', '<b>Submitted a Hall photo</b>', 'board'],
     ['hall_vote', 'Voted in the Hall', 'vote'],
-    ['hall_upload', 'Submitted a Hall photo', 'board'],
-    ['tip_click', 'Tapped a Buy Me a Beer link', 'amount'],
-    ['social_profile_click', 'Tapped a social profile link in the footer', 'platform'],
-    ['link_page_click', 'Tapped a button on the /links/ link-in-bio page', 'target'],
-    ['app_installed', 'Installed the site to their home screen (Android/desktop)', '(none)'],
+    ['neighbor_send', 'Printed a neighbor door note', 'method'],
+    ['game_complete', 'Finished a game round', 'game_name, level_name, score, new_best, coverage'],
+    ['social_profile_click', 'Tapped a social profile link', 'platform'],
+    ['link_page_click', 'Tapped a button on /links/', 'target'],
+    ['app_installed', 'Installed the site to their home screen', '(none)'],
+    ['— Money —', '', ''],
+    ['tip_click', 'Tapped a Buy Me a Beer link (intent)', 'amount'],
+    ['— Site health —', '', ''],
+    ['page_not_found', 'Landed on the 404 page (find broken links)', 'page_path, page_referrer'],
+    ['js_error', 'A script broke on the page (max 3 per page)', 'error_message, error_source'],
+    ['— Reserved: fire once these features exist —', '', ''],
+    ['generate_lead', '<b>Email submitted</b> (“email me my plan”, ebook download). Main key event once live.', 'method, form_id'],
+    ['newsletter_subscribe', 'Confirmed the double opt-in email', 'method'],
+    ['sign_up', 'Created an account', 'method'],
+    ['login', 'Signed in', 'method'],
+    ['program_join', 'Joined a program (drip course, alerts, texts)', 'program_name'],
+    ['donate', '<b>Tip actually paid</b> (Stripe sends them to a thank-you page)', 'value, currency'],
+    ['purchase', 'Bought merch, the ebook or the course', 'value, currency, items'],
   ],
+  ga4Params: ['quiz_name', 'step_number', 'question_id', 'step_type', 'answer', 'effort_level', 'lawn_profile', 'grass_pick', 'task_count', 'game_name', 'level_name', 'score', 'new_best', 'coverage', 'tool_name', 'choice', 'file_name', 'file_extension', 'search_term', 'search_location', 'results_count', 'topic', 'method', 'content_type', 'item_id', 'cta_location', 'cta_text', 'link_url', 'link_text', 'link_area', 'link_domain', 'nav_area', 'card_id', 'question', 'form_id', 'form_location', 'percent', 'read_seconds', 'zip3', 'yard_size', 'area_count', 'vote', 'board', 'amount', 'platform', 'target', 'page_path', 'page_referrer', 'error_message', 'error_source', 'program_name', 'value', 'currency'],
+  ga4Dims: ['page_type', 'post_tag', 'post_topics', 'quiz_name', 'step_number', 'question_id', 'answer', 'effort_level', 'lawn_profile', 'grass_pick', 'game_name', 'level_name', 'tool_name', 'choice', 'search_term', 'search_location', 'topic', 'method', 'content_type', 'cta_location', 'cta_text', 'link_area', 'link_domain', 'link_url', 'nav_area', 'card_id', 'question', 'form_id', 'zip3', 'yard_size', 'vote', 'board', 'platform', 'target', 'file_name', 'page_referrer', 'error_message', 'program_name'],
+  ga4Metrics: ['score', 'task_count', 'results_count', 'percent', 'read_seconds', 'area_count', 'coverage', 'amount'],
   ga4Page: 'Every page also pushes <code>page_type</code> (home, post, guide, tool, hub, topic, fun, page) and <code>content_group</code> (Blog posts, Guides, Tools, Hubs, Home, …) before GTM loads, plus <code>post_tag</code>, <code>post_topics</code> and <code>published</code> on posts and guides.',
   ga4Steps: `
 <h4>Step 1. The Google tag (probably done)</h4>
 <p>GTM → Tags → you should have a <b>Google Tag</b> with your G- Measurement ID, firing on <b>Initialization – All Pages</b>. Open it → Configuration settings → add parameters: <code>content_group</code> = <code>{{DLV - content_group}}</code> and <code>page_type</code> = <code>{{DLV - page_type}}</code> (make those variables in Step 2 first). Now every page view carries its content group, and GA4’s built-in “Content group” dimension fills in.</p>
-<h4>Step 2. Data Layer Variables</h4>
-<p>GTM → Variables → User-Defined → New → <b>Data Layer Variable</b>. Make one per name below. Name each “DLV - name” and put the exact name in “Data Layer Variable Name”:</p>
-<p><code>page_type, content_group, post_tag, post_topics, published, quiz_name, step_number, step_type, effort_level, lawn_profile, grass_pick, task_count, game_name, level_name, score, new_best, coverage, tool_name, file_name, file_extension, search_term, results_count, method, content_type, item_id, cta_location, cta_text, link_url, link_area, zip3, yard_size, vote, board, amount, platform, target</code></p>
-<p>Tip: GTM → Admin → Import Container can do it in one go if you’d rather I build an import file. Ask.</p>
-<h4>Step 3. One trigger for all site events</h4>
-<p>Triggers → New → <b>Custom Event</b> → Event name:</p>
-<p><code>^(quiz_start|quiz_step|quiz_complete|calendar_download|file_download|tool_use|game_complete|share|search|plan_cta_click|internal_link_click|location_set|yard_measured|hall_vote|hall_upload|tip_click|social_profile_click|link_page_click|app_installed)$</code></p>
-<p>Check <b>Use regex matching</b> → All Custom Events → name it “CE - Mow It Tall events”.</p>
+<h4>Step 2–4, the fast way: import the ready-made container</h4>
+<p>Use the <b>GTM import file</b> box below: paste your G- Measurement ID, tap Download, then GTM → Admin → <b>Import Container</b> → choose the file → workspace: Existing (Default) → <b>Merge</b> → <b>Rename conflicting tags, triggers and variables</b> → Confirm. It adds one GA4 event tag, one trigger and a variable for every parameter. Then go to <b>Preview</b> (below). If the import errors out, do Steps 2–4 by hand.</p>
+<h4>Step 2. Data Layer Variables (by hand)</h4>
+<p>GTM → Variables → User-Defined → New → <b>Data Layer Variable</b>, one per name. Name each “DLV - name”, put the exact name in “Data Layer Variable Name”, version 2:</p>
+<p><code>page_type, content_group, post_tag, post_topics, published</code> plus every parameter in the events table: <code>{{PARAMS}}</code></p>
+<h4>Step 3. One trigger for every site event (never needs updating)</h4>
+<p>Triggers → New → <b>Custom Event</b> → Event name <code>.*</code> → check <b>Use regex matching</b> → This trigger fires on <b>Some Custom Events</b> → <code>Event</code> <b>does not start with</b> <code>gtm.</code> → name it “CE - Mow It Tall events”. New events I add later flow through automatically.</p>
 <h4>Step 4. One GA4 event tag</h4>
-<p>Tags → New → <b>Google Analytics: GA4 Event</b> → Measurement ID = your G- ID → Event Name = <code>{{Event}}</code> → Event Parameters: add a row for every DLV from Step 2 (Parameter name = the plain name, Value = the DLV). Parameters that a given event doesn’t have are simply left out. Trigger = “CE - Mow It Tall events”. Save.</p>
-<p>Then <b>Preview</b> (top right), open the site, take the quiz, download a calendar, play a game, search. Every event should show in Tag Assistant and in GA4 → Admin → DebugView. <b>Submit</b> → name the version “GA4 events v1” → Publish.</p>
+<p>Tags → New → <b>Google Analytics: GA4 Event</b> → Measurement ID → Event Name = <code>{{Event}}</code> → Event Parameters: one row per parameter (name = plain name, value = its DLV). Trigger = “CE - Mow It Tall events”. The site clears old parameters before every event, so values never leak from one event into the next, and a parameter an event doesn’t have is simply not sent.</p>
+<p><b>Preview</b> (top right) → open the site → take the quiz, download a calendar, search the blog, open an FAQ, click out to a source link. Every event shows in Tag Assistant and in GA4 → Admin → DebugView. <b>Submit</b> → name it “GA4 events v2” → Publish.</p>
+<p>Duplicate tip: GA4’s Enhanced measurement also logs outbound clicks as <code>click</code>. Keep it or turn “Outbound clicks” off; the site’s <code>outbound_click</code> has more detail.</p>
 <h4>Step 5. Custom dimensions and metrics</h4>
-<p>GA4 → Admin → Custom definitions → Create custom dimension (scope: <b>Event</b>). Dimension name and Event parameter the same:</p>
-<p><code>page_type, post_tag, post_topics, tool_name, quiz_name, step_number, effort_level, lawn_profile, grass_pick, game_name, level_name, cta_location, link_area, zip3, yard_size, method, content_type, board, vote, platform, target, search_term</code></p>
-<p>Custom metrics (Standard unit): <code>score, task_count, results_count</code>. Data only shows from the day you create them, so do this early. (<code>content_group</code> doesn’t need one; it’s built in.)</p>
+<p>GA4 → Admin → Custom definitions → Create custom dimension (scope <b>Event</b>; name = parameter). Dimensions:</p>
+<p><code>{{DIMS}}</code></p>
+<p>Custom metrics (Standard): <code>{{METRICS}}</code>. Data only shows from the day you create them. (<code>content_group</code> is built in; GA4 allows 50 event dimensions, this uses about 38.)</p>
+<h4>Step 5b. The drop-off reports you asked for</h4>
+<ul>
+<li><b>Quiz drop-off by question:</b> Explore → Funnel exploration → steps: <i>quiz_start</i> → <i>quiz_step where step_number = 2</i> → … <i>= 9</i> → <i>quiz_complete</i>. Shows exactly which question loses people. Also a Free form with rows = question_id, values = Event count for quiz_abandon.</li>
+<li><b>Starts vs completions:</b> Free form, rows = Event name, filter = quiz_start or quiz_complete, columns = Date. Completion rate = completes ÷ starts.</li>
+<li><b>What people search for:</b> Free form, rows = search_term, columns = search_location, values = Event count. Then search_no_results the same way: that list is your content backlog.</li>
+<li><b>What people click out to:</b> rows = link_domain, link_url (outbound_click).</li>
+</ul>
 <h4>Step 6. Key events</h4>
 <p>GA4 → Admin → Events (after each has fired once) → star <b>quiz_complete</b>, <b>calendar_download</b>, <b>hall_upload</b>. When email sign-ups exist: <b>generate_lead</b>. Keep plan_cta_click and tool_use as normal events; they’re steps, not goals.</p>
 <h4>Step 7. Explorations to build (GA4 → Explore)</h4>

@@ -23,7 +23,7 @@ const items = [
 ];
 const data = JSON.stringify({ items, baseTags: BASE_TAGS, topicTags: TOPIC_TAGS });
 const TABS = [
-  ['week', 'This Week'], ['todo', 'To-Do'], ['seo', 'SEO & AEO'], ['analytics', 'Analytics'], ['social', 'Social'], ['photos', 'Photos'], ['build', 'Build Plan'], ['money', 'Tips & Payments'], ['members', 'Members & Email'],
+  ['week', 'This Week'], ['todo', 'To-Do'], ['seo', 'SEO & AEO'], ['analytics', 'Analytics'], ['social', 'Social'], ['photos', 'Photos'], ['links', 'Short Links'], ['build', 'Build Plan'], ['money', 'Tips & Payments'], ['members', 'Members & Email'],
 ];
 ---
 <Base title="HQ | Mow It Tall" description="Mow It Tall dashboard" path="/admin/" noindex>
@@ -156,6 +156,10 @@ const TABS = [
         <p class="dash-note">GA4 (through Tag Manager), Clarity and Looker Studio. Nothing here needs an API key.</p>
         <details class="dash-more pb" open><summary>Events the Site Sends</summary><div data-pb="ga4Events"></div></details>
         <details class="dash-more pb"><summary>GA4 + GTM Setup, Step by Step</summary><div data-pb="ga4Steps"></div></details>
+        <details class="dash-more pb"><summary>GTM Import File (Sets Up the Tag for You)</summary>
+          <p>Builds a Tag Manager file with one GA4 event tag, one trigger for every site event, and a variable for each parameter. Import it with <b>Merge</b>.</p>
+          <form class="td-add" data-gtm-form><label class="hall-field"><span>Your GA4 Measurement ID</span><input type="text" required pattern="G-[A-Z0-9]+" placeholder="G-XXXXXXXXXX" data-gtm-id autocapitalize="characters" /></label><button type="submit" class="btn btn-small">Download File</button></form>
+        </details>
         <details class="dash-more pb"><summary>UTM Tags: How to Label Every Link</summary><div data-pb="utm"></div></details>
         <details class="dash-more pb"><summary>Looker Studio Report</summary><div data-pb="looker"></div></details>
         <h2 class="dash-h">Your Looker Studio Report</h2>
@@ -163,6 +167,22 @@ const TABS = [
         <div class="looker-box" data-looker></div>
         <h2 class="dash-h">Analytics To-Dos</h2>
         <div data-mini="launch,analytics"></div>
+      </section>
+
+      <!-- ===== Short links ===== -->
+      <section class="dash-panel" data-panel="links" hidden>
+        <p class="dash-note">Easy addresses that send people anywhere: mowittall.com/water → the rain meter. Use them on social, print, QR codes and merch tags. Changes go live within a minute.</p>
+        <form class="window tool sl-form" data-sl-form>
+          <input type="hidden" data-sl-old />
+          <label class="hall-field"><span>Short link</span><span class="sl-pre">mowittall.com/<input type="text" required maxlength="40" pattern="[a-z0-9][a-z0-9\-]*" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="water" data-sl-slug /></span></label>
+          <label class="hall-field"><span>Goes to</span><input type="text" required placeholder="/resources/#water-h or https://…" data-sl-target /></label>
+          <label class="hall-field"><span>Note (just for you)</span><input type="text" maxlength="200" placeholder="Instagram reel, door notes…" data-sl-note /></label>
+          <label class="sl-check"><input type="checkbox" data-sl-perm /> Permanent (301). Leave off if you might change where it points.</label>
+          <p class="sl-actions"><button type="submit" class="btn btn-small" data-sl-save>Save Short Link</button> <button type="button" class="btn btn-small btn-quiet" data-sl-cancel hidden>Cancel Edit</button></p>
+          <p class="hall-status" data-sl-msg role="status"></p>
+        </form>
+        <p class="dash-fine">Tips: add utm tags to the destination so GA4 credits the source (e.g. <code>/plan/?utm_source=door_note&amp;utm_medium=qr</code>). Short links override a page with the same name typed without a slash. <button type="button" class="linkish" data-sl-starter>Add my starter set</button></p>
+        <ol class="sl-list" data-sl-list></ol>
       </section>
 
       <!-- ===== Build plan ===== -->

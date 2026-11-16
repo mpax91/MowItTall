@@ -72,7 +72,7 @@ const description = 'Know a lawn that needs help? Send your neighbor a free lawn
     root.querySelectorAll<HTMLButtonElement>('[data-nb]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.nb === note.id)));
   }
   root.querySelectorAll<HTMLButtonElement>('[data-nb]').forEach((b) => b.addEventListener('click', () => { note = NOTES.find((n) => n.id === b.dataset.nb)!; render(); }));
-  $('[data-nb-print]').addEventListener('click', () => window.print());
+  $('[data-nb-print]').addEventListener('click', () => { (window as any).mitTrack?.('neighbor_send', { method: 'print' }); window.print(); });
   $('[data-nb-share]').addEventListener('click', async (e) => {
     if (navigator.share) { try { await navigator.share({ text: text() }); } catch { /* cancelled */ } return; }
     try { await navigator.clipboard.writeText(text()); const b = e.currentTarget as HTMLElement; const o = b.textContent; b.textContent = 'Copied'; setTimeout(() => (b.textContent = o), 1500); } catch { /* */ }

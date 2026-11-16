@@ -340,6 +340,7 @@ export function initMeasure(root) {
     save();
     setMode();
     if (!quiet) openName(a);
+    window.mitTrack && window.mitTrack('measure_area_added', { area_count: areas.length });
   }
 
   function defaultName() {
@@ -581,6 +582,7 @@ export function initMeasure(root) {
   function enterFull() {
     if (full) return;
     full = true;
+    window.mitTrack && window.mitTrack('measure_open', { area_count: areas.length });
     root.classList.add('is-full');
     document.documentElement.classList.add('mz-lock');
     history.pushState({ mz: 1 }, '');

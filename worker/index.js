@@ -37,6 +37,8 @@ async function init(db) {
         // HQ settings and saved results (audit runs, Looker embed URL, profile links): small JSON blobs by key
         db.prepare(`CREATE TABLE IF NOT EXISTS kv (k TEXT PRIMARY KEY, v TEXT, at INTEGER)`),
         // Search Console / Bing exports uploaded in HQ (rank tracker), one row per upload
+        // Short links: mowittall.com/<slug> -> any page or outside URL, managed in HQ → Short Links
+        db.prepare(`CREATE TABLE IF NOT EXISTS shortlinks (slug TEXT PRIMARY KEY, target TEXT NOT NULL, note TEXT, permanent INTEGER NOT NULL DEFAULT 0, clicks INTEGER NOT NULL DEFAULT 0, last_click INTEGER, created INTEGER NOT NULL, updated INTEGER NOT NULL)`),
         db.prepare(`CREATE TABLE IF NOT EXISTS seo_snap (id INTEGER PRIMARY KEY AUTOINCREMENT, source TEXT, label TEXT, kind TEXT, rows TEXT, at INTEGER)`),
       ]);
       const now = Date.now();
@@ -166,6 +168,30 @@ async function admin(env, req, url) {
   return json({ ok: true });
 }
 
+/* ---------- short links */
+const RESERVED = new Set(['api', 'admin', 'og', 'img', 'icons', '_astro', 'pagefind', 'data', 'robots.txt', 'llms.txt', 'rss.xml', 'sitemap-index.xml', 'sitemap-0.xml', 'manifest.webmanifest', 'favicon.svg']);
+const SLUG_RE = /^[a-z0-9][a-z0-9-]{0,39}$/;
+let linkCache = { at: 0, map: null };
+async function shortlinks(env) {
+  if (!linkCache.map || Date.now() - linkCache.at > 60000) {
+    const { results } = await env.DB.prepare('SELECT slug, target, permanent FROM shortlinks').all();
+    linkCache = { at: Date.now(), map: Object.fromEntries(results.map((r) => [r.slug, r])) };
+  }
+  return linkCache.map;
+}
+async function shortRedirect(req, env, ctx, url) {
+  // Short links are typed without a trailing slash (mowittall.com/water); /water/ would be a real page.
+  if (url.pathname.endsWith('/')) return null;
+  let slug = ''; try { slug = decodeURIComponent(url.pathname).replace(/^\/+/, '').toLowerCase(); } catch { return null; }
+  if (!SLUG_RE.test(slug)) return null;
+  const link = (await shortlinks(env))[slug];
+  if (!link) return null;
+  const to = new URL(link.target, url.origin);
+  if (url.search && !to.search) to.search = url.search;   // pass utm tags etc. through
+  ctx.waitUntil(env.DB.prepare('UPDATE shortlinks SET clicks = clicks + 1, last_click = ? WHERE slug = ?').bind(Date.now(), slug).run());
+  return new Response(null, { status: link.permanent ? 301 : 302, headers: { location: to.toString(), 'cache-control': link.permanent ? 'public, max-age=3600' : 'no-store', 'x-robots-tag': 'noindex' } });
+}
+
 /* ---------- admin dashboard (/admin/) */
 const PLATFORMS = ['instagram', 'facebook', 'nextdoor', 'x'];
 async function dash(env, req, url) {
@@ -225,6 +251,35 @@ async function dash(env, req, url) {
       .bind(id, done ? Date.now() : null, note === undefined ? null : clean(note, 500)).run();
     return json({ ok: true });
   }
+  /* ----- short links */
+  if (p === '/api/admin/links' && req.method === 'GET') {
+    const { results } = await env.DB.prepare('SELECT * FROM shortlinks ORDER BY updated DESC').all();
+    return json({ links: results });
+  }
+  if (p === '/api/admin/links' && req.method === 'POST') {
+    const { action, slug: raw, oldSlug, target, note, permanent } = await req.json().catch(() => ({}));
+    const slug = String(raw || '').trim().replace(/^\/+|\/+$/g, '').toLowerCase();
+    linkCache.map = null;
+    if (action === 'delete') { await env.DB.prepare('DELETE FROM shortlinks WHERE slug = ?').bind(slug).run(); return json({ ok: true }); }
+    if (!SLUG_RE.test(slug)) return bad('Use lowercase letters, numbers and dashes (up to 40), like "measure" or "fall-seed".');
+    if (RESERVED.has(slug)) return bad('That one is reserved by the site.');
+    const t = String(target || '').trim();
+    if (!/^\/(?!\/)/.test(t) && !/^https:\/\//.test(t)) return bad('Point it at a page on the site (starting with /) or a full https:// address.');
+    if (t.length > 1000) return bad('That address is too long.');
+    if (t.replace(/[?#].*$/, '').toLowerCase() === '/' + slug) return bad('That would redirect to itself. Add a slash at the end (/' + slug + '/) if it’s a page.');
+    const now = Date.now();
+    if (oldSlug && oldSlug !== slug) {
+      const taken = await env.DB.prepare('SELECT slug FROM shortlinks WHERE slug = ?').bind(slug).first();
+      if (taken) return bad('That short link already exists.');
+      await env.DB.prepare('UPDATE shortlinks SET slug = ?, target = ?, note = ?, permanent = ?, updated = ? WHERE slug = ?').bind(slug, t, clean(note, 200), permanent ? 1 : 0, now, String(oldSlug)).run();
+    } else {
+      if (action === 'create') { const taken = await env.DB.prepare('SELECT slug FROM shortlinks WHERE slug = ?').bind(slug).first(); if (taken) return bad('That short link already exists. Edit it instead.'); }
+      await env.DB.prepare(`INSERT INTO shortlinks (slug, target, note, permanent, created, updated) VALUES (?, ?, ?, ?, ?, ?)
+        ON CONFLICT (slug) DO UPDATE SET target = excluded.target, note = excluded.note, permanent = excluded.permanent, updated = excluded.updated`)
+        .bind(slug, t, clean(note, 200), permanent ? 1 : 0, now, now).run();
+    }
+    return json({ ok: true, slug });
+  }
   /* ----- small saved settings/results */
   if (p === '/api/admin/kv' && req.method === 'GET') {
     const k = url.searchParams.get('k');
@@ -260,9 +315,14 @@ async function dash(env, req, url) {
 }
 
 export default {
-  async fetch(req, env) {
+  async fetch(req, env, ctx) {
     const url = new URL(req.url);
-    if (!url.pathname.startsWith('/api/')) return env.ASSETS.fetch(req);
+    if (!url.pathname.startsWith('/api/')) {
+      if (req.method === 'GET' || req.method === 'HEAD') {
+        try { await init(env.DB); const r = await shortRedirect(req, env, ctx, url); if (r) return r; } catch { /* fall through to the page */ }
+      }
+      return env.ASSETS.fetch(req);
+    }
     try {
       await init(env.DB);
       const p = url.pathname;

@@ -87,8 +87,11 @@ const description =
     topic ? u.searchParams.set('topic', topic) : u.searchParams.delete('topic');
     q.value.trim() ? u.searchParams.set('q', q.value.trim()) : u.searchParams.delete('q');
     history.replaceState(null, '', u);
+    clearTimeout((window as any).__mitBf);
+    const term = q.value.trim().toLowerCase();
+    if (term) (window as any).__mitBf = setTimeout(() => (window as any).mitTrack?.(shown ? 'search' : 'search_no_results', { search_term: term.slice(0, 80), search_location: 'blog', results_count: shown, topic }), 1200);
   }
   q.addEventListener('input', apply);
-  chips.forEach((c) => c.addEventListener('click', () => { topic = c.dataset.bfTopic || ''; apply(); }));
+  chips.forEach((c) => c.addEventListener('click', () => { topic = c.dataset.bfTopic || ''; (window as any).mitTrack?.('blog_filter', { topic: topic || 'all' }); apply(); }));
   apply();
 </script>

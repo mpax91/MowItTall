@@ -122,11 +122,15 @@ const NAV = [
       // GA4 events go through Google Tag Manager's dataLayer. mitTrack('event_name', { param: 'value' }).
       // Also: any element with data-track="event_name" (plus optional data-track-* params) sends that event on click.
       window.dataLayer = window.dataLayer || [];
-      window.mitTrack = function (event, params) { try { window.dataLayer.push(Object.assign({ event: event }, params || {})); } catch (e) {} };
+      // Event parameters are cleared before each event so a value never carries over into the next one (GTM remembers pushed keys).
+      var MIT_KEYS = 'quiz_name step_number question_id step_type answer effort_level lawn_profile grass_pick task_count game_name level_name score new_best coverage tool_name choice file_name file_extension search_term search_location results_count topic method content_type item_id cta_location cta_text link_url link_text link_area link_domain nav_area card_id question form_id form_location percent read_seconds zip3 yard_size area_count vote board amount platform target page_path page_referrer error_message error_source program_name value currency'.split(' ');
+      window.mitTrack = function (event, params) {
+        try { var reset = {}; MIT_KEYS.forEach(function (k) { reset[k] = undefined; }); window.dataLayer.push(reset); window.dataLayer.push(Object.assign({ event: event }, params || {})); } catch (e) {}
+      };
     </script>
     <script type="application/ld+json" set:html={JSON.stringify(ld)} />
   </head>
-  <body class={path === "/" ? "is-home" : undefined}>
+  <body class={path === "/" ? "is-home" : path === "/404/" ? "is-404" : undefined} data-pt={pageType}>
     <!-- Google Tag Manager (noscript) -->
     {!isAdminPage && <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PTSGH8QX" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>}
     <!-- End Google Tag Manager (noscript) -->
@@ -253,6 +257,45 @@ const NAV = [
         // Downloads made in the browser (.ics calendars, saved images): anchors with a download attribute
         var ac = HTMLAnchorElement.prototype.click;
         HTMLAnchorElement.prototype.click = function () { if (this.download) { var ext = (this.download.split('.').pop() || '').toLowerCase(); T(ext === 'ics' ? 'calendar_download' : 'file_download', { file_name: this.download, file_extension: ext, tool_name: slug(location.pathname) || 'home' }); } return ac.apply(this, arguments); };
+        // Outbound links, email/phone links, header/footer nav, chip pickers, flip cards
+        document.addEventListener('click', function (e) {
+          var a = e.target.closest && e.target.closest('a[href]');
+          if (a) {
+            var h = a.getAttribute('href') || '', txt = (a.textContent || '').trim().slice(0, 60);
+            if (/^mailto:|^tel:|^sms:/.test(h)) T('contact_click', { method: h.split(':')[0], link_text: txt });
+            else if (/^https?:/.test(h) && a.hostname !== location.hostname && !/mowittall\.com$/.test(a.hostname)) T('outbound_click', { link_domain: a.hostname.replace(/^www\./, ''), link_url: h.slice(0, 150), link_text: txt, link_area: where(a) });
+            var nav = a.closest('header.top, footer, .crumbs');
+            if (nav && h.charAt(0) === '/') T('nav_click', { nav_area: nav.tagName === 'HEADER' ? 'header' : nav.tagName === 'FOOTER' ? 'footer' : 'breadcrumb', link_text: txt, link_url: h });
+          }
+          var chip = e.target.closest && e.target.closest('[data-cp-chip]');
+          if (chip) { var pk = chip.closest('[data-chip-picker]'); T('tool_choice', { tool_name: pk ? pk.id : 'picker', choice: chip.getAttribute('data-cp-chip') }); }
+          var flip = e.target.closest && e.target.closest('.flip-btn, .flip-inner');
+          if (flip) { var card = flip.closest('.flip, li, [id]'); T('card_flip', { card_id: (card && (card.id || slug(card.querySelector('h3, h2') && card.querySelector('h3, h2').textContent))) || 'card', page_type: document.body.dataset.pt || '' }); }
+        }, true);
+        // FAQs and other expanders
+        document.addEventListener('toggle', function (e) {
+          var d = e.target; if (!d || d.tagName !== 'DETAILS' || !d.open || d.closest('[data-dash]')) return;
+          var s = d.querySelector('summary'), q = (s && s.textContent || '').trim().slice(0, 100);
+          T(d.closest('.faq, .guide-faq') ? 'faq_open' : 'details_open', { question: q });
+        }, true);
+        // Every form (Hall upload, neighbor note, future email sign-ups)
+        document.addEventListener('submit', function (e) { var f = e.target; T('form_submit', { form_id: f.id || f.getAttribute('data-form') || slug(f.className) || 'form', form_location: where(f) }); }, true);
+        // Reading depth on posts and guides
+        var art = document.querySelector('article.prose');
+        if (art) {
+          var marks = [25, 50, 75, 90], sentM = {}, t0 = Date.now(), doneArt = false;
+          var onScroll = function () {
+            var r = art.getBoundingClientRect(), pct = Math.round(Math.min(1, Math.max(0, (innerHeight - r.top) / r.height)) * 100);
+            marks.forEach(function (m) { if (pct >= m && !sentM[m]) { sentM[m] = 1; T('scroll_depth', { percent: m }); } });
+            if (!doneArt && r.bottom <= innerHeight + 40) { doneArt = true; T('article_complete', { read_seconds: Math.round((Date.now() - t0) / 1000) }); }
+          };
+          addEventListener('scroll', onScroll, { passive: true });
+        }
+        // Print, 404s and broken scripts
+        addEventListener('beforeprint', function () { T('print_page', {}); });
+        if (document.body.classList.contains('is-404')) T('page_not_found', { page_path: location.pathname.slice(0, 150), page_referrer: document.referrer.slice(0, 150) });
+        var errs = 0;
+        addEventListener('error', function (e) { if (errs++ < 3 && e.message) T('js_error', { error_message: String(e.message).slice(0, 100), error_source: String(e.filename || '').split('/').pop().slice(0, 60) }); });
         // Location and yard size (coarse only: first 3 ZIP digits, size bucket)
         window.addEventListener('mit:place', function (e) { var z = e.detail && (e.detail.zip || ''); T('location_set', { zip3: String(z).slice(0, 3), method: e.detail && e.detail.source || 'zip' }); });
         window.addEventListener('appinstalled', function () { T('app_installed', {}); });

@@ -18,7 +18,7 @@ export default defineConfig({
   site: 'https://mowittall.com',
   trailingSlash: 'ignore',
   integrations: [sitemap({
-    filter: (page) => !/\/(404|clippings|admin|search|merch|og|links)(\/|$)/.test(page),
+    filter: (page) => !/\/(404|clippings|admin|search|og|links)(\/|$)/.test(page),
     serialize: (item) => (lastmod[item.url] ? { ...item, lastmod: lastmod[item.url] } : item),
   })],
   // Old blog address (it used to be called Clippings)

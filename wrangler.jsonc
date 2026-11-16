@@ -8,7 +8,8 @@
     "directory": "./dist",
     "binding": "ASSETS",
     "not_found_handling": "404-page",
-    "run_worker_first": ["/api/*"]
+    // The worker runs first for pages too (short links live there); static files skip it.
+    "run_worker_first": ["/*", "!/_astro/*", "!/og/*", "!/img/*", "!/icons/*", "!/pagefind/*", "!/data/*", "!/favicon.svg"]
   },
   // Created automatically on the first deploy (no database_id needed). Admin key: the ADMIN_KEY secret,
   // set in the Cloudflare dashboard (Workers & Pages → mowittall → Settings → Variables and Secrets).

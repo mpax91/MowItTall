@@ -515,3 +515,20 @@ main.nb-page > section.nb-rules { padding: 26px 0 0; }
 .pb code, .td-body code { word-break: normal; overflow-wrap: anywhere; }
 .pb-table td:first-child code { white-space: nowrap; overflow-wrap: normal; }
 [data-todo-filter] .cp-chip { white-space: nowrap; padding-inline: 12px; }
+/* HQ short links */
+.sl-form { padding: 14px; color: var(--paper); }
+.sl-form .hall-field { margin-bottom: 10px; }
+.sl-pre { display: flex; align-items: center; gap: 2px; font-weight: 800; color: var(--paper); }
+.sl-pre input { flex: 1; min-width: 0; }
+.sl-check { display: flex; gap: 8px; align-items: flex-start; font-size: 0.9rem; color: var(--paper-dim); margin: 4px 0 10px; }
+.sl-list { list-style: none; padding: 0; display: grid; gap: 10px; }
+.sl-item { background: var(--paper); color: var(--ink); border: 2px solid var(--win-edge); border-radius: 10px; padding: 10px 12px; }
+.sl-item p { margin: 0 0 4px; }
+.sl-item .dash-fine { color: #4a5d4b; }
+.sl-short b { font: 800 1.05rem var(--display); }
+.sl-to { word-break: break-all; font-size: 0.9rem; } .sl-to a { color: #1f5a34; }
+.sl-btns { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px !important; }
+.sl-item .btn-quiet { color: var(--ink); border-color: var(--ink); }
+.sl-qr svg { width: 180px; height: 180px; background: #fff; display: block; margin: 8px 0; }
+.sl-qr a { color: #1f5a34; font-weight: 700; }
+.pb-sec td { background: #dfe9d8; font-weight: 800; color: #24432c; text-transform: uppercase; font-size: 0.75rem; letter-spacing: .05em; }
