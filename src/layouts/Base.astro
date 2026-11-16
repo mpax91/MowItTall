@@ -40,7 +40,8 @@ const site = 'https://mowittall.com';
 const url = site + path;
 // Share image: the page's own 1200x630 card if it has one (src/data/og.js), else Mike's backyard photo.
 const card = !imageProp && OG[path];
-const image = imageProp || (card ? `/og/${ogSlug(path)}.png` : '/img/backyard-stripes-1400.webp');
+// `v` in og.js busts Facebook/LinkedIn image caches when a card is redesigned (bump it on each redesign).
+const image = imageProp || (card ? `/og/${ogSlug(path)}.png${card.v ? `?v=${card.v}` : ''}` : '/img/backyard-stripes-1400.webp');
 const imageAlt = altProp || (card ? `${card.title} | Mow It Tall` : 'Mike’s striped backyard lawn in Bedford, NY');
 const imageType = image.endsWith('.png') ? 'image/png' : image.endsWith('.jpg') ? 'image/jpeg' : 'image/webp';
 const imageSize = card ? [1200, 630] : image.includes('-1400') ? [1400, 1050] : null;
