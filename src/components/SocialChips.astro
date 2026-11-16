@@ -1,0 +1,20 @@
+---
+// Social profile buttons with each platform's icon (Simple Icons, CC0).
+// iconOnly: round icon buttons (footer). Otherwise icon + name (links, contact).
+import * as si from 'simple-icons';
+import { SOCIALS_MAIN } from '../data/site.js';
+const { area = 'footer', iconOnly = false, label = 'Mow It Tall on social media' } = Astro.props;
+const ICON = { instagram: 'siInstagram', youtube: 'siYoutube', facebook: 'siFacebook', threads: 'siThreads', x: 'siX', tiktok: 'siTiktok', pinterest: 'siPinterest', reddit: 'siReddit', bluesky: 'siBluesky', nextdoor: 'siNextdoor' };
+const items = SOCIALS_MAIN.map(([k, name, u]) => ({ k, name, u, path: si[ICON[k]]?.path }));
+---
+<ul class:list={['social-chips', iconOnly && 'is-icons']} aria-label={label}>
+  {items.map(({ k, name, u, path }) => (
+    <li>
+      <a href={u} rel="me noopener" target="_blank" aria-label={iconOnly ? `Mow It Tall on ${name}` : undefined} title={iconOnly ? name : undefined}
+        data-track="social_profile_click" data-track-platform={k} data-track-link_area={area}>
+        {path && <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path fill="currentColor" d={path} /></svg>}
+        {(!iconOnly || !path) && <span>{name}</span>}
+      </a>
+    </li>
+  ))}
+</ul>

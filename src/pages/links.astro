@@ -1,6 +1,7 @@
 ---
 // Link-in-bio page for Instagram, TikTok, X and Threads (instead of Linktree). Not for search: noindex.
 // Bio links carry utm tags (see HQ → Social → Setup Plan), and each button sends a GA4 event.
+import SocialChips from '../components/SocialChips.astro';
 import Base from '../layouts/Base.astro';
 import { allPosts } from '../data/posts.js';
 import { SOCIALS_MAIN, SOCIALS_MORE, TIPS_ON, tipLink } from '../data/site.js';
@@ -30,11 +31,7 @@ const LINKS = [
     {SOCIALS_MAIN.length > 0 && (
       <section class="links-follow" aria-labelledby="follow-h">
         <h2 id="follow-h">Follow Along <span>@mowittall</span></h2>
-        <ul class="social-chips">
-          {SOCIALS_MAIN.map(([k, name, u]) => (
-            <li><a href={u} rel="me noopener" target="_blank" data-track="social_profile_click" data-track-platform={k} data-track-link_area="links">{name}</a></li>
-          ))}
-        </ul>
+        <SocialChips area="links" />
         {SOCIALS_MORE.length > 0 && <p class="links-more">Also on {SOCIALS_MORE.map(([k, name, u], i) => <>{i > 0 && ' · '}<a href={u} rel="me noopener" target="_blank" data-track="social_profile_click" data-track-platform={k} data-track-link_area="links">{name}</a></>)}</p>}
       </section>
     )}

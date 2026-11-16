@@ -1,4 +1,5 @@
 ---
+import SocialChips from '../components/SocialChips.astro';
 import Base from '../layouts/Base.astro';
 import { CONTACT_EMAIL, SOCIALS_MAIN } from '../data/site.js';
 
@@ -39,11 +40,7 @@ const REASONS = [
       <section class="contact-follow" aria-labelledby="follow-h">
         <h2 id="follow-h">Or Find Me on Social</h2>
         <p>Stripes, quick tips and the occasional lawn rant. DMs are open, but email gets a faster answer.</p>
-        <ul class="social-chips">
-          {SOCIALS_MAIN.map(([k, name, u, h]) => (
-            <li><a href={u} rel="me noopener" target="_blank" data-track="social_profile_click" data-track-platform={k} data-track-link_area="contact">{name}</a></li>
-          ))}
-        </ul>
+        <SocialChips area="contact" />
       </section>
     )}
 

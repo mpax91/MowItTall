@@ -5,6 +5,7 @@ import '@fontsource/atkinson-hyperlegible-next/700.css';
 import '../styles/global.css';
 import '../styles/tools.css';
 import BeerCallout from '../components/BeerCallout.astro';
+import SocialChips from '../components/SocialChips.astro';
 import RedVest from '../components/RedVest.astro';
 import { TOPICS } from '../data/topics.js';
 import { allOgPages, ogSlug } from '../data/og.js';
@@ -247,11 +248,7 @@ const NAV = [
       {SOCIALS_MAIN.length > 0 && (
         <div class="foot-social-wrap">
           <h2 class="foot-h">Follow Along</h2>
-          <ul class="social-chips" aria-label="Mow It Tall on social media">
-            {SOCIALS_MAIN.map(([k, name, u]) => (
-              <li><a href={u} rel="me noopener" target="_blank" data-track="social_profile_click" data-track-platform={k} data-track-link_area="footer">{name}</a></li>
-            ))}
-          </ul>
+          <SocialChips iconOnly area="footer" />
         </div>
       )}
       <div class="foot-extra">

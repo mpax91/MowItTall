@@ -17,8 +17,8 @@ const amounts = [5, 10];
       </svg>
     </div>
     <div class="beer-foot-text">
-      <p class="beer-foot-h">Site saved you a weekend?</p>
-      <p class="beer-foot-sub">No ads, no paywall. A beer keeps it that way.</p>
+      <p class="beer-foot-h">Find This Helpful?</p>
+      <p class="beer-foot-sub">Say thanks with a beer.</p>
     </div>
     {TIPS_ON
       ? <a class="beer-foot-btn" href={TIP_URL || tipLink(5)} target="_blank" rel="noopener" data-track="tip_click" data-track-link_area="footer">Buy Me a Beer</a>
@@ -36,14 +36,14 @@ const amounts = [5, 10];
       </svg>
     </div>
     <div class="beer-body">
-      <h2 id="beer-h">Did This Help? Buy Me a Beer.</h2>
-      <p>No ads, no paywall, no email required. If the site saved you a bag of fertilizer or a fight with your spouse, a beer keeps it going.</p>
+      <h2 id="beer-h">Find This Helpful? Buy Me a Beer.</h2>
+      <p>Totally optional. Just a way to say thanks.</p>
       <div class="beer-btns">
         {amounts.map((a) => TIPS_ON
           ? <a class="btn beer-btn" href={tipLink(a)} target="_blank" rel="noopener" data-track="tip_click" data-track-amount={String(a)}>${a} {a === 5 ? '· one beer' : '· a round'}</a>
           : <span class="btn beer-btn is-off" aria-disabled="true">${a} {a === 5 ? '· one beer' : '· a round'}</span>)}
       </div>
-      {!TIPS_ON && <p class="beer-soon">Tip jar opens soon. The thought counts. Slightly.</p>}
+      {!TIPS_ON && <p class="beer-soon">Tip jar opens soon.</p>}
     </div>
   </aside>
 )}
