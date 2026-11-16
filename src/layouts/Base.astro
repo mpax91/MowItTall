@@ -73,7 +73,9 @@ const NAV = [
 <!doctype html>
 <html lang="en">
   <head>
-    <script is:inline define:vars={{ pageDL }}>window.dataLayer = window.dataLayer || []; window.dataLayer.push(pageDL);</script>
+    <script is:inline define:vars={{ pageDL }}>window.dataLayer = window.dataLayer || []; window.dataLayer.push(pageDL);
+    // GA4: page fields go on every hit (page_view included) via a gtag 'set' command. Don't define window.gtag here.
+    (function () { var s = {}; ['page_type', 'content_group', 'post_tag', 'post_topics'].forEach(function (k) { var v = pageDL[k]; if (v !== undefined && v !== null && v !== '') s[k] = String(v).slice(0, 100); }); (function () { window.dataLayer.push(arguments); })('set', s); })();</script>
     {!isAdminPage && (<Fragment>
     <!-- Microsoft Clarity page tags (Clarity itself loads through GTM). Queued with Clarity's standard stub, so they apply whenever Clarity loads. Filter recordings by these in Clarity → Filters → Custom tags. -->
     <script is:inline define:vars={{ pageDL }}>(function(c){c.clarity=c.clarity||function(){(c.clarity.q=c.clarity.q||[]).push(arguments)};['page_type','content_group','post_tag','post_topics'].forEach(function(k){var v=pageDL[k];if(v)c.clarity('set',k,String(v).slice(0,255))})})(window);</script>
