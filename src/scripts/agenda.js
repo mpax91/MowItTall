@@ -97,7 +97,45 @@ const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
 const ymd = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
 export const tasksFor = (level) => TASKS.filter((t) => t.level <= level);
+// Supply cost per job for a 5,000 sq ft lawn, [low, high] in dollars. Assumes you already own a
+// mower, spreader and rake. Matches the DIY shopping list in the Westchester cost guide; the rest are
+// Claude's estimates (Mike to review). scale: true = product amount grows with lawn size.
+export const BASE_SQFT = 5000;
+const COST = {
+  blade: { c: [10, 15] },                    // hardware-store sharpening (or free with a file)
+  crabgrass: { c: [30, 50], scale: true },   // 1 bag of preventer
+  'spring-feed': { c: [35, 60], scale: true },
+  'spot-weeds': { c: [12, 25] },             // ready-to-spray bottle
+  grubs: { c: [30, 50], scale: true },       // preventive grub bag
+  'july4-feed': { c: [20, 35], scale: true },// half dose
+  'soil-test': { c: [20, 30] },
+  aerate: { c: [80, 120] },                  // half-day core aerator rental
+  seed: { c: [40, 80], scale: true },        // thin-spot overseeding
+  'fall-feed': { c: [35, 60], scale: true },
+  'fall-weeds': { c: [15, 30], scale: true },
+  'columbus-feed': { c: [35, 60], scale: true },
+  lime: { c: [25, 40], scale: true },        // ~3 bags pelletized
+  'thanksgiving-feed': { c: [35, 60], scale: true },
+  winter: { c: [15, 30] },                   // oil, spark plug, fuel stabilizer
+};
+const r5 = (n) => Math.max(5, Math.round(n / 5) * 5);
+export function taskCost(t, sqft = BASE_SQFT) {
+  const x = COST[t.id];
+  if (!x) return null;
+  const k = x.scale ? Math.max(0.4, sqft / BASE_SQFT) : 1;
+  return [r5(x.c[0] * k), r5(x.c[1] * k)];
+}
+export function levelCost(level, sqft = BASE_SQFT) {
+  return tasksFor(level).reduce((a, t) => { const c = taskCost(t, sqft); return c ? [a[0] + c[0], a[1] + c[1]] : a; }, [0, 0]);
+}
+export const money = ([lo, hi]) => `$${lo.toLocaleString('en-US')}–${hi.toLocaleString('en-US')}`;
+
 // "9 jobs · about 6 hours a year" for an effort level
+export function levelShort(level) {
+  const list = tasksFor(level);
+  const hrs = Math.max(1, Math.round(list.reduce((s, t) => s + (t.minutes || 0), 0) / 60));
+  return `${plural(list.length, 'job')} · +${plural(hrs, 'hr')}`;
+}
 export function levelSummary(level) {
   const list = tasksFor(level);
   const mins = list.reduce((s, t) => s + (t.minutes || 0), 0);
@@ -118,14 +156,16 @@ function status(t, y, today) {
   return { state: 'now', text: `Do it now · ${plural(left, 'day')} left` };
 }
 
-function taskCard(t, y, today) {
+function taskCard(t, y, today, sqft) {
   const k = kindOf(t);
   const s = today ? status(t, y, today) : null;
   const more = MORE[t.id];
   const mins = t.minutes ? ` · ${t.minutes >= 60 ? `${t.minutes / 60} hr` : `${t.minutes} min`}` : '';
+  const cost = taskCost(t, sqft);
+  const price = cost ? ` · ~${money(cost)}` : '';
   return `<details class="ag-ev is-${k}${s ? ` is-${s.state}` : ''}" id="t-${t.id}-${y}" data-task="${t.id}">
 <summary><span class="ag-ev-top"><b class="ag-ev-title">${esc(tc(t.title))}</b><i class="ag-ev-plus" aria-hidden="true"></i></span>
-<span class="ag-ev-meta">${windowText(t)}${mins}</span>${s ? `<span class="ag-ev-status">${s.text}</span>` : ''}</summary>
+<span class="ag-ev-meta">${windowText(t)}${mins}${price}</span>${s ? `<span class="ag-ev-status">${s.text}</span>` : ''}</summary>
 <div class="ag-ev-body"><p>${esc(t.short)}</p><p><b>How:</b> ${esc(t.why)}</p>${t.tip ? `<p><b>Tip:</b> ${esc(t.tip)}</p>` : ''}${more ? `<a class="ag-more" href="${more[0]}">${esc(more[1])} →</a>` : ''}</div>
 </details>`;
 }
@@ -135,7 +175,7 @@ function holidayChip(h) {
 }
 
 // months: [{y, m (1-12)}]. today: Date or null (server render). level: 0-3.
-export function agendaHTML({ months, today = null, level = 3 }) {
+export function agendaHTML({ months, today = null, level = 3, sqft = BASE_SQFT }) {
   const list = tasksFor(level);
   const todayKey = today ? ymd(today) : null;
   let html = '';
@@ -160,7 +200,7 @@ export function agendaHTML({ months, today = null, level = 3 }) {
     }
     for (const r of sorted) {
       const isToday = todayKey === ymd(r.d);
-      html += `<div class="ag-day${isToday ? ' is-today' : ''}"><p class="ag-date"><span>${DOW[r.d.getDay()]}</span><b>${r.d.getDate()}</b></p><div class="ag-items">${r.hol.map(holidayChip).join('')}${r.ev.map((t) => taskCard(t, y, today)).join('')}</div></div>`;
+      html += `<div class="ag-day${isToday ? ' is-today' : ''}"><p class="ag-date"><span>${DOW[r.d.getDay()]}</span><b>${r.d.getDate()}</b></p><div class="ag-items">${r.hol.map(holidayChip).join('')}${r.ev.map((t) => taskCard(t, y, today, sqft)).join('')}</div></div>`;
     }
     html += `<a class="ag-mlink" href="/calendar/${MONTHS_LONG[m - 1].toLowerCase()}/">More on ${MONTHS_LONG[m - 1]} lawn care →</a></section>`;
   });

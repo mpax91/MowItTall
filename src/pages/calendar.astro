@@ -2,7 +2,7 @@
 // Dedicated lawn calendar. Step 1: pick an effort level. Step 2: the calendar builds below,
 // in the normal page scroll (no inner scroll box), from this month through last month.
 import Base from '../layouts/Base.astro';
-import { LEVELS, levelSummary } from '../scripts/agenda.js';
+import { LEVELS, levelShort, levelCost, money } from '../scripts/agenda.js';
 import { MONTHS, MONTHS_LONG } from '../data/tasks.js';
 
 const title = 'Lawn Care Calendar for the Northeast: What to Do Each Month';
@@ -21,10 +21,10 @@ const description =
         <h2 class="ag-ctl-label" id="ag-lv-h">How Much Effort Do You Want to Put In?</h2>
         <div class="ag-seg" role="group" aria-labelledby="ag-lv-h">
           {LEVELS.map((l, i) => (
-            <button type="button" data-level={i} aria-pressed="false"><b>{l.name}</b><span>{l.note}</span><em>{levelSummary(i)}</em></button>
+            <button type="button" data-level={i} aria-pressed="false"><b>{l.name}</b><span>{l.note}</span><em>{levelShort(i)}</em><em class="ag-cost" data-cost>{money(levelCost(i))}</em></button>
           ))}
         </div>
-        <p class="ag-note">Hours are extra time on top of your normal mowing.</p>
+        <p class="ag-note" data-note>Per year. Hours are extra time on top of your normal mowing. Costs are supplies for a typical 5,000 sq ft lawn, assuming you already own a mower and spreader. <a href="/measure/">Measure yours</a> for your numbers.</p>
       </div>
 
       <div class="ag-cal" data-cal hidden>
@@ -50,7 +50,7 @@ const description =
 </Base>
 
 <script>
-  import { agendaHTML, rollingMonths, icsFor, levelSummary, LEVELS } from '../scripts/agenda.js';
+  import { agendaHTML, rollingMonths, icsFor, levelSummary, levelCost, money, BASE_SQFT, LEVELS } from '../scripts/agenda.js';
 
   const root = document.querySelector('[data-agenda-root]');
   const cal = root.querySelector('[data-cal]');
@@ -65,6 +65,17 @@ const description =
   const months = rollingMonths(y, m, 12); // this month first, last month at the bottom
   const track = (name, p) => { try { (window as any).mitTrack?.(name, p); } catch { /* ignore */ } };
   let level = -1;
+
+  // size the costs to the visitor's measured lawn, if they used the measure tool
+  let sqft = BASE_SQFT;
+  try {
+    const yard = JSON.parse(localStorage.getItem('mit-yard') || 'null');
+    if (yard && yard.total > 300) sqft = Math.round(yard.total);
+  } catch { /* private mode */ }
+  if (sqft !== BASE_SQFT) {
+    buttons.forEach((b) => { b.querySelector('[data-cost]').textContent = money(levelCost(Number(b.dataset.level), sqft)); });
+    root.querySelector('[data-note]').textContent = `Per year. Hours are extra time on top of your normal mowing. Costs are supplies sized to your ${sqft.toLocaleString('en-US')} sq ft lawn, assuming you already own a mower and spreader.`;
+  }
 
   // month pills in calendar order (this month first), each jumps to its month
   const byM = Object.fromEntries([...pills.querySelectorAll('li')].map((li) => [li.querySelector('a').dataset.m, li]));
@@ -95,9 +106,9 @@ const description =
     level = lv;
     try { localStorage.setItem('mit-cal-level', String(level)); } catch { /* private mode */ }
     buttons.forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.level) === level)));
-    listEl.innerHTML = agendaHTML({ months, today, level });
+    listEl.innerHTML = agendaHTML({ months, today, level, sqft });
     titleEl.textContent = `Your Lawn Year: ${LEVELS[level].name}`;
-    subEl.textContent = `${levelSummary(level).replace(/^./, (c) => c.toUpperCase())} on top of your normal mowing.`;
+    subEl.textContent = `${levelSummary(level).replace(/^./, (c) => c.toUpperCase())} on top of mowing · about ${money(levelCost(level, sqft))} in supplies.`;
     nudge.innerHTML = nudgeHTML();
     cal.hidden = false;
     if (scroll) {

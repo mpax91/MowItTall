@@ -2236,6 +2236,9 @@ main > section.ag-wrap { padding-top: 6px; }
 .ag-ics { width: 100%; text-align: center; }
 /* calendar appears after an effort pick, in the normal page scroll */
 .ag-note { margin: 10px 0 0; font-size: 0.85rem; color: var(--paper-dim); }
+.ag-note a { color: var(--leaf); }
+.ag-seg em.ag-cost { margin-top: 0; color: var(--leaf); }
+.ag-seg button[aria-pressed='true'] em.ag-cost { color: #2f6e1f; }
 .ag-cal[hidden] { display: none; }
 .ag-cal { scroll-margin-top: 8px; }
 .ag-cal-head { margin: 4px 0 10px; }
