@@ -25,7 +25,7 @@ faq:
 
 ## Plant the Right Grass
 
-**Turf-type tall fescue** has the deepest roots of the common Northeast grasses, so it finds water when others can't. If you're overseeding a no-water lawn, this is your grass. [Every grass, ranked](/blog/grass-types-northeast/), or [pick yours in 4 taps](/lawn-101/#grass).
+**Turf-type tall fescue** has the deepest roots of the common Northeast grasses, so it finds water when others can't. If you're overseeding a no-water lawn, this is your grass. [Every grass, ranked](/blog/grass-types-northeast/), or [pick yours in 4 taps](/resources/what-grass-seed-should-i-buy/).
 
 ## Mow Tall. Like, Tall.
 

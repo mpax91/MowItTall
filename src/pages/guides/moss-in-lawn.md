@@ -9,7 +9,7 @@ answer: "<b>Moss doesn't kill grass; it moves in where grass is already struggli
 date: 2026-11-15
 minutes: 3
 topics: [weeds, soil]
-tools: [["/weeds/#moss", "Moss on the weed board"], ["/blog/lawn-soil-test/", "Soil test translator"], ["/lawn-101/#grass", "Shade grass picker"]]
+tools: [["/weeds/#moss", "Moss on the weed board"], ["/blog/lawn-soil-test/", "Soil test translator"], ["/resources/what-grass-seed-should-i-buy/", "Shade grass picker"]]
 faq:
   - q: "Does lime get rid of moss?"
     a: "Only if your soil is actually acidic. Moss handles a wide range of pH, so lime alone rarely fixes it. Test the soil first, and add lime only if the pH is below about 6."
@@ -40,7 +40,7 @@ Moss is the lawn's way of telling you grass doesn't like it there. Kill it witho
 2. **Let in light.** Trim low tree branches. Even a little more sun helps.
 3. **Kill and rake (optional).** An iron-based moss killer turns it black in a few days. Or skip the product and just rake it out hard with a metal rake. Moss has tiny roots.
 4. **Loosen the soil.** Core aerate packed areas. [Aeration guide](/guides/should-i-aerate-my-lawn/).
-5. **Overseed in September** with grass that fits: fine fescue for shade, tall fescue for part sun. [Pick your grass](/lawn-101/#grass).
+5. **Overseed in September** with grass that fits: fine fescue for shade, tall fescue for part sun. [Pick your grass](/resources/what-grass-seed-should-i-buy/).
 6. **Feed it in fall** so the new grass fills in thick. [When to fertilize](/guides/when-to-fertilize-lawn/).
 
 ## Or Let It Win

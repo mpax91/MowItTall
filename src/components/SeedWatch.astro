@@ -49,10 +49,27 @@ const seedJson = JSON.stringify(SEEDS);
       <p class="sw-day"><b data-sw-day>Day –</b><span data-sw-stage>Pick a date</span></p>
       <span class="mc-word" data-tone="close" data-sw-word>…</span>
     </div>
-    <svg class="sw-scene" viewBox="0 0 104 34" shape-rendering="crispEdges" role="img" aria-label="What your seeded soil should look like about now" data-sw-scene></svg>
-    <div class="sw-line" aria-hidden="true">
-      <div class="sw-track" data-sw-track></div>
-      <span class="sw-today" data-sw-today></span>
+    <div class="sw-tm" data-sw-tm>
+      <div class="sw-tm-top">
+        <p class="sw-tm-day"><small>Slide Through 8 Weeks</small><b data-sw-tday>Day 0</b><span data-sw-tstage></span></p>
+        <button type="button" class="sw-tm-play" data-sw-play aria-label="Play the next 8 weeks">▶ Play</button>
+      </div>
+      <div class="sw-tm-view" data-sw-view>
+        <svg class="sw-scene" viewBox="0 0 96 52" shape-rendering="crispEdges" role="img" aria-label="Your seeded soil on the day picked with the slider" data-sw-scene></svg>
+        <span class="sw-tm-hint" data-sw-hint aria-hidden="true">◀ Slide ▶</span>
+      </div>
+      <p class="sw-tm-cap" data-sw-cap aria-live="polite"></p>
+      <div class="sw-tm-slider">
+        <div class="sw-tm-bands" aria-hidden="true">
+          <span class="sw-tm-band sw-b-sprout" data-sw-bsprout></span>
+          <span class="sw-tm-band sw-b-mow" data-sw-bmow></span>
+          <span class="sw-tm-you" data-sw-you>You</span>
+        </div>
+        <input type="range" min="0" max="60" step="1" value="0" data-sw-range aria-label="Days since you planted" />
+        <div class="sw-tm-ticks" aria-hidden="true"><span>Plant</span><span>2 wks</span><span>4 wks</span><span>6 wks</span><span>8 wks</span></div>
+        <div class="sw-tm-key" aria-hidden="true"><span><i class="k-sprout"></i>Sprouts</span><span><i class="k-mow"></i>First mow</span></div>
+      </div>
+      <button type="button" class="sw-tm-now is-off" data-sw-now>Back to Today</button>
     </div>
     <ol class="sw-steps" data-sw-steps></ol>
     <p class="sw-verdict" data-sw-verdict></p>
@@ -106,29 +123,86 @@ const seedJson = JSON.stringify(SEEDS);
       if (date.value && date.value !== synced) { synced = date.value; saveProfile('seeded', date.value); }
     };
 
-    /* ---------- the picture: soil, seeds and sprouts drawn as pixels */
-    function scene(stage: number, wave: number) {
-      // seeded random so the picture doesn't jump around on every redraw
-      let s = 7; const r = () => ((s = (s * 9301 + 49297) % 233280) / 233280);
+    /* ---------- the picture: soil, seed and grass drawn as pixels, for any day 0–60.
+       Every blade gets its own sprout day (fast wave / slow wave), growth rate and a later side shoot,
+       so sliding shows sprouts appearing in waves, filling in, the first mow, and thickening up. */
+    const W = 96, H = 52, SOIL = 38, PX_IN = 7, K = PX_IN / 5; // close-up: grass grows up from y=38; 7 px = 1 inch
+    function blades(sd: any) {
+      let s = 11; const r = () => ((s = (s * 9301 + 49297) % 233280) / 233280);
+      const mixed = sd.first[0] !== sd.last[0];
+      const out: any[] = [];
+      for (let x = 6; x < W; x++) for (let k = 0; k < 2; k++) {
+        if (r() < 0.12) continue;
+        const fast = !mixed || r() < 0.45;
+        const win = fast ? sd.first : sd.last;
+        const nogo = r() < 0.22;                       // not every seed makes it (and that's planned for)
+        const sprout = win[0] + r() * (win[1] - win[0]) + (r() < 0.12 ? r() * 6 : 0);
+        out.push({ x, nogo, sprout, rate: K * (fast && mixed ? 0.95 : sd.first[0] >= 14 ? 0.62 : 0.85) * (0.75 + r() * 0.5),
+          tiller: sprout + 16 + r() * 16, tx: r() < 0.5 ? -1 : 1, shade: r(), seedY: SOIL - 1 + Math.round(r()) });
+      }
+      return out;
+    }
+    const mowDayOf = (sd: any) => (sd.first[0] >= 14 ? 44 : 33);
+    const CUT = Math.round(3.4 * PX_IN);             // ~3.5 inches after mowing
+    function heightAt(g: number, rate: number, d: number, mowDay: number) {
+      if (g < 0) return 0;
+      const grow = (n: number) => Math.min(4.8 * PX_IN, rate * n * (n < 6 ? 0.55 : 1) + (n < 6 ? 0 : -2.7 * rate));
+      let h = Math.max(1, grow(g));
+      if (d >= mowDay && h > CUT) h = Math.min(h, CUT + 0.55 * K * ((d - mowDay) % 7));
+      return h;
+    }
+    function scene(d: number, sd: any, bl: any[]) {
       const px: string[] = [];
       const rect = (x: number, y: number, w: number, h: number, c: string) => px.push(`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${c}"/>`);
-      rect(0, 0, 104, 34, '#9fc6e6');                 // sky
-      rect(0, 0, 104, 6, '#b7d6ee');
-      rect(0, 20, 104, 14, '#6b4a2e');                // soil
-      for (let i = 0; i < 160; i++) rect(Math.floor(r() * 104), 20 + Math.floor(r() * 14), 1, 1, r() < 0.5 ? '#5a3d25' : '#7d5838');
-      for (let i = 0; i < 26; i++) rect(Math.floor(r() * 102), 19 + Math.floor(r() * 3), 1, 1, '#d8c08a'); // seeds on top
-      const blades = [0, 10, 40, 60, 70][stage] * (stage === 1 ? wave : 1);
-      const maxH = [0, 3, 7, 12, 14][stage];
-      const gap = stage === 3 ? 0.12 : stage === 2 ? 0.2 : 0;
-      for (let i = 0; i < blades; i++) {
-        const x = Math.floor(r() * 103);
-        if (gap && r() < gap) continue;                 // thin spots
-        const h = Math.max(1, Math.round(maxH * (0.45 + r() * 0.55)));
-        const c = r() < 0.5 ? '#5fae3e' : '#79c64f';
-        rect(x, 20 - h, 1, h, c);
-        if (h > 4 && r() < 0.4) rect(x + (r() < 0.5 ? -1 : 1), 20 - h + 1, 1, 1, '#9fd36a');
-      }
+      const mowDay = mowDayOf(sd);
+      rect(0, 0, W, H, '#9fc6e6'); rect(0, 0, W, 6, '#b7d6ee');
+      // a fence + a far hedge so it reads as a yard, not a petri dish
+      rect(0, 10, W, 1, '#e8eef2'); for (let x = 3; x < W; x += 11) rect(x, 6, 3, SOIL - 6, '#f4f6ef');
+      rect(0, 15, W, 1, '#e8eef2');
+      // soil (darker while you're keeping it damp)
+      const damp = d <= sd.last[1] + 3;
+      rect(0, SOIL, W, H - SOIL, damp ? '#5a3d25' : '#6b4a2e');
+      let s = 3; const r = () => ((s = (s * 9301 + 49297) % 233280) / 233280);
+      for (let i = 0; i < 200; i++) rect(Math.floor(r() * W), SOIL + Math.floor(r() * (H - SOIL)), 1, 1, r() < 0.5 ? (damp ? '#4a3220' : '#5a3d25') : (damp ? '#6b4a2e' : '#7d5838'));
+      // seeds still sitting on top
+      bl.forEach((b) => { if (b.nogo ? d < 40 : d < b.sprout) rect(b.x, b.seedY, 1, 1, '#d8c08a'); });
+      // grass
+      const tip = d >= mowDay && (d - mowDay) % 7 < 2;
+      bl.forEach((b) => {
+        if (b.nogo) return;
+        const g = d - b.sprout;
+        const h = Math.round(heightAt(g, b.rate, d, mowDay));
+        if (!h) return;
+        const young = g < 5, old = g > 26;
+        const c = young ? '#b5e07a' : old ? (b.shade < 0.5 ? '#4f9a35' : '#68b845') : (b.shade < 0.5 ? '#5fae3e' : '#79c64f');
+        rect(b.x, SOIL - h, 1, h, c);
+        if (h > 8 && !tip && b.shade > 0.7) rect(b.x + b.tx, SOIL - h + 2, 1, 1, '#9fd36a');
+        if (tip && h >= CUT - 1) rect(b.x, SOIL - h, 1, 1, '#d9e6a3');
+        const tg = d - b.tiller;                        // side shoot: the lawn thickening up
+        if (tg > 0) { const th = Math.round(Math.min(h - 1, heightAt(tg, b.rate * 0.9, d, mowDay))); if (th > 0) rect(b.x + b.tx, SOIL - th, 1, th, b.shade < 0.5 ? '#468f2f' : '#5aa83c'); }
+      });
+      // ruler: 1"–4" marks so the height means something
+      rect(0, SOIL - 4 * PX_IN - 1, 4, 4 * PX_IN + 1, '#f6c945'); rect(3, SOIL - 4 * PX_IN - 1, 1, 4 * PX_IN + 1, '#d99a1c');
+      for (let i = 1; i <= 4; i++) rect(0, SOIL - i * PX_IN, i % 2 ? 2 : 3, 1, '#12301d');
       return px.join('');
+    }
+    const tallestIn = (d: number, sd: any, bl: any[]) => {
+      let m = 0; const mowDay = mowDayOf(sd);
+      bl.forEach((b) => { if (!b.nogo) m = Math.max(m, heightAt(d - b.sprout, b.rate, d, mowDay)); });
+      return m / PX_IN;
+    };
+    function caption(d: number, sd: any) {
+      const mixed = sd.first[0] !== sd.last[0], mowDay = mowDayOf(sd);
+      if (d === 0) return 'Seed’s down. Now the hard part: waiting. Keep the top damp, every single day.';
+      if (d < sd.first[0]) return `Looks like nothing. It isn’t. Underground, the seed is soaking up water and splitting open. Stay off it.`;
+      if (d <= sd.first[1]) return mixed ? 'First green hairs, thinner than thread. That’s the fast grass showing off. Get low and look across the yard in morning light.' : 'First green hairs, thinner than thread. Get low and look across the yard in morning light. Keep watering.';
+      if (mixed && d < sd.last[0]) return 'Green fuzz on the fast stuff. The slow grass is still on its way, so don’t stop watering because it “looks done.”';
+      if (mixed && d <= sd.last[1]) return 'The second wave shows up between the first sprouts. This is the bluegrass and fescue finally clocking in.';
+      if (d <= 21) return 'Filling in. Patchy right now is normal. Ease off to watering once a day, a little longer each time.';
+      if (d < mowDay) return 'Getting tall and a little floppy. Roots are chasing water down. Water every few days, longer.';
+      if (d <= mowDay + 2) return 'First mow! Mower on its highest setting, sharp blade, dry ground. Take off the top inch, no more.';
+      if (d <= 45) return 'Mowed and thickening. Each blade starts sending out side shoots. That’s how thin turns into thick.';
+      return 'It’s a lawn. A young one. It keeps thickening through next spring. Thin spots get a pinch more seed.';
     }
 
     /* ---------- stages */
@@ -157,6 +231,68 @@ const seedJson = JSON.stringify(SEEDS);
       } catch { el.hidden = true; }
     }
 
+    /* ---------- the time machine: slide (or drag the picture, or hit Play) through days 0–60 */
+    const range = $<HTMLInputElement>('[data-sw-range]'), view = $('[data-sw-view]');
+    const playBtn = $<HTMLButtonElement>('[data-sw-play]'), nowBtn = $<HTMLButtonElement>('[data-sw-now]');
+    const MAX = 60, pctOf = (n: number) => `${(Math.min(MAX, n) / MAX) * 100}%`;
+    let tm = { sd: null as any, bl: [] as any[], blFor: '', today: 0, day: 0, touched: false };
+    let raf = 0, used = false;
+    function show(day: number) {
+      const sd = tm.sd; if (!sd) return;
+      tm.day = Math.max(0, Math.min(MAX, Math.round(day)));
+      range.value = String(tm.day);
+      $('[data-sw-scene]').innerHTML = scene(tm.day, sd, tm.bl);
+      const isToday = tm.day === Math.min(MAX, tm.today);
+      const inches = tallestIn(tm.day, sd, tm.bl);
+      $('[data-sw-tday]').textContent = tm.day === 0 ? 'Planting Day' : `Day ${tm.day}`;
+      $('[data-sw-tstage]').textContent = (isToday && tm.today <= MAX ? 'Today · ' : '') + (inches < 0.2 ? 'Nothing up yet' : `Tallest: about ${inches < 1 ? '½' : Math.round(inches * 2) / 2} in`).replace('.5 in', '½ in');
+      $('[data-sw-cap]').textContent = caption(tm.day, sd);
+      nowBtn.classList.toggle('is-off', isToday || tm.today > MAX);
+      nowBtn.textContent = `Back to Today (Day ${tm.today})`;
+      range.setAttribute('aria-valuetext', `Day ${tm.day}`);
+    }
+    function setToday(d: number, sd: any) {
+      tm.sd = sd; tm.today = d;
+      if (tm.blFor !== sd.id) { tm.bl = blades(sd); tm.blFor = sd.id; }
+      const mixed = sd.first[0] !== sd.last[0];
+      const sprout = $('[data-sw-bsprout]'), mow = $('[data-sw-bmow]'), you = $('[data-sw-you]');
+      sprout.style.left = pctOf(sd.first[0]); sprout.style.width = `calc(${pctOf(mixed ? sd.last[1] : sd.first[1])} - ${pctOf(sd.first[0])})`;
+      const md = mowDayOf(sd); mow.style.left = pctOf(md - 3); mow.style.width = `calc(${pctOf(md + 9)} - ${pctOf(md - 3)})`;
+      you.hidden = d > MAX; you.style.left = pctOf(d);
+      if (!tm.touched) show(Math.min(d, MAX)); else show(tm.day);
+    }
+    const touch = () => {
+      tm.touched = true; $('[data-sw-hint]').classList.add('is-gone');
+      if (!used) { used = true; (window as any).mitTrack?.('tool_use', { tool_name: 'seed_timeline', choice: type.value }); }
+    };
+    const stop = () => { cancelAnimationFrame(raf); raf = 0; playBtn.textContent = '▶ Play'; };
+    range.addEventListener('input', () => { stop(); touch(); show(+range.value); });
+    nowBtn.addEventListener('click', () => { stop(); show(tm.today); });
+    playBtn.addEventListener('click', () => {
+      if (raf) return stop();
+      touch();
+      const from = tm.day >= MAX ? 0 : tm.day, t0 = performance.now(), dur = (MAX - from) * 85;
+      playBtn.textContent = '❚❚ Pause';
+      const step = (t: number) => {
+        const day = from + ((t - t0) / dur) * (MAX - from);
+        show(day);
+        if (day < MAX) raf = requestAnimationFrame(step); else stop();
+      };
+      raf = requestAnimationFrame(step);
+    });
+    // drag sideways on the picture to scrub; vertical swipes still scroll the page (touch-action: pan-y)
+    let drag: { x: number; day: number; id: number } | null = null;
+    view.addEventListener('pointerdown', (e) => { drag = { x: e.clientX, day: tm.day, id: e.pointerId }; });
+    view.addEventListener('pointermove', (e) => {
+      if (!drag || e.pointerId !== drag.id) return;
+      const dx = e.clientX - drag.x;
+      if (Math.abs(dx) < 4) return;
+      stop(); touch();
+      show(drag.day + (dx / view.clientWidth) * MAX);
+    });
+    const end = () => { drag = null; };
+    view.addEventListener('pointerup', end); view.addEventListener('pointercancel', end); view.addEventListener('pointerleave', end);
+
     function update() {
       const sd = SEEDS.find((s: any) => s.id === type.value);
       const planted = new Date(date.value + 'T12:00');
@@ -166,6 +302,7 @@ const seedJson = JSON.stringify(SEEDS);
       save();
       if (!date.value || Number.isNaN(d)) return;
       if (d < 0) {
+        setToday(0, sd);
         $('[data-sw-day]').textContent = 'Not yet';
         $('[data-sw-stage]').textContent = 'That date is in the future';
         $('[data-sw-verdict]').textContent = 'Pick the day you actually spread the seed.';
@@ -174,17 +311,10 @@ const seedJson = JSON.stringify(SEEDS);
       const st = stageOf(d, sd);
       const mixed = sd.first[0] !== sd.last[0];
       // how far through the sprouting waves we are (for the picture)
-      const wave = st === 1 ? Math.min(1, 0.35 + (d - sd.first[0]) / Math.max(1, sd.last[1] - sd.first[0])) : 1;
       $('[data-sw-day]').textContent = `Day ${d}`;
       $('[data-sw-stage]').textContent = STAGES[st];
-      $('[data-sw-scene]').innerHTML = scene(st, wave);
+      setToday(d, sd);
 
-      // timeline: 0 → 56 days, bands for sprouting and mowing
-      const span = 56, pct = (n: number) => `${Math.min(100, (n / span) * 100)}%`;
-      $('[data-sw-track]').innerHTML =
-        `<span class="sw-band sw-b-sprout" style="left:${pct(sd.first[0])};width:calc(${pct(sd.last[1])} - ${pct(sd.first[0])})"></span>` +
-        `<span class="sw-band sw-b-mow" style="left:${pct(28)};width:calc(${pct(42)} - ${pct(28)})"></span>`;
-      $('[data-sw-today]').style.left = pct(d);
       const steps = [
         ['Day 0', 'Seed down'],
         [`Days ${sd.first[0]}–${sd.first[1]}`, mixed ? 'First sprouts' : 'Sprouts'],
@@ -260,9 +390,9 @@ const seedJson = JSON.stringify(SEEDS);
       const ev = (n: number, title: string, body: string) =>
         `BEGIN:VEVENT\r\nUID:mit-seed-${n}-${day(0)}@mowittall.com\r\nDTSTAMP:${day(0)}T120000Z\r\nDTSTART;VALUE=DATE:${day(n)}\r\nSUMMARY:${title}\r\nDESCRIPTION:${body}\r\nEND:VEVENT\r\n`;
       const text = 'BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//Mow It Tall//Seed//EN\r\n' +
-        ev(sd.first[1], 'Look for grass sprouts', 'Get low and look across the yard in morning light. Keep it damp. mowittall.com/resources/can-i-seed-now/#seedwatch') +
-        (sd.last[1] !== sd.first[1] ? ev(sd.last[1], 'Seed check: the slow ones', 'The bluegrass/fescue should be up by now. Ease watering to once a day. mowittall.com/resources/can-i-seed-now/#seedwatch') : '') +
-        ev(30, 'First mow check', 'Is the new grass about 4 inches? Mower on high, sharp blade, dry ground. mowittall.com/resources/can-i-seed-now/#seedwatch') +
+        ev(sd.first[1], 'Look for grass sprouts', 'Get low and look across the yard in morning light. Keep it damp. mowittall.com/resources/is-my-grass-seed-working/') +
+        (sd.last[1] !== sd.first[1] ? ev(sd.last[1], 'Seed check: the slow ones', 'The bluegrass/fescue should be up by now. Ease watering to once a day. mowittall.com/resources/is-my-grass-seed-working/') : '') +
+        ev(30, 'First mow check', 'Is the new grass about 4 inches? Mower on high, sharp blade, dry ground. mowittall.com/resources/is-my-grass-seed-working/') +
         'END:VCALENDAR\r\n';
       const a = document.createElement('a');
       a.href = URL.createObjectURL(new Blob([text], { type: 'text/calendar' }));

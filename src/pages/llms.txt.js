@@ -14,13 +14,16 @@ const TOOLS = [
   ['/calendar/', 'Lawn care calendar', 'What to do each month for cool-season lawns in the Northeast.'],
   ['/measure/', 'Lawn square footage calculator', 'Draw your lawn on a satellite map to get square feet per area and a total.'],
   ['/weeds/', 'Lawn weed identification guide', 'Photos and fixes for 16 common Northeast lawn weeds, including crabgrass, nutsedge, clover and creeping Charlie.'],
-  ['/resources/', 'Free lawn tools', 'Can I seed now, is my grass seed working, what is wrong with my lawn, lawn calculator, spreader settings, should I water, soil temperature.'],
+  ['/resources/', 'Free lawn tools', 'Hub of every free tool on the site, sorted by need: right now (water, seed, soil temperature, mowing time), something wrong (problem finder, weed ID), seed, feed and soil, doing a job right, mowing and gear, landscapers, fun.'],
   ['/lawn-101/', 'Lawn care 101', 'Six small habits that fix most lawns, plus a grass seed picker.'],
   ['/resources/should-i-water-my-lawn/', 'Should I water my lawn?', 'Live rain meter: last 7 days of rain vs. lawn water use plus a 3-day forecast, for any Northeast ZIP.'],
   ['/resources/can-i-seed-now/', 'Can I plant grass seed now?', 'Live yes/no from soil temperature and the 7-day forecast, plus germination times.'],
   ['/resources/lawn-calculator/', 'Lawn calculator', 'Seed, fertilizer, preventer, lime, straw, compost and water amounts by square footage and grass type.'],
   ['/resources/whats-wrong-with-my-lawn/', 'What is wrong with my lawn?', 'Lawn problem finder: brown patches, stripes, grubs, dog spots, seed failures and more, with cause, check and fix.'],
   ['/resources/lawn-soil-temperature/', 'Lawn soil temperature', 'Live soil temperature by ZIP with what each range means for crabgrass preventer, seeding and feeding.'],
+  ['/resources/is-my-grass-seed-working/', 'Is my grass seed working?', 'Germination tracker: seed type + planting date gives the day count, a slidable 8-week picture of what the seed should look like, watering and first-mow timing.'],
+  ['/resources/what-grass-seed-should-i-buy/', 'What grass seed should I buy?', 'Four-question grass seed picker for Northeast lawns (bluegrass/rye, perennial rye, tall fescue, fine fescue shade mix) with pounds to buy.'],
+  ['/resources/lawn-care-order-of-operations/', 'Lawn care order of operations', 'Step-by-step order for overseeding, patching, aerating, crabgrass preventer, fertilizing, weed control, liming, spring cleanup and fall wrap-up.'],
   ['/resources/spreader-settings/', 'Spreader settings calculator', 'Half-rate, two-direction spreader settings so fertilizer goes down without stripes.'],
 ];
 

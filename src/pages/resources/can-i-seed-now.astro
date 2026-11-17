@@ -1,7 +1,6 @@
 ---
 import ToolPage from '../../layouts/ToolPage.astro';
 import CanISeed from '../../components/CanISeed.astro';
-import SeedWatch from '../../components/SeedWatch.astro';
 const faq = [
   ['What is the best time to plant grass seed in the Northeast?', 'September. The soil is still warm, so seed sprouts fast, the nights are cooling off, and weeds are slowing down. Late August can work in a cool year, but around here August heat usually beats up new grass. Spring is possible but I don’t recommend it: new grass sprouts with the crabgrass and has to survive its first summer.'],
   ['What soil temperature does grass seed need?', 'Cool-season grass seed sprouts best with soil between about 50 and 70°F. Below 50°F it barely moves. Very hot soil and air make it hard to keep seedlings alive.'],
@@ -16,10 +15,10 @@ const sources = [
 ---
 <ToolPage seo="Can I Plant Grass Seed Now? Live Answer by ZIP" crumb="Can I Seed Now?" slug="can-i-seed-now" appName="Can I Seed Now?"
   h1="Can I Plant Grass Seed Now?"
-  description="A live yes-or-no answer on planting grass seed this week, from your soil temperature and 7-day forecast. Plus germination times and a seed countdown."
+  description="A live yes-or-no answer on planting grass seed this week, from your soil temperature and 7-day forecast. Plus germination times for every grass."
   answer="<b>In the Northeast, the best time to plant grass seed is September, when soil is 50 to 70°F and the nights are cooling off.</b> Late August works in a cool year. Spring is possible, but <a href='/blog/spring-seeding/'>I don’t recommend it</a>. The live checker below looks at your soil temperature and this week’s forecast and gives you a straight yes or no."
   faq={faq} sources={sources}>
-  <Fragment slot="tool"><CanISeed /><div class="tp-extra"><SeedWatch guide={false} /></div></Fragment>
+  <Fragment slot="tool"><CanISeed /></Fragment>
 
   <h2>How It Decides</h2>
   <ul>
@@ -39,6 +38,6 @@ const sources = [
       <tr><td>Kentucky bluegrass</td><td>14 to 30 days</td><td>6 weeks or more</td></tr>
     </tbody>
   </table>
-  <p>Already seeded? Use the “Is My Grass Seed Working?” countdown up top and I’ll tell you when to stop worrying.</p>
-  <p>Not sure which seed to buy? <a href="/lawn-101/#grass">Pick your grass in four questions</a>. Full steps: <a href="/guides/when-to-overseed-lawn/">when and how to overseed</a> and <a href="/guides/fix-bare-spots-in-lawn/">fixing bare spots</a>.</p>
+  <p>Already seeded? <a href="/resources/is-my-grass-seed-working/">Is my grass seed working?</a> lets you slide through the next 8 weeks and see what it should look like, so you know when to stop worrying.</p>
+  <p>Not sure which seed to buy? <a href="/resources/what-grass-seed-should-i-buy/">Pick your grass in four questions</a>. Full steps: <a href="/guides/when-to-overseed-lawn/">when and how to overseed</a> and <a href="/guides/fix-bare-spots-in-lawn/">fixing bare spots</a>.</p>
 </ToolPage>

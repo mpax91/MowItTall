@@ -6,4 +6,7 @@ export const TOOL_PAGES = [
   ['whats-wrong-with-my-lawn', 'What’s Wrong With My Lawn?'],
   ['lawn-soil-temperature', 'Soil Temperature'],
   ['spreader-settings', 'Spreader Settings'],
+  ['is-my-grass-seed-working', 'Is My Seed Working?'],
+  ['what-grass-seed-should-i-buy', 'Pick Your Grass'],
+  ['lawn-care-order-of-operations', 'Jobs in Order'],
 ];

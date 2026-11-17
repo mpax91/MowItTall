@@ -1,103 +1,164 @@
 ---
+// /resources/: the tool hub. A grid of every free tool, sorted by the question in the visitor's head
+// (see TOOL_CATS in src/data/tools.js for the order and why). Each card goes to that tool's own page.
+// Filter chips ("What are you trying to do?") show one section; the find box searches names and keywords.
+// Old in-page anchors (#seedwatch, #ops-overseed, #water-h…) are forwarded to the new dedicated pages.
 import Base from '../layouts/Base.astro';
-import Calendar from '../components/Calendar.astro';
-import SoilGauge from '../components/SoilGauge.astro';
-import RainMeter from '../components/RainMeter.astro';
-import ChipPicker from '../components/ChipPicker.astro';
-import CanISeed from '../components/CanISeed.astro';
-import SeedWatch from '../components/SeedWatch.astro';
-import LawnCalc from '../components/LawnCalc.astro';
-import SpreaderHelper from '../components/SpreaderHelper.astro';
-import { DX, DX_GROUPS } from '../data/diagnose.js';
-import { OPS, OPS_GROUPS } from '../data/orderOps.js';
-import { NEEDS, NEED_GROUPS } from '../data/doINeed.js';
-import { TOOL_PAGES } from '../data/toolPages.js';
+import PixelIcon from '../components/PixelIcon.astro';
+import { TOOLS, TOOL_CATS, toolsIn } from '../data/tools.js';
+import { TOOL_ICONS } from '../data/toolIcons.js';
 
+const site = 'https://mowittall.com';
 const title = 'Free Lawn Care Tools and Calculators | Mow It Tall';
 const description =
-  'Free lawn tools: can I seed now, is my seed working, what’s wrong with my lawn, a lawn calculator, spreader settings, should I water and live soil temperature.';
-const jump = [
-  ['#seed', 'Can I seed now?'], ['#seedwatch', 'Is my seed working?'], ['#dx', 'What’s wrong?'], ['#ops', 'Order of operations'], ['#calc', 'Lawn calculator'],
-  ['#spreader', 'Spreader settings'], ['#need', 'Do I need this?'], ['#water-h', 'Should I water?'], ['#measure-h', 'Measure'], ['#grass-h', 'Pick grass'],
-];
+  `${TOOLS.length} free lawn tools sorted by what you need: should I water, can I seed now, what’s wrong with my lawn, which grass seed, lawn calculator and more.`;
+const abs = (h) => (h.startsWith('http') ? h : site + h);
+const jsonLd = { '@graph': [
+  { '@type': 'CollectionPage', '@id': `${site}/resources/#page`, name: 'Free Lawn Tools', url: `${site}/resources/`, description, mainEntity: { '@id': `${site}/resources/#tools` } },
+  { '@type': 'ItemList', '@id': `${site}/resources/#tools`, name: 'Free lawn care tools', numberOfItems: TOOLS.length,
+    itemListElement: TOOLS.map((t, i) => ({ '@type': 'ListItem', position: i + 1, name: t.name, url: abs(t.href) })) },
+] };
+// never hide just one card behind a button
+const cats = TOOL_CATS.map((c) => { const tools = toolsIn(c.id); return { ...c, tools, show: tools.length - c.show === 1 ? tools.length : c.show }; });
 ---
-<Base title={title} description={description} path="/resources/" crumbs={[["Resources", "/resources/"]]}>
-  <main id="main">
+<Base title={title} description={description} path="/resources/" jsonLd={jsonLd} crumbs={[["Resources", "/resources/"]]}>
+  <main id="main" class="tg-page" data-tool-grid>
     <section class="page-head page-head-hub">
-      <h1>Free Lawn Resources</h1>
-      <p class="lede">Free tools and cheat sheets that do the thinking for you. No account, no email, no gas blower.</p>
-      <nav class="shed-jump" aria-label="Jump to a tool">
-        {jump.map(([h, t]) => <a class="bf-chip" href={h}>{t}</a>)}
-      </nav>
-      <p class="res-pages">Want one tool on its own page? {TOOL_PAGES.map(([sl, t], i) => <>{i > 0 && ' · '}<a href={`/resources/${sl}/`}>{t}</a></>)}</p>
+      <h1>Free Lawn Tools</h1>
+      <p class="lede">{TOOLS.length} free tools that do the thinking for you, sorted by what you’re trying to figure out. Tap one. No account, no email, no gas blower.</p>
+
+      <div class="tg-pick">
+        <h2 class="tg-ask" id="tg-ask">What Are You Trying to Do?</h2>
+        <div class="tg-chips" role="group" aria-labelledby="tg-ask">
+          <button type="button" class="tg-chip" data-tg-cat="" aria-pressed="true">Show Everything</button>
+          {cats.filter((c) => c.id !== 'start').map((c) => (
+            <button type="button" class="tg-chip" data-tg-cat={c.id} aria-pressed="false">{c.short}</button>
+          ))}
+        </div>
+        <label class="tg-find">
+          <span class="sr-only">Find a tool</span>
+          <svg viewBox="0 0 12 12" width="18" height="18" aria-hidden="true" shape-rendering="crispEdges"><path fill="currentColor" d="M3 1h4v1h1v1h1v4H8v1H7v1H3V8H2V7H1V3h1V2h1zm0 2v4h4V3zm5 6h1v1h1v1h1v1h-1v-1h-1v-1H8z" /></svg>
+          <input type="search" placeholder="Find a tool (try “seed”)" autocomplete="off" enterkeyhint="search" data-tg-find />
+        </label>
+      </div>
     </section>
 
-    <section class="plan plan-mid" aria-labelledby="quiz-h">
+    <p class="tg-none" data-tg-none hidden>No tool for that yet. <a href="/plan/">Take the 2-minute quiz</a> or <a href="/search/">search the whole site</a>.</p>
+
+    {cats.map((c) => {
+      const hiddenN = Math.max(0, c.tools.length - c.show);
+      return (
+        <section class:list={['tg-sec', `tg-sec-${c.id}`]} id={`cat-${c.id}`} data-tg-sec={c.id} aria-labelledby={`tg-${c.id}-h`}>
+          <div class="tg-head">
+            <span class="tg-icon"><PixelIcon map={TOOL_ICONS[c.icon]} size={34} /></span>
+            <div>
+              <h2 id={`tg-${c.id}-h`}>{c.name}</h2>
+              <p class="tg-why">{c.why}</p>
+            </div>
+          </div>
+          <ul class:list={['tg-grid', c.id === 'start' && 'tg-grid-start']}>
+            {c.tools.map((t, i) => (
+              <li class="tg-item" data-tg-item data-extra={i >= c.show ? '' : undefined} data-keys={`${t.name} ${t.line} ${t.keys || ''} ${c.name}`.toLowerCase()}>
+                <a class="tg-card" href={t.href} data-track="tool_click" data-track-tool_name={t.id} data-track-link_area={`resources_${c.id}`}>
+                  <span class="tg-tag" data-tag={t.tag}>{t.tag === 'Live' && <i aria-hidden="true"></i>}{t.tag}</span>
+                  <span class="tg-name">{t.name}</span>
+                  <span class="tg-line">{t.line}</span>
+                  <span class="tg-go" aria-hidden="true">→</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+          {hiddenN > 0 && (
+            <button type="button" class="tg-more" data-tg-more aria-expanded="false" data-more={`Show ${hiddenN} More`}>Show {hiddenN} More ▾</button>
+          )}
+        </section>
+      );
+    })}
+
+    <section class="plan plan-mid" aria-labelledby="tg-plan-h">
       <div class="window plan-card">
-        <h2 id="quiz-h">Your Lawn Plan</h2>
-        <p>Seven quick questions about your yard and how much effort you’ll honestly give. You get the few things that matter, in order, with phone reminders.</p>
+        <h2 id="tg-plan-h">Too Many Tools? Fair.</h2>
+        <p>Skip all of this. Answer seven quick questions and I’ll tell you the three or four things your lawn actually needs, in order, with reminders.</p>
         <a class="btn" href="/plan/">Get My Free Lawn Plan</a>
       </div>
     </section>
-
-    <section class="tool-sec"><CanISeed /></section>
-    <section class="tool-sec"><SeedWatch /></section>
-
-    <section class="tool-sec">
-      <ChipPicker id="dx" title="What’s wrong with my lawn?" sub="Tap what you’re seeing. I’ll tell you the likely cause, how to check, and the fix." items={DX} groups={DX_GROUPS} prompt="Tap what your lawn is doing." />
-    </section>
-
-    <section class="tool-sec">
-      <ChipPicker id="ops" title="Order of operations" sub="Pick the job. Get the steps in the right order. Order matters more than products." items={OPS} groups={OPS_GROUPS} prompt="Tap a job." fine="Always follow the product labels. They win." />
-    </section>
-
-    <section class="tool-sec"><LawnCalc /></section>
-
-    <section class="plan plan-mid" aria-labelledby="measure-h">
-      <div class="window plan-card">
-        <h2 id="measure-h">Measure Your Yard</h2>
-        <p>Trace your grass on a satellite map. Each part gets its square feet written right on it, plus a total. Every tool on this page uses it.</p>
-        <a class="btn" href="/measure/">Measure My Lawn</a>
-      </div>
-    </section>
-
-    <section class="tool-sec"><SpreaderHelper /></section>
-
-    <section class="tool-sec">
-      <ChipPicker id="need" title="Do I need this?" sub="Tap the thing your neighbor bought. Get my verdict." items={NEEDS} groups={NEED_GROUPS} prompt="Tap something." />
-    </section>
-
-    <section class="plan plan-mid" aria-labelledby="grass-h">
-      <div class="window plan-card">
-        <h2 id="grass-h">Pick Your Grass Seed</h2>
-        <p>Sun, shade, kids, dogs, no sprinkler? Four questions and you’ll know exactly which grass to buy and how much.</p>
-        <a class="btn" href="/lawn-101/#grass">Find My Grass</a>
-      </div>
-    </section>
-
-    <RainMeter />
-
-    <SoilGauge />
-
-    <Calendar />
-
-    <section class="plan plan-mid" aria-labelledby="nb-card-h">
-      <div class="window plan-card">
-        <h2 id="nb-card-h">Know a Lawn That Needs Help?</h2>
-        <p>Send your neighbor a free lawn plan. Print an anonymous note for their door, or text it.</p>
-        <a class="btn" href="/neighbor/">Send It to a Neighbor</a>
-      </div>
-    </section>
-
-    <section class="workbench" aria-labelledby="bench-h">
-      <h2 id="bench-h">On the Workbench</h2>
-      <p class="section-lede">Tools I’m building next.</p>
-      <ul class="bench-list">
-        <li><strong>Should I mow today?</strong> A straight yes or no for your ZIP, from rain, soil temperature and the etiquette rules.</li>
-        <li><strong>Lawn alerts.</strong> A heads-up when it’s time to water, seed, feed or put down crabgrass preventer.</li>
-        <li><strong>Your lawn, saved.</strong> An account with your measurements, your plan, what you’ve done and progress photos.</li>
-        <li><strong>Anonymous neighbor emails.</strong> Send the site to a neighbor without them knowing it was you.</li>
-      </ul>
-    </section>
   </main>
 </Base>
+
+<script>
+  // Old one-page anchors → the tool's own page (emails, social posts and short links still use some).
+  const OLD: Record<string, string> = {
+    seed: '/resources/can-i-seed-now/', seedwatch: '/resources/is-my-grass-seed-working/', dx: '/resources/whats-wrong-with-my-lawn/',
+    ops: '/resources/lawn-care-order-of-operations/', calc: '/resources/lawn-calculator/', spreader: '/resources/spreader-settings/',
+    need: '/blog/lawn-stuff-you-dont-need/#tool', 'water-h': '/resources/should-i-water-my-lawn/', water: '/resources/should-i-water-my-lawn/',
+    'soil-h': '/resources/lawn-soil-temperature/', 'measure-h': '/measure/', 'grass-h': '/resources/what-grass-seed-should-i-buy/',
+    'quiz-h': '/plan/', 'nb-card-h': '/neighbor/', calendar: '/calendar/',
+  };
+  const h = decodeURIComponent(location.hash.slice(1));
+  if (h && !h.startsWith('cat-')) {
+    const to = OLD[h] || (h.startsWith('dx-') ? `/resources/whats-wrong-with-my-lawn/#${h}` : h.startsWith('ops-') ? `/resources/lawn-care-order-of-operations/#${h}` : '');
+    if (to) location.replace(to);
+  }
+
+  const root = document.querySelector<HTMLElement>('[data-tool-grid]')!;
+  const chips = [...root.querySelectorAll<HTMLButtonElement>('[data-tg-cat]')];
+  const secs = [...root.querySelectorAll<HTMLElement>('[data-tg-sec]')];
+  const find = root.querySelector<HTMLInputElement>('[data-tg-find]')!;
+  const none = root.querySelector<HTMLElement>('[data-tg-none]')!;
+  let cat = '';
+
+  const expand = (sec: HTMLElement, on: boolean) => {
+    sec.classList.toggle('is-open', on);
+    const b = sec.querySelector<HTMLButtonElement>('[data-tg-more]');
+    if (b) { b.setAttribute('aria-expanded', String(on)); b.textContent = on ? 'Show Less ▴' : `${b.dataset.more} ▾`; }
+  };
+
+  function render() {
+    const q = find.value.trim().toLowerCase();
+    const words = q.split(/\s+/).filter(Boolean);
+    let shown = 0;
+    root.classList.toggle('is-filtered', !!(cat || q));
+    secs.forEach((sec) => {
+      const inCat = !cat || sec.dataset.tgSec === cat || (q && !cat);
+      let n = 0;
+      sec.querySelectorAll<HTMLElement>('[data-tg-item]').forEach((li) => {
+        const hit = !words.length || words.every((w) => li.dataset.keys!.includes(w));
+        li.hidden = !(inCat && hit);
+        if (!li.hidden) n++;
+      });
+      sec.hidden = n === 0 || (!!cat && sec.dataset.tgSec !== cat && sec.dataset.tgSec !== 'start') || (!!cat && sec.dataset.tgSec === 'start' && !q);
+      if (cat === sec.dataset.tgSec || q) sec.classList.add('is-open'); else if (!sec.dataset.userOpen) expand(sec, false);
+      if (!sec.hidden) shown += n;
+    });
+    none.hidden = shown > 0;
+    chips.forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.tgCat === cat)));
+  }
+
+  chips.forEach((c) => c.addEventListener('click', () => {
+    cat = c.dataset.tgCat || '';
+    find.value = '';
+    history.replaceState(null, '', cat ? `#cat-${cat}` : location.pathname);
+    render();
+    (window as any).mitTrack?.('tool_choice', { tool_name: 'resources_filter', choice: cat || 'all' });
+    const target = cat ? root.querySelector(`#cat-${cat}`) : null;
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }));
+
+  let t = 0;
+  find.addEventListener('input', () => {
+    cat = '';
+    render();
+    clearTimeout(t);
+    t = window.setTimeout(() => { if (find.value.trim().length > 1) (window as any).mitTrack?.('search', { search_term: find.value.trim().slice(0, 60), search_location: 'resources' }); }, 1200);
+  });
+
+  root.querySelectorAll<HTMLButtonElement>('[data-tg-more]').forEach((b) => b.addEventListener('click', () => {
+    const sec = b.closest<HTMLElement>('[data-tg-sec]')!;
+    const on = !sec.classList.contains('is-open');
+    sec.dataset.userOpen = on ? '1' : '';
+    expand(sec, on);
+  }));
+
+  // #cat-seed etc. opens that section filtered (handy for links from emails and posts)
+  if (h.startsWith('cat-') && chips.some((c) => c.dataset.tgCat === h.slice(4))) { cat = h.slice(4); render(); }
+</script>

@@ -70,7 +70,7 @@ export const MONTH_PAGES = [
     note: '<b>Rough-looking lawn? You’re not alone.</b> Most lawns around here struggle by now unless they’ve been set up for it: mowed tall all summer, fed in fall, thick enough to shade out weeds. It takes a few years of the basics to get there. Stick to the plan. The comeback starts in a few weeks.',
     skip: ['Seeding. Most years, August heat beats up new grass. Wait for September unless a cool spell hits early.', 'Crabgrass preventer in late summer if you plan to seed. It blocks seed too.', 'Fertilizer in the heat. Line up your Labor Day feeding instead.', 'Panicking about the crabgrass. It dies at the first frost. Pull the worst of it and seed those spots in September.'],
     mow: 'Weekly or less at 3.5 to 4 inches until the heat breaks. Skip a week if it isn’t growing.',
-    extra: ['Buy seed now, before the good stuff sells out. <a href="/lawn-101/#grass">Pick your grass</a> in four taps.', 'Mail in a soil test now so you know about lime before fall.', 'Packed, hard soil? Line up a core aerator for early September, right before you seed.'],
+    extra: ['Buy seed now, before the good stuff sells out. <a href="/resources/what-grass-seed-should-i-buy/">Pick your grass</a> in four taps.', 'Mail in a soil test now so you know about lime before fall.', 'Packed, hard soil? Line up a core aerator for early September, right before you seed.'],
   },
   {
     slug: 'september',

@@ -432,7 +432,7 @@ export function build(key, c, today, lib = []) {
         ['p', hi(c)],
         ['p', 'When it’s time to seed (September, mostly), the seed aisle is a wall of bags with the same green picture on every one. The picture is lying. The right grass depends on your sun, your traffic and whether you water.'],
         ['p', 'Four taps and I’ll tell you the mix and how many pounds. Do it from this email and it saves to your profile, so your September seeding reminder names the exact seed.'],
-        ['btn', 'Pick My Grass', '/lawn-101/#grass'],
+        ['btn', 'Pick My Grass', '/resources/what-grass-seed-should-i-buy/'],
         ['p', '– Mike'],
         ['ps', nextLine()],
       ],
@@ -475,7 +475,7 @@ export function build(key, c, today, lib = []) {
           ['p', 'This one’s on your landscaper. One friendly text does it:'],
           ['box', CREW_TASKS[id].line],
           ['btn', 'Write the Text for Me', `/blog/what-to-tell-your-landscaper/?asks=${CREW_JOBS[id].asks}#crewtext`],
-          id === 'aerate' ? ['p', 'Then seed right after, with seed you picked. <a href="/lawn-101/#grass">Pick your grass</a>.'] : null,
+          id === 'aerate' ? ['p', 'Then seed right after, with seed you picked. <a href="/resources/what-grass-seed-should-i-buy/">Pick your grass</a>.'] : null,
           ['p', '– Mike'],
         ].filter(Boolean),
       };
@@ -501,7 +501,7 @@ export function build(key, c, today, lib = []) {
           : typical ? ['box', `<b>For a typical 5,000 sq ft lawn:</b> ${typical}.${cost ? ` About ${cost}.` : ''}<br><a href="/measure/">Measure your lawn</a> (one minute) and I’ll do the exact math from now on.`]
           : cost ? ['box', `<b>Cost:</b> about ${cost}.`] : null,
         id === 'lime' && c.answers.ph ? ['p', `<b>Your soil test said pH ${c.answers.ph}.</b> That’s low, so yes: lime this fall.`] : null,
-        id === 'seed' && plan.grass ? ['p', `<b>Your grass:</b> ${plan.grass.name}${plan.grass.mix ? ` (${plan.grass.mix})` : ''}.${c.answers.grass ? '' : ' <a href="/lawn-101/#grass">Not sure? Pick it in 4 taps.</a>'}`] : null,
+        id === 'seed' && plan.grass ? ['p', `<b>Your grass:</b> ${plan.grass.name}${plan.grass.mix ? ` (${plan.grass.mix})` : ''}.${c.answers.grass ? '' : ' <a href="/resources/what-grass-seed-should-i-buy/">Not sure? Pick it in 4 taps.</a>'}`] : null,
         id === 'seed' ? ['p', `<b>Plus starter fertilizer</b> the same day: ${c.sqft ? starterBags(c.sqft) : '1 bag of the 5,000 sq ft size for a typical lawn'}. The one with the big middle number.`] : null,
         FEEDS.has(id) && c.answers.spreader === 'no' ? ['p', 'No spreader yet? <a href="/blog/how-to-use-a-spreader/">Which one to get and how to use it</a> (5 minutes).'] : null,
         t.tip ? ['p', `<b>Heads up:</b> ${t.tip}`] : null,
@@ -557,7 +557,7 @@ export function build(key, c, today, lib = []) {
           ['p', 'September is the best month all year to grow grass around here, and the stores get picked over. Shop this month so you’re ready on day one.'],
           ['h', 'Your Shopping List'],
           ['list', [
-            g.name ? `<b>Seed: ${g.name}</b>${g.mix ? ` (${g.mix})` : ''}. ${cap(c.sqft ? amountFor('seed', c.sqft, plan) : `${amountFor('seed', 5000, plan)} for a typical lawn`)}.${c.answers.grass ? '' : ' <a href="/lawn-101/#grass">Not sure? Pick it in 4 taps.</a>'}` : '<b>Seed:</b> <a href="/lawn-101/#grass">pick your grass in 4 taps</a> and it tells you how many pounds.',
+            g.name ? `<b>Seed: ${g.name}</b>${g.mix ? ` (${g.mix})` : ''}. ${cap(c.sqft ? amountFor('seed', c.sqft, plan) : `${amountFor('seed', 5000, plan)} for a typical lawn`)}.${c.answers.grass ? '' : ' <a href="/resources/what-grass-seed-should-i-buy/">Not sure? Pick it in 4 taps.</a>'}` : '<b>Seed:</b> <a href="/resources/what-grass-seed-should-i-buy/">pick your grass in 4 taps</a> and it tells you how many pounds.',
             `<b>Starter fertilizer</b> (the big middle number): ${c.sqft ? starterBags(c.sqft) : '1 bag of the 5,000 sq ft size for a typical lawn'}.`,
             plan.tasks.some((t) => t.id === 'fall-feed') ? `<b>Labor Day fertilizer:</b> ${c.sqft ? amountFor('fall-feed', c.sqft, plan) : amountFor('fall-feed', 5000, plan) + ' for a typical lawn'}. (Skip it on spots that get starter.)` : '',
             c.answers.ph ? '' : '<b>A soil test kit</b>, if you haven’t done one. <a href="/blog/lawn-soil-test/">Here’s how</a>.',

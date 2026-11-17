@@ -61,7 +61,7 @@ import Base from '../layouts/Base.astro';
       h.textContent = c[0];
       p.textContent = `${c[1]} Saved to your lawn profile.`;
       window.mitTrack && window.mitTrack('form_submit', { form_id: `profile_${f}`, choice: v, method: 'email' });
-      if (f !== 'sun' || v !== 'shade') next.insertAdjacentHTML('afterbegin', '<a class="btn btn-quiet" href="/lawn-101/#grass">Pick Your Grass (4 Taps)</a>');
+      if (f !== 'sun' || v !== 'shade') next.insertAdjacentHTML('afterbegin', '<a class="btn btn-quiet" href="/resources/what-grass-seed-should-i-buy/">Pick Your Grass (4 Taps)</a>');
     }
   </script>
 </Base>

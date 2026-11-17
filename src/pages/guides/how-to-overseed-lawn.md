@@ -9,7 +9,7 @@ answer: "<b>Overseed in September: mow shorter than usual and bag the clippings,
 date: 2026-11-17
 minutes: 4
 topics: [seeding]
-tools: [["/lawn-101/#grass", "Pick your grass (and how many pounds)"], ["/resources/can-i-seed-now/", "Can I seed now? (live)"], ["/resources/can-i-seed-now/#seedwatch", "Is my seed working? (tracker)"]]
+tools: [["/resources/what-grass-seed-should-i-buy/", "Pick your grass (and how many pounds)"], ["/resources/can-i-seed-now/", "Can I seed now? (live)"], ["/resources/can-i-seed-now/#seedwatch", "Is my seed working? (tracker)"]]
 faq:
   - q: "What is the best month to overseed in the Northeast?"
     a: "September. Warm soil, cooler air, fall rain and fewer weeds make it the best window of the year. Late August works if the heat breaks early; early October is last call with fast-sprouting grass."
@@ -32,7 +32,7 @@ Overseeding is the single best thing you can do for a thin lawn. It's also the e
 
 ## August: Get Ready
 
-- **Pick the seed.** Match your sun and your yard, not the picture on the bag. [Pick your grass in 4 taps](/lawn-101/#grass): it tells you the mix and the pounds for your lawn.
+- **Pick the seed.** Match your sun and your yard, not the picture on the bag. [Pick your grass in 4 taps](/resources/what-grass-seed-should-i-buy/): it tells you the mix and the pounds for your lawn.
 - **Measure.** You need square feet to buy the right amount. [Measure on a map](/measure/).
 - **Buy:** seed (at the overseeding rate, about half the new-lawn rate), starter fertilizer, and maybe a bag of compost or topsoil for bare spots.
 - **Soil test** if you haven't. [Here's how](/blog/lawn-soil-test/).

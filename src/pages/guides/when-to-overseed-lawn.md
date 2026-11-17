@@ -10,7 +10,7 @@ updated: 2026-11-16
 date: 2026-11-15
 minutes: 4
 topics: [seeding]
-tools: [["/resources/can-i-seed-now/", "Can I seed now?"], ["/resources/lawn-calculator/", "How much seed do I need?"], ["/lawn-101/#grass", "Pick your grass seed"], ["/resources/can-i-seed-now/#seedwatch", "Is my seed working?"]]
+tools: [["/resources/can-i-seed-now/", "Can I seed now?"], ["/resources/lawn-calculator/", "How much seed do I need?"], ["/resources/what-grass-seed-should-i-buy/", "Pick your grass seed"], ["/resources/can-i-seed-now/#seedwatch", "Is my seed working?"]]
 faq:
   - q: "Is October too late to overseed?"
     a: "Early October is usually OK in the Lower Hudson Valley if you use fast grass like perennial ryegrass. By mid-October the soil is cooling and young grass may not be tough enough for winter. If you missed it, wait for next September."
@@ -44,7 +44,7 @@ My [Can I seed now?](/resources/can-i-seed-now/) tool checks your soil temperatu
 
 ## How to Overseed, Step by Step
 
-1. **Pick the right seed.** Match it to your sun and how you use the yard. [Pick your grass](/lawn-101/#grass) in four taps.
+1. **Pick the right seed.** Match it to your sun and how you use the yard. [Pick your grass](/resources/what-grass-seed-should-i-buy/) in four taps.
 2. **Mow short.** Drop the mower to about 2 to 2.5 inches for this one mow, and bag the clippings.
 3. **Get seed to soil.** Core aerate, or rake hard with a metal rake until you see dirt between the grass. Seed sitting on top of thatch won't grow.
 4. **Spread the seed.** Use about half the new-lawn rate on the bag. Go in two directions so you don't miss stripes. [How much do I need?](/resources/lawn-calculator/)

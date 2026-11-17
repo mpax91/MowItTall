@@ -1,0 +1,48 @@
+---
+import ToolPage from '../../layouts/ToolPage.astro';
+import GrassPicker from '../../components/GrassPicker.astro';
+const faq = [
+  ['What is the best grass seed for the Northeast?', 'For a sunny lawn that gets watered, a Kentucky bluegrass and perennial ryegrass blend: it looks great, stripes well and heals itself. For a lawn that never gets watered or gets beat up by kids and dogs, turf-type tall fescue. For shade, a fine fescue mix. Most yards with a mix of sun and shade do best with a sun and shade blend.'],
+  ['What grass seed grows in shade?', 'Fine fescues (creeping red, chewings and hard fescue) handle shade best. They need at least about 4 hours of direct sun. Under that, no lawn grass will stay thick, so mulch or a groundcover is the honest answer.'],
+  ['What is the fastest growing grass seed?', 'Perennial ryegrass. It sprouts in 5 to 10 days and fills in quickly, which is why it’s in most store mixes. Kentucky bluegrass is the slowest, up to a month.'],
+  ['How much grass seed do I need?', 'It depends on the grass. A new lawn takes about 3 to 5 pounds per 1,000 square feet for bluegrass or rye blends and 6 to 8 pounds for tall fescue. Overseeding an existing lawn takes about half that. The picker does the math for your lawn if you measure it first.'],
+  ['Is expensive grass seed worth it?', 'Usually, yes. Cheap bags are often padded with annual ryegrass, coated filler or “other crop” seed. Look at the tag: germination 85% or higher, weed seed under 0.5%, no annual ryegrass, and a test date in the last year.'],
+];
+const sources = [
+  ['Penn State Extension: Lawn establishment', 'https://extension.psu.edu/lawn-establishment'],
+  ['Penn State Extension: Growing turf under shaded conditions', 'https://extension.psu.edu/growing-turf-under-shaded-conditions'],
+  ['University of Missouri Extension: Lawn grasses for shade', 'https://www.extension.missouri.edu/publications/g6725'],
+];
+---
+<ToolPage seo="What Grass Seed Should I Buy? Free Picker for Northeast Lawns" crumb="Pick Your Grass" slug="what-grass-seed-should-i-buy" appName="Grass Seed Picker"
+  h1="What Grass Seed Should I Buy?"
+  description="Four questions about sun, traffic, watering and what you care about. Get the grass seed that fits your yard and exactly how much to buy."
+  answer="<b>For most sunny Northeast lawns, a Kentucky bluegrass and perennial ryegrass blend. For lawns that never get watered or get beat up, turf-type tall fescue. For shade, a fine fescue mix.</b> Answer four quick questions below and I’ll pick one for your yard, plus how many pounds to buy."
+  faq={faq} sources={sources}>
+  <Fragment slot="tool"><GrassPicker id="gp-tool" postHref="/blog/grass-types-northeast/" /></Fragment>
+
+  <h2>The Four Grasses, in One Table</h2>
+  <table>
+    <thead><tr><th>Grass</th><th>Best For</th><th>Sprouts In</th><th>My Take</th></tr></thead>
+    <tbody>
+      <tr><td>Kentucky bluegrass</td><td>Full sun, watered, stripes</td><td>2 to 4 weeks</td><td>The varsity captain. Spreads and heals itself. Needs water.</td></tr>
+      <tr><td>Perennial ryegrass</td><td>Full sun, fast results</td><td>5 to 10 days</td><td>My guy. Fast, shiny, stripes like a dream. Doesn’t spread.</td></tr>
+      <tr><td>Tall fescue</td><td>Kids, dogs, no sprinkler</td><td>1 to 2 weeks</td><td>The offensive lineman. Deep roots, takes a beating, a little coarse.</td></tr>
+      <tr><td>Fine fescue</td><td>Shade (4+ hours of sun)</td><td>1 to 2 weeks</td><td>The introvert. Thin blades, low water, hates traffic.</td></tr>
+    </tbody>
+  </table>
+  <p>The full roast of each one is in <a href="/blog/grass-types-northeast/">every grass seed worth buying, ranked</a>.</p>
+
+  <h2>Read the Tag, Not the Picture</h2>
+  <p>The front of the bag is marketing. The little white tag is the truth. Look for:</p>
+  <ul>
+    <li><strong>Germination 85% or higher.</strong></li>
+    <li><strong>Weed seed under 0.5%</strong>, and “noxious weeds: none.”</li>
+    <li><strong>No annual ryegrass.</strong> It dies after one year. That’s not a lawn, that’s a rental.</li>
+    <li><strong>A test date in the last 12 months.</strong> Old seed sprouts worse.</li>
+    <li><strong>Coated seed</strong> means you’re paying for coating. Buy a little more if that’s all they have.</li>
+  </ul>
+
+  <h2>When to Plant It</h2>
+  <p>September, for most of the Northeast. Warm soil, cool nights, and the weeds are packing up. <a href="/resources/can-i-seed-now/">Check if this week is a good week</a>, and once it’s down, <a href="/resources/is-my-grass-seed-working/">track whether it’s working</a>. Need the amounts for your whole yard? <a href="/measure/">Measure it</a> and the picker shows pounds for your lawn.</p>
+</ToolPage>

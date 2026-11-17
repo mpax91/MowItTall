@@ -70,7 +70,7 @@ export const DX = [
     title: 'The tree is winning.',
     sections: s(['Not enough sun. Most grass wants at least 4 hours of direct sun.'], [],
       ['Seed with fine fescue. It’s the shade specialist.', 'Trim the lower branches to let light in.', 'Under 4 hours of sun? Mulch it. That’s not failure, that’s math.']),
-    more: { href: '/lawn-101/#grass', text: 'Pick a grass for your sun' } },
+    more: { href: '/resources/what-grass-seed-should-i-buy/', text: 'Pick a grass for your sun' } },
   { id: 'weedy', group: 'thin', label: 'Weeds everywhere', word: 'THIN GRASS', tone: 'close',
     title: 'Weeds aren’t the problem. Empty space is.',
     sections: s(['Weeds move into thin lawns.'], [],

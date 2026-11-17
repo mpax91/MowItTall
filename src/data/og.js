@@ -30,6 +30,9 @@ export const OG_PAGES = {
   '/resources/whats-wrong-with-my-lawn/': { title: 'What’s Wrong With My Lawn? Tap What You See', kicker: 'Free Tool' },
   '/resources/lawn-soil-temperature/': { title: 'Lawn Soil Temperature, Right Now', kicker: 'Free Tool' },
   '/resources/spreader-settings/': { title: 'Spreader Settings Without the Stripes', kicker: 'Free Tool' },
+  '/resources/is-my-grass-seed-working/': { title: 'Is My Grass Seed Working? Slide Through 8 Weeks', kicker: 'Free Tool' },
+  '/resources/what-grass-seed-should-i-buy/': { title: 'What Grass Seed Should I Buy? Four Questions', kicker: 'Free Tool' },
+  '/resources/lawn-care-order-of-operations/': { title: 'Lawn Jobs in the Right Order', kicker: 'Free Tool' },
 };
 
 const slugOf = (k) => k.split('/').pop().replace(/\.md$/, '');

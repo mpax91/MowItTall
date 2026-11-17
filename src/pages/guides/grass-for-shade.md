@@ -9,7 +9,7 @@ answer: "<b>Fine fescues (hard, creeping red, Chewings and sheep fescue) are the
 date: 2026-11-17
 minutes: 3
 topics: [seeding]
-tools: [["/lawn-101/#grass", "Pick your grass (4 taps)"], ["/guides/moss-in-lawn/", "Moss in the lawn"], ["/guides/how-to-overseed-lawn/", "How to overseed, step by step"]]
+tools: [["/resources/what-grass-seed-should-i-buy/", "Pick your grass (4 taps)"], ["/guides/moss-in-lawn/", "Moss in the lawn"], ["/guides/how-to-overseed-lawn/", "How to overseed, step by step"]]
 faq:
   - q: "What is the best grass seed for shade?"
     a: "Fine fescues: hard fescue, creeping red fescue, Chewings fescue and sheep fescue. They handle more shade than any other cool-season lawn grass. A shade mix that's mostly fine fescue is what you want under trees."
@@ -37,7 +37,7 @@ Grass is a sun plant. Trees are shade machines. Every shady lawn is a negotiatio
 - **Kentucky bluegrass:** the least shade-tolerant of the bunch, except a few shade-specific varieties.
 - **Rough bluegrass:** grows in cool, constantly wet shade, but I'd call it a weed in a normal lawn ([it's on my weed board](/weeds/rough-bluegrass/)).
 
-**Bottom line:** under trees, buy a shade mix that's mostly fine fescue. [Pick your grass in 4 taps](/lawn-101/#grass) and it'll tell you the mix and the pounds.
+**Bottom line:** under trees, buy a shade mix that's mostly fine fescue. [Pick your grass in 4 taps](/resources/what-grass-seed-should-i-buy/) and it'll tell you the mix and the pounds.
 
 ## How to Care for a Shady Lawn
 

@@ -3,10 +3,11 @@
 // question-style H1, short answer box, the live tool, how it works, FAQ, sources.
 // Props: seo, description, slug, h1, crumb, answer (HTML), appName, faq [[q, a]], sources [[name, url]]
 import Base from './Base.astro';
-import { TOOL_PAGES } from '../data/toolPages.js';
+import { relatedTools } from '../data/tools.js';
 const { seo, description, slug, h1, crumb, answer, appName, faq = [], sources = [] } = Astro.props;
 const site = 'https://mowittall.com';
 const path = `/resources/${slug}/`;
+const more = relatedTools(path, 6);
 const title = seo.length + 14 <= 65 ? `${seo} | Mow It Tall` : seo;
 const jsonLd = { '@graph': [
   {
@@ -38,13 +39,19 @@ const jsonLd = { '@graph': [
         {faq.map(([q, a]) => <details><summary>{q}</summary><p>{a}</p></details>)}
       </section>
     )}
-    <nav class="guide-tools" aria-label="More free tools" data-pagefind-ignore>
-      <h2>More Free Tools</h2>
-      <ul>
-        {TOOL_PAGES.filter(([s]) => s !== slug).map(([s, t]) => <li><a class="bf-chip" href={`/resources/${s}/`}>{t}</a></li>)}
-        <li><a class="bf-chip" href="/measure/">Measure My Lawn</a></li>
-        <li><a class="bf-chip" href="/resources/">All Resources</a></li>
+    <nav class="tp-more" aria-labelledby="tp-more-h" data-pagefind-ignore>
+      <h2 id="tp-more-h">More Free Tools</h2>
+      <ul class="tg-grid">
+        {more.map((t) => (
+          <li class="tg-item"><a class="tg-card" href={t.href} data-track="tool_click" data-track-tool_name={t.id} data-track-link_area="tool_more">
+            <span class="tg-tag" data-tag={t.tag}>{t.tag === 'Live' && <i aria-hidden="true"></i>}{t.tag}</span>
+            <span class="tg-name">{t.name}</span>
+            <span class="tg-line">{t.line}</span>
+            <span class="tg-go" aria-hidden="true">→</span>
+          </a></li>
+        ))}
       </ul>
+      <a class="tp-all" href="/resources/">See All Free Tools →</a>
     </nav>
     {sources.length > 0 && (
       <aside class="guide-sources" data-pagefind-ignore>

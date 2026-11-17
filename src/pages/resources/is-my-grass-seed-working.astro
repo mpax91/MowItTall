@@ -1,0 +1,59 @@
+---
+import ToolPage from '../../layouts/ToolPage.astro';
+import SeedWatch from '../../components/SeedWatch.astro';
+const faq = [
+  ['How do I know if my grass seed is working?', 'Get low and look across the lawn in morning light. New sprouts are thin, bright green hairs, thinner than thread, and easy to miss standing up. Perennial ryegrass shows up in about 5 to 10 days, tall and fine fescue in 1 to 2 weeks, and Kentucky bluegrass in 2 to 4 weeks. If it’s been less than that, nothing is wrong yet.'],
+  ['What does grass seed look like when it first sprouts?', 'Like a faint green fuzz. Each sprout is a single, very thin blade, often lighter or yellow-green, and they don’t all come up at once. Mixes come up in waves: the ryegrass first, then the fescue and bluegrass a week or two later.'],
+  ['Why is my new grass coming in patchy?', 'Patchy is normal for the first month. Seed sprouts in waves, some seed always fails, and the first blades haven’t started spreading yet. New grass sends out side shoots after about 3 to 4 weeks and keeps thickening into next spring. If spots are still bare after the slowest grass in your mix should be up, rake them lightly and add a little more seed.'],
+  ['Why didn’t my grass seed grow?', 'The usual reasons: the surface dried out while it was sprouting, the seed was buried too deep, a heavy rain washed it away, the soil was too cold, a crabgrass preventer went down in the last few months, or the seed was old. Fix the cause, then reseed.'],
+  ['How tall should new grass be before the first mow?', 'About 4 inches, which usually takes 4 to 6 weeks. Set the mower on its highest setting, use a sharp blade, mow when the ground is dry, and take off only the top inch.'],
+  ['Can I walk on new grass seed?', 'As little as you can until you’ve mowed it two or three times. Footprints crush sprouts and push seed too deep. Move the hose from the edges.'],
+];
+const sources = [
+  ['Penn State Extension: Lawn establishment', 'https://extension.psu.edu/lawn-establishment'],
+  ['UNH Cooperative Extension: Lawn establishment and renovation', 'https://extension.unh.edu/resources/files/Resource000519_Rep541.pdf'],
+  ['Iowa State Extension: How should I water a newly seeded lawn?', 'https://yardandgarden.extension.iastate.edu/faq/how-should-i-water-newly-seeded-lawn'],
+];
+---
+<ToolPage seo="Is My Grass Seed Working? Day-by-Day Germination Tracker" crumb="Is My Seed Working?" slug="is-my-grass-seed-working" appName="Is My Grass Seed Working?"
+  h1="Is My Grass Seed Working?"
+  description="Put in your seed and the day you planted. Slide through the next 8 weeks to see what it should look like, when it sprouts, when to mow, and when to actually worry."
+  answer="<b>Probably. Grass seed takes 5 days to a month to show up: perennial ryegrass in about 5 to 10 days, tall and fine fescue in 1 to 2 weeks, Kentucky bluegrass in 2 to 4 weeks.</b> Until then it looks like dirt. Pick your seed and the day you planted, then slide through the timeline to see what you should be seeing right now, and what’s coming."
+  faq={faq} sources={sources}>
+  <Fragment slot="tool"><SeedWatch /></Fragment>
+
+  <h2>What Each Week Should Look Like</h2>
+  <table>
+    <thead><tr><th>When</th><th>What You See</th><th>What You Do</th></tr></thead>
+    <tbody>
+      <tr><td>Days 0–5</td><td>Dirt. Beautiful, expensive dirt.</td><td>Keep the top damp. Light water 1 to 3 times a day. Stay off it.</td></tr>
+      <tr><td>Days 5–14</td><td>Thin green hairs. Rye and fescue first.</td><td>Keep watering, even if it looks done. The slow grass isn’t up yet.</td></tr>
+      <tr><td>Weeks 2–4</td><td>Green fuzz, patchy. Bluegrass finally clocks in.</td><td>Ease off to once a day, a little longer each time.</td></tr>
+      <tr><td>Weeks 4–6</td><td>Tall and floppy, about 4 inches.</td><td>First mow: highest setting, sharp blade, top inch only.</td></tr>
+      <tr><td>Week 6 and on</td><td>Each blade starts side shoots. Thin turns thick.</td><td>Normal watering. Touch up bare spots. No weed killer yet.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>How Long Each Grass Takes</h2>
+  <table>
+    <thead><tr><th>Grass</th><th>Sprouts In</th><th>First Mow</th></tr></thead>
+    <tbody>
+      <tr><td>Perennial ryegrass</td><td>5 to 10 days</td><td>About 4 weeks</td></tr>
+      <tr><td>Tall fescue</td><td>7 to 14 days</td><td>4 to 5 weeks</td></tr>
+      <tr><td>Fine fescue (shade mixes)</td><td>7 to 14 days</td><td>4 to 6 weeks</td></tr>
+      <tr><td>Kentucky bluegrass</td><td>14 to 30 days</td><td>6 weeks or more</td></tr>
+    </tbody>
+  </table>
+  <p>Cold soil slows all of these down. Below about 50°F, seed barely moves. That’s why September beats everything: <a href="/resources/can-i-seed-now/">check if it’s a good week to seed</a>.</p>
+
+  <h2>The Usual Suspects When Seed Fails</h2>
+  <ul>
+    <li><strong>It dried out.</strong> One sunny, windy afternoon can kill sprouting seed. This is the number one reason, by a mile.</li>
+    <li><strong>It’s buried.</strong> Seed wants to sit about ¼ inch down, touching soil. Deeper doesn’t come up.</li>
+    <li><strong>It washed away.</strong> A downpour moves seed into lines and low spots. Re-spread a pinch where you see bare streaks.</li>
+    <li><strong>A crabgrass preventer.</strong> Most of them stop grass seed too, for months. <a href="/guides/weed-killer-and-grass-seed/">Weed killer and seed timing</a>.</li>
+    <li><strong>Old seed.</strong> Check the test date on the tag. A year or two old and it drops off fast.</li>
+    <li><strong>Birds.</strong> They take some. The seeding rate on the bag already counts on it. Rude, but planned for.</li>
+  </ul>
+  <p>Still deciding what to plant? <a href="/resources/what-grass-seed-should-i-buy/">Pick your grass in four questions</a>. The full how-to is in <a href="/guides/how-to-overseed-lawn/">how to overseed</a>, and the funny version is <a href="/blog/is-my-grass-seed-growing/">the seed guide on the blog</a>.</p>
+</ToolPage>

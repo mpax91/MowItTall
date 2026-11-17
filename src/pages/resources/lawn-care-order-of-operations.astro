@@ -1,0 +1,49 @@
+---
+import ToolPage from '../../layouts/ToolPage.astro';
+import ChipPicker from '../../components/ChipPicker.astro';
+import { OPS, OPS_GROUPS } from '../../data/orderOps.js';
+const faq = [
+  ['Should I aerate or overseed first?', 'Aerate first, then seed right after, then starter fertilizer, then water. The holes from aerating are perfect little seed pockets.'],
+  ['Should I fertilize before or after overseeding?', 'Right after you spread the seed, with a starter fertilizer. Then rake lightly so the seed touches soil, and water.'],
+  ['Should I mow before fertilizing?', 'Yes. Mow first, then spread. You won’t suck the granules back up or fling them around, and they reach the soil faster.'],
+  ['Can I put down crabgrass preventer and grass seed at the same time?', 'Usually not in the same spot. Most crabgrass preventers stop grass seed too. Skip the preventer where you’re seeding, or use mesotrione (sold as Tenacity), which is labeled for use at seeding.'],
+  ['How long after killing weeds can I seed?', 'It depends on the product, usually a few weeks. The label says exactly. That’s why weeds come first, 2 to 4 weeks before seeding.'],
+  ['Should I lime before fertilizing?', 'Lime only after a soil test says you need it. When you do, it can go down any time the ground isn’t frozen, but don’t put down more than about 50 pounds per 1,000 square feet at once.'],
+];
+const sources = [
+  ['Penn State Extension: Lawn management through the seasons', 'https://extension.psu.edu/lawn-management-through-the-seasons'],
+  ['Penn State Extension: Lawn establishment', 'https://extension.psu.edu/lawn-establishment'],
+  ['Purdue Turfgrass Science: Herbicide delays after seeding', 'https://turf.purdue.edu/for-professionals-herbicide-delays-after-seeding/'],
+];
+---
+<ToolPage seo="Lawn Care Order of Operations: Every Job, Step by Step" crumb="Jobs in Order" slug="lawn-care-order-of-operations" appName="Lawn Jobs in the Right Order"
+  h1="Lawn Jobs in the Right Order"
+  description="Overseeding, aerating, fertilizing, liming, crabgrass preventer. Pick the job and get the steps in the right order, because order matters more than products."
+  answer="<b>The order matters more than the products.</b> Weeds come out a few weeks before seed goes down. Aerate, then seed, then starter fertilizer, then water. Mow before you spread anything. Lime only after a soil test. Tap a job below for the full step-by-step."
+  faq={faq} sources={sources}>
+  <Fragment slot="tool"><ChipPicker id="ops" title="Pick the Job" sub="Get the steps in the right order." items={OPS} groups={OPS_GROUPS} prompt="Tap a job." fine="Always follow the product labels. They win." /></Fragment>
+
+  <h2>The Five Rules of Order</h2>
+  <ol>
+    <li><strong>Test before you treat.</strong> A soil test tells you if you need lime. Guessing is how people buy stuff they don’t need. <a href="/blog/lawn-soil-test/">Soil test guide</a>.</li>
+    <li><strong>Weeds before seed.</strong> Most weed killers need a few weeks before seed can go down.</li>
+    <li><strong>Preventer and seed don’t mix.</strong> Crabgrass preventer stops grass seed too. Pick one per spot per season.</li>
+    <li><strong>Mow, then spread.</strong> Every time. Then sweep the driveway back onto the lawn.</li>
+    <li><strong>Water it in.</strong> A quarter inch for fertilizer. Constant damp for seed.</li>
+  </ol>
+
+  <h2>The Whole Year, in Order</h2>
+  <table>
+    <thead><tr><th>When</th><th>Job</th></tr></thead>
+    <tbody>
+      <tr><td>March–April</td><td>Spring cleanup, sharpen the blade, crabgrass preventer when soil hits about 55°F</td></tr>
+      <tr><td>Memorial Day</td><td>Light feeding (if you’re feeding in spring)</td></tr>
+      <tr><td>Summer</td><td>Mow tall, water deep, leave it alone</td></tr>
+      <tr><td>Labor Day</td><td>The big feeding</td></tr>
+      <tr><td>September</td><td>Aerate, overseed, starter fertilizer. No weed killer this month</td></tr>
+      <tr><td>October</td><td>Columbus Day feeding, weeds on grass you didn’t seed, mow the leaves</td></tr>
+      <tr><td>November</td><td>Last mow a little shorter, clean up the mower</td></tr>
+    </tbody>
+  </table>
+  <p>Want this built for your yard with reminders? That’s <a href="/calendar/">the lawn calendar</a>. Need amounts? <a href="/resources/lawn-calculator/">The lawn calculator</a> does the math.</p>
+</ToolPage>

@@ -9,7 +9,7 @@ answer: "<b>Figure out why the spot died, loosen the soil, add a thin layer of c
 date: 2026-11-15
 minutes: 3
 topics: [seeding, dogs-kids]
-tools: [["/blog/dog-pee-kids-bouncy-houses-lawn/", "Damage report picker"], ["/lawn-101/#grass", "Pick your grass seed"], ["/resources/can-i-seed-now/#seedwatch", "Seed countdown"]]
+tools: [["/blog/dog-pee-kids-bouncy-houses-lawn/", "Damage report picker"], ["/resources/what-grass-seed-should-i-buy/", "Pick your grass seed"], ["/resources/can-i-seed-now/#seedwatch", "Seed countdown"]]
 faq:
   - q: "Can I just throw grass seed on bare spots?"
     a: "It rarely works. Seed sitting on hard soil dries out or gets eaten by birds. Loosen the soil first, press the seed in, and keep it damp."
@@ -44,7 +44,7 @@ More causes and fixes: the [damage report](/blog/dog-pee-kids-bouncy-houses-lawn
 1. **Clear it.** Rake out dead grass and debris.
 2. **Loosen the soil.** Scratch up the top inch with a metal rake or hand cultivator. Hard soil = dead seed.
 3. **Add a thin layer** (about a quarter inch) of compost or topsoil if the soil is poor or the spot is low.
-4. **Spread seed** that matches your lawn, at about the new-lawn rate on the bag. [Pick your grass](/lawn-101/#grass).
+4. **Spread seed** that matches your lawn, at about the new-lawn rate on the bag. [Pick your grass](/resources/what-grass-seed-should-i-buy/).
 5. **Press it in.** Step on it or tamp it with the back of the rake so seed touches soil.
 6. **Cover lightly** with a thin sprinkle of straw or peat moss to hold moisture. You should still see soil through it.
 7. **Starter fertilizer** on the patch, at the bag rate.
