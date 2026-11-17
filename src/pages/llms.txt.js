@@ -32,7 +32,7 @@ export function GET() {
 
 > The easy guide to a better lawn. Plain-English lawn care for beginner homeowners with cool-season grass (Kentucky bluegrass, perennial ryegrass, tall fescue, fine fescue) in Westchester County, the Lower Hudson Valley, Fairfield County CT and the wider Northeastern US. Written by Mike, a homeowner in Bedford, NY known locally for his striped lawn.
 
-Key positions: mow tall (3.5 to 4 inches), leave the clippings, feed on three holidays (Memorial Day, Labor Day, Columbus Day; Labor Day matters most), seed in late August through September, test the soil every few years, water deeply about an inch a week only when rain falls short. Advice names product types, not brands.
+Key positions: mow tall (3.5 to 4 inches), leave the clippings, feed on the holidays (Labor Day matters most; add Columbus Day and Memorial Day for more green, up to five light feedings for watered lawns), seed in late August through September, test the soil every few years, water deeply about an inch a week only when rain falls short. Advice names product types, not brands.
 
 ## Guides (straight answers)
 ${guides.map(line).join('\n')}

@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "Pay a guy or DIY? Every lawn job, ranked."
+title: "Pay a Guy or DIY? Every Job, Ranked"
 description: "Got a landscaper? Keep him. Just stop paying him for the 15-minute jobs. Every lawn job ranked from “pay someone, no shame” to “never pay for this,” with a calculator for your yearly bill."
+summary: "Every lawn job ranked from pay someone, no shame, to never pay for this. A calculator shows your yearly bill and what the smart split saves."
+related: ["/blog/should-i-hire-a-lawn-service/", "/blog/what-to-tell-your-landscaper/", "/guides/lawn-care-cost-westchester/"]
 seoTitle: "What Lawn Work to Hire Out vs. DIY (Ranked)"
 seoDescription: "Which lawn jobs are worth paying a landscaper for and which to do yourself. Mowing and cleanups: hire if you want. Fertilizer: DIY. Plus a cost calculator."
 date: 2026-11-16
@@ -30,13 +32,13 @@ Here’s every lawn job, ranked from “pay someone, no shame” to “never pay
 
 <div data-widget-slot></div>
 
-## The top of the list: pay a guy, no shame
+## The Top of the List: Pay a Guy, No Shame
 
 **Tree work** is number one, and it’s not close. Chainsaws, ladders and gravity are a bad combo for a guy who learned everything from YouTube. Hire a licensed, insured arborist. This one isn’t even in the calculator.
 
 **Mowing** is next. It eats about 17 hours a summer. If you’d rather spend them at your kid’s game, pay for it. Just [make them mow tall](/blog/your-landscaper-is-scalping-your-lawn/).
 
-## The middle: whatever you like
+## The Middle: Whatever You Like
 
 **Cleanups and hedges** are a toss-up. Fine to hire. Fine to DIY on a nice Saturday with a podcast. One rule for spring: no power raking a lawn that just woke up.
 
@@ -44,13 +46,13 @@ Here’s every lawn job, ranked from “pay someone, no shame” to “never pay
 
 **Aeration** needs a heavy machine for one afternoon. Hire it, or split a rental with the neighbor. Either way, buy the seed yourself. Crews love cheap seed.
 
-## The bottom: never pay for this
+## The Bottom: Never Pay for This
 
 **Grub control** is at the bottom because most lawns don’t need it most years. Peel back a square foot of sod in August. A few grubs is normal. A lot is a problem. [Here’s how to tell](/resources/whats-wrong-with-my-lawn/#dx-grubs).
 
 **The fertilizer and weed program** is dead last. It’s the biggest bill after mowing, and it’s the easiest job on the list. Three bags a year, a spreader, 15 minutes each. You can [do it on three holidays](/blog/holiday-lawn-fertilizer-schedule/). You’ll time it better than a truck on a route, too.
 
-## The smart split
+## The Smart Split
 
 If you remember one thing: **pay for the time, keep the timing.**
 

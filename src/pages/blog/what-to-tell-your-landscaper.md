@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "What to text your landscaper (without starting a war)"
+title: "What to Text Your Landscaper"
 description: "Your landscaper isn’t a mind reader. One short, friendly text fixes most lawn problems. Tap what you want and I’ll write it for you."
+summary: "How to ask your landscaper for what you want without starting a war: the rules, the big three asks and what not to say. Tap your asks and I’ll write the text."
+related: ["/blog/is-my-landscaper-doing-a-good-job/", "/blog/your-landscaper-is-scalping-your-lawn/", "/blog/pay-a-guy-or-diy-lawn-jobs/"]
 seoTitle: "What to Tell Your Landscaper: Copy-and-Paste Texts"
 seoDescription: "How to ask your landscaper to mow higher, leave clippings, sharpen blades and more, without being that customer. Build a friendly text in one tap."
 date: 2026-11-16
@@ -30,7 +32,7 @@ So say something. Nicely. In writing. I’ll write it for you.
 
 <div data-widget-slot></div>
 
-## The rules of the text
+## The Rules of the Text
 
 1. **Two or three asks, max.** A list of 11 requests reads like a hostage note. Save some for next month.
 2. **Give a number.** “Mow a little higher” means nothing. “3.5 inches” means 3.5 inches.
@@ -38,7 +40,7 @@ So say something. Nicely. In writing. I’ll write it for you.
 4. **Send it after a visit, not before.** It’s fresh, they can fix it next week, and nobody gets ambushed in the driveway.
 5. **Say thank you.** Every time. These guys work hard in the heat. A little kindness gets you a lot of extra notches.
 
-## The big three asks
+## The Big Three Asks
 
 If you only send one text this year, make it these:
 
@@ -46,14 +48,14 @@ If you only send one text this year, make it these:
 - **Leave the clippings.** [Free fertilizer](/blog/stop-bagging-your-clippings/). They break down in a day or two.
 - **Sharpen the blades.** If your grass tips look white and shredded a day after a mow, the blades are dull. [How to check](/blog/sharpen-your-mower-blade/).
 
-## What not to say
+## What Not to Say
 
 - “My neighbor’s lawn looks better.” Even if true. Especially if true.
 - “I read online that…” Just ask for the thing. Leave the internet out of it. (Yes, I see the irony.)
 - Anything at 6am.
 - Anything while you’re standing behind them on the lawn holding a coffee.
 
-## If they push back
+## If They Push Back
 
 Some crews will say the mower “only goes that high.” Fair. Ask for the top notch. Some will say mowing tall “looks messy.” It looks messy for one week, then it looks thick. Give it a month.
 

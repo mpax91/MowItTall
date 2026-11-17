@@ -1,9 +1,11 @@
 ---
 layout: ../../layouts/Post.astro
-title: "Lawn New Year’s resolutions you’ll actually keep"
-description: "Forget the gym. These lawn resolutions are so small you’ll actually keep them: mow tall, leave the clippings, feed on three holidays, one soil test, and a few more."
+title: "Lawn Resolutions You’ll Actually Keep"
+description: "Forget the gym. These lawn resolutions are so small you’ll actually keep them: mow tall, leave the clippings, feed on the holidays, one soil test, and a few more."
+summary: "Lawn resolutions small enough to stick, the ones you won’t keep, and what to do while it’s still winter. Pick yours and check back in June."
+related: ["/blog/holiday-lawn-fertilizer-schedule/", "/blog/lawn-off-season-training/", "/blog/lawn-soil-test/"]
 seoTitle: "Lawn Care New Year’s Resolutions You’ll Keep"
-seoDescription: "Easy lawn resolutions for the new year: mow at 3.5 inches, leave clippings, feed on three holidays, crabgrass preventer on Tax Day, one soil test."
+seoDescription: "Easy lawn resolutions for the new year: mow at 3.5 inches, leave clippings, feed on Labor Day, crabgrass preventer on Tax Day, one soil test."
 date: 2026-11-16
 minutes: 3
 tag: Hot take
@@ -15,7 +17,7 @@ faq:
   - q: "What’s the easiest way to get a better lawn this year?"
     a: "Raise the mower to 3.5 inches or higher and leave the clippings. Those two changes cost nothing and fix more lawns than any product."
   - q: "How many times a year should I fertilize?"
-    a: "For most Northeast lawns, three: Memorial Day, Labor Day and Columbus Day. Labor Day is the most important one."
+    a: "Labor Day if you only do one. Most Northeast lawns look great with two or three: add Columbus Day and Memorial Day. Every extra feeding means a bit more mowing."
 ---
 
 **You’re not going to the gym in February. I’m not either. But you can keep a lawn resolution, because a good one takes about four minutes a month.** The trick is picking small ones. Nobody quits “mow a little higher.”
@@ -24,7 +26,7 @@ Pick yours below. They save on your phone, so you can check back in June and fee
 
 <div data-widget-slot></div>
 
-## Resolutions you won’t keep (ranked)
+## Resolutions You Won’t Keep (Ranked)
 
 Let’s be honest about the ones that die by Valentine’s Day:
 
@@ -34,17 +36,17 @@ Let’s be honest about the ones that die by Valentine’s Day:
 4. **“I’m going to read the whole fertilizer bag.”** You won’t. [Here’s the short version](/blog/how-to-read-a-fertilizer-bag/).
 5. **“I’ll stop comparing my lawn to the neighbor’s.”** You won’t. Neither will he. That’s the beauty of it.
 
-## Why small ones work
+## Why Small Ones Work
 
 A big lawn makeover is a gym membership. You’re fired up in January and gone by March. Small habits stack. Mow tall every time, leave the clippings, feed three times a year, and by Labor Day your lawn looks like you hired someone. You didn’t. You just stopped doing the dumb stuff.
 
-## What to do right now (it’s winter)
+## What to Do Right Now (It’s Winter)
 
 - **Off-season training.** Vacuum stripes in the living room. Sharpen the blade. Tune up the mower. [The full program](/blog/lawn-off-season-training/).
 - **Stay off frozen grass.** Brown footprints in April are a January mistake.
 - **Measure your lawn** so you buy the right amount of everything this year. [Two minutes on the map](/measure/).
 - **Get your plan.** [Nine questions](/plan/), and your whole year lands in your phone calendar.
 
-## The bottom line
+## The Bottom Line
 
 Resolutions fail when they’re big. Lawn resolutions are tiny. Mow tall, leave the clippings, feed on the holidays. You can do that. You can even do it hungover on January 1st. (Don’t mow on January 1st.)

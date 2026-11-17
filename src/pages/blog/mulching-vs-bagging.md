@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "Mulching vs. bagging: I mulch whenever I can. Here’s when I don’t."
+title: "Mulching vs. Bagging"
 description: "Mulching grass clippings is free fertilizer and less work. Bagging has a few real uses. The honest scorecard, plus a quick picker for whether to mulch or bag today’s mow."
+summary: "Why I mulch my clippings almost every time, the few times I bag, and a quick picker for today’s mow."
+related: ["/blog/stop-bagging-your-clippings/", "/blog/one-third-rule-mowing/", "/guides/should-i-mulch-leaves-into-lawn/"]
 seoTitle: "Mulching vs. Bagging Grass Clippings"
 seoDescription: "Should you mulch or bag grass clippings? Mulch most of the time. The honest scorecard and the few times bagging is the right call."
 date: 2026-11-15
@@ -22,7 +24,7 @@ faq:
 
 **Mulch whenever you can. Bag when you have a reason.** Mulching is free fertilizer and half the work. I mulch almost every mow. [I already yelled about bagging once](/blog/stop-bagging-your-clippings/). This is the fair, calm version.
 
-## The scorecard
+## The Scorecard
 
 | | Mulch | Bag |
 |---|---|---|
@@ -33,13 +35,13 @@ faq:
 | Long or wet grass | Clumps | Handles it |
 | Weeds gone to seed | Spreads them | Picks them up |
 
-## Why I mulch
+## Why I Mulch
 
 Clippings are mostly water and break down in a few days. They hand back nitrogen and other stuff your lawn already used once. Mulch all season and you can cover a real chunk of what your lawn needs in a year. That’s fertilizer you already paid for.
 
 And no, clippings don’t cause thatch. That myth needs to retire.
 
-## When I bag
+## When I Bag
 
 - **The grass got away from me.** Long clippings clump and smother the lawn. Bag that one, or [mow it twice](/blog/one-third-rule-mowing/).
 - **It’s wet.** Wet clippings make piles. Better to wait. If I can’t, I bag.
@@ -47,10 +49,10 @@ And no, clippings don’t cause thatch. That myth needs to retire.
 - **Right before I overseed.** Mow low and bag so seed hits dirt.
 - **Something looks sick.** Don’t spread a fungus around the yard.
 
-## Today’s call
+## Today’s Call
 
 <div data-widget-slot></div>
 
-## The bottom line
+## The Bottom Line
 
 Leave the clippings. Bag with a reason. Your back, your weekend and your lawn all win.

@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "Let the dog pee. Rent the bouncy house. Your lawn is not a museum."
+title: "Your Lawn Is Not a Museum"
 description: "Dog pee spots, poop, the neighbor’s dog, kids, kiddie pools and bouncy houses: what each one actually does to your grass, how to fix it, and why you should stop worrying and use your lawn."
+summary: "What dog pee, poop, kids, kiddie pools and bouncy houses really do to grass, and how to fix each one. Short version: use your lawn."
+related: ["/blog/kid-and-pet-safe-lawn-care/", "/guides/fix-bare-spots-in-lawn/", "/blog/animals-in-your-lawn/"]
 seoTitle: "How to Fix Dog Pee Spots (and Bouncy House Damage)"
 seoDescription: "Why dog pee kills grass, male vs. female dogs, do pee rocks work, and how to fix spots from dogs, kids and bouncy houses. Your lawn is not a museum."
 date: 2026-11-15
@@ -28,7 +30,7 @@ I say this as a guy who stripes his grass and checks the soil temperature for fu
 
 Okay. Now let’s talk about my dog.
 
-## I buy rocks for my dog’s water bowl
+## I Buy Rocks for My Dog’s Water Bowl
 
 There are rocks on Amazon you drop in your dog’s water bowl. They’re supposed to stop pee spots. I buy them. My wife makes fun of me every single time a new bag shows up at the door.
 
@@ -38,7 +40,7 @@ Will I keep buying them? Yes. That’s between me and the rocks.
 
 What actually works is way less fun: **a hose.** More on that below.
 
-## What dog pee actually does
+## What Dog Pee Actually Does
 
 Dog pee is basically a fertilizer overdose. It’s packed with nitrogen and salt.
 
@@ -47,7 +49,7 @@ Dog pee is basically a fertilizer overdose. It’s packed with nitrogen and salt
 
 So your dog is both killing your lawn and fertilizing it. Very on brand for a dog.
 
-## Boys vs. girls
+## Boys vs. Girls
 
 People swear girl dog pee is “stronger.” It’s not really the pee. **It’s the delivery.**
 
@@ -55,22 +57,22 @@ People swear girl dog pee is “stronger.” It’s not really the pee. **It’s
 - **Dogs that lift a leg** (most grown boys) spread it around. A little on the mailbox post, a little on your shrubs, a little on the neighbor’s tree. Less burn, more drama.
 - **Big dogs** make bigger spots. Math.
 
-## What actually works
+## What Actually Works
 
 - **Hose it.** Soak the spot right after. Dilution is the solution. It’s that simple and that annoying.
 - **Give them a spot.** A patch of mulch or gravel by the back door you train them to use. Takes some treats and some patience.
 - **Plant tougher grass.** Perennial rye and tall fescue handle pee better than Kentucky bluegrass. [Which grass is which](/blog/grass-types-northeast/).
 - **Don’t mess with the dog.** Skip the supplements that claim to change their pee unless your vet says yes. The dog comes first. The lawn is a distant second.
 
-## The neighbor’s dog
+## The Neighbor’s Dog
 
 Your dog’s pee spot is a cute little project. The neighbor’s dog’s pee spot is an act of war. **It’s the same spot.** Say something friendly once, hose it when you see it, and patch the curb strip every fall. That strip belongs to every dog in town. Accept it.
 
-## Poop is not fertilizer
+## Poop Is Not Fertilizer
 
 Pick it up. It takes weeks to break down, it smothers and burns the grass under it, and it carries stuff you don’t want on your kids’ shoes. Also, you only mow over one once in your life. Make it zero.
 
-## The kids, the bouncy house and the party
+## The Kids, the Bouncy House and the Party
 
 Listen. **The lawn is meant to be enjoyed.** That’s the most important thing on this whole website.
 
@@ -80,7 +82,7 @@ Here’s what to do about every one of them:
 
 <div data-widget-slot></div>
 
-## The bottom line
+## The Bottom Line
 
 Everything on that list can be fixed. Most of it with a hose and a handful of seed in September. Meanwhile your kids will remember the bouncy house a lot longer than you’ll remember the yellow square.
 

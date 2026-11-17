@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "Mower maintenance you can do yourself in one Saturday morning"
+title: "One-Saturday Mower Maintenance"
 description: "A DIY lawn mower tune-up: oil, air filter, spark plug, blade, deck, fresh gas and winter storage. What to do, how often, what it costs, and the few jobs worth paying a shop for. Includes a checklist that saves on your phone."
+summary: "A DIY tune-up: oil, air filter, spark plug, blade, deck and fuel, how often to do each, and the few jobs worth paying a shop for. Tick off a checklist as you go."
+related: ["/blog/sharpen-your-mower-blade/", "/blog/opening-day-first-mow/", "/blog/walk-behind-vs-riding-vs-zero-turn-mower/"]
 seoTitle: "DIY Lawn Mower Maintenance Checklist"
 seoDescription: "A one-hour DIY mower tune-up: oil, air filter, spark plug, blade, deck and fresh gas, plus winter storage. With a checklist that saves on your phone."
 date: 2026-11-15
@@ -24,11 +26,11 @@ faq:
 
 The shop charges a lot more for the same stuff, and in April you’ll wait weeks for it.
 
-## Rule zero: pull the spark plug wire
+## Rule Zero: Pull the Spark Plug Wire
 
 Before you touch anything near the blade, **pull the spark plug wire off** (or take the battery out). A blade can turn when you spin it by hand. Do this every time. No exceptions. Not even for “just a second.”
 
-## The big five
+## The Big Five
 
 **1. Oil.** Once a year or every 50 hours. Run the mower for a few minutes first so the oil flows, then drain and refill with what your manual says. Too much is as bad as too little. Check the dipstick.
 
@@ -40,22 +42,22 @@ Before you touch anything near the blade, **pull the spark plug wire off** (or t
 
 **5. Fresh gas.** Old gas is the number one reason mowers won’t start. Buy small cans. Add stabilizer if it’ll sit more than a month.
 
-## The extras
+## The Extras
 
 - **Scrape under the deck.** Caked grass ruins airflow, mulching and stripes. Tip the mower with the **air filter side up.** The other way, oil floods the filter and you’ll have smoke and regrets.
 - **Wheels level.** All four on the same height setting, or you get a lopsided cut.
 - **Cables and belts.** Self-propelled won’t pull? Usually a stretched cable or worn belt.
 
-## Battery mowers
+## Battery Mowers
 
 Easier: no oil, no plugs, no gas. Keep the deck clean and the blade sharp, and treat the batteries well. Store them inside over winter, partly charged, never frozen.
 
-## When to pay a shop
+## When to Pay a Shop
 
 Engine knocking, smoking that won’t stop, transmission problems, anything that needs the engine opened up. That’s not a Saturday job. Everything on the checklist below is.
 
 <div data-widget-slot></div>
 
-## The bottom line
+## The Bottom Line
 
 One hour a year keeps a mower going for a decade. Do it in February and you’ll be the only one on the street who mows the first warm weekend. [More off-season training](/blog/lawn-off-season-training/).

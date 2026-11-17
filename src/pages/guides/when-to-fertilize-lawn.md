@@ -5,7 +5,7 @@ short: "When to Fertilize"
 description: "The best times to fertilize a cool-season lawn in New York and the Northeast, how much to use, and the feedings you can skip."
 seoTitle: "When to Fertilize Your Lawn in New York and the Northeast"
 seoDescription: "Feed cool-season lawns in late May, early September and mid-October. Early September matters most. How much to use and what to skip."
-answer: "<b>Early September is the most important feeding</b> for a Northeast lawn. Add a light one in late May and another in mid-October and you're done. That's three feedings a year, easy to remember as Memorial Day, Labor Day and Columbus Day. Skip early spring."
+answer: "<b>Early September is the most important feeding</b> for a Northeast lawn. If you only feed once, make it that one. Add mid-October and a light one in late May for a thicker, greener lawn (easy to remember as Labor Day, Columbus Day and Memorial Day). Skip early spring."
 date: 2026-11-15
 minutes: 3
 topics: [feeding]

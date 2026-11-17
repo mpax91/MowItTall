@@ -3,9 +3,10 @@
 // Frontmatter: title, description, seoTitle?, seoDescription?, answer (the 1–3 sentence quick answer),
 // date, updated?, minutes, topics, faq [{q, a}], sources [{name, url}], tools? [[href, label]]
 import Base from './Base.astro';
-import PinButton from '../components/PinButton.astro';
+import ShareBox from '../components/ShareBox.astro';
 import { topicBySlug } from '../data/topics.js';
-import { allPosts } from '../data/posts.js';
+import { allPosts, readMinutes } from '../data/posts.js';
+import { processArticle } from '../lib/autolink.js';
 import { ogSlug } from '../data/og.js';
 const { frontmatter, url } = Astro.props;
 const { title, description, answer, faq = [], sources = [], tools = [] } = frontmatter;
@@ -17,6 +18,7 @@ const iso = (d) => (d instanceof Date ? d.toISOString() : String(d || '')).slice
 const date = iso(frontmatter.date), modified = iso(frontmatter.updated) || date;
 const pretty = new Date(modified + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 const short = frontmatter.short || title;
+const art = processArticle(await Astro.slots.render('default'), path, { autolink: frontmatter.autolink !== false });
 const metaTitle = frontmatter.seoTitle ? (frontmatter.seoTitle.length + 14 <= 65 ? `${frontmatter.seoTitle} | Mow It Tall` : frontmatter.seoTitle) : `${title} | Mow It Tall`;
 const score = (p) => (p.topics || []).filter((t) => topics.includes(t)).length;
 const guides = allPosts(import.meta.glob('../pages/guides/[a-z]*.md', { eager: true }))
@@ -39,16 +41,15 @@ const jsonLd = { '@graph': [
     <header class="post-head">
       <span class="clip-tag">Guide</span>
       <h1>{title}</h1>
-      <p class="post-meta">By <a href="/yards/">Mike</a>, Bedford, NY. Updated <time datetime={modified}>{pretty}</time>. {frontmatter.minutes || 3} min read.</p>
     </header>
     {answer && (
       <section class="window guide-answer" aria-labelledby="qa-h">
-        <h2 id="qa-h">The Short Answer</h2>
+        <h2 id="qa-h">The Short Answer <span class="qa-time">About {readMinutes(frontmatter, art.words)} min read</span></h2>
         <p set:html={answer} />
       </section>
     )}
     <article class="prose">
-      <slot />
+      <Fragment set:html={art.html} />
     </article>
     {tools.length > 0 && (
       <nav class="guide-tools" aria-label="Free tools for this" data-pagefind-ignore>
@@ -69,7 +70,7 @@ const jsonLd = { '@graph': [
         <ul>{sources.map((s) => <li><a href={s.url} rel="noopener" target="_blank">{s.name}</a></li>)}</ul>
       </aside>
     )}
-    <PinButton path={path} note="Need this again in spring?" />
+    <ShareBox path={path} title={title} kind="guide" />
     <aside class="guide-bio" data-pagefind-ignore>
       <p><b>Who’s Mike?</b> A homeowner in Bedford, NY, known around town as the lawn guy because of the stripes. No lawn company, no products to sell you. <a href="/yards/">See the yard</a>.</p>
     </aside>

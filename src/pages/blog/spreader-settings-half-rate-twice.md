@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "Half the setting, twice the passes. The only way I spread anything."
+title: "Half the Setting, Twice the Passes"
 description: "How to use a lawn spreader without leaving stripes: set it to half of what the bag says, go back and forth, then go again side to side. Same amount of product, way better coverage. Plus what the spreader number means."
+summary: "How to spread fertilizer or seed without stripes: half the bag’s setting, two directions, same amount. Plus what the bag number means and a setting helper."
+related: ["/blog/how-to-read-a-fertilizer-bag/", "/blog/holiday-lawn-fertilizer-schedule/", "/blog/granules-vs-spray/"]
 seoTitle: "Spreader Settings: Half Rate, Two Directions"
 seoDescription: "How to use a fertilizer spreader without stripes: set it to half the bag setting and go over the lawn twice in two directions. Plus a calculator."
 date: 2026-11-15
@@ -24,7 +26,7 @@ faq:
 
 Still here? Fine. Here’s why it works.
 
-## Why one pass gives you stripes
+## Why One Pass Gives You Stripes
 
 You are not a robot. You drift. You speed up near the end. You misjudge where your last pass was. Spreaders don’t throw perfectly even either.
 
@@ -32,7 +34,7 @@ On one pass, every mistake shows up as a stripe. Light green where you missed, d
 
 On two passes in two directions, the second pass covers the first pass’s mistakes. Misses get filled in, and since each pass is half strength, the overlaps don’t burn.
 
-## How I do it
+## How I Do It
 
 1. **Fill the spreader on the driveway**, not the grass. A spill on the lawn is a dead spot. A spill on the driveway gets swept up.
 2. **Do the edges first.** One lap around the outside of the lawn. Now you have room to turn around.
@@ -45,21 +47,21 @@ Plug in your bag and your lawn:
 
 <div data-widget-slot></div>
 
-## What the number on the bag means
+## What the Number on the Bag Means
 
 That “6” or “3½” or “H” is the size of the opening, for **one specific spreader**, at a normal walking pace. It’s not a universal number. If your spreader isn’t on the bag, look up your spreader maker’s chart.
 
 Also: half the number isn’t always exactly half the product. Spreaders aren’t that precise. That’s why I check after pass one. About half of what you need should be gone. Way more left? Bump it up a notch for pass two.
 
-## Things that make stripes anyway
+## Things That Make Stripes Anyway
 
 - **Walking speed.** Same pace the whole time. A normal walk.
 - **Wind.** Granules go sideways. Wait for a calm day.
 - **Wet or clumpy product.** It clogs. Keep bags closed and dry.
 - **Drop spreaders.** They only drop between the wheels. Miss by an inch and you get a perfect stripe you didn’t want. Overlap your wheel tracks.
 
-## The one-liner to remember
+## The One-Liner to Remember
 
 Half the setting, twice the passes. It takes 10 more minutes. It saves you a summer of looking at stripes you didn’t mean to make.
 
-Need to know what’s in the bag in the first place? [Here’s how to read a fertilizer bag](/blog/how-to-read-a-fertilizer-bag/). Need to know when to use it? [Feed on the holidays](/blog/holiday-lawn-fertilizer-schedule/).
+Need to know what’s in the bag in the first place? [Here’s how to read a fertilizer bag](/blog/how-to-read-a-fertilizer-bag/). Need to know when to use it? [Feed on the holidays](/blog/holiday-lawn-fertilizer-schedule/). Spreading seed? Same trick, and here’s [when to overseed](/guides/when-to-overseed-lawn/).

@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "How to explain your lawn hobby to your significant other (and get them on your side)"
+title: "How to Explain Your Lawn Hobby to Your Spouse"
 description: "They’ve noticed the soil test kit on the counter. They’ve heard you say “pH” at dinner. Here’s how to explain the lawn thing, handle every objection, and maybe get them to like it too."
+summary: "Five steps to explaining the lawn thing at home: admit it’s a hobby, show the hours, talk money carefully, and know what not to say. Plus comebacks for every objection."
+related: ["/blog/walk-behind-vs-riding-vs-zero-turn-mower/", "/blog/lawn-compliments/", "/blog/lawn-care-dad-jokes/"]
 seoTitle: "How to Explain Your Lawn Care Hobby to Your Spouse"
 seoDescription: "A funny, honest guide to explaining your lawn care hobby to your spouse or partner: what to say, what not to say, and how to handle every objection."
 date: 2026-11-15
@@ -24,32 +26,32 @@ If that person is your significant other, this one’s for you.
 
 <div data-widget-slot></div>
 
-## Step 1: Admit it’s a hobby
+## Step 1: Admit It’s a Hobby
 
 Don’t say “the lawn needs it.” The lawn does not need a third spreader. You wanted a third spreader. Own it.
 
 Hobbies are healthy. Golf costs more. Boats cost way more. A lawn is a hobby you can see from the kitchen window, and it makes the house look good. Lead with that.
 
-## Step 2: Show them the hours
+## Step 2: Show Them the Hours
 
 The fear is that you’ll be out there every weekend forever. Show them it’s a short list. A real plan for a good-looking lawn is a few hours a month. Do it early, come back inside, be a person.
 
 [Get a plan with real hours on it](/plan/). Print it. Stick it on the fridge. Nothing builds trust like a printed schedule.
 
-## Step 3: Talk money (carefully)
+## Step 3: Talk Money (Carefully)
 
 Doing it yourself costs less than paying a lawn company. That’s a real argument. Use it.
 
 Then don’t ruin it by buying the gadget from the endcap. [You don’t need most of it](/blog/lawn-stuff-you-dont-need/).
 
-## Step 4: Know what not to say
+## Step 4: Know What Not to Say
 
 - “Did you walk on the new seed?”
 - “Our pH is 5.8 and honestly I’m concerned.”
 - “I’m going to stripe it. In a spiral. For your birthday.” (Okay, this one might work.)
 - “The neighbor’s lawn is nicer.” They’ll ask why you care. You’ll have no good answer.
 
-## Step 5: Give them something
+## Step 5: Give Them Something
 
 The fastest way to get someone on board is to make it good for them too:
 
@@ -58,6 +60,6 @@ The fastest way to get someone on board is to make it good for them too:
 - **Mow while they’re out.** They come home to a fresh-cut yard and never heard a thing. Magic.
 - **Vacuum stripes in the living room.** [Off-season training](/blog/lawn-off-season-training/) that also cleans the house. Unbeatable.
 
-## The bottom line
+## The Bottom Line
 
 You don’t need them to love grass. You need them to love that you love it, and to see it’s not taking over your life. Keep it short, keep it tidy, and let the stripes speak for themselves.

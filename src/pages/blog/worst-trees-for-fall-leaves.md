@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "Power ranking the worst trees for fall leaves. Oaks are going down."
+title: "The Worst Trees for Fall Leaves, Ranked"
 description: "Ranking the trees that do the most damage to your fall weekends, from honeylocust (a saint) to oak (the guest who won’t leave). Plus what to do with each one’s leaves."
+summary: "Trees ranked by how much they ruin your fall weekends, from honeylocust to oak, and what to do with each one’s leaves. Tap your tree for the game plan."
+related: ["/guides/should-i-mulch-leaves-into-lawn/", "/blog/you-never-needed-a-leaf-blower/", "/blog/halloween-is-the-lawn-super-bowl/"]
 seoTitle: "Worst Trees for Fall Leaves, Ranked"
 seoDescription: "Which trees drop the worst leaves? Oak, sweetgum, black walnut and sycamore top the list. Honeylocust and ginkgo are the easiest. What to do with each."
 date: 2026-11-16
@@ -22,7 +24,7 @@ faq:
 
 <div data-widget-slot></div>
 
-## The power ranking
+## The Power Ranking
 
 **8. Honeylocust (MVP).** Tiny leaflets fall and vanish into the grass like they were never there. Light shade all summer. If you’re planting a tree near a lawn, this is the dream.
 
@@ -40,12 +42,12 @@ faq:
 
 **1. Oak (dead last).** Here we go. Tough, leathery leaves that take forever to break down. They drop in waves from October to December. Some oaks hold their dead leaves all winter, just to drop them on your clean lawn in April. Plus acorns. Millions of acorns. Every squirrel in Westchester has a timeshare in your yard. **The oak is the guest who won’t leave the party. Oaks are going down.**
 
-## What to do with all of it
+## What to Do With All of It
 
 Same answer for almost every tree: **mulch the leaves with your mower.** Chop them until you can see grass through the bits. Do it once a week through the season. Oak leaves need two passes. Pick up nuts and gumballs first so they don’t become missiles. [The full mulching guide](/guides/should-i-mulch-leaves-into-lawn/).
 
 Too thick? Chop once, then move the extra into your garden beds. Free mulch. And for the love of everything, [you never needed a leaf blower](/blog/you-never-needed-a-leaf-blower/).
 
-## The bottom line
+## The Bottom Line
 
 Honeylocust is a saint. Oak is a villain. You can’t pick your trees, but you can pick your weekend: mow the leaves into the lawn and go watch football.

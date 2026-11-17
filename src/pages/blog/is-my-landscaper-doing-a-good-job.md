@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "Grade your landscaper. Be honest."
+title: "Grade Your Landscaper"
 description: "Short grass, shredded tips, ruts and clippings in the street. Nine questions, one letter grade, and what to do about it."
+summary: "The signs of a good and bad mowing crew, read straight off your lawn. Nine questions give you a letter grade and a text to send if it’s not an A."
+related: ["/blog/what-to-tell-your-landscaper/", "/blog/your-landscaper-is-scalping-your-lawn/", "/blog/pay-a-guy-or-diy-lawn-jobs/"]
 seoTitle: "Is My Landscaper Doing a Good Job? Grade Them"
 seoDescription: "Signs your landscaper is hurting your lawn: mowing too short, dull blades, ruts, mowing wet grass and more. Take the 9-question report card and get a fix list."
 date: 2026-11-16
@@ -28,7 +30,7 @@ Time to fix that. Go look at your lawn (or think back to summer) and answer hone
 
 <div data-widget-slot></div>
 
-## How to read your lawn like a detective
+## How to Read Your Lawn Like a Detective
 
 **The height.** Walk out the day after a mow. If the grass doesn’t cover your shoelaces, it’s too short. Short grass lets in sun, sun wakes up weed seeds, and the lawn fries in August. [3.5 inches](/blog/your-landscaper-is-scalping-your-lawn/) is the goal.
 
@@ -42,7 +44,7 @@ Time to fix that. Go look at your lawn (or think back to summer) and answer hone
 
 **The August mow.** Brown, dormant grass in a dry spell isn’t growing. Mowing it just grinds it into dust and stresses it more. [Here’s whether it’s dead or sleeping](/resources/whats-wrong-with-my-lawn/#dx-summer-brown).
 
-## Before you fire anyone
+## Before You Fire Anyone
 
 Most crews are good people with bad habits and no time. Nobody told them you care. So:
 

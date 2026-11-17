@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "Opening Day: the official rules of the first mow"
+title: "Opening Day: Rules of the First Mow"
 description: "The first mow of the year is Opening Day. When it actually is, how high to cut, spring training for your mower, rain delays, and the lineup card to tick off before you start."
+summary: "When the first mow of spring really is, how high to cut, spring training for your mower, and a lineup card to tick off before you start."
+related: ["/guides/spring-lawn-cleanup-checklist/", "/blog/lawn-mower-maintenance-diy/", "/blog/one-third-rule-mowing/"]
 seoTitle: "First Mow of Spring: When and How High to Cut"
 seoDescription: "When to do the first mow of spring and how high: wait for about 5 inches of growing grass and firm ground, then cut to 3.5 to 4 inches. No scalping."
 date: 2026-11-16
@@ -22,17 +24,17 @@ faq:
 
 <div data-widget-slot></div>
 
-## Rule 1: Opening Day isn’t a date
+## Rule 1: Opening Day Isn’t a Date
 
 Baseball gets a schedule. You get the grass. **Opening Day is when the grass is growing and about 5 inches tall, and the field is playable.** Around Westchester, that’s usually mid-April, give or take two weeks depending on how mean March was.
 
 Mowing in late March because your brother-in-law did? That’s a spring training game. It doesn’t count, and you’re going to pull something.
 
-## Rule 2: Rain delays are real
+## Rule 2: Rain Delays Are Real
 
 If your shoes sink, the mower sinks. Wet ground ruts, packs down and tears the grass. **No footprints, no mow.** Sit in the dugout. Have a beer. Watch the forecast. [How long to wait after rain](/guides/how-long-to-wait-to-mow/).
 
-## Rule 3: Spring training is mandatory
+## Rule 3: Spring Training Is Mandatory
 
 No pitcher throws his first pitch of the year in a real game. Your mower shouldn’t either.
 
@@ -40,26 +42,26 @@ No pitcher throws his first pitch of the year in a real game. Your mower shouldn
 - **Sharp blade.** A dull blade on Opening Day is a pitcher with a dead arm.
 - **New spark plug, clean filter, check the oil.** [The 30-minute tune-up](/blog/lawn-mower-maintenance-diy/).
 
-## Rule 4: No scalping on the first pitch
+## Rule 4: No Scalping on the First Pitch
 
 Everybody wants a “clean-up cut” on Opening Day. Don’t. **Set the mower to 3.5 to 4 inches** and take off a third, max. A buzz cut in April is a welcome mat for crabgrass in July. [How high to mow](/guides/how-high-to-mow-grass/).
 
-## Rule 5: Clear the field
+## Rule 5: Clear the Field
 
 Sticks, rocks, pinecones, dog toys, and that one frisbee you lost in August. Walk the whole lawn before the first pass. Anything that goes through the blade comes out like a fastball, aimed at your car. [The full spring cleanup checklist](/guides/spring-lawn-cleanup-checklist/).
 
-## Rule 6: Respect the start time
+## Rule 6: Respect the Start Time
 
 First pitch is at a civilized hour. **Saturday 10am is the sweet spot.** Not 7am. Your neighbors waited all winter for a quiet Saturday too. [Check the official rules](/blog/lawn-mowing-etiquette/).
 
-## Rule 7: Play the anthem
+## Rule 7: Play the Anthem
 
 Headphones in. [The official mowing playlist](/blog/lawn-mowing-playlist/). Nearly two hours. Zero skips. You won’t need two hours. You’ll want them.
 
-## The season ahead
+## The Season Ahead
 
 Opening Day in April. The all-star break around July 4th (raise the mower, water deep, chill). The playoff push on Labor Day (the big feeding). And the Super Bowl on Halloween. [It’s a long season](/blog/halloween-is-the-lawn-super-bowl/). Pace yourself.
 
-## The bottom line
+## The Bottom Line
 
 Wait for the grass. Tune up the mower. Mow high. Clear the field. Start at a decent hour. Play ball.

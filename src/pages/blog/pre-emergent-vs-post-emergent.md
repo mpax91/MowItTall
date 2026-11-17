@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "Pre-emergent vs. post-emergent: the bouncer and the hitman"
+title: "Pre vs. Post: The Bouncer and the Hitman"
 description: "Pre-emergent weed control stops weeds before they sprout. Post-emergent kills weeds you can see. What each one does, when to use it, why timing is everything, and why most pre-emergents also stop grass seed."
+summary: "Pre-emergents stop weeds before they sprout and post-emergents kill the ones you see. When to use each, why timing is everything, and the catch for new seed."
+related: ["/guides/crabgrass-preventer-timing/", "/blog/fall-kill-weeds-or-plant-seed/", "/blog/lawn-weed-bracket/"]
 seoTitle: "Pre-Emergent vs. Post-Emergent Weed Control"
 seoDescription: "Pre-emergent stops weeds before they sprout; post-emergent kills weeds you can see. When to use each, timing, and why pre-emergent stops grass seed."
 date: 2026-11-15
@@ -22,7 +24,7 @@ faq:
 
 **Pre-emergent stops weeds before they sprout. Post-emergent kills weeds you can already see.** One is a bouncer at the door. The other is a hitman. You need to know which one you’re hiring.
 
-## Pre-emergent: the bouncer
+## Pre-Emergent: The Bouncer
 
 Pre-emergent sits in the top layer of soil and stops seeds from sprouting. **Crabgrass preventer** is the one everybody knows.
 
@@ -32,7 +34,7 @@ Pre-emergent sits in the top layer of soil and stops seeds from sprouting. **Cra
 - **It lasts a few months**, then it’s gone.
 - **It stops grass seed too.** Big one. More on that below.
 
-## Post-emergent: the hitman
+## Post-Emergent: The Hitman
 
 Post-emergent kills weeds that are already growing.
 
@@ -42,16 +44,16 @@ Post-emergent kills weeds that are already growing.
 
 Best time to hire the hitman for dandelions and clover: **fall.** Weeds are pulling energy into their roots for winter, and the weed killer goes right along.
 
-## The catch nobody mentions
+## The Catch Nobody Mentions
 
 Most pre-emergents can’t tell a crabgrass seed from a grass seed. Put down crabgrass preventer in April and you’re mostly not seeding those spots until fall.
 
 Want both? There are seed-safe options. [Here’s how to seed and fight weeds in the same season](/blog/fall-kill-weeds-or-plant-seed/).
 
-## Which one do I need?
+## Which One Do I Need?
 
 <div data-widget-slot></div>
 
-## The bottom line
+## The Bottom Line
 
 Bouncer in April. Hitman in fall. And the best security system there is? Thick grass mowed tall. Weeds can’t move in when there’s no vacancy. [Name that weed](/weeds/).

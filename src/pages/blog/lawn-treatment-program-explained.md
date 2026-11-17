@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "Lawn programs, decoded. Which visits you actually need."
+title: "Lawn Programs, Decoded"
 description: "The 6-step lawn program, visit by visit: what each one does, which ones matter, which ones you can skip, and the questions to ask before you sign."
+summary: "What each visit in a typical lawn treatment program does, which ones matter, which you can skip, and what to ask before you sign. Tap any visit for my honest call."
+related: ["/blog/should-i-hire-a-lawn-service/", "/blog/holiday-lawn-fertilizer-schedule/", "/blog/pay-a-guy-or-diy-lawn-jobs/"]
 seoTitle: "Lawn Treatment Programs Explained: What Each Visit Does"
 seoDescription: "What’s in a lawn treatment program, visit by visit. Which ones matter (early spring, early fall), which to skip (summer), and what to ask before you sign."
 date: 2026-11-16
@@ -30,18 +32,18 @@ Let’s fix that. Here’s what’s in a typical program, visit by visit, with m
 
 <div data-widget-slot></div>
 
-## The good news
+## The Good News
 
 A lot of a program is legit. The early spring preventer, the late spring feeding, the early fall feeding and the late fall feeding line up almost exactly with [my holiday schedule](/blog/holiday-lawn-fertilizer-schedule/): Tax Day, Memorial Day, Labor Day, Columbus Day. Those are the right moves at the right time of year.
 
-## The not-so-good news
+## The Not-So-Good News
 
 - **Same schedule for every yard.** Your shady backyard and the sunny corner lot get the same visit, the same day, the same product.
 - **Timing follows the route, not the weather.** The crabgrass preventer works best when soil hits about 55°F. The truck comes when the truck comes.
 - **“Just in case” stuff.** Grub control every year. Fungicide every summer. Spraying the whole lawn for six dandelions. Most lawns don’t need any of it most years.
 - **The summer visit.** Cool-season grass naps in July. Feeding a sleeping, thirsty lawn mostly feeds the crabgrass.
 
-## Three ways to play it
+## Three Ways to Play It
 
 **Keep the program, but boss it.** Ask what goes down each visit, ask for spot-spraying, ask to skip grub control unless they find grubs, and ask for a text before they come. A good company says yes.
 
@@ -49,7 +51,7 @@ A lot of a program is legit. The early spring preventer, the late spring feeding
 
 **Fire the program, keep the mowing.** My favorite. Your guy mows, you do three feedings and a preventer yourself. It costs a fraction of the program and takes about an hour a year. [See the math](/blog/pay-a-guy-or-diy-lawn-jobs/).
 
-## Before you sign anything
+## Before You Sign Anything
 
 Read the renewal rules. Lots of programs roll over every year unless you cancel. That’s not a scam. It’s just how they’re set up. Put a reminder in your phone a month before it renews, and ask yourself: did my lawn actually get better?
 

@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "Your lawn finally looks great. Here’s how to handle the compliments."
+title: "How to Handle Lawn Compliments"
 description: "Neighbors slowing down, strangers asking for your secret, someone asking you to do their lawn: a guide to handling lawn compliments with grace, humility and just a little bit of smugness."
+summary: "The stages of a lawn glow-up, the golden rules of being the lawn guy, and exactly what to say back when the neighbors start talking."
+related: ["/blog/lawn-stripe-patterns/", "/blog/explain-lawn-hobby-to-your-spouse/", "/blog/power-ranking-every-excuse-for-a-bad-lawn/"]
 seoTitle: "How to Handle Lawn Compliments (a Guide)"
 seoDescription: "Neighbors slowing down? Someone asking you to do their lawn? How to handle lawn compliments with grace, humility and a little smugness."
 date: 2026-11-15
@@ -18,7 +20,7 @@ faq:
 
 **Say thank you. Keep it short. Never explain soil pH to someone who asked in passing.** That’s the whole etiquette. But you’re going to need more than that, because once your lawn turns, people start talking.
 
-## The stages of a lawn glow-up
+## The Stages of a Lawn Glow-Up
 
 1. **Nobody notices.** You notice. You notice constantly.
 2. **Your spouse notices.** Mostly because you keep making them look out the window.
@@ -26,7 +28,7 @@ faq:
 4. **Cars slow down.** You pretend not to see. You see.
 5. **A stranger asks.** You have arrived.
 
-## The golden rules
+## The Golden Rules
 
 - **Be humble. Ish.** “Thanks, it’s mostly just mowing it tall” is perfect. True, simple, sounds effortless.
 - **Don’t lecture.** They asked one question. Answer one question. If they ask a second, you may proceed to two.
@@ -34,11 +36,11 @@ faq:
 - **Never say yes to doing their lawn.** You will be mowing two lawns until you move.
 - **Compliment theirs back.** Even if it’s rough. Especially if it’s rough. Win quietly.
 
-## What they’ll say, and what you say back
+## What They’ll Say, and What You Say Back
 
 <div data-widget-slot></div>
 
-## The bottom line
+## The Bottom Line
 
 A great lawn is a conversation starter. Be the guy people want to ask, not the guy people cross the street to avoid. And when they ask how you did it, the honest answer is the best one: a few small changes, done at the right time.
 

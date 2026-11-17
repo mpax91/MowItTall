@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "I’m the stripes guy. Here’s every pattern, ranked by how hard your neighbors will stare."
+title: "Every Stripe Pattern, Ranked"
 description: "Straight, diagonal, checkerboard, diamond and the spiral. What each lawn stripe pattern looks like, how hard it is, how long it takes, and exactly how to mow it."
+summary: "Straight, diagonal, checkerboard, diamond and spiral: how hard each one is, how long it takes, and how to mow it. Tap a pattern to see it."
+related: ["/guides/how-to-stripe-your-lawn/", "/blog/lawn-compliments/", "/blog/one-third-rule-mowing/"]
 seoTitle: "Lawn Stripe Patterns: Checkerboard, Diagonal and More"
 seoDescription: "How to mow straight, diagonal, checkerboard, diamond and spiral lawn stripe patterns, with a pattern picker showing difficulty and step-by-step passes."
 date: 2026-11-16

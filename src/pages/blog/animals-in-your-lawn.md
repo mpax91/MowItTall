@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "Your lawn has visitors. Here’s what they’re trying to tell you."
+title: "What the Animals in Your Lawn Are Telling You"
 description: "Skunks, moles, raccoons, bees, rabbits, deer, geese and more: what each animal in your yard says about your lawn, and what to do about it. Spoiler: some of it is good news."
+summary: "Skunks, moles, raccoons, geese, deer and more: what each visitor says about your lawn and whether to do anything about it. Tap a critter for the verdict."
+related: ["/guides/grubs-in-lawn/", "/guides/snow-mold-and-vole-damage/", "/blog/dog-pee-kids-bouncy-houses-lawn/"]
 seoTitle: "What Animals in Your Lawn Mean: Skunks, Moles, Geese"
 seoDescription: "Skunk holes, mole tunnels, geese, bees and deer: what each animal in your yard says about your lawn and what to do about it."
 date: 2026-11-15
@@ -26,12 +28,12 @@ So let’s read the room. Find the clue, tap the card.
 
 <div data-widget-slot></div>
 
-## The big takeaways
+## The Big Takeaways
 
 - **Digging animals are hungry, not evil.** Skunks, raccoons, moles and birds dig for food. Figure out what food, then decide if you care.
 - **Check before you buy grub killer.** Peel back a square foot of sod in a few spots and count. Lots of people treat for grubs they don’t have.
 - **Some visitors are compliments.** Worms, moles and bees mean your soil is alive and you’re not nuking everything. Take the win.
 - **Tall grass fixes more than you think.** It shades out weeds, saves water, and geese hate it.
-- **Your dog is the only one you can train.** Maybe.
+- **Your dog is the only one you can train.** Maybe. ([Dog spots, fixed.](/blog/dog-pee-kids-bouncy-houses-lawn/))
 
 **Bottom line:** before you declare war on the wildlife, read the clue. Then [take the quiz](/plan/) and fix the lawn, not the raccoon.

@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "The gift guide for lawn people (that isn’t a leaf blower)"
+title: "The Lawn Lover’s Gift Guide"
 description: "What to get the lawn guy or lawn girl in your life: stocking stuffers under $25, real upgrades, big gifts, a starter kit for new homeowners, and what to never buy."
+summary: "Gift ideas for the lawn person in your life, from stocking stuffers to big upgrades, plus the one gift that always wins and what to never buy. Tap a budget to shop."
+related: ["/blog/lawn-stuff-you-dont-need/", "/blog/sharpen-your-mower-blade/", "/blog/lawn-off-season-training/"]
 seoTitle: "Gifts for Lawn Lovers: The Lawn Care Gift Guide"
 seoDescription: "Gift ideas for people who love their lawn: soil thermometer, spare mower blade, soil test, spreader, battery trimmer, striping kit. And skip the leaf blower."
 date: 2026-11-16
@@ -22,28 +24,28 @@ faq:
 
 <div data-widget-slot></div>
 
-## The rules of buying for a lawn person
+## The Rules of Buying for a Lawn Person
 
 1. **Look at their mower first.** Write down the model number. Half the best gifts (blade, spark plug, filter) need it. This is also the most romantic thing you can do for a lawn person.
 2. **Upgrade what they already use.** They have a spreader. It wobbles. They’ll say it’s fine. It’s not fine.
 3. **Quiet beats loud.** Battery tools are the move. Nobody in Bedford wants to hear a two-stroke engine at 8am on a Saturday.
 4. **Don’t buy them a “program.”** The magic 12-step lawn box is mostly stuff they don’t need. [I made a whole list](/blog/lawn-stuff-you-dont-need/).
 
-## The one gift that wins every time
+## The One Gift That Wins Every Time
 
 **A spare mower blade.** Here’s my secret: I own two. One’s always sharp. Swap it in ten minutes, sharpen the other one whenever. Sharp blade, clean cut, better-looking lawn all season. [Why it matters](/blog/sharpen-your-mower-blade/). It costs less than a nice dinner and they’ll think of you every time they mow. Which is weekly. You’re welcome.
 
-## The runner-up nobody thinks of
+## The Runner-Up Nobody Thinks Of
 
 **A soil test.** Get one from their state’s Cooperative Extension lab, print the order form, and stick it in a card. “I got your dirt tested.” It sounds insane. They will lose their minds. Then plug the results into my [soil test translator](/blog/lawn-soil-test/) together. That’s a date.
 
-## What to never buy
+## What to Never Buy
 
 - **A gas leaf blower.** [They never needed one](/blog/you-never-needed-a-leaf-blower/).
 - **Aerator shoes.** Spiked sandals that do nothing except make you look like you lost a bet.
 - **Lawn paint.** We have standards.
 - **Anything that says “miracle.”** Lawns don’t do miracles. They do Labor Day feedings.
 
-## The bottom line
+## The Bottom Line
 
 Small, useful, quiet. Blade, thermometer, soil test, a better spreader. And if you really want to make their year, do the leaves one Saturday without being asked. Then don’t mention it. They’ll know.

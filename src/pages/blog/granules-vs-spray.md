@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "Granules vs. spray: I hate spraying, and I’m not sorry"
+title: "Granules vs. Spray: I Hate Spraying"
 description: "Granular or liquid for fertilizer, crabgrass preventer and weed killer? The honest pros and cons of each, what happened when I tried spray dye and surfactants, and when spraying actually wins."
+summary: "The honest pros and cons of granular and liquid fertilizer, preventer and weed killer, what happened when I tried to make spraying work, and the jobs where spray actually wins."
+related: ["/blog/spreader-settings-half-rate-twice/", "/blog/pre-emergent-vs-post-emergent/", "/blog/how-to-read-a-fertilizer-bag/"]
 seoTitle: "Granular vs. Liquid Fertilizer and Weed Killer"
 seoDescription: "Granular vs. liquid lawn products: honest pros and cons for fertilizer, crabgrass preventer and weed killer, and when spraying actually wins."
 date: 2026-11-15
@@ -22,7 +24,7 @@ faq:
 
 **Granules for almost everything. A spray bottle for the odd weed. That’s my whole system.** Spraying is messy, it’s easy to miss spots, and you can’t see where you’ve been. Some people swear by it. I respect them. I don’t want to be them.
 
-## Granules: the good and the bad
+## Granules: The Good and the Bad
 
 **Good:**
 - Easy. Fill the spreader, walk, done.
@@ -35,7 +37,7 @@ faq:
 - Granular weed killers need wet leaves to stick and a dry day after. Annoying.
 - Bags are heavy. A 50 lb bag is a workout I didn’t ask for.
 
-## Spray: the good and the bad
+## Spray: The Good and the Bad
 
 **Good:**
 - Works fast. Weed killer coats the leaf and gets to work.
@@ -49,13 +51,13 @@ faq:
 - Cleaning the sprayer after. Every. Single. Time.
 - Everyone stays off the lawn until it dries.
 
-## The time I tried to make spraying work
+## The Time I Tried to Make Spraying Work
 
 I gave it a real shot. I added **marker dye** so I could see where I’d sprayed, and a **surfactant** to help it stick to the leaves and work better.
 
 Did it help? A little. Was it worth it? Not for me. The dye got on my hands, my shoes, the driveway and somehow the dog. The surfactant made everything slippery. I spent more time cleaning up than spraying. I went back to granules and never looked back.
 
-## When spray actually wins
+## When Spray Actually Wins
 
 I’m not a zealot. Spray is the right call when:
 
@@ -68,6 +70,6 @@ Tap the job to see my pick:
 
 <div data-widget-slot></div>
 
-## The bottom line
+## The Bottom Line
 
 If you hate chores, use granules. If you love gear, go ahead and spray. Either way, read the label and keep kids and dogs off until it’s dry. [What’s safe and what’s not](/blog/kid-and-pet-safe-lawn-care/).

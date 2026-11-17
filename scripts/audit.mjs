@@ -173,7 +173,7 @@ function shareCheck() {
       const desc = pinEl.getAttribute('data-pin-description') || '';
       if (desc.length < 50) add('warn', 'Pinterest description is missing or very short');
       if (desc.length > 500) add('warn', `Pinterest description is ${desc.length} characters (500 max)`);
-      if (!d.querySelector('.pin-save-btn')) add('info', 'No “Save to Pinterest” button');
+      if (!d.querySelector('[data-share-item="pinterest"]')) add('info', 'No Pinterest option in the Share box');
     }
   }
   if (pages.get('/') && !meta(pages.get('/'), 'meta[name="p:domain_verify"]')) issues.push({ path: '/', sev: 'warn', msg: 'Pinterest verification tag (p:domain_verify) is missing' });

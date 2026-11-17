@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "Is my grass seed growing? Day by day, what you should see (and when to relax)"
+title: "Is My Grass Seed Growing?"
 description: "You put down seed and now you stare at dirt every morning. Here’s how long each grass takes to sprout, what week one through week six should look like, how to water, when to mow, and how to tell if something actually went wrong."
+summary: "How long each grass takes to sprout, what weeks one through six should look like, how to water, when to mow, and when it’s actually time to worry. Start a countdown for your seed."
+related: ["/guides/when-to-overseed-lawn/", "/blog/grass-types-northeast/", "/guides/fix-bare-spots-in-lawn/"]
 seoTitle: "How Long Does Grass Seed Take to Grow? A Day-by-Day Guide"
 seoDescription: "How long grass seed takes to sprout (rye 5–10 days, fescue 1–2 weeks, bluegrass 2–4 weeks), how to water new seed, when to mow, and when to worry."
 date: 2026-11-15
@@ -24,13 +26,13 @@ faq:
 
 <div data-widget-slot></div>
 
-## The waiting is the worst part
+## The Waiting Is the Worst Part
 
 Every new seeder does the same thing: walks out every morning with a coffee, stares at the dirt, sees nothing, and decides they did it wrong.
 
 You didn’t. Seed spends its first week (or three) underground, soaking up water and splitting open. Nothing happens on top until it’s ready. Then one morning you get low, look across the yard with the sun behind it, and there’s a green haze. It always shows up all at once. It always feels like a miracle.
 
-## How long each grass takes
+## How Long Each Grass Takes
 
 | Grass | First green |
 |---|---|
@@ -41,13 +43,13 @@ You didn’t. Seed spends its first week (or three) underground, soaking up wate
 
 Most bags are mixes, so the lawn comes up in waves. The rye pops first and makes you feel great. The bluegrass shows up later and makes you feel great again. Cold soil slows all of it down.
 
-## Not every seed makes it. That’s the plan.
+## Not Every Seed Makes It. That’s the Plan.
 
 The germination number on your seed tag comes from a lab with perfect conditions. Your yard is not a lab. Birds take some, some dry out, some land too deep, some just don’t feel like it. The rate on the bag already expects that. You don’t need every seed. You need enough.
 
 Thin spots in the first month are normal. A lawn from seed keeps filling in through the fall and into next spring, especially bluegrass, which spreads sideways on its own.
 
-## Watering: the whole game
+## Watering: The Whole Game
 
 The #1 reason seed fails: it dried out. Once a seed starts sprouting, one dry afternoon can kill it.
 
@@ -57,11 +59,11 @@ The #1 reason seed fails: it dried out. Once a seed starts sprouting, one dry af
 
 Puddles mean too much. Seed floating away means way too much.
 
-## When to mow
+## When to Mow
 
 When it’s about 4 inches tall. That’s usually 4 to 6 weeks after seeding. Set the mower as high as it goes, use a sharp blade (a dull one rips baby grass right out), mow when the ground is dry, and take off the top inch. Mowing actually helps new grass thicken up.
 
-## When to actually worry
+## When to Actually Worry
 
 If you’re past the window for your grass plus a week and you see nothing, something got in the way. Check these:
 
@@ -74,7 +76,7 @@ If you’re past the window for your grass plus a week and you see nothing, some
 
 Fix the cause, rake the spot lightly, and seed again. Around here, fall seed can go down until about mid-October.
 
-## The bottom line
+## The Bottom Line
 
 Water it, stay off it, and stop staring at it. Grass has been doing this for millions of years without your supervision. Trust the process.
 

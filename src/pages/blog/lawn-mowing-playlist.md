@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "The official mowing playlist. Nearly two hours, zero skips."
+title: "The Official Mowing Playlist"
 description: "29 songs about grass, stripes, standing tall and not mowing at 7am. Built for a full Saturday mow, in order, with a reason for every track."
+summary: "29 songs, about two hours, built for a full Saturday mow, with a reason every track made the cut."
+related: ["/blog/mowing-the-lawn-is-a-workout/", "/blog/lawn-care-dad-jokes/", "/blog/lawn-stripe-patterns/"]
 seoTitle: "The Best Lawn Mowing Playlist"
 date: 2026-11-15
 minutes: 4
@@ -25,7 +27,7 @@ It’s in order. It has a story. Every song is here for a reason, and I wrote th
 
 <div data-widget-slot></div>
 
-## The rules
+## The Rules
 
 - **No skipping.** You don’t skip a pass. You don’t skip a song.
 - **Protect your ears.** A gas mower is loud enough to hurt your hearing over time. Don’t crank earbuds over the engine to win. Get hearing protection with Bluetooth built in, or keep it low under regular ear muffs.

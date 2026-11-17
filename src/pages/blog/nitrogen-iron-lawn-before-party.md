@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "Nitrogen is a cheat code. Iron is the spray tan. Your lawn is on PEDs."
+title: "Green Up Your Lawn Before a Party"
 description: "How to get your lawn its greenest before a party: a light dose of fast-acting nitrogen 10 to 14 days out, iron a few days out, and a sharp mow. The pre-party cycle, the side effects, and when to skip it."
+summary: "How to get your lawn its greenest for a big day: nitrogen 10 to 14 days out, iron a few days out, a sharp mow, and the side effects. Count down to your party."
+related: ["/blog/how-to-read-a-fertilizer-bag/", "/blog/holiday-lawn-fertilizer-schedule/", "/blog/sharpen-your-mower-blade/"]
 seoTitle: "How to Green Up Your Lawn Fast Before a Party"
 seoDescription: "Fast-acting nitrogen 10 to 14 days out, iron a few days out, a sharp mow. How to get your lawn its greenest for a party, and the side effects."
 date: 2026-11-15
@@ -24,7 +26,7 @@ faq:
 
 Let’s talk about the program.
 
-## Nitrogen: the cheat code
+## Nitrogen: The Cheat Code
 
 Nitrogen is the gas pedal. It’s the first number on the bag, and it’s what makes grass grow and turn green.
 
@@ -33,13 +35,13 @@ Nitrogen is the gas pedal. It’s the first number on the bag, and it’s what m
 
 Before a party, a **light** dose of fast stuff 10 to 14 days out gives you peak green right on game day.
 
-## Iron: the spray tan
+## Iron: The Spray Tan
 
 Iron makes grass darker green fast without making it grow much. Purely cosmetic. Shows up in a couple of days (liquid is fastest) and fades in a few weeks.
 
 It’s the spray tan. Nobody needs it. Everybody notices it.
 
-## The side effects (read the fine print)
+## The Side Effects (Read the Fine Print)
 
 Every PED has them.
 
@@ -49,13 +51,13 @@ Every PED has them.
 - **Iron stains concrete orange.** Your driveway will snitch. Sweep every granule.
 - **It wears off.** Blow it all on one party and the lawn crashes after. Back to the regular program.
 
-## The pre-party cycle
+## The Pre-Party Cycle
 
 When’s the party?
 
 <div data-widget-slot></div>
 
-## The bottom line
+## The Bottom Line
 
 For one big day, a little nitrogen and a little iron are totally legal performance enhancers. For the other 364, it’s mow tall, feed on the holidays, and let the lawn get strong naturally. Like an athlete. A clean one.
 

@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "A soil test is blood work for your lawn. Get one."
+title: "A Soil Test Is Blood Work for Your Lawn"
 description: "Why a soil test is the cheapest lawn upgrade there is, how often to do one, how to take the sample, how to read the report, and exactly what to do when the numbers come back low or high."
+summary: "Why a soil test is the cheapest lawn upgrade, how to take a sample, how to read the report, and what to do when numbers come back low or high. Includes a real report, decoded."
+related: ["/guides/does-my-lawn-need-lime/", "/blog/how-to-read-a-fertilizer-bag/", "/blog/holiday-lawn-fertilizer-schedule/"]
 seoTitle: "Lawn Soil Test: How to Do It and Read It"
 seoDescription: "Why to test your lawn soil, how often, how to take a sample, and how to read pH, phosphorus and potassium. Plus a soil test translator."
 date: 2026-11-15
@@ -29,7 +31,7 @@ Already have your report? Plug it in here. Don’t have one yet? Keep reading, t
 
 <div data-widget-slot></div>
 
-## Why bother?
+## Why Bother?
 
 - **You stop guessing.** Most people throw down whatever the guy at the store says. Some of it your lawn needs. Some of it is money in the trash.
 - **It saves money.** If your soil is already loaded with phosphorus or potassium, you can buy cheaper bags without it.
@@ -37,7 +39,7 @@ Already have your report? Plug it in here. Don’t have one yet? Keep reading, t
 - **It finds stuff you can’t see.** Low magnesium. Salt from the road. You can’t eyeball that.
 - **It gives you a starting line.** Test now, test again in a few years, and you’ll see if what you’re doing is working.
 
-## How often?
+## How Often?
 
 **Once when you start. Then every few years.** Every 3 years is plenty for most lawns. Soil changes slowly. Testing every spring is like stepping on the scale every hour.
 
@@ -48,7 +50,7 @@ Two exceptions:
 
 Test at the same time of year and use the same lab each time. Different labs measure differently, so switching labs is like switching scales mid-diet.
 
-## How to do it
+## How to Do It
 
 This is the part people overthink. Don’t.
 
@@ -61,7 +63,7 @@ This is the part people overthink. Don’t.
 
 **Pro tip:** if your front and back yards are totally different (sunny vs. shady, old lawn vs. new), send them as two separate samples.
 
-## How to read it
+## How to Read It
 
 Your report will be a wall of numbers. Most of it doesn’t matter much. Read it in this order and stop when you get bored.
 
@@ -83,7 +85,7 @@ Some reports also list a **buffer pH.** That’s how stubborn your soil is about
 
 **One more thing:** results come in parts per million (ppm) or pounds per acre, and every lab uses its own ranges. Compare your numbers to **your** lab’s “optimal” range, not something you saw on a forum.
 
-## A real report, decoded
+## A Real Report, Decoded
 
 Enough theory. A buddy of mine let me share his report. I scrubbed his name and address and redrew it so it’s easier to read. He’s being a good sport about it. Mostly.
 
@@ -93,7 +95,7 @@ See the pattern? Almost everything is “overachiever” except the pH. That’s
 
 Want to see what the translator says about it? Scroll back up and tap **“Try my buddy’s.”**
 
-## What to do about it
+## What to Do About It
 
 Here’s the playbook for the stuff that actually comes up.
 
@@ -119,7 +121,7 @@ Here’s the playbook for the stuff that actually comes up.
 
 **Low organic matter.** Leave your clippings. Mow over your leaves. After you aerate, rake in a thin layer of compost. Free fixes, mostly.
 
-## The cheat sheet
+## The Cheat Sheet
 
 - **Test once when you start, then every few years.**
 - **10 to 15 spots, 3 to 4 inches deep, plastic bucket.**

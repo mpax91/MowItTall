@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "Halloween is the Super Bowl of lawns. Act like it."
+title: "Halloween Is the Super Bowl of Lawns"
 description: "Late October is when your grass looks its best all year, and 60 people are about to walk right past it. We train all year for this night."
+summary: "Cool-season grass peaks in late October, right when the whole neighborhood walks past it. How to treat the year like a football season, plus a game week checklist."
+related: ["/blog/holiday-lawn-fertilizer-schedule/", "/guides/should-i-mulch-leaves-into-lawn/", "/blog/worst-trees-for-fall-leaves/"]
 seoTitle: "Halloween Is the Super Bowl of Lawns"
 date: 2026-11-15
 minutes: 3
@@ -20,7 +22,7 @@ Everybody thinks the big day for lawns is the Fourth of July. Wrong. In July you
 
 The real Super Bowl is **Halloween**. Here’s why.
 
-## Your lawn peaks in late October
+## Your Lawn Peaks in Late October
 
 If you have cool-season grass (most of the Northeast does), late October is the best it will look all year:
 
@@ -30,13 +32,13 @@ If you have cool-season grass (most of the Northeast does), late October is the 
 
 Peak lawn. Done. Not up for debate.
 
-## And then 60 people walk past it
+## And Then 60 People Walk Past It
 
 Name another night when dozens of your neighbors walk right up your front walk, slowly, staring at your yard. Bring the parents. Bring the dads standing at the end of the driveway with nothing to do but judge.
 
 That’s not trick-or-treating. That’s a crowd. You don’t just perform for a crowd. You **dominate**.
 
-## You’ve been training all year
+## You’ve Been Training All Year
 
 - **Spring is preseason.** Crabgrass preventer, sharpen the blade, raise the mower.
 - **Summer is surviving.** Mow tall, water deep, don’t panic.
@@ -44,7 +46,7 @@ That’s not trick-or-treating. That’s a crowd. You don’t just perform for a
 - **September is the playoffs.** Feed it. Keep the new grass wet.
 - **Halloween is the big game.**
 
-## Game week checklist
+## Game Week Checklist
 
 1. **Sharp blade.** A dull blade tears the tips and they turn white. Nobody wins a Super Bowl with frayed tips.
 2. **Mow one or two days before.** Keep it tall. This is not the night for a buzz cut.
@@ -53,7 +55,7 @@ That’s not trick-or-treating. That’s a crowd. You don’t just perform for a
 5. **Edge the front walk.** That walk is the red carpet. Every single kid is going to use it.
 6. **Frosty morning? Stay off it.** Walking on frozen grass leaves footprints that turn brown.
 
-## How to lose the big game
+## How to Lose the Big Game
 
 - **The 12-foot inflatable skeleton.** It looks great. It’s also sitting on your grass for three weeks with no sun. On November 1 you’ll have a skeleton-shaped yellow spot. Put it on the mulch or the driveway.
 - **Fake tombstones.** Same deal. They’re fake graves for the props and real graves for the grass under them. Move them every few days.
@@ -62,7 +64,7 @@ That’s not trick-or-treating. That’s a crowd. You don’t just perform for a
 
 And yes, some kid is going to cut straight across your lawn. Let it go. Thick grass bounces back. That’s the whole point of training.
 
-## After the game
+## After the Game
 
 Keep mowing as long as it keeps growing. Give it one last feeding when growth slows down. Then hang it up for winter and enjoy that frosty November striping.
 

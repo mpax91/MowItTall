@@ -38,7 +38,7 @@ export const RESOLUTIONS = [
   { id: 'tall', t: 'Mow at 3.5 inches or higher', d: 'Every mow. Not “most” mows. The single easiest upgrade. <a href="/guides/how-high-to-mow-grass/">Why</a>.' },
   { id: 'clippings', t: 'Leave the clippings', d: 'Take the bag off. Free fertilizer, less work. <a href="/blog/mulching-vs-bagging/">Mulch vs. bag</a>.' },
   { id: 'blade', t: 'Sharpen the blade twice', d: 'Once in spring, once around July 4th. Or buy a spare and swap.' },
-  { id: 'holidays', t: 'Feed on three holidays', d: 'Memorial Day, Labor Day, Columbus Day. That’s it. <a href="/blog/holiday-lawn-fertilizer-schedule/">The schedule</a>.' },
+  { id: 'holidays', t: 'Feed on the holidays', d: 'Labor Day at minimum. Add Columbus Day and Memorial Day for more green. <a href="/blog/holiday-lawn-fertilizer-schedule/">The schedule</a>.' },
   { id: 'taxday', t: 'Crabgrass preventer around Tax Day', d: 'One bag, one weekend. No crabgrass party in August.' },
   { id: 'soil', t: 'Get one soil test', d: 'Stop guessing. About the price of a pizza. <a href="/blog/lawn-soil-test/">How</a>.' },
   { id: 'water', t: 'Water deep, not daily', d: 'Once or twice a week, early morning, about an inch total. Or skip it when the <a href="/resources/">rain meter</a> says so.' },

@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "Do you actually need it? A brutally honest list of lawn stuff your neighbor bought"
+title: "Lawn Stuff You Don’t Need"
 description: "Aeration, aeration sneakers, dethatchers, mulching blades, lawn stripers, lime, iron, top dressing, irrigation and more: what’s worth it, what’s a maybe, and what’s a scam, from a guy who bought most of it."
+summary: "Aeration shoes, dethatchers, stripers, lime, iron, irrigation and more, sorted into worth it, maybe and scam. Tap anything your neighbor bought for my verdict."
+related: ["/blog/lawn-gift-guide/", "/guides/should-i-aerate-my-lawn/", "/blog/robot-mower-judging-you/"]
 seoTitle: "Lawn Gear You Don’t Need (and What You Do)"
 seoDescription: "Do you need aeration, aerator shoes, a dethatcher, mulching blades, lime, iron, top dressing or irrigation? Honest verdicts from a guy who bought it."
 date: 2026-11-15
@@ -26,7 +28,7 @@ Here’s every piece of lawn stuff people ask me about, with my honest verdict. 
 
 <div data-widget-slot></div>
 
-## The short version
+## The Short Version
 
 - **Yes:** blade sharpening, a soil test.
 - **Maybe:** aeration (only if your soil is packed), mulching blades, a striper kit (only if you want stripes, and you do), iron (before a party).
@@ -34,13 +36,13 @@ Here’s every piece of lawn stuff people ask me about, with my honest verdict. 
 - **Probably not:** dethatching, top dressing, an irrigation system, grub killer every single year.
 - **Absolutely not:** aeration sneakers.
 
-## About those aeration sneakers
+## About Those Aeration Sneakers
 
 I bought them. They’re spiked sandals you strap over your shoes and walk around in. The idea is you poke holes in the lawn while you do yard work.
 
 The reality: spikes just push the dirt sideways. Real aeration pulls little plugs of soil out. To make any difference, you’d have to walk every inch of your lawn a bunch of times. You will not do that. Nobody will do that. You will, however, look like a lawn villain, and your wife will take pictures. Ask me how I know.
 
-## The rule for anything new
+## The Rule for Anything New
 
 Before you buy something, ask: **what problem does this fix, and do I have that problem?** Most lawn problems come from mowing too short, feeding at the wrong time, or never seeding. None of those need new gear.
 

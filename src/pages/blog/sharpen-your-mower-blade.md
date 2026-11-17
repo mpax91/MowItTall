@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "Sharpen your mower blade. My secret: own two."
+title: "Sharpen Your Blade. Better Yet, Own Two."
 description: "Most people never sharpen their mower blade, and their lawn looks gray because of it. How often to sharpen, how to tell it’s dull, how to do it yourself, and the two-blade trick so you never stop mowing to wait on sharpening."
+summary: "What a dull blade does to grass, how often to sharpen, how to swap it yourself, and the two-blade trick. A quick check tells you if yours is dull."
+related: ["/blog/lawn-mower-maintenance-diy/", "/blog/one-third-rule-mowing/", "/blog/opening-day-first-mow/"]
 seoTitle: "How Often to Sharpen a Mower Blade"
 seoDescription: "Sharpen your mower blade at least once a season. How to tell it’s dull, how to sharpen it yourself, and the two-blade trick so you never wait."
 date: 2026-11-15
@@ -22,11 +24,11 @@ faq:
 
 **Sharpen your blade at least once a season. Better yet, buy two blades: one on the mower, one sharp and waiting on the shelf.** Swap takes five minutes. You never stop mowing to wait on sharpening. That’s the secret.
 
-## Most people never do this
+## Most People Never Do This
 
 I’d bet most mowers on my street have the same blade they came with. Dull as a butter knife. And their owners wonder why the lawn looks gray.
 
-## What a dull blade does
+## What a Dull Blade Does
 
 A sharp blade **cuts** grass. A dull blade **rips** it.
 
@@ -34,14 +36,14 @@ Ripped grass gets frayed, shredded tips that dry out and turn white, then brown.
 
 **The test:** look at a blade of grass the day after you mow. Clean, flat cut? Sharp. Shredded like a broom? Dull.
 
-## How often
+## How Often
 
 - **At least once a season.** Spring, before the first mow.
 - **Better: twice.** Spring and around July 4th.
 - **Rule of thumb:** every 20 to 25 hours of mowing.
 - **Any time you hit something.** Rocks, roots, sprinkler heads, that dog toy.
 
-## The two-blade trick
+## The Two-Blade Trick
 
 Here’s why people don’t sharpen: the mower is out of action while the blade’s at the shop. Grass doesn’t wait.
 
@@ -54,7 +56,7 @@ So buy a second blade (same part number). Now:
 
 Twenty to forty bucks for a spare. Best money in lawn care.
 
-## How to swap or sharpen it yourself
+## How to Swap or Sharpen It Yourself
 
 1. **Pull the spark plug wire.** Always. (Battery? Take it out.)
 2. **Tip the mower with the air filter side up.**
@@ -66,10 +68,10 @@ Twenty to forty bucks for a spare. Best money in lawn care.
 
 Or skip steps 5 and 6 and let a hardware store do it for a few bucks.
 
-## Is yours dull?
+## Is Yours Dull?
 
 <div data-widget-slot></div>
 
-## The bottom line
+## The Bottom Line
 
-A sharp blade is the cheapest upgrade in lawn care. Two blades make it painless. While you’re under there, [do the rest of the tune-up](/blog/lawn-mower-maintenance-diy/).
+A sharp blade is the cheapest upgrade in lawn care. Two blades make it painless. Pair it with [mowing tall](/guides/how-high-to-mow-grass/) and your lawn looks greener by next weekend. While you’re under there, [do the rest of the tune-up](/blog/lawn-mower-maintenance-diy/).

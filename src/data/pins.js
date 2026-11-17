@@ -7,7 +7,7 @@
 //   pinPhoto: which of Mike's photos to use: front-yard-may | backyard-stripes | spiral-pattern | frosty-stripes-november
 //   pinTool:  the "Free tool inside" name (default: from PIN_TOOLS by widget).
 // Base.astro adds a hidden pin image (data-pin-media) so Pinterest's Save button grabs the tall pin,
-// and the post/guide layouts show a "Save to Pinterest" button. HQ → Social → Pinterest has the copy.
+// and the "Share This" box (ShareBox.astro) on posts/guides pins it via Pinterest's pin builder. HQ → Social → Pinterest has the copy.
 import { ogSlug } from './og.js';
 import { SOCIAL } from './social.js';
 

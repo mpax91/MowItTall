@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "Your robot mower is judging you"
+title: "Your Robot Mower Is Judging You"
 description: "Robot mowers follow every lawn rule you ignore: mow tall, mow often, leave the clippings. Here’s what yours thinks of you, plus the honest pros and cons."
+summary: "Why robot mowers make lawns look good, their honest downsides, and the power move of robot plus you. Tap a confession to hear what the robot thinks."
+related: ["/blog/walk-behind-vs-riding-vs-zero-turn-mower/", "/blog/one-third-rule-mowing/", "/blog/lawn-stuff-you-dont-need/"]
 seoTitle: "Are Robot Mowers Worth It? An Honest Take"
 seoDescription: "Robot mowers keep grass tall, mow a little every day and mulch the clippings. The honest pros, the cons (edges, stripes, cost, wildlife) and who they’re for."
 date: 2026-11-16
@@ -24,7 +26,7 @@ Hot take: the robot isn’t the lazy option. It’s the *disciplined* option. It
 
 <div data-widget-slot></div>
 
-## Why robots make lawns look good
+## Why Robots Make Lawns Look Good
 
 It’s not magic. It’s just doing what I’ve been yelling about for years:
 
@@ -33,7 +35,7 @@ It’s not magic. It’s just doing what I’ve been yelling about for years:
 - **It leaves the clippings.** Tiny ones, every day. Free fertilizer. [Stop bagging](/blog/stop-bagging-your-clippings/).
 - **It doesn’t get lazy in July.** You do. It doesn’t.
 
-## The honest downsides
+## The Honest Downsides
 
 I’m not here to sell you a robot. Here’s the other side:
 
@@ -44,12 +46,12 @@ I’m not here to sell you a robot. Here’s the other side:
 - **Hills, roots and weird yards.** Steep slopes and lots of obstacles can trip them up.
 - **Wildlife.** Run it in daylight. Night is when the rabbits and toads are out.
 
-## The power move: robot plus you
+## The Power Move: Robot Plus You
 
 Let the robot handle the daily grind: height, clippings, consistency. Then on Saturday morning, you take the push mower out for a striping pass. The neighbors see stripes. The lawn gets daily care. You get the credit.
 
 That’s the deal everyone makes, by the way. I wrote a dad joke about it. [It’s number one on the list](/blog/lawn-care-dad-jokes/).
 
-## The bottom line
+## The Bottom Line
 
 The robot is judging you because it’s doing it right. Mow tall, mow often, leave the clippings, with or without a robot. And if you get one, name it. Something like Gary. Gary deserves a name.

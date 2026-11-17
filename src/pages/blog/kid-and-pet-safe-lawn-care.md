@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "Kids, dogs and lawn chemicals: what’s safe, what’s not, and what to do instead"
+title: "Kids, Dogs and Lawn Chemicals"
 description: "Which lawn products are low-worry with kids and pets, which ones need real care, and six ways to beat weeds, including zero-chemical options with honest pros and cons."
+summary: "Which lawn products are low-worry around kids and pets, which need real care, and the ground rules if you use anything. Plus six ways to beat weeds, some with zero chemicals."
+related: ["/blog/dog-pee-kids-bouncy-houses-lawn/", "/blog/pre-emergent-vs-post-emergent/", "/guides/grubs-in-lawn/"]
 seoTitle: "Is Lawn Care Safe for Kids and Pets?"
 seoDescription: "Which lawn products are low-worry with kids and dogs, which need care, and six ways to beat weeds, including zero-chemical options."
 date: 2026-11-15
@@ -28,7 +30,7 @@ Here are your options, from zero chemicals to the full treatment.
 
 <div data-widget-slot></div>
 
-## The best play is offense
+## The Best Play Is Offense
 
 If you only read one section, read this one. **Thick grass is the best weed killer ever invented.** Weeds are opportunists. They move into bare and thin spots. Take away the empty real estate and they’ve got nowhere to live.
 
@@ -41,7 +43,7 @@ How to play offense:
 
 The catch? It’s slow. One to three seasons. And one big conflict: **crabgrass preventer stops grass seed too.** If you’re seeding, skip the preventer on those spots. You have to pick one.
 
-## If you use anything, the ground rules
+## If You Use Anything, the Ground Rules
 
 - **The label is the boss.** It tells you how much, when, and how long to keep people and pets off. Read it every time, even if you’ve used it before.
 - **Kids and pets inside** while you spread or spray.
@@ -52,7 +54,7 @@ The catch? It’s slow. One to three seasons. And one big conflict: **crabgrass 
 - **Lock it up.** Original container, closed, up high. Garage shelves count. Low garage shelves do not.
 - **Wash hands and paws** after time on a freshly treated lawn.
 
-## Surprises that catch people
+## Surprises That Catch People
 
 - **“Organic” fertilizer can be the dog’s favorite snack.** Products with bone meal, blood meal or fish meal smell like dinner. Dogs can eat a lot of it fast, and bone meal can clump into a hard mass in the stomach. Keep those bags sealed and supervise after spreading.
 - **Natural doesn’t mean safe.** Strong horticultural vinegar can burn skin and eyes, and it kills grass along with the weeds.
@@ -61,7 +63,7 @@ The catch? It’s slow. One to three seasons. And one big conflict: **crabgrass 
 - **Clover plus bare feet plus bees.** If you let clover grow, mow before the kids run around, or get them shoes.
 - **Lawn mushrooms.** Most are harmless, some aren’t. If you have little kids or a dog who eats everything, kick them over and toss them.
 
-## The low-worry list
+## The Low-Worry List
 
 - Grass seed
 - Compost
@@ -70,11 +72,11 @@ The catch? It’s slow. One to three seasons. And one big conflict: **crabgrass 
 - Mowing tall and watering deep
 - A weeding tool and a podcast
 
-## Grubs, without the heavy stuff
+## Grubs, Without the Heavy Stuff
 
 Got grubs? First, make sure. Peel back a square foot of sod in a few spots and count. A few is normal. If you really have a lot, there are gentler routes: beneficial nematodes (tiny worms that hunt grubs, best in moist late-summer soil) and milky spore (Japanese beetle grubs only, and it takes years). Neither is as fast as the standard stuff, but neither needs a “keep off” sign.
 
-## If someone eats something
+## If Someone Eats Something
 
 If someone collapses or has trouble breathing, call 911. Otherwise, don’t panic, and don’t make them throw up unless a professional tells you to. Grab the bag so you can read the label, then call:
 

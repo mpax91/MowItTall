@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "Every grass seed worth buying in the Northeast, ranked and roasted"
+title: "Every Northeast Grass Seed, Ranked and Roasted"
 description: "Kentucky bluegrass vs. perennial rye vs. tall fescue vs. fine fescue: how each one looks, feels, spreads, sprouts and handles sun, shade and no water. Plus a 4-question picker for your yard."
+summary: "Kentucky bluegrass, perennial rye, tall fescue and fine fescue compared on looks, feel, sun, shade and water. A four-question picker tells you what to plant."
+related: ["/guides/when-to-overseed-lawn/", "/blog/is-my-grass-seed-growing/", "/blog/fall-kill-weeds-or-plant-seed/"]
 seoTitle: "Best Grass Seed for the Northeast, Ranked"
 seoDescription: "Kentucky bluegrass, perennial rye, tall fescue and fine fescue compared for Northeast lawns: sun, shade, traffic, water. Plus a grass seed picker."
 date: 2026-11-15
@@ -34,7 +36,7 @@ Not sure? Take the four-question picker. It tells you what to buy and how much.
 
 <div data-widget-slot></div>
 
-## The cheat sheet
+## The Cheat Sheet
 
 | Grass | Sprouts in | Sun | Water | Spreads? |
 |---|---|---|---|---|
@@ -45,7 +47,7 @@ Not sure? Take the four-question picker. It tells you what to buy and how much.
 
 Now let’s meet the roster.
 
-## Kentucky bluegrass: the varsity captain
+## Kentucky Bluegrass: The Varsity Captain
 
 - **Looks:** deep green with a hint of blue. Medium blades with a tip shaped like the front of a boat.
 - **Feels:** a thick, soft carpet. The barefoot grass.
@@ -57,7 +59,7 @@ Now let’s meet the roster.
 
 **Mike’s take:** the gold standard. Slow starter, great finisher. That’s why it’s almost always paired with rye.
 
-## Perennial rye: my guy
+## Perennial Rye: My Guy
 
 I’ll say it. Perennial rye is my favorite grass. I said what I said.
 
@@ -71,7 +73,7 @@ I’ll say it. Perennial rye is my favorite grass. I said what I said.
 
 **Mike’s take:** it’s the fastest, the darkest and the best striper. The catch: it’s the least winter-tough of the four and it can’t fix its own bare spots, so overseed it every fall. Keep the blade sharp too. A dull blade shreds rye and leaves white tips.
 
-## Turf-type tall fescue: the offensive lineman
+## Turf-Type Tall Fescue: The Offensive Lineman
 
 - **Looks:** wider blades, a little coarser. The new turf types are way finer than the old pasture stuff, but it won’t pass for bluegrass up close.
 - **Feels:** tougher. Not the barefoot grass.
@@ -83,7 +85,7 @@ I’ll say it. Perennial rye is my favorite grass. I said what I said.
 
 **Mike’s take:** the “I never water and I have three dogs” grass. One rule: don’t mix it with rye or fine fescue. The blades are too different and it looks patchy.
 
-## Fine fescue: the introvert
+## Fine Fescue: The Introvert
 
 Fine fescue is really a little family: creeping red, chewings and hard fescue. They’re usually sold together.
 
@@ -97,7 +99,7 @@ Fine fescue is really a little family: creeping red, chewings and hard fescue. T
 
 **Mike’s take:** if you’ve got trees, this is your grass. Mow it tall, leave it alone, don’t overfeed it.
 
-## The benchwarmers
+## The Benchwarmers
 
 These show up in cheap bags. Skip them.
 
@@ -105,7 +107,7 @@ These show up in cheap bags. Skip them.
 - **Rough bluegrass.** Those [lime green patches](/weeds/#rough-bluegrass) that look like a different lawn? Often this. It sneaks into cheap shade mixes.
 - **Kentucky 31 tall fescue.** The old pasture version. Wide, clumpy blades. Get “turf-type” or nothing.
 
-## How to read the bag
+## How to Read the Bag
 
 Flip it over and read the label. This is where the truth lives.
 
@@ -114,7 +116,7 @@ Flip it over and read the label. This is where the truth lives.
 - **Other crop.** Lower is better. That’s grass you didn’t ask for.
 - **Named varieties.** Real names beat “VNS” (variety not stated). VNS means they’re not telling you, which tells you something.
 
-## Mixing it up
+## Mixing It Up
 
 Most lawns around here are already a mix. When you overseed, match what you have, or grab a blend that fits your sun. Want stripes in the sun? Bluegrass and rye. Got sun out front and shade out back? A sun and shade mix lets each grass win its own spot.
 

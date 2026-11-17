@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "Mowing the lawn is a workout. Tell your doctor."
+title: "Mowing Is a Workout. Tell Your Doctor."
 description: "Some people go to the gym. Big deal. You push a mower up a hill in July. Here’s the proof, plus a calculator for your time, steps and calories."
+summary: "Why pushing a mower counts as real exercise (per the CDC), what riding mowers don’t count for, and a calculator for your time, steps and calories."
+related: ["/blog/walk-behind-vs-riding-vs-zero-turn-mower/", "/blog/lawn-mowing-playlist/", "/blog/robot-mower-judging-you/"]
 seoTitle: "Is Mowing the Lawn Exercise? Calories and Steps"
 date: 2026-11-15
 minutes: 3
@@ -25,7 +27,7 @@ They drive to a building, walk on a treadmill that goes nowhere and pay $60 a mo
 
 Who’s the athlete here?
 
-## This isn’t me talking. It’s the CDC.
+## This Isn’t Me Talking. It’s the CDC.
 
 The CDC lists **pushing a lawn mower** as moderate exercise. Same category as a brisk walk. It counts toward the 150 minutes a week adults are supposed to get.
 
@@ -33,32 +35,32 @@ The research people who rate how hard activities are put walking behind a power 
 
 So yes. Mowing is cardio. It says so on a government website.
 
-## What to tell people
+## What to Tell People
 
 - **Your spouse:** “I wasn’t avoiding the dishes. I was training.”
 - **Your parents:** “Yes, I exercise. Every Saturday. Outside. Like you told me to.”
 - **Your doctor:** “Moderate cardio, once a week, with weights.” (The weights are the mower.)
 - **The guy at the gym:** Nothing. He’s not on your level. Literally. He’s on a treadmill.
 
-## Lay off the drive bar
+## Lay Off the Drive Bar
 
 Got a self-propelled mower? It still counts. But let go of the drive bar, the one that makes the wheels go, for a few passes. Not the safety bar. That one kills the engine.
 
 Push it yourself for one lap of the front yard. You’ll be sweating with the best of them by the second stripe.
 
-## I see you on the riding mower
+## I See You on the Riding Mower
 
 Respect. But a riding mower is light activity. It burns a little more than sitting on the couch, and it doesn’t count as exercise. It’s a hobby with a cupholder.
 
 Want the credit? Walk the trimmer around the edges. Or push mow the front yard, where the neighbors can see you.
 
-## Run your numbers
+## Run Your Numbers
 
 Tap in your lawn size and your mower. If you don’t know your square footage, [measure your yard on the map](/measure/). It takes two minutes and writes the number right on your lawn.
 
 <div data-widget-slot></div>
 
-## Make it a real workout
+## Make It a Real Workout
 
 - **Hills are free leg day.** Mow across slopes with a push mower, not up and down. Safer, and your legs still feel it.
 - **Wear real shoes.** Sneakers or boots. Never flip-flops. This is training, not the beach.

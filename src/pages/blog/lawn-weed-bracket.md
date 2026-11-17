@@ -1,7 +1,9 @@
 ---
 layout: ../../layouts/Post.astro
-title: "The lawn weed bracket: 16 weeds enter, one ruins your summer"
+title: "The Lawn Weed Bracket"
 description: "Sixteen lawn weeds, four regions, one champion. Fill out the bracket, pick the worst weed in every matchup, and see how everyone else voted."
+summary: "Sixteen weeds, four regions, one champion. Fill out the bracket, see how everyone else voted, and learn how to beat the winner."
+related: ["/weeds/", "/blog/pre-emergent-vs-post-emergent/", "/guides/get-rid-of-clover-in-lawn/"]
 seoTitle: "The Worst Lawn Weed Bracket: Vote for the Worst Weed"
 seoDescription: "Dandelion vs. crabgrass vs. creeping Charlie. Fill out the lawn weed bracket, vote on every matchup, and see which weed everyone hates most."
 date: 2026-11-16
@@ -24,7 +26,7 @@ Tap the **worse** weed in each matchup. Your picks move on to the next round. Af
 
 <div data-widget-slot></div>
 
-## Scouting report: the four regions
+## Scouting Report: The Four Regions
 
 **The Flower Region.** The pretty ones. Dandelion is the 1 seed on name recognition alone, but creeping Charlie is the team nobody wants to draw. It roots every few inches and laughs at hand-pulling. Watch out for wild violet: a 4 seed with a terrifying defense against weed killer.
 
@@ -34,14 +36,14 @@ Tap the **worse** weed in each matchup. Your picks move on to the next round. Af
 
 **The Wild Card Region.** Japanese stiltgrass is invasive and coming out of the woods. Moss is the most patient villain in the tournament. And yes, the 4 seed is “Weed (the other kind).” It’s here on a technicality. It came in through the bird feeder. Nothing survives the stripes.
 
-## My bracket (for the record)
+## My Bracket (For the Record)
 
 I have creeping Charlie over nutsedge in the final. Creeping Charlie is the only weed that has ever made me say a word I can’t print here. Fight me in the comments. (There are no comments. Fight me at the block party.)
 
-## How to actually beat your champion
+## How to Actually Beat Your Champion
 
 Every weed in this bracket has a card on [the weed board](/weeds/) with the easy fix, my fix, and whether you should just let it be. Most of them lose to the same thing: **thick, tall, well-fed grass.** Mow at 3.5 to 4 inches, [feed on the holidays](/blog/holiday-lawn-fertilizer-schedule/), put down [crabgrass preventer around Tax Day](/guides/crabgrass-preventer-timing/), and overseed thin spots in September. Weeds hate a crowded room.
 
-## The bottom line
+## The Bottom Line
 
 Fill out your bracket. Share it with the guy down the street who thinks clover is “basically fine.” And may the worst weed win.
