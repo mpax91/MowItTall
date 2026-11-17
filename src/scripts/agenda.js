@@ -56,18 +56,19 @@ function nth(y, m, dow, n) {
   d.setDate(d.getDate() + 7 * (n - 1));
   return d;
 }
-// Holiday markers: small "all-day" chips on the real date (Claude's copy; Mike to review)
-function holidays(y) {
-  return [
-    { id: 'tax', date: new Date(y, 3, 15), name: 'Tax Day', note: 'Crabgrass preventer down yet?', level: 1 },
-    { id: 'memorial', date: nth(y, 4, 1, -1), name: 'Memorial Day', note: 'Feeding weekend.', level: 2 },
-    { id: 'july4', date: new Date(y, 6, 4), name: 'July 4th', note: 'Half dose, only if you water.', level: 3 },
-    { id: 'labor', date: nth(y, 8, 1, 1), name: 'Labor Day', note: 'The big feed. Don’t skip it.', level: 0 },
-    { id: 'columbus', date: nth(y, 9, 1, 2), name: 'Columbus Day', note: 'Pre-game feed for Halloween.', level: 1 },
-    { id: 'halloween', date: new Date(y, 9, 31), name: 'Halloween', note: 'Game day. Your lawn peaks tonight.', level: 0 },
-    { id: 'thanks', date: nth(y, 10, 4, 4), name: 'Thanksgiving', note: 'Last call before the freeze.', level: 3 },
-  ];
+// Holiday jobs sit on the holiday itself (the card still shows the full window), so each holiday
+// shows up once instead of a card on the window start plus a separate holiday marker.
+function holidayDate(id, y) {
+  return {
+    crabgrass: new Date(y, 3, 15),        // Tax Day
+    'spring-feed': nth(y, 4, 1, -1),       // Memorial Day
+    'july4-feed': new Date(y, 6, 4),
+    'fall-feed': nth(y, 8, 1, 1),          // Labor Day
+    'columbus-feed': nth(y, 9, 1, 2),
+    'thanksgiving-feed': nth(y, 10, 4, 4),
+  }[id] || null;
 }
+const placeOf = (t, y) => holidayDate(t.id, y) || new Date(y, t.start[0] - 1, t.start[1]);
 
 // one-line mood for each month header (Claude's copy; Mike to review)
 const MOOD = ['Asleep', 'Still asleep', 'Waking up', 'Go time', 'Growing fast', 'Heating up', 'Survival mode', 'Hang in there', 'Prime time', 'Peak season', 'Winding down', 'Off season'];
@@ -102,7 +103,7 @@ export const tasksFor = (level) => TASKS.filter((t) => t.level <= level);
 // Claude's estimates (Mike to review). scale: true = product amount grows with lawn size.
 export const BASE_SQFT = 5000;
 const COST = {
-  blade: { c: [10, 15] },                    // hardware-store sharpening (or free with a file)
+  blade: { c: [0, 25] },                     // free with a file, ~$25 at a shop
   crabgrass: { c: [30, 50], scale: true },   // 1 bag of preventer
   'spring-feed': { c: [35, 60], scale: true },
   'spot-weeds': { c: [12, 25] },             // ready-to-spray bottle
@@ -111,14 +112,14 @@ const COST = {
   'soil-test': { c: [20, 30] },
   aerate: { c: [80, 120] },                  // half-day core aerator rental
   seed: { c: [40, 80], scale: true },        // thin-spot overseeding
-  'fall-feed': { c: [35, 60], scale: true },
+  'fall-feed': { c: [50, 75], scale: true },  // the big one: a fuller bag
   'fall-weeds': { c: [15, 30], scale: true },
   'columbus-feed': { c: [35, 60], scale: true },
   lime: { c: [25, 40], scale: true },        // ~3 bags pelletized
   'thanksgiving-feed': { c: [35, 60], scale: true },
   winter: { c: [15, 30] },                   // oil, spark plug, fuel stabilizer
 };
-const r5 = (n) => Math.max(5, Math.round(n / 5) * 5);
+const r5 = (n) => Math.round(n / 5) * 5;
 export function taskCost(t, sqft = BASE_SQFT) {
   const x = COST[t.id];
   if (!x) return null;
@@ -160,7 +161,8 @@ function taskCard(t, y, today, sqft) {
   const k = kindOf(t);
   const s = today ? status(t, y, today) : null;
   const more = MORE[t.id];
-  const mins = t.minutes ? ` · ${t.minutes >= 60 ? `${t.minutes / 60} hr` : `${t.minutes} min`}` : '';
+  const fm = (n) => (n >= 60 && n % 60 === 0 ? `${n / 60} hr` : `${n} min`);
+  const mins = t.minRange ? ` · ${t.minRange[0]}–${t.minRange[1]} min` : t.minutes ? ` · ${fm(t.minutes)}` : '';
   const cost = taskCost(t, sqft);
   const price = cost ? ` · ~${money(cost)}` : '';
   return `<details class="ag-ev is-${k}${s ? ` is-${s.state}` : ''}" id="t-${t.id}-${y}" data-task="${t.id}">
@@ -170,9 +172,6 @@ function taskCard(t, y, today, sqft) {
 </details>`;
 }
 
-function holidayChip(h) {
-  return `<p class="ag-hol"><b>${esc(h.name)}</b> ${esc(h.note)}</p>`;
-}
 
 // months: [{y, m (1-12)}]. today: Date or null (server render). level: 0-3.
 export function agendaHTML({ months, today = null, level = 3, sqft = BASE_SQFT }) {
@@ -185,11 +184,10 @@ export function agendaHTML({ months, today = null, level = 3, sqft = BASE_SQFT }
     const rows = new Map();
     const add = (d, kind, item) => {
       const key = ymd(d);
-      if (!rows.has(key)) rows.set(key, { d, hol: [], ev: [] });
+      if (!rows.has(key)) rows.set(key, { d, ev: [] });
       rows.get(key)[kind].push(item);
     };
-    for (const t of list) if (t.start[0] === m) add(new Date(y, m - 1, t.start[1]), 'ev', t);
-    for (const h of holidays(y)) if (h.date.getMonth() + 1 === m && h.level <= level) add(h.date, 'hol', h);
+    for (const t of list) { const d = placeOf(t, y); if (d.getMonth() + 1 === m) add(d, 'ev', t); }
     const sorted = [...rows.values()].sort((a, b) => a.d - b.d);
     const jobs = sorted.reduce((n, r) => n + r.ev.length, 0);
     const label = `${MONTHS_LONG[m - 1]}${idx === 0 || m === 1 ? ` ${y}` : ''}`;
@@ -200,7 +198,7 @@ export function agendaHTML({ months, today = null, level = 3, sqft = BASE_SQFT }
     }
     for (const r of sorted) {
       const isToday = todayKey === ymd(r.d);
-      html += `<div class="ag-day${isToday ? ' is-today' : ''}"><p class="ag-date"><span>${DOW[r.d.getDay()]}</span><b>${r.d.getDate()}</b></p><div class="ag-items">${r.hol.map(holidayChip).join('')}${r.ev.map((t) => taskCard(t, y, today, sqft)).join('')}</div></div>`;
+      html += `<div class="ag-day${isToday ? ' is-today' : ''}"><p class="ag-date"><span>${DOW[r.d.getDay()]}</span><b>${r.d.getDate()}</b></p><div class="ag-items">${r.ev.map((t) => taskCard(t, y, today, sqft)).join('')}</div></div>`;
     }
     html += `<a class="ag-mlink" href="/calendar/${MONTHS_LONG[m - 1].toLowerCase()}/">More on ${MONTHS_LONG[m - 1]} lawn care →</a></section>`;
   });

@@ -19,7 +19,7 @@ export const TASKS = [
     title: 'Raise your mower to 3.5–4 inches',
     short: 'The single easiest upgrade. Tall grass shades out weeds and handles heat.',
     why: 'Set it once in spring and leave it there all season.',
-    start: [3, 25], end: [4, 20], level: 0, minutes: 1,
+    start: [3, 25], end: [4, 20], level: 0, minutes: 5,
   },
   {
     id: 'cleanup',
@@ -76,7 +76,7 @@ export const TASKS = [
     title: 'Mow tall, water deep',
     short: 'Summer survival mode. Keep it tall and water once or twice a week.',
     why: 'About an inch of water a week, early morning. Skip fertilizer in the heat.',
-    start: [6, 20], end: [8, 31], level: 0, minutes: 0,
+    start: [6, 20], end: [8, 31], level: 0, minutes: 45, minRange: [30, 60],
   },
   {
     id: 'soil-test',
@@ -108,7 +108,7 @@ export const TASKS = [
     title: 'Labor Day feeding',
     short: 'The big one. If you only fertilize once a year, this is it.',
     why: 'Grass grows most of its roots in fall. This feeds them so the lawn comes back thick.',
-    start: [8, 29], end: [9, 15], level: 0, minutes: 30, holiday: true,
+    start: [8, 29], end: [9, 15], level: 0, minutes: 45, minRange: [30, 60], holiday: true,
   },
   {
     id: 'fall-weeds',
