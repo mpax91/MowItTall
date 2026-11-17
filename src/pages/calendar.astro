@@ -7,13 +7,13 @@ import { MONTHS, MONTHS_LONG } from '../data/tasks.js';
 
 const title = 'Lawn Care Calendar for the Northeast: What to Do Each Month';
 const description =
-  'A month-by-month lawn care schedule for Westchester and the Northeast. Pick how much effort you want and get every job with its date window, starting this month.';
+  'A month-by-month lawn care schedule for the Northeast. Pick how much effort you want and get every job with its date window, starting this month.';
 ---
 <Base title={title} description={description} path="/calendar/" crumbs={[["Resources", "/resources/"], ["Lawn Calendar", "/calendar/"]]}>
   <main id="main">
     <section class="page-head page-head-hub">
       <h1>The Lawn Calendar</h1>
-      <p class="lede">Every lawn job for the year, in order, starting this month. Pick how much effort you want and I’ll build your calendar. Timing is set for Westchester &amp; the Northeast.</p>
+      <p class="lede">Every lawn job for the year, in order, starting this month. Pick how much effort you want and I’ll build your calendar. Timing is set for the Northeast.</p>
     </section>
 
     <section class="ag-wrap" data-agenda-root>
@@ -24,6 +24,7 @@ const description =
             <button type="button" data-level={i} aria-pressed="false"><b>{l.name}</b><span>{l.note}</span><em>{levelSummary(i)}</em></button>
           ))}
         </div>
+        <p class="ag-note">Hours are extra time on top of your normal mowing.</p>
       </div>
 
       <div class="ag-cal" data-cal hidden>
@@ -96,7 +97,7 @@ const description =
     buttons.forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.level) === level)));
     listEl.innerHTML = agendaHTML({ months, today, level });
     titleEl.textContent = `Your Lawn Year: ${LEVELS[level].name}`;
-    subEl.textContent = `${levelSummary(level).replace(/^./, (c) => c.toUpperCase())}, plus mowing.`;
+    subEl.textContent = `${levelSummary(level).replace(/^./, (c) => c.toUpperCase())} on top of your normal mowing.`;
     nudge.innerHTML = nudgeHTML();
     cal.hidden = false;
     if (scroll) {

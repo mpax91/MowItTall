@@ -71,10 +71,22 @@ function holidays(y) {
 
 // one-line mood for each month header (Claude's copy; Mike to review)
 const MOOD = ['Asleep', 'Still asleep', 'Waking up', 'Go time', 'Growing fast', 'Heating up', 'Survival mode', 'Hang in there', 'Prime time', 'Peak season', 'Winding down', 'Off season'];
-const CHILL = {
-  1: { title: 'New Year, New Dew', text: 'Your only resolution: stay off the frozen lawn. Frosty grass snaps underfoot and every footprint turns brown by spring.' },
-  2: { title: 'Love It From a Distance', text: 'It’s sleeping, not dead. Don’t seed, don’t feed, don’t panic. Buy flowers, not fertilizer.' },
-};
+// "Nothing new" line for a month with no new jobs at the chosen level (one per month so no two match).
+// Nov–Feb lines are Mike's; the rest are Claude's copy, Mike to review.
+const QUIET = [
+  'Nothing new. Just try to stay off the frozen lawn.',
+  'Nothing new. It’s sleeping, not dead. Admire it from a distance and don’t panic.',
+  'Nothing new. Let it wake up on its own.',
+  'Nothing new. Let it wake up, then mow with the deck up high.',
+  'Nothing new. Mow tall and leave the clippings on the lawn.',
+  'Nothing new. Mow tall, mow often, leave the clippings.',
+  'Nothing new. Mow high and let it ride out the heat. Brown in a dry spell is just napping.',
+  'Nothing new. Keep mowing tall. Labor Day is coming.',
+  'Nothing new. Keep mowing tall while it grows like crazy.',
+  'Nothing new. Keep the leaves off it. Halloween is game day.',
+  'Nothing new. Just stay on top of the leaves and get ready for the last mow of the year.',
+  'Nothing new. Just put the mower away right.',
+];
 
 const SMALL = new Set(['a', 'an', 'the', 'and', 'or', 'of', 'to', 'in', 'on', 'at', 'by', 'for', 'up', 'as']);
 export const tc = (x) => x.split(' ').map((w, i, a) => (i && i < a.length - 1 && SMALL.has(w.toLowerCase()) ? w.toLowerCase() : w.split('-').map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join('-'))).join(' ');
@@ -90,7 +102,7 @@ export function levelSummary(level) {
   const list = tasksFor(level);
   const mins = list.reduce((s, t) => s + (t.minutes || 0), 0);
   const hrs = Math.round(mins / 60);
-  return `${plural(list.length, 'job')} · ${mins < 60 ? 'under an hour' : `about ${plural(hrs, 'hour')}`} a year`;
+  return `${plural(list.length, 'job')} · +${plural(Math.max(1, hrs), 'hr')} a year`;
 }
 
 // status of a task's window in a given year, relative to today
@@ -144,8 +156,7 @@ export function agendaHTML({ months, today = null, level = 3 }) {
     html += `<section class="ag-month${isCur ? ' is-current' : ''}" id="m-${y}-${m}" data-ym="${y}-${m}" aria-label="${MONTHS_LONG[m - 1]} ${y}">
 <h2 class="ag-mhead"><span class="ag-mname">${label}</span><span class="ag-mood">${MOOD[m - 1]}${jobs ? ` · ${plural(jobs, 'job')}` : ''}</span></h2>`;
     if (!sorted.length) {
-      const c = CHILL[m];
-      html += c ? `<div class="ag-chill"><b>${c.title}</b><span>${c.text}</span></div>` : '<p class="ag-empty">Nothing new on your list this month. Keep mowing tall.</p>';
+      html += `<p class="ag-empty">${QUIET[m - 1]}</p>`;
     }
     for (const r of sorted) {
       const isToday = todayKey === ymd(r.d);
