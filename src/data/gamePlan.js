@@ -59,7 +59,7 @@ export function amountFor(id, sqft, plan = {}) {
     return `about ${r1(lo)}–${r1(hi)} lb of ${g.name.toLowerCase()} seed${full ? ' (new lawn)' : ' to overseed'}`;
   }
   if (id === 'lime') return `only if the test says so, and no more than ${fmtN(k * 50)} lb per round`;
-  if (id === 'summer') return `one inch of water is about ${fmtN(sqft * 0.623)} gallons for your lawn (rain counts)`;
+  if (id === 'summer') return `one inch of water is about ${fmtN(sqft * 0.623)} gallons (rain counts)`;
   return '';
 }
 
@@ -81,7 +81,7 @@ export function buildPlan(answers = {}, opts = {}) {
   const sunMap = { full: 'full', part: 'part', mixed: 'mixed', shade: 'low' };
   const trafficMap = { kids: 'heavy', dogs: 'heavy', both: 'heavy', adults: 'normal', looks: 'light' };
   const goal = problems.includes('neighbor') || level >= 2 ? 'stripes' : level === 0 ? 'easy' : '';
-  const grassKey = pickGrass({ sun: sunMap[answers.sun] || 'full', traffic: trafficMap[answers.uses] || 'normal', water: answers.water || 'hose', goal });
+  const grassKey = answers.grass && GRASS[answers.grass] ? answers.grass : pickGrass({ sun: sunMap[answers.sun] || 'full', traffic: trafficMap[answers.uses] || 'normal', water: answers.water || 'hose', goal });
   const crew = answers.mower === 'crew';
   const plan = { level, petty, flags, tasks, sqft, grassKey, crew, look: answers.look, profile: PROFILES[level], levelName: LEVEL_NAMES[level] };
 

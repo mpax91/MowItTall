@@ -15,7 +15,7 @@ const OG = allOgPages();
 const PINS = allPins();
 const FOOT_TOPICS = ['mowing', 'feeding', 'seeding', 'weeds', 'soil', 'gear'].map((slug) => TOPICS.find((t) => t.slug === slug)).filter(Boolean);
 const FOOTER = [
-  { title: 'Start Here', links: [['/plan/', 'Free Lawn Plan'], ['/lawn-101/', 'Lawn 101'], ['/calendar/', 'Lawn Calendar'], ['/guides/', 'Lawn Guides'], ['/lawn-care/', 'Lawn Care by Town'], ['/search/', 'Search the Site']] },
+  { title: 'Start Here', links: [['/plan/', 'Free Lawn Plan'], ['/account/', 'Your Lawn Profile'], ['/lawn-101/', 'Lawn 101'], ['/calendar/', 'Lawn Calendar'], ['/guides/', 'Lawn Guides'], ['/lawn-care/', 'Lawn Care by Town'], ['/search/', 'Search the Site']] },
   { title: 'Free Tools', links: [['/weeds/', 'What’s That Weed?'], ['/measure/', 'Measure Your Yard'], ['/resources/whats-wrong-with-my-lawn/', 'What’s Wrong With My Lawn?'], ['/resources/should-i-water-my-lawn/', 'Should I Water?'], ['/resources/can-i-seed-now/', 'Can I Seed Now?'], ['/resources/lawn-calculator/', 'Lawn Calculator'], ['/resources/', 'All Free Tools']] },
   { title: 'The Blog', links: [['/blog/', 'All Posts'], ...FOOT_TOPICS.map((t) => [`/blog/topic/${t.slug}/`, t.name.replace(/\b(\w)/g, (m) => m.toUpperCase()).replace(' For ', ' for ')])] },
   { title: 'Just for Fun', links: [['/games/', 'Lawn Games'], ['/hall/', 'Hall of Fame & Shame'], ['/yards/', 'Mike’s Yard'], ['/neighbor/', 'Send to a Neighbor'], ['/merch/', 'Merch']] },
@@ -136,6 +136,14 @@ const NAV = [
     <meta name="p:domain_verify" content="973d0ea12fe385f3caf46f5786dd79e1" />
     <link rel="alternate" type="application/rss+xml" title="Mow It Tall blog" href="/rss.xml" />
     <link rel="sitemap" href="/sitemap-index.xml" />
+    <script is:inline>
+      // Email subscribers: links from the lawn emails carry ?mt=<token> (added by the click tracker). Keep it so
+      // tools on the site can save answers to their profile (src/scripts/profile.js), then strip it from the
+      // address bar so a shared link never carries it.
+      (function () { try { var u = new URL(location.href), t = u.searchParams.get('mt'); if (!t) return;
+        if (/^[a-z0-9]{16,40}$/.test(t)) { localStorage.setItem('mit-crm', t); localStorage.setItem('mit-email', '1'); }
+        u.searchParams.delete('mt'); history.replaceState(history.state, '', u.pathname + u.search + u.hash); } catch (e) {} })();
+    </script>
     <script is:inline>
       // GA4 events go through Google Tag Manager's dataLayer. mitTrack('event_name', { param: 'value' }).
       // Also: any element with data-track="event_name" (plus optional data-track-* params) sends that event on click.

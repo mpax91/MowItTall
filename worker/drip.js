@@ -38,7 +38,7 @@ export const JOB_SUBJECTS = {
   crabgrass: 'Tax Day is coming. So is the crabgrass.',
   'spring-feed': 'Memorial Day weekend: feed the lawn before the burgers',
   'spot-weeds': 'Weeds are growing. That’s actually good news.',
-  grubs: 'Grub check: 5 minutes, one square foot',
+  grubs: 'Had grubs before? Stop them now.',
   'july4-feed': 'July 4th feeding: half a dose, and only if you water',
   summer: 'Summer mode: mow tall, water deep, don’t panic',
   'soil-test': 'Blood work for your lawn (it’s $25)',
@@ -79,20 +79,26 @@ export const PINNED = [
 ];
 
 /* ------------------------------------------------------------------ welcome series */
+const isFam = (c) => ['kids', 'dogs', 'both'].includes(c.answers.uses);
 export const WELCOME = [
   { key: 'w0-plan', day: 0 },
   { key: 'w1-fix', day: 2 },
   { key: 'w2-measure', day: 4, when: (c) => !c.measured },
-  { key: 'w3-hello', day: 7 },
-  { key: 'w4-crew', day: 10, when: (c) => c.answers.mower === 'crew' },
-  { key: 'w4-family', day: 10, when: (c) => c.answers.mower !== 'crew' && ['kids', 'dogs', 'both'].includes(c.answers.uses) },
+  { key: 'w3-ask', day: 6, when: (c) => !c.answers.sun || !c.answers.uses },
+  { key: 'w4-hello', day: 9 },
+  { key: 'w5-crew', day: 12, when: (c) => c.answers.mower === 'crew' },
+  { key: 'w5-family', day: 12, when: (c) => c.answers.mower !== 'crew' && isFam(c) },
+  { key: 'w5-101', day: 12, when: (c) => c.answers.mower !== 'crew' && !isFam(c) && Number(c.answers.know ?? 1) <= 1 },
+  { key: 'w6-grass', day: 15, when: (c) => !c.answers.grass },
 ];
 const WELCOME_KEYS = new Set(WELCOME.map((w) => w.key));
 
 // Email names for HQ (anything not listed is named from the library or the job).
 export const NAMES = {
-  'w0-plan': 'Welcome: your game plan', 'w1-fix': 'Welcome: the free fix', 'w2-measure': 'Welcome: measure your lawn',
-  'w3-hello': 'Welcome: hi, I’m Mike', 'w4-crew': 'Welcome: talk to your landscaper', 'w4-family': 'Welcome: kids, dogs and lawns',
+  'w0-plan': 'Welcome: your game plan', 'w1-fix': 'Welcome: the free fix', 'w2-measure': 'Profile: measure your lawn',
+  'w3-ask': 'Profile: sun + who uses it (one tap)', 'w4-hello': 'Welcome: hi, I’m Mike', 'w5-crew': 'Welcome: talk to your landscaper',
+  'w5-family': 'Welcome: kids, dogs and lawns', 'w5-101': 'Welcome: lawn 101 in 3 minutes', 'w6-grass': 'Profile: pick your grass',
+  'ask-water': 'Profile: do you water? (one tap, before summer)',
 };
 // A/B tests: which test an email belongs to. Arms are 'a' and 'b' unless HQ adds more.
 export function testFor(key) {
@@ -135,6 +141,9 @@ export function nextFor(c, sent, today, lib = []) {
     const { on, at, year } = jobDates(t, today);
     const key = `job:${t.id}:${year}`;
     if (sent.has(key)) continue;
+    // Their soil test is in (from the soil test translator): no need to nag, and no lime if pH is fine.
+    if (t.id === 'soil-test' && c.answers.ph) continue;
+    if (t.id === 'lime' && Number(c.answers.ph) >= 6) continue;
     // Already "this week" when they signed up (the welcome email covered it): skip until next year.
     if (statusOf(t, joined).state === 'now' && year === joined.getFullYear()) continue;
     if (today >= at && today <= new Date(on.getTime() + 2 * DAY) && joined < on) return { key, kind: 'job', task: t.id };
@@ -143,7 +152,7 @@ export function nextFor(c, sent, today, lib = []) {
   if (last && today - last < 2 * DAY) return null;
 
   // 2. rest of the welcome series
-  if (age <= 21) {
+  if (age <= 30) {
     for (const w of WELCOME) {
       if (w.key === 'w0-plan' || sent.has(w.key)) continue;
       if (w.when && !w.when(c)) continue;
@@ -154,6 +163,8 @@ export function nextFor(c, sent, today, lib = []) {
   // 3. weekly content: Thursdays, with 5 quiet content days before
   if (today.getDay() !== 4 || (lastContent && today - lastContent < 5 * DAY) || age < 9) return null;
   const m = today.getMonth() + 1, d = today.getDate(), y = today.getFullYear();
+  // Before summer, ask whether they water (changes grass picks and the summer advice).
+  if (!c.answers.water && m >= 5 && m <= 7 && !sent.has('ask-water')) return { key: 'ask-water', kind: 'content' };
   for (const p of PINNED) {
     const pd = new Date(y, p.m - 1, p.d, 12);
     if (Math.abs(today - pd) <= 3 * DAY && !sent.has(`lib:${p.id}`) && lib.some((x) => x.id === p.id)) return { key: `lib:${p.id}`, kind: 'content' };
@@ -174,9 +185,14 @@ export function pickContent(c, sent, month, lib) {
   if (probs.has('bare') || a.look === 'patchy' || a.look === 'dirt') want.add('seeding');
   if (probs.has('brown')) { want.add('mowing'); want.add('soil'); }
   if (probs.has('grubs')) want.add('dogs-kids');
+  // Variety: don't send the same kind (guide, post, tool) twice in a row.
+  let lastKind = '', lastAt = 0;
+  for (const [k, at] of sent) if (k.startsWith('lib:') && at > lastAt) { lastAt = at; lastKind = (lib.find((x) => `lib:${x.id}` === k) || {}).kind || ''; }
+  // Already covered by the welcome series (or already done on the site).
+  const skip = new Set(['tool-measure', c.answers.grass ? 'tool-grass' : '']);
   let best = null, bestScore = -1;
   for (const it of lib) {
-    if (sent.has(`lib:${it.id}`)) continue;
+    if (sent.has(`lib:${it.id}`) || skip.has(it.id)) continue;
     if (PINNED.some((p) => p.id === it.id)) continue; // pinned ones wait for their date
     const topics = it.topics || [];
     if (topics.includes('got-a-guy') && !crew) continue;
@@ -190,7 +206,9 @@ export function pickContent(c, sent, month, lib) {
     if (crew && topics.includes('got-a-guy')) score += 40;
     if (fam && topics.includes('dogs-kids')) score += 25;
     if (it.kind === 'tool') score += 10;
-    if (it.kind === 'guide') score -= 5;
+    if (it.kind === lastKind) score -= 25;
+    const know = Number(a.know ?? 1);
+    if (it.kind === 'guide') score += know >= 2 ? -15 : know === 0 ? 10 : -5; // beginners get straight answers first
     score += (it.date ? new Date(it.date).getTime() / 1e12 : 0); // newer wins ties
     if (score > bestScore) { best = it; bestScore = score; }
   }
@@ -201,6 +219,14 @@ export function pickContent(c, sent, month, lib) {
 // Each returns { subjects: { a, b }, pre, blocks } where blocks are rendered by worker/mailer.js:
 //   ['p', html] ['h', text] ['steps', [{k, title, text, extra}]] ['btn', label, url] ['ps', html] ['hr']
 const hi = (c) => (c.name ? `Hey ${c.name},` : 'Hey,');
+// Subject lines over ~70 characters get cut off on phones: keep whole sentences that fit.
+function shortSubject(s) {
+  if (s.length <= 70) return s;
+  const parts = s.match(/[^.?!]+[.?!]+/g) || [s];
+  let out = '';
+  for (const p of parts) { if ((out + p).trim().length > 70) break; out += p; }
+  return out.trim() || s.slice(0, 68).replace(/\s+\S*$/, '') + '…';
+}
 const A = (url, text) => `<a href="${url}">${text}</a>`;
 
 function jobBlock(j) {
@@ -214,8 +240,9 @@ export function build(key, c, today, lib = []) {
   const plan = buildPlan(c.answers, { today, sqft: c.sqft });
   const name = c.name || '';
   const nextLine = () => {
+    // Only when it's close enough to matter (a job three months out in every email gets stale fast).
     const n = plan.upcoming.find((x) => x.on > new Date(today.getTime() + 3 * DAY));
-    return n ? `P.S. Next up for you: <b>${n.title}</b>, around ${fmtDate(n.on)}. I’ll remind you a few days before.` : '';
+    return n && n.on - today < 21 * DAY ? `P.S. Coming up for you: <b>${n.title}</b>, around ${fmtDate(n.on)}. I’ll remind you a few days before.` : '';
   };
 
   if (key === 'w0-plan') {
@@ -235,7 +262,8 @@ export function build(key, c, today, lib = []) {
         ['p', `That’s it for now. Your full year is <b>${plural(plan.tasks.length, 'job')}</b>, about ${plural(plan.hours, 'hour')}${plan.crew ? ' of your time' : ' plus mowing'}.`],
         ['btn', 'See Your Whole Lawn Year', `/calendar/?level=${plan.level}`],
         ['h', 'What happens next'],
-        ['p', 'I’ll email you a few days before each job, with how much to buy for your lawn. In between, about once a week, I’ll send one useful thing from the site: a tool, a hot take, a straight answer. Short. Funny-ish. Never a sales pitch.'],
+        ['p', 'Over the next two weeks I’ll walk you through the setup, one small step at a time: measuring your lawn (one minute, on a map), a couple of one-tap questions, and the right grass for your yard. Every answer makes the emails after it smarter.'],
+        ['p', 'After that, I’ll email you a few days before each job, with exactly how much to buy for your lawn. In between, about once a week, one useful thing from the site: a tool, a hot take, a straight answer. Short. Funny-ish. Never a sales pitch.'],
         ['p', 'One favor: if this landed in Promotions, drag it to your Primary inbox. Otherwise the reminders get lost, and then what are we even doing.'],
         ['p', 'Questions? Just hit reply. It comes straight to me.<br>– Mike'],
       ],
@@ -259,20 +287,40 @@ export function build(key, c, today, lib = []) {
   }
   if (key === 'w2-measure') {
     return {
-      subjects: { a: 'How big is your lawn, really?', b: 'Measure your lawn in 60 seconds (no tape measure)' },
-      pre: 'Every bag tells you how much it covers. Now you’ll know.',
+      subjects: { a: 'How big is your lawn, really?', b: 'Step 1: measure your lawn (60 seconds, no tape measure)' },
+      pre: 'Do this once and every reminder does the math for you.',
       blocks: [
         ['p', hi(c)],
+        ['p', 'Step one of making these emails actually useful: how big is your lawn?'],
         ['p', 'Every bag of seed or fertilizer says how many square feet it covers. Most people guess, buy two, and use one. Or buy one and stripe the lawn by running out halfway.'],
-        ['p', 'So I built a tool: tap the corners of your lawn on a satellite photo, and it writes the square feet right inside each area. Takes about a minute. Nothing about your address is saved on my end.'],
-        ['btn', 'Measure My Lawn', `/measure/?t=${c.token || ''}`],
-        ['p', 'Measure from this link and my reminders will use your exact number for “how much to buy.”'],
+        ['p', 'So I built a tool. Tap the corners of your lawn on a satellite photo and it writes the square feet right inside each area. About a minute. Your address never leaves your phone.'],
+        ['btn', 'Measure My Lawn', '/measure/'],
+        ['box', '<b>Open it from this email</b> and your number saves to your lawn profile. From then on, every reminder says exactly how many bags to buy.'],
         ['p', '– Mike'],
         ['ps', nextLine()],
       ],
     };
   }
-  if (key === 'w3-hello') {
+  if (key === 'w3-ask') {
+    const blocks = [['p', hi(c)], ['p', 'Two quick questions. One tap each, no typing. Your answers change which grass I recommend and what I warn you about.']];
+    if (!c.answers.sun) blocks.push(['ask', 'How much sun does the lawn get? (Think middle of a summer day.)', 'sun', [['full', 'Full sun'], ['part', 'Some shade'], ['mixed', 'Sunny front, shady back'], ['shade', 'Mostly shade']]]);
+    if (!c.answers.uses) blocks.push(['ask', 'Who uses the lawn?', 'uses', [['kids', 'Kids'], ['dogs', 'Dogs'], ['both', 'Kids and dogs'], ['adults', 'Just grown-ups'], ['looks', 'Nobody. It’s for looks']]]);
+    blocks.push(['p', 'That’s it. Tap and you’re done.<br>– Mike']);
+    return { subjects: { a: 'Two quick questions (one tap each)', b: 'Is your lawn sunny or shady?' }, pre: 'No typing. Just tap.', blocks };
+  }
+  if (key === 'ask-water') {
+    return {
+      subjects: { a: 'Summer’s coming. Do you water?', b: 'One tap: do you water the lawn?' },
+      pre: 'No wrong answer. It changes the summer advice.',
+      blocks: [
+        ['p', hi(c)],
+        ['p', 'Summer is where lawns get separated from the pack. The advice is different depending on one thing:'],
+        ['ask', 'Do you water the lawn?', 'water', [['auto', 'Sprinkler system'], ['hose', 'Hose, when it looks rough'], ['never', 'Nope. Rain or nothing.']]],
+        ['p', 'No wrong answer. A brown August lawn is usually asleep, not dead.<br>– Mike'],
+      ],
+    };
+  }
+  if (key === 'w4-hello') {
     return {
       subjects: { a: 'Who is this guy?', b: 'Quick hello (and one question for you)' },
       pre: 'Hit reply. I read every one.',
@@ -287,7 +335,7 @@ export function build(key, c, today, lib = []) {
       ],
     };
   }
-  if (key === 'w4-crew') {
+  if (key === 'w5-crew') {
     return {
       subjects: { a: 'Your landscaper isn’t ignoring you. Nobody asked.', b: 'One text to send your landscaper' },
       pre: 'Mow at 3.5 inches, leave the clippings, sharpen the blades.',
@@ -301,7 +349,35 @@ export function build(key, c, today, lib = []) {
       ],
     };
   }
-  if (key === 'w4-family') {
+  if (key === 'w5-101') {
+    return {
+      subjects: { a: 'Everything you need to know about lawns (3 minutes)', b: 'Lawn 101: the six habits that fix most lawns' },
+      pre: 'Six small habits. That’s most of it.',
+      blocks: [
+        ['p', hi(c)],
+        ['p', 'You said you’re new to this. Good news: a great lawn is mostly six small habits. Raise the mower. Leave the clippings. Feed on a few holidays. Keep the blade sharp. Mow over the leaves. Seed in September.'],
+        ['p', 'That’s it. No 12-step program, no mystery jugs from the store. I put them on six flip cards, one minute each.'],
+        ['btn', 'Lawn 101 in 3 Minutes', '/lawn-101/'],
+        ['p', 'I’ll remind you when each one matters, so you don’t have to remember any of it.<br>– Mike'],
+        ['ps', nextLine()],
+      ],
+    };
+  }
+  if (key === 'w6-grass') {
+    return {
+      subjects: { a: 'Which grass should you actually buy?', b: 'Pick your grass in 4 taps' },
+      pre: 'The picture on the bag is lying to you.',
+      blocks: [
+        ['p', hi(c)],
+        ['p', 'When it’s time to seed (September, mostly), the seed aisle is a wall of bags with the same green picture on every one. The picture is lying. The right grass depends on your sun, your traffic and whether you water.'],
+        ['p', 'Four taps and I’ll tell you the mix and how many pounds. Do it from this email and it saves to your profile, so your September seeding reminder names the exact seed.'],
+        ['btn', 'Pick My Grass', '/lawn-101/#grass'],
+        ['p', '– Mike'],
+        ['ps', nextLine()],
+      ],
+    };
+  }
+  if (key === 'w5-family') {
     return {
       subjects: { a: 'Kids, dogs and lawn stuff: what’s actually safe', b: 'A lawn the kids and dog can actually use' },
       pre: 'Spot-treat, keep off until it dries, water in granules.',
@@ -320,20 +396,26 @@ export function build(key, c, today, lib = []) {
     const t = TASKS.find((x) => x.id === id);
     if (!t) return null;
     const { on } = jobDates(t, today);
-    const amount = amountFor(id, c.sqft, plan), cost = costFor(t, c.sqft);
+    const amount = c.sqft ? amountFor(id, c.sqft, plan) : '', typical = c.sqft ? '' : amountFor(id, 5000, plan), cost = costFor(t, c.sqft);
     const link = TASK_LINKS[id];
     const j = plan.upcoming.concat(plan.doNow ? [plan.doNow] : [], plan.alsoNow).find((x) => x && x.id === id);
-    const when = t.holiday ? fmtDate(on) : `${fmtDate(on)} – ${fmtDate(new Date(on.getFullYear(), t.end[0] - 1, t.end[1]))}`;
+    const hol = t.holiday || id === 'crabgrass';
+    const title = t.title.replace(/\s*\([^)]*\)/g, '');
+    const when = id === 'crabgrass' ? `${fmtDate(on)} (really: when the soil hits 55°F, around when the forsythia blooms)` : hol ? fmtDate(on) : `${fmtDate(on)} – ${fmtDate(new Date(on.getFullYear(), t.end[0] - 1, t.end[1]))}`;
     return {
-      subjects: { a: JOB_SUBJECTS[id] || t.title, b: `Lawn reminder: ${t.title} (${fmtDate(on)})` },
+      subjects: { a: JOB_SUBJECTS[id] || title, b: `Lawn reminder: ${title} (${fmtDate(on)})` },
       pre: t.short,
       blocks: [
         ['p', hi(c)],
-        ['h', t.title],
+        ['h', title],
         ['p', `<b>When:</b> ${when}${t.holiday ? ' (or that weekend)' : ''}`],
         ['p', `${t.short} ${t.why}`],
         j && j.who ? ['p', `<b>${j.who.who === 'guy' ? 'Your guy' : 'You'}:</b> ${j.who.line}`] : null,
-        amount ? ['box', `<b>For your lawn${c.sqft ? ` (${Math.round(c.sqft).toLocaleString('en-US')} sq ft)` : ''}:</b> ${amount}.${cost ? `<br><b>Cost:</b> about ${cost}.` : ''}`] : cost ? ['box', `<b>Cost:</b> about ${cost}.`] : null,
+        amount ? ['box', `<b>For your lawn (${Math.round(c.sqft).toLocaleString('en-US')} sq ft):</b> ${amount}.${cost ? `<br><b>Cost:</b> about ${cost}.` : ''}`]
+          : typical ? ['box', `<b>For a typical 5,000 sq ft lawn:</b> ${typical}.${cost ? ` About ${cost}.` : ''}<br><a href="/measure/">Measure your lawn</a> (one minute) and I’ll do the exact math from now on.`]
+          : cost ? ['box', `<b>Cost:</b> about ${cost}.`] : null,
+        id === 'lime' && c.answers.ph ? ['p', `<b>Your soil test said pH ${c.answers.ph}.</b> That’s low, so yes: lime this fall.`] : null,
+        id === 'seed' && plan.grass ? ['p', `<b>Your grass:</b> ${plan.grass.name}${plan.grass.mix ? ` (${plan.grass.mix})` : ''}.${c.answers.grass ? '' : ' <a href="/lawn-101/#grass">Not sure? Pick it in 4 taps.</a>'}`] : null,
         t.tip ? ['p', `<b>Heads up:</b> ${t.tip}`] : null,
         link ? ['btn', link[1], link[0]] : null,
         ['p', '– Mike'],
@@ -361,13 +443,29 @@ export function build(key, c, today, lib = []) {
   if (key.startsWith('lib:')) {
     const it = lib.find((x) => x.id === key.slice(4));
     if (!it) return null;
-    const label = it.kind === 'tool' ? 'Try It (Free)' : it.tool ? 'Read It + Try the Tool' : it.kind === 'guide' ? 'Get the Straight Answer' : 'Read It';
+    if (it.kind === 'guide') {
+      const sub = it.short && it.short.length >= 25 ? shortSubject(it.short) : `Straight answer: ${it.title}`;
+      return {
+        subjects: { a: shortSubject(it.title), b: sub.length <= 75 ? sub : `Straight answer: ${shortSubject(it.title)}` },
+        pre: it.short || firstSentence(it.take),
+        blocks: [
+          ['p', hi(c)],
+          ['p', `You asked (well, a lot of people did): <b>${it.title.replace(/\s*\(.*\)\s*$/, '')}</b>`],
+          ['box', `<b>Short answer:</b> ${it.take}`],
+          ['p', 'The full version has the details, the exceptions, and a quick FAQ. One page, no scrolling through a life story first.'],
+          ['btn', 'Get the Straight Answer', it.url],
+          ['p', '– Mike'],
+          ['ps', nextLine()],
+        ],
+      };
+    }
+    const label = it.kind === 'tool' ? 'Try It (Free)' : it.tool ? 'Read It + Try the Tool' : 'Read It';
     return {
-      subjects: { a: it.hook, b: it.kind === 'tool' ? it.title : it.title },
+      subjects: { a: shortSubject(it.hook), b: it.title },
       pre: firstSentence(it.take),
       blocks: [
         ['p', hi(c)],
-        ['h', it.hook],
+        ['h', it.title],
         ['p', it.take],
         it.tool && it.kind !== 'tool' ? ['p', `There’s a free tool built in: <b>${it.tool}</b>.`] : null,
         ['btn', label, it.url],

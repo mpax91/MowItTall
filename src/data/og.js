@@ -8,7 +8,7 @@ import { TOWNS } from './towns.js';
 
 export const OG_PAGES = {
   '/': { title: 'A Better Lawn, Without Becoming a Lawn Guy', kicker: 'Free Lawn Plan', layout: 'home', v: 2 },
-  '/plan/': { title: 'Get Your Free Lawn Plan in 2 Minutes', kicker: 'The Quiz' },
+  '/plan/': { title: 'Get Your Free Lawn Plan in a Minute', kicker: 'The Quiz' },
   '/lawn-101/': { title: 'Lawn Care 101: Six Small Habits That Fix Most Lawns', kicker: 'Start Here' },
   '/resources/': { title: 'Free Lawn Tools That Do the Thinking for You', kicker: 'Free Tools' },
   '/calendar/': { title: 'The Lawn Calendar: What to Do Each Month', kicker: 'Free Tool' },

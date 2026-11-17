@@ -2594,3 +2594,7 @@ main[data-gate] ~ .pre-foot, main[data-gate] ~ .footer, body:has(main[data-gate]
 .gp-fine .linkish { color: var(--paper-dim); }
 @media print { .gp-mail, .gp-actions, .gp-fine { display: none !important; } .gp-step { border: 1px solid #999; } }
 .gp-fine .linkish { background: none; border: 0; padding: 4px 2px; font: inherit; text-decoration: underline; cursor: pointer; }
+.gp-pitch { text-align: left; margin: 0 0 12px; padding: 0 0 0 18px; color: #e3efdc; font-size: 0.97rem; }
+.gp-pitch li { margin: 0 0 6px; }
+.gp-pitch b { color: var(--sun); }
+.gp-small { font-size: 0.88rem; opacity: 0.85; }

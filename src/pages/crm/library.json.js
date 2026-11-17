@@ -15,7 +15,7 @@ const GUIDE_MONTHS = {
   'should-i-aerate-my-lawn': [8, 9], 'when-to-stop-mowing': [10, 11], 'fix-bare-spots-in-lawn': [8, 9],
   'moss-in-lawn': [3, 4, 10], 'should-i-mulch-leaves-into-lawn': [10, 11], 'does-my-lawn-need-lime': [3, 9, 10],
   'spring-lawn-cleanup-checklist': [3, 4], 'snow-mold-and-vole-damage': [3], 'get-rid-of-clover-in-lawn': [5, 6, 9, 10],
-  'how-long-to-wait-to-mow': [4, 9], 'how-to-stripe-your-lawn': [5, 6], 'weed-killer-and-grass-seed': [4, 8, 9],
+  'how-long-to-wait-to-mow': [4, 9], 'how-to-stripe-your-lawn': [5, 6], 'weed-killer-and-grass-seed': [8, 9],
   'types-of-lawn-fertilizer': [4, 5, 8],
 };
 const SKIP_GUIDES = new Set(['lawn-care-cost-westchester']); // local prices: not for a Northeast-wide list
@@ -40,7 +40,7 @@ export async function GET() {
     const fm = g.frontmatter;
     items.push({
       id: `guides/${slug}`, kind: 'guide', url: `/guides/${slug}/`, title: fm.title, seo: fm.title,
-      hook: fm.title, take: first(fm.answer) || strip(fm.description), months: GUIDE_MONTHS[slug] || [], topics: fm.topics || [], tag: 'Straight Answer', tool: '',
+      hook: fm.title, take: strip(fm.answer).slice(0, 420).replace(/\s+\S*$/, (m) => (strip(fm.answer).length > 420 ? '…' : m)) || strip(fm.description), short: first(fm.answer), months: GUIDE_MONTHS[slug] || [], topics: fm.topics || [], tag: 'Straight Answer', tool: '',
     });
   }
   for (const [k, so] of Object.entries(SOCIAL)) {

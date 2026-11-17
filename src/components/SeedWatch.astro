@@ -75,6 +75,7 @@ const seedJson = JSON.stringify(SEEDS);
 </section>
 
 <script>
+  import { saveProfile } from '../scripts/profile.js';
   import { getPlace } from '../scripts/place.js';
   const KEY = 'mit-seed';
   const DAY = 86400000;
@@ -99,7 +100,11 @@ const seedJson = JSON.stringify(SEEDS);
     date.value = saved.date || iso(new Date(Date.now() - 7 * DAY));
     date.max = iso(new Date());
     see = saved.see || '';
-    const save = () => { try { localStorage.setItem(KEY, JSON.stringify({ type: type.value, date: date.value, see })); } catch {} };
+    let synced = '';
+    const save = () => {
+      try { localStorage.setItem(KEY, JSON.stringify({ type: type.value, date: date.value, see })); } catch {}
+      if (date.value && date.value !== synced) { synced = date.value; saveProfile('seeded', date.value); }
+    };
 
     /* ---------- the picture: soil, seeds and sprouts drawn as pixels */
     function scene(stage: number, wave: number) {

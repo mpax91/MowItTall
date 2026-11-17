@@ -33,6 +33,7 @@ const { postHref = '', id = 'gp' } = Astro.props;
 </section>
 
 <script>
+  import { saveProfile } from '../scripts/profile.js';
   import { QUESTIONS, RESULTS, pick } from '../data/grassPicker.js';
   type Opt = { v: string; t: string; s: string };
   type Q = { id: string; q: string; hint: string; options: Opt[] };
@@ -73,6 +74,7 @@ const { postHref = '', id = 'gp' } = Astro.props;
       const r = (RESULTS as Record<string, R>)[key];
       // remember the pick so the lawn calculator, seed tracker and plan can use it
       try { localStorage.setItem('mit-grass', key); window.dispatchEvent(new CustomEvent('mit:grass', { detail: key })); } catch {}
+      saveProfile('grass', key);
       $('[data-gp-quiz]').hidden = true;
       $('[data-gp-result]').hidden = false;
       $('[data-gp-tag]').textContent = r.tag;

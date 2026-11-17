@@ -77,6 +77,8 @@ export function initMail({ root, api }) {
         ${tile(num(r.replies), 'Replies', r.unread ? `<small>${r.unread} unread</small>` : '')}
       </div>
       <p class="dash-fine">${num(st.bounced || 0)} bounced · ${num(st.complained || 0)} marked spam (both stop getting email automatically) · ${num(s.b || 0)} bounces/complaints in this period${s.n && s.sp / s.n > 0.001 ? ' · <b>Spam complaints are above 0.1%: slow down or check the copy.</b>' : ''}</p>
+      <h3 class="dash-h">Lawn Profiles (Built Through the Emails)</h3>
+      ${r.profile?.n ? `<div class="ml-prof">${[['sqft', 'Measured lawn'], ['sun', 'Sun'], ['uses', 'Who uses it'], ['grass', 'Grass picked'], ['water', 'Watering'], ['ph', 'Soil pH'], ['seeded', 'Seeding tracked']].map(([k, t]) => `<div><span>${t}</span><b>${pct(r.profile[k] || 0, r.profile.n)}</b><i style="width:${Math.round(100 * (r.profile[k] || 0) / r.profile.n)}%"></i></div>`).join('')}</div>` : '<p class="dash-fine">Shows up once people are on the list.</p>'}
       <h3 class="dash-h">Sign-ups per Day (90 days)</h3>
       <div class="ev-bars" role="img" aria-label="Sign-ups per day">${dates.map((d) => `<i style="height:${Math.max(3, Math.round(((S[d]?.n || 0) / max) * 100))}%" title="${d}: ${S[d]?.n || 0} sign-ups, ${U[d]?.n || 0} unsubscribes"></i>`).join('')}</div>
       <p class="dash-fine ev-axis"><span>${dates[0]}</span><span>Hover a bar for sign-ups and unsubscribes</span><span>${dates[89]}</span></p>
@@ -226,7 +228,8 @@ export function initMail({ root, api }) {
       <dl class="ml-facts">
         <div><dt>Level</dt><dd>${esc(c.levelName || '–')}</dd></div><div><dt>ZIP</dt><dd>${esc(c.zip || '–')}</dd></div><div><dt>Lawn</dt><dd>${c.sqft ? `${num(c.sqft)} sq ft${c.measured ? ' (measured)' : ''}` : '–'}</dd></div>
         <div><dt>Looks</dt><dd>${esc(a.look || '–')}</dd></div><div><dt>Problems</dt><dd>${esc((a.problems || []).join(', ') || 'none')}</dd></div><div><dt>Mows</dt><dd>${esc(a.mower || '–')}</dd></div>
-        <div><dt>Height</dt><dd>${esc(a.height || '–')}</dd></div><div><dt>Sun / water</dt><dd>${esc(a.sun || '–')} / ${esc(a.water || '–')}</dd></div><div><dt>Uses</dt><dd>${esc(a.uses || '–')}</dd></div>
+        <div><dt>Height</dt><dd>${esc(a.height || '–')}</dd></div><div><dt>Knows</dt><dd>${esc(['beginner', 'basics', 'reads bags', 'lawn nerd'][a.know] || '–')}</dd></div><div><dt>Sun / water</dt><dd>${esc(a.sun || '?')} / ${esc(a.water || '?')}</dd></div>
+        <div><dt>Uses</dt><dd>${esc(a.uses || '?')}</dd></div><div><dt>Grass</dt><dd>${esc(a.grass || '?')}</dd></div><div><dt>Soil pH</dt><dd>${esc(a.ph || '?')}</dd></div>${a.seeded ? `<div><dt>Seeded</dt><dd>${esc(a.seeded)}</dd></div>` : ''}
       </dl>
       <p class="ml-row">
         ${c.status === 'active' ? '<button type="button" class="linkish" data-a="unsub">Unsubscribe</button>' : '<button type="button" class="linkish" data-a="resub">Resubscribe</button>'}

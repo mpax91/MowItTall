@@ -42,9 +42,12 @@ const ROWS = [
 </section>
 
 <script>
+  import { saveProfile } from '../scripts/profile.js';
   document.querySelectorAll<HTMLElement>('[data-soil-translator]').forEach((root) => {
     const ans: Record<string, string> = { p: 'ok', k: 'ok', mg: 'ok', om: 'ok' };
     const phIn = root.querySelector<HTMLInputElement>('[data-st-ph]')!;
+    // Only a pH the visitor typed (not the default or the buddy preset) goes to their email profile.
+    phIn.addEventListener('change', () => { const v = parseFloat(phIn.value.replace(/[^0-9.]/g, '')); if (v >= 3.5 && v <= 9.5) saveProfile('ph', v); });
     const dot = root.querySelector<HTMLElement>('[data-st-dot]')!;
     const word = root.querySelector<HTMLElement>('[data-st-word]')!;
     const line = root.querySelector<HTMLElement>('[data-st-line]')!;

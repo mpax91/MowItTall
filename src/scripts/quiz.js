@@ -1,9 +1,11 @@
-// The lawn plan quiz (/plan/). Ten questions max (Mike, Nov 17). Each pick gets a quick reaction line, then
+// The lawn plan quiz (/plan/). Seven questions: where the lawn is, the effort, and how much they know
+// (Mike, Nov 17). Lawn size, sun, who uses it, watering, grass and soil pH are collected later through the
+// email series (one-tap questions + site tools that save to the profile: src/scripts/profile.js). Each pick gets a quick reaction line, then
 // moves on. The results page is deliberately short: a personality, three steps, and the email sign-up.
 // Everything else (amounts per job, the full year, tools, posts) goes out over time in the email drip.
 // Plan logic lives in src/data/gamePlan.js so the welcome email says exactly what this page says.
-import { buildPlan, SIZES, fmtDate } from '../data/gamePlan.js';
-import { yardTotal, fmt as fmtN } from './yard.js';
+import { buildPlan, fmtDate } from '../data/gamePlan.js';
+import { yardTotal } from './yard.js';
 import { getPlace, setZip } from './place.js';
 
 const STEPS = [
@@ -19,22 +21,21 @@ const STEPS = [
     ],
   },
   {
-    id: 'size', q: 'How big is the lawn?', hint: 'A guess is fine. It’s for how much stuff to buy.', type: 'one',
-    options: [
-      { v: 'tiny', t: 'Postage stamp', s: 'I could mow it with scissors.', r: 'Small lawn, small bills. Smart.' },
-      { v: 'normal', t: 'Normal suburban yard', s: 'Front, back, a little side strip.', r: 'The sweet spot.' },
-      { v: 'quarter', t: 'Quarter acre-ish', s: 'Takes a podcast episode to mow.', r: 'A proper lawn. Respect.' },
-      { v: 'big', t: 'Big. Like, riding-mower big', s: 'Half an acre or more.', r: 'You have a lot of stripes in your future.' },
-      { v: 'unknown', t: 'No idea', s: 'It’s… green-sized.', r: 'No problem. You can measure it on a map later.' },
-    ],
-  },
-  {
     id: 'effort', q: 'How much effort are we talking?', hint: 'Pick the real answer, not the New Year’s resolution answer.', type: 'one',
     options: [
       { v: 0, t: 'Couch Potato', s: 'I will mow. That’s the deal. Don’t make it weird.', r: 'Honest. I can work with honest.' },
       { v: 1, t: 'Good Enough Guy', s: 'A Saturday morning here and there. Nice lawn, no obsession.', r: 'Where most great lawns live.' },
       { v: 2, t: 'Curb Appeal Hunter', s: 'I want people to slow down when they drive by.', r: 'Cars will slow down. Promise.' },
       { v: 3, t: 'Lawn Psycho', s: 'I’ve named my mower. I know my soil pH. Send help.', r: 'Welcome home.' },
+    ],
+  },
+  {
+    id: 'know', q: 'How much do you know about lawns?', hint: 'No wrong answer. It decides how much I explain.', type: 'one',
+    options: [
+      { v: 0, t: 'It’s green. That’s it.', s: 'I mow it. Things happen. I don’t ask questions.', r: 'Perfect. I’ll explain everything, in plain English.' },
+      { v: 1, t: 'The basics.', s: 'I own a spreader. I’ve used it. Once.', r: 'Good start. I’ll fill in the gaps.' },
+      { v: 2, t: 'I’ve read a bag or two.', s: 'I know what the three numbers mean. Mostly.', r: 'Nice. I’ll skip the kindergarten stuff.' },
+      { v: 3, t: 'I watch lawn YouTube at 11pm.', s: 'Soil tests. Reel mowers. I have opinions.', r: 'One of us. One of us.' },
     ],
   },
   {
@@ -55,33 +56,6 @@ const STEPS = [
       { v: 'low', t: 'Short.', s: 'Means fewer mows, right?', r: 'Oh no. We’ll talk.' },
       { v: 'mid', t: 'Somewhere in the middle.', s: 'Seems reasonable.', r: 'Close. One notch more.' },
       { v: 'high', t: 'As high as it goes.', s: 'A person of culture.', r: 'You get it. Mow it tall.' },
-    ],
-  },
-  {
-    id: 'sun', q: 'How much sun does it get?', hint: 'Think middle of a summer day.', type: 'one',
-    options: [
-      { v: 'full', t: 'Full sun', s: 'Out in the open most of the day.', r: 'Grass loves that.' },
-      { v: 'part', t: 'Some shade', s: 'A few trees doing their thing.', r: 'Totally workable.' },
-      { v: 'mixed', t: 'Sunny in front, shady in back', s: 'Two lawns in one.', r: 'Two lawns, one plan.' },
-      { v: 'shade', t: 'Mostly shade', s: 'It’s basically a forest.', r: 'The trees are winning. We’ll negotiate.' },
-    ],
-  },
-  {
-    id: 'water', q: 'Do you water?', hint: 'No wrong answer. It changes which grass makes sense.', type: 'one',
-    options: [
-      { v: 'auto', t: 'Sprinkler system', s: 'It runs on a timer.', r: 'Fancy. We’ll make sure it’s not overdoing it.' },
-      { v: 'hose', t: 'Hose, when it looks rough', s: 'When I remember.', r: 'Deep and rare beats daily. You’re fine.' },
-      { v: 'never', t: 'Nope', s: 'Rain or nothing.', r: 'Totally fine. Tough grass, mow tall.' },
-    ],
-  },
-  {
-    id: 'uses', q: 'Who uses the lawn?', hint: 'Kids and dogs change what you put down.', type: 'one',
-    options: [
-      { v: 'kids', t: 'Kids', s: 'Soccer goals and bare spots.', r: 'A lawn that gets used is a good lawn.' },
-      { v: 'dogs', t: 'Dogs', s: 'Yellow spots, worn paths.', r: 'Let the dog pee. We’ll fix the spots.' },
-      { v: 'both', t: 'Kids and dogs', s: 'Chaos. Lovely chaos.', r: 'Chaos-proof plan coming up.' },
-      { v: 'adults', t: 'Just grown-ups', s: 'Cookouts and lawn chairs.', r: 'Civilized.' },
-      { v: 'looks', t: 'Nobody. It’s for looks', s: 'Admired from the window.', r: 'A museum lawn. Bold.' },
     ],
   },
   {
@@ -145,10 +119,7 @@ export function initQuiz(root) {
     }
 
     const multi = s.type === 'many';
-    let options = s.options;
-    // A measured lawn beats a guess: offer it first.
-    const mapped = s.id === 'size' ? yardTotal() : 0;
-    if (mapped) options = [{ v: 'map', t: `From my map: ${fmtN(mapped)} sq ft`, s: 'You measured it. Nerd. (Compliment.)', r: 'Exact numbers. Love it.' }, ...options];
+    const options = s.options;
     const current = answers[s.id];
     body.innerHTML = `<div class="quiz-options" role="group" aria-label="${esc(s.q)}">${options
       .map((o) => {
@@ -169,7 +140,6 @@ export function initQuiz(root) {
           return;
         }
         answers[s.id] = opt.v;
-        if (s.id === 'size') answers.sqft = opt.v === 'map' ? mapped : SIZES[opt.v] || undefined;
         body.querySelectorAll('.quiz-opt').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
         save();
         next.disabled = false;
@@ -213,7 +183,7 @@ export function initQuiz(root) {
   function showResult(fresh) {
     card.hidden = true;
     root.querySelector('.quiz-intro').hidden = true;
-    const sqft = yardTotal() || answers.sqft || 0;
+    const sqft = yardTotal() || 0; // only a measured lawn: sizes come later, through the emails
     const plan = buildPlan(answers, { sqft });
     const { profile, level } = plan;
     if (fresh) track('quiz_complete', { quiz_name: 'lawn_plan', effort_level: level, lawn_profile: profile.name, grass_pick: plan.grassKey, task_count: plan.tasks.length });
@@ -247,15 +217,21 @@ export function initQuiz(root) {
 
       <div class="window gp-mail" data-mail>
         ${joined ? doneHTML(true) : `
-        <h3>Get Your Lawn Year by Email</h3>
-        <p>I’ll email you right before each job, with exactly how much to buy for your lawn. Plus the good stuff from the site, about once a week. No spam. One click to leave.</p>
+        <h3>Let Me Walk You Through It</h3>
+        <p>That’s the plan. The rest comes by email, one easy step at a time, and every email remembers your answers.</p>
+        <ul class="gp-pitch">
+          <li><b>This week:</b> measure your lawn in 60 seconds. After that, every reminder tells you exactly how much to buy.</li>
+          <li><b>Next:</b> a few one-tap questions, the right grass for your yard, and your first soil test, decoded.</li>
+          <li><b>All year:</b> a heads-up a few days before every job, plus one good thing from the site about once a week.</li>
+        </ul>
+        <p class="gp-small">Short. Funny-ish. Never a sales pitch. One click to leave.</p>
         <form class="gp-form" data-mail-form novalidate>
           <label class="sr-only" for="mail-name">First name</label>
           <input id="mail-name" name="name" class="quiz-input" autocomplete="given-name" placeholder="First name (optional)" maxlength="40">
           <label class="sr-only" for="mail-email">Email</label>
           <input id="mail-email" name="email" class="quiz-input" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" required maxlength="120">
           <input name="website" class="gp-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
-          <button type="submit" class="btn">Send Me My Lawn Year</button>
+          <button type="submit" class="btn">Start My Lawn Emails</button>
           <p class="gp-msg" data-mail-msg role="status"></p>
         </form>`}
       </div>
@@ -281,7 +257,7 @@ export function initQuiz(root) {
   }
 
   function doneHTML(again) {
-    return `<h3>${again ? 'You’re on the List' : 'You’re In'}</h3><p>${again ? 'Your lawn year is coming by email. Check your inbox (and the Promotions tab) for the next one.' : 'Check your inbox for your game plan. Can’t find it? Look in Promotions or Spam and drag it to your inbox, so the reminders show up.'}</p>`;
+    return `<h3>${again ? 'You’re on the List' : 'You’re In'}</h3><p>${again ? 'Your lawn emails are on the way. Check your inbox (and the Promotions tab) for the next one.' : 'Your game plan is in your inbox. Can’t find it? Look in Promotions or Spam and drag it to your inbox, so the reminders show up. First real step lands in a couple of days.'}</p>`;
   }
 
   async function subscribe(form, plan) {
@@ -298,7 +274,7 @@ export function initQuiz(root) {
       });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(j.error || 'Something broke. Try again in a minute.');
-      try { localStorage.setItem('mit-email', '1'); if (j.t) localStorage.setItem('mit-crm', j.t); } catch { /* */ }
+      try { localStorage.setItem('mit-email', '1'); if (j.t) localStorage.setItem('mit-crm', j.t); if (j.s) localStorage.setItem('mit-session', j.s); } catch { /* */ }
       track('generate_lead', { method: 'quiz', form_id: 'lawn_year_email', effort_level: plan.level, lawn_profile: plan.profile.name });
       form.closest('[data-mail]').innerHTML = doneHTML(false);
     } catch (err) {

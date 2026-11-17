@@ -1,0 +1,63 @@
+---
+// Landing page for one-tap answers in the lawn emails (e.g. "How much sun? [Full sun] [Some shade] …").
+// The click tracker sends people here with ?mt=<token>&f=sun&v=shade. The answer is saved by the browser
+// (not on the GET), so email security scanners that open every link don't save random answers.
+import Base from '../layouts/Base.astro';
+---
+<Base title="Saved to Your Lawn Profile | Mow It Tall" description="Your answer is saved. Every lawn email from here on uses it." path="/saved/" noindex beer={false}>
+  <main id="main" class="page saved-page">
+    <div class="window saved-card" data-saved>
+      <p class="plan-badge">Lawn profile</p>
+      <h1 data-h>Got It.</h1>
+      <p data-p>Saved. Every email from here on uses it.</p>
+      <p class="saved-next" data-next><a class="btn" href="/">Back to Mow It Tall</a></p>
+    </div>
+  </main>
+  <style>
+    .saved-page { max-width: calc(560px + 2 * var(--gutter)); }
+    .saved-card { padding: 22px 18px; text-align: center; margin-top: 10px; }
+    .saved-card h1 { font-size: clamp(2rem, 8vw, 2.6rem); margin: 0 0 8px; }
+    .saved-card p { color: #e3efdc; }
+    .saved-next { display: grid; gap: 10px; margin-top: 18px; }
+    .saved-next .btn { width: 100%; }
+  </style>
+  <script>
+    import { saveProfile } from '../scripts/profile.js';
+    const q = new URLSearchParams(location.search);
+    const f = q.get('f') || '', v = q.get('v') || '';
+    const COPY: Record<string, Record<string, [string, string]>> = {
+      sun: {
+        full: ['Full Sun. Nice.', 'Grass loves it. Your grass pick and seed amounts now assume a sunny lawn.'],
+        part: ['Some Shade. Workable.', 'I’ll lean your grass pick toward mixes that handle a few trees.'],
+        mixed: ['Two Lawns in One.', 'Sunny front, shady back. I’ll point you to a sun-and-shade mix when it’s time to seed.'],
+        shade: ['The Trees Are Winning.', 'Mostly shade means fine fescue and patience. I’ll be honest about what grows there.'],
+      },
+      uses: {
+        kids: ['Kids It Is.', 'I’ll flag anything that needs keep-off time and favor tougher grass.'],
+        dogs: ['Dogs It Is.', 'Pet-safe notes on every product job, and how to fix the yellow spots.'],
+        both: ['Lovely Chaos.', 'Kid and pet notes on every product job, and grass that can take a beating.'],
+        adults: ['Civilized.', 'Cookouts and lawn chairs. Noted.'],
+        looks: ['A Museum Lawn.', 'For looks only. Bold. We’ll make it worth looking at.'],
+      },
+      water: {
+        auto: ['Sprinkler System.', 'I’ll remind you to water deep and less often, and to turn it down when it rains.'],
+        hose: ['Hose When Needed.', 'Deep and rare beats daily. I’ll tell you when it’s actually worth it.'],
+        never: ['Rain or Nothing.', 'Totally fine. Tough grass, mow tall, and a brown August is just a nap.'],
+      },
+    };
+    const h = document.querySelector('[data-h]')!, p = document.querySelector('[data-p]')!, next = document.querySelector('[data-next]')!;
+    const c = COPY[f]?.[v];
+    if (!c) {
+      h.textContent = 'Hmm.';
+      p.textContent = 'That link didn’t carry an answer. No harm done.';
+    } else if (!saveProfile(f, v)) {
+      h.textContent = c[0];
+      p.textContent = 'Open this from the email link on this phone and I’ll save it to your lawn profile.';
+    } else {
+      h.textContent = c[0];
+      p.textContent = `${c[1]} Saved to your lawn profile.`;
+      window.mitTrack && window.mitTrack('form_submit', { form_id: `profile_${f}`, choice: v, method: 'email' });
+      if (f !== 'sun' || v !== 'shade') next.insertAdjacentHTML('afterbegin', '<a class="btn btn-quiet" href="/lawn-101/#grass">Pick Your Grass (4 Taps)</a>');
+    }
+  </script>
+</Base>

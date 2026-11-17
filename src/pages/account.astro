@@ -1,0 +1,193 @@
+---
+// Your Lawn Profile (/account/). Sign in with a magic link (no passwords, so nothing to forget or reset).
+// Signed in: edit the lawn profile the emails use, change email settings, see what's coming, sign out or
+// delete everything. API: /api/crm/login, /api/crm/session, /api/crm/me (worker/crm.js).
+import Base from '../layouts/Base.astro';
+---
+<Base title="Your Lawn Profile | Mow It Tall" description="Sign in to see and edit your lawn profile and email settings." path="/account/" noindex beer={false}>
+  <main id="main" class="page acct" data-acct>
+    <h1>Your Lawn Profile</h1>
+
+    <section class="window acct-card" data-out hidden>
+      <h2>Sign In</h2>
+      <p>No passwords here. Type the email you signed up with and I’ll send you a sign-in link. Tap it and you’re in, and this phone stays signed in.</p>
+      <form class="gp-form" data-login novalidate>
+        <label class="sr-only" for="acct-email">Email</label>
+        <input id="acct-email" class="quiz-input" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" required maxlength="120">
+        <button type="submit" class="btn">Email Me a Sign-In Link</button>
+        <p class="gp-msg" data-login-msg role="status"></p>
+      </form>
+      <p class="acct-fine">Not on the list yet? <a href="/plan/">Take the 1-minute quiz</a> and sign up at the end.</p>
+    </section>
+
+    <p class="acct-msg" data-wait>Loading…</p>
+
+    <div data-in hidden>
+      <section class="window acct-card acct-hello">
+        <p class="plan-badge" data-profile></p>
+        <h2 data-hi>Hey</h2>
+        <p data-sum></p>
+        <p class="acct-links"><a href="/calendar/" data-cal>See My Lawn Year</a><a href="/measure/">Measure My Lawn</a></p>
+      </section>
+
+      <section class="acct-card acct-paper">
+        <h2>What the Emails Know About Your Lawn</h2>
+        <p class="acct-fine">Every reminder uses these. Change anything, then save.</p>
+        <form data-form class="acct-form">
+          <label>First name<input name="name" maxlength="40" autocomplete="given-name"></label>
+          <label>ZIP code<input name="zip" inputmode="numeric" maxlength="5"></label>
+          <label>Lawn size (sq ft)<input name="sqft" inputmode="numeric" placeholder="Not measured yet"><small><a href="/measure/">Measure it on a map</a> (1 minute)</small></label>
+          <label>Effort<select name="effort"><option value="0">Couch Potato</option><option value="1">Good Enough Guy</option><option value="2">Curb Appeal Hunter</option><option value="3">Lawn Psycho</option></select></label>
+          <label>How much you know<select name="know"><option value="0">It’s green. That’s it.</option><option value="1">The basics</option><option value="2">I’ve read a bag or two</option><option value="3">Lawn YouTube at 11pm</option></select></label>
+          <label>Who mows<select name="mower"><option value="me">Me</option><option value="crew">A landscaper or lawn service</option><option value="kid">A kid I pay</option><option value="robot">A robot</option></select></label>
+          <label>Sun<select name="sun"><option value="">Not sure yet</option><option value="full">Full sun</option><option value="part">Some shade</option><option value="mixed">Sunny front, shady back</option><option value="shade">Mostly shade</option></select></label>
+          <label>Who uses it<select name="uses"><option value="">Not sure yet</option><option value="kids">Kids</option><option value="dogs">Dogs</option><option value="both">Kids and dogs</option><option value="adults">Just grown-ups</option><option value="looks">Nobody. It’s for looks</option></select></label>
+          <label>Watering<select name="water"><option value="">Not sure yet</option><option value="auto">Sprinkler system</option><option value="hose">Hose, when it looks rough</option><option value="never">Rain or nothing</option></select></label>
+          <label>Grass<select name="grass"><option value="">Not picked yet</option><option value="kbg-rye">Bluegrass and rye</option><option value="rye">Perennial rye</option><option value="tttf">Tall fescue</option><option value="sunshade">Sun and shade mix</option><option value="shade">Fine fescue shade mix</option><option value="deep">Not grass (deep shade)</option></select><small><a href="/lawn-101/#grass">Pick it in 4 taps</a></small></label>
+          <label>Soil pH<input name="ph" inputmode="decimal" placeholder="From a soil test"><small><a href="/blog/lawn-soil-test/">How to get one</a></small></label>
+          <button type="submit" class="btn">Save My Profile</button>
+          <p class="gp-msg" data-save-msg role="status"></p>
+        </form>
+      </section>
+
+      <section class="acct-card acct-paper">
+        <h2>Email Settings</h2>
+        <div class="acct-prefs" data-prefs>
+          <button type="button" class="cp-chip" data-pref="all">Everything (about weekly)</button>
+          <button type="button" class="cp-chip" data-pref="jobs">Just job reminders</button>
+          <button type="button" class="cp-chip" data-pref="unsub">No emails</button>
+        </div>
+        <h3>Coming Up</h3>
+        <ul class="acct-list" data-coming></ul>
+        <h3>Recently Sent</h3>
+        <ul class="acct-list" data-recent></ul>
+      </section>
+
+      <section class="acct-card acct-paper acct-end">
+        <p class="acct-links"><button type="button" class="linkish" data-logout>Sign out</button><button type="button" class="linkish" data-logout-all>Sign out everywhere</button><button type="button" class="linkish acct-danger" data-delete>Delete my profile and emails</button></p>
+      </section>
+    </div>
+  </main>
+
+  <style>
+    .acct { max-width: calc(680px + 2 * var(--gutter)); }
+    .acct h1 { font-size: clamp(2rem, 8vw, 2.8rem); margin-bottom: 14px; }
+    .acct-card { padding: 18px 16px; margin: 0 0 14px; }
+    .acct-card h2 { font-size: 1.35rem; margin: 0 0 8px; }
+    .acct-card h3 { font-size: 1.05rem; margin: 16px 0 6px; }
+    .acct-card p { margin: 0 0 10px; }
+    .window.acct-card p { color: #e3efdc; }
+    .acct-paper { background: var(--paper); color: var(--ink); border-radius: 12px; }
+    .acct-paper h2, .acct-paper h3 { color: var(--ink); }
+    .acct-fine { font-size: 0.9rem; opacity: 0.85; }
+    .acct-fine a, .acct-paper a { color: inherit; font-weight: 700; }
+    .acct-msg { color: var(--paper-dim); }
+    .acct-links { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+    .acct-links a, .acct-links .linkish { font-weight: 700; color: inherit; background: none; border: 0; padding: 4px 0; font: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
+    .acct-hello .acct-links a { color: var(--paper); }
+    .acct-form { display: grid; gap: 12px; }
+    .acct-form label { display: grid; gap: 4px; font-weight: 700; font-size: 0.95rem; }
+    .acct-form input, .acct-form select { font: inherit; font-weight: 400; padding: 10px; border-radius: 8px; border: 2px solid #b7c9b0; background: #fff; color: var(--ink); }
+    .acct-form small { font-weight: 400; }
+    .acct-form .gp-msg { color: #2f7d34 !important; }
+    @media (min-width: 560px) { .acct-form { grid-template-columns: 1fr 1fr; } .acct-form .btn, .acct-form .gp-msg { grid-column: 1 / -1; } }
+    .acct-prefs { display: flex; flex-wrap: wrap; gap: 8px; }
+    .acct-prefs .cp-chip { color: var(--ink); border-color: #b7c9b0; background: #fff; }
+    .acct-prefs .cp-chip[aria-pressed='true'] { background: var(--ink); color: var(--paper); border-color: var(--ink); box-shadow: none; }
+    .acct-list { margin: 0; padding-left: 18px; font-size: 0.95rem; }
+    .acct-list li { margin: 0 0 4px; }
+    .acct-list small { opacity: 0.7; }
+    .acct-danger { color: #a3271f !important; }
+  </style>
+
+  <script>
+    const $ = <T extends Element = HTMLElement>(s: string) => document.querySelector<T>(s)!;
+    const esc = (s: string) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+    const track = (e: string, p: object = {}) => (window as any).mitTrack && (window as any).mitTrack(e, p);
+    const day = (s: string | number) => new Date(typeof s === 'string' ? `${s}T12:00:00` : s).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    const ls = { get: (k: string) => { try { return localStorage.getItem(k) || ''; } catch { return ''; } }, set: (k: string, v: string) => { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch {} } };
+    let sess = ls.get('mit-session');
+
+    async function api(method = 'GET', body?: object) {
+      const r = await fetch('/api/crm/me', { method, headers: { 'x-crm-session': sess, 'content-type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
+      const j = await r.json().catch(() => ({ error: 'Something broke.' }));
+      if (r.status === 401) { signedOut(); throw new Error('Signed out.'); }
+      if (!r.ok) throw new Error(j.error || 'Something broke.');
+      return j;
+    }
+    function signedOut(msg = '') {
+      sess = ''; ls.set('mit-session', '');
+      $('[data-wait]').hidden = true; $('[data-in]').hidden = true; $('[data-out]').hidden = false;
+      if (msg) $('[data-login-msg]').textContent = msg;
+    }
+    function show(d: any) {
+      $('[data-wait]').hidden = true; $('[data-out]').hidden = true; $('[data-in]').hidden = false;
+      if (d.t) ls.set('mit-crm', d.t);
+      ls.set('mit-email', '1');
+      $('[data-profile]').textContent = d.profile;
+      $('[data-hi]').textContent = d.name ? `Hey ${d.name}` : 'Hey there';
+      $('[data-sum]').innerHTML = `${esc(d.email)} · ${esc(d.levelName)} · ${d.jobs} jobs a year${d.sqft ? ` · ${Number(d.sqft).toLocaleString()} sq ft` : ''}${d.grassName ? ` · ${esc(d.grassName)}` : ''}`;
+      $<HTMLAnchorElement>('[data-cal]').href = `/calendar/?level=${d.level}`;
+      const f = $<HTMLFormElement>('[data-form]'), a = d.answers || {};
+      const set = (n: string, v: any) => { const el = f.elements.namedItem(n) as HTMLInputElement | null; if (el) el.value = v ?? ''; };
+      set('name', d.name); set('zip', d.zip); set('sqft', d.sqft ? Number(d.sqft).toLocaleString() : '');
+      set('effort', a.effort ?? 1); set('know', a.know ?? 1); set('mower', a.mower || 'me');
+      set('sun', a.sun || ''); set('uses', a.uses || ''); set('water', a.water || ''); set('grass', a.grass || ''); set('ph', a.ph ?? '');
+      const pref = d.status !== 'active' ? 'unsub' : d.pref;
+      document.querySelectorAll<HTMLButtonElement>('[data-pref]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.pref === pref)));
+      $('[data-coming]').innerHTML = d.coming.length ? d.coming.map((x: any) => `<li>${esc(x.subject)} <small>${day(x.date)}</small></li>`).join('') : `<li>${d.status === 'active' ? 'Nothing scheduled in the next few weeks. Enjoy it.' : 'Emails are off.'}</li>`;
+      $('[data-recent]').innerHTML = d.recent.length ? d.recent.map((x: any) => `<li>${esc(x.subject)} <small>${day(x.sent_at)}</small></li>`).join('') : '<li>Nothing yet.</li>';
+    }
+
+    // Arriving from a sign-in link?
+    (async () => {
+      const q = new URLSearchParams(location.search), code = q.get('login');
+      if (code) {
+        history.replaceState(null, '', '/account/');
+        try {
+          const r = await fetch('/api/crm/session', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ code, device: ls.get('mit-device') }) });
+          const j = await r.json();
+          if (r.ok) { sess = j.s; ls.set('mit-session', sess); ls.set('mit-crm', j.t); track('login', { method: 'magic_link' }); }
+          else if (!sess) { signedOut(j.error); return; } // an old link while already signed in: just stay signed in
+        } catch { signedOut('Couldn’t sign you in. Try again.'); return; }
+      }
+      if (!sess) { signedOut(); return; }
+      try { show(await api()); } catch { /* signedOut already ran */ }
+    })();
+
+    $('[data-login]').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = $<HTMLInputElement>('#acct-email'), msg = $('[data-login-msg]'), btn = (e.target as HTMLElement).querySelector('button')!;
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(input.value.trim())) { msg.textContent = 'That email doesn’t look right.'; return; }
+      btn.disabled = true; msg.textContent = 'Sending…';
+      try {
+        const r = await fetch('/api/crm/login', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ email: input.value.trim() }) });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(j.error || 'Something broke.');
+        msg.textContent = 'If that email is on the list, a sign-in link is on its way. Check your inbox (and Promotions).';
+      } catch (err: any) { msg.textContent = err.message; btn.disabled = false; }
+    });
+
+    $('[data-form]').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target as HTMLFormElement, msg = $('[data-save-msg]');
+      const fields: Record<string, string> = {};
+      ['name', 'zip', 'sqft', 'effort', 'know', 'mower', 'sun', 'uses', 'water', 'grass', 'ph'].forEach((n) => { fields[n] = ((f.elements.namedItem(n) as HTMLInputElement).value || '').trim(); });
+      msg.textContent = 'Saving…';
+      try { show(await api('POST', { action: 'save', fields })); msg.textContent = 'Saved. The next email uses it.'; track('form_submit', { form_id: 'lawn_profile' }); }
+      catch (err: any) { msg.textContent = err.message; }
+    });
+    document.querySelectorAll<HTMLButtonElement>('[data-pref]').forEach((b) => b.addEventListener('click', async () => {
+      if (b.dataset.pref === 'unsub' && !confirm('Stop all lawn emails?')) return;
+      try { show(await api('POST', { action: 'pref', pref: b.dataset.pref })); } catch (err: any) { alert(err.message); }
+    }));
+    $('[data-logout]').addEventListener('click', async () => { try { await api('POST', { action: 'logout' }); } catch {} signedOut('Signed out.'); });
+    $('[data-logout-all]').addEventListener('click', async () => { try { await api('POST', { action: 'logout-all' }); } catch {} signedOut('Signed out on every device.'); });
+    $('[data-delete]').addEventListener('click', async () => {
+      if (!confirm('Delete your lawn profile and stop all emails? This can’t be undone.')) return;
+      try { await api('POST', { action: 'delete' }); } catch {}
+      ls.set('mit-crm', ''); ls.set('mit-email', '');
+      signedOut('Deleted. Everything’s gone. Keep mowing it tall.');
+    });
+  </script>
+</Base>

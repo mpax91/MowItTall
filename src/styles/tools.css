@@ -810,3 +810,7 @@ main.nb-page > section.nb-rules { padding: 26px 0 0; }
 .ml-num { width: 80px; }
 @media (max-width: 480px) { .ml-facts { grid-template-columns: repeat(2, 1fr); } }
 .ml-dlg-in h3 { padding-right: 34px; }
+.ml-prof { display: grid; gap: 6px; margin: 0 0 14px; }
+.ml-prof div { position: relative; display: flex; justify-content: space-between; padding: 6px 10px; border-radius: 8px; background: rgba(0, 0, 0, 0.2); overflow: hidden; font-size: 0.92rem; }
+.ml-prof i { position: absolute; left: 0; top: 0; bottom: 0; background: rgba(159, 211, 106, 0.25); z-index: 0; }
+.ml-prof span, .ml-prof b { position: relative; z-index: 1; }

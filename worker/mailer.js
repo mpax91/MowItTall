@@ -8,7 +8,7 @@ export const ADDRESS = 'Mow It Tall · 83 Main Street · Bedford Hills, NY 10507
 const C = { bg: '#173d27', panel: '#1f5234', paper: '#f1f6ec', ink: '#12301d', red: '#c8372d', leaf: '#9fd36a', sun: '#f6c945', soft: '#e3eed9', dim: '#4a5d4b' };
 const FONT = "-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif";
 const escA = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
-const txt = (h) => String(h || '').replace(/<br\s*\/?>/gi, '\n').replace(/<a [^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/gi, '$2 ($1)').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ');
+const txt = (h) => String(h || '').replace(/href="\//g, `href="https://mowittall.com/`).replace(/<br\s*\/?>/gi, '\n').replace(/<a [^>]*href="([^"]+)"[^>]*>(.*?)<\/a>/gi, '$2 ($1)').replace(/<[^>]+>/g, '').replace(/&amp;/g, '&').replace(/&nbsp;/g, ' ');
 
 // Site link + utm tags (so GA4 and the first-party log can tell which email sent the visit).
 export function siteUrl(url, key, variant) {
@@ -50,6 +50,11 @@ export function render(email, { sendId, key, variant, token, pref = 'all' }) {
           ${s.link ? `<div style="margin-top:6px;font:700 14px/1.4 ${FONT}"><a href="${escA(track(s.link[0]))}" style="color:${C.ink}">${s.link[1]} &rarr;</a></div>` : ''}
         </td></tr>`).join('')}</table>`);
       plain.push(a.map((s, i) => `${i + 1}. ${s.k.toUpperCase()}: ${s.title}\n   ${txt(s.text)}${s.extra ? `\n   ${txt(s.extra)}` : ''}`).join('\n'));
+    } else if (t === 'ask') {
+      // One-tap question: each answer is a tracked link to /saved/?f=<field>&v=<value> (saved by the browser there).
+      const [, q, field, opts] = b;
+      parts.push(`<div style="background:${C.soft};border-radius:12px;padding:14px 14px 8px;margin:0 0 16px"><p style="margin:0 0 10px;font:800 16px/1.4 ${FONT};color:${C.ink}">${q}</p>${opts.map(([v, label]) => `<a href="${escA(track(`/saved/?f=${field}&v=${v}`))}" style="display:inline-block;margin:0 6px 8px 0;padding:10px 14px;border-radius:999px;background:#ffffff;border:2px solid ${C.ink};font:700 15px/1.2 ${FONT};color:${C.ink};text-decoration:none">${label}</a>`).join('')}</div>`);
+      plain.push(`${q}\n${opts.map(([v, label]) => `- ${label}: ${links[links.length - opts.length + opts.findIndex((o) => o[0] === v)]}`).join('\n')}`);
     } else if (t === 'hr') { parts.push(`<hr style="border:0;border-top:1px solid #cfdcc5;margin:18px 0">`); }
   }
   const unsub = `${SITE}/api/m/u?t=${token || ''}${sendId ? `&s=${sendId}` : ''}`;
@@ -63,7 +68,7 @@ export function render(email, { sendId, key, variant, token, pref = 'all' }) {
     <tr><td style="background:${C.paper};border-radius:14px;padding:24px 22px 10px">${parts.join('\n')}</td></tr>
     <tr><td style="padding:16px 6px 0;font:13px/1.6 ${FONT};color:#b9d8b4;text-align:center">
       You’re getting this because you signed up at mowittall.com.<br>
-      ${pref === 'jobs' ? 'You’re on job reminders only.' : `<a href="${escA(unsub)}&o=jobs" style="color:#e3efdc">Just send job reminders</a>`} &nbsp;·&nbsp; <a href="${escA(unsub)}" style="color:#e3efdc">Unsubscribe</a><br>
+      <a href="${escA(track('/account/'))}" style="color:#e3efdc">Your lawn profile</a> &nbsp;·&nbsp; ${pref === 'jobs' ? 'Job reminders only' : `<a href="${escA(unsub)}&o=jobs" style="color:#e3efdc">Just job reminders</a>`} &nbsp;·&nbsp; <a href="${escA(unsub)}" style="color:#e3efdc">Unsubscribe</a><br>
       ${ADDRESS}
     </td></tr>
   </table>

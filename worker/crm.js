@@ -40,6 +40,10 @@ const SCHEMA = [
   'CREATE TABLE IF NOT EXISTS tests (id TEXT PRIMARY KEY, winner TEXT, status TEXT, at INTEGER)',
   'CREATE TABLE IF NOT EXISTS crm_kv (k TEXT PRIMARY KEY, v TEXT, at INTEGER)',
   'CREATE TABLE IF NOT EXISTS crm_events (id INTEGER PRIMARY KEY AUTOINCREMENT, type TEXT, message_id TEXT, detail TEXT, at INTEGER)',
+  // Sign-in: magic links (no passwords). logins = one-time codes (30 min), sessions = "remember me" on a device.
+  'CREATE TABLE IF NOT EXISTS logins (code TEXT PRIMARY KEY, contact_id INTEGER, iph TEXT, created INTEGER, used INTEGER)',
+  'CREATE TABLE IF NOT EXISTS sessions (token TEXT PRIMARY KEY, contact_id INTEGER, created INTEGER, last INTEGER, device TEXT)',
+  'CREATE INDEX IF NOT EXISTS sessions_contact ON sessions(contact_id)',
 ];
 let ready = false;
 export async function crmInit(env) {
@@ -198,13 +202,10 @@ export async function crmPublic(req, env, ctx, url) {
   if (!(await crmInit(env))) return bad('Email isn’t set up yet.', 503);
   const p = url.pathname, now = Date.now();
   if (p === '/api/crm/subscribe' && req.method === 'POST') return subscribe(req, env, ctx);
-  if (p === '/api/crm/update' && req.method === 'POST') {
-    const b = await req.json().catch(() => ({}));
-    const sqft = Math.round(Number(b.sqft) || 0);
-    if (!b.t || sqft < 100 || sqft > 2_000_000) return bad('Bad request.');
-    await env.CRM.prepare('UPDATE contacts SET sqft = ?, measured = 1, updated = ? WHERE token = ?').bind(sqft, now, clean(b.t, 40)).run();
-    return json({ ok: true });
-  }
+  if (p === '/api/crm/update' && req.method === 'POST') return profileUpdate(req, env);
+  if (p === '/api/crm/login' && req.method === 'POST') return login(req, env, ctx);
+  if (p === '/api/crm/session' && req.method === 'POST') return session(req, env);
+  if (p === '/api/crm/me') return me(req, env);
   let m = p.match(/^\/api\/m\/o\/([a-z0-9]{8,20})\.gif$/);
   if (m) {
     ctx.waitUntil((async () => {
@@ -215,10 +216,12 @@ export async function crmPublic(req, env, ctx, url) {
   }
   m = p.match(/^\/api\/m\/c\/([a-z0-9]{8,20})\/(\d{1,3})$/);
   if (m) {
-    const row = await env.CRM.prepare('SELECT contact_id, links, sent_at FROM sends WHERE id = ?').bind(m[1]).first();
+    const row = await env.CRM.prepare('SELECT s.contact_id, s.links, s.sent_at, c.token FROM sends s LEFT JOIN contacts c ON c.id = s.contact_id WHERE s.id = ?').bind(m[1]).first();
     let target = SITE + '/';
     try { const L = JSON.parse(row?.links || '[]'); if (L[Number(m[2])]) target = L[Number(m[2])]; } catch { /* */ }
     if (!target.startsWith('https://')) target = SITE + '/';
+    // Site links carry the subscriber's token so tools there save to their lawn profile (Base.astro strips it).
+    if (row?.token && target.startsWith(SITE)) { const u = new URL(target); u.searchParams.set('mt', row.token); target = u.toString(); }
     if (row) {
       const ua = req.headers.get('user-agent') || '';
       const bot = BOT_UA.test(ua) || (now - row.sent_at < 8000) ? 1 : 0; // security scanners click within seconds
@@ -236,6 +239,36 @@ export async function crmPublic(req, env, ctx, url) {
   return bad('Not found.', 404);
 }
 
+// Lawn profile answers saved from the site (measure tool, grass picker, soil translator, seed tracker, one-tap
+// email questions via /saved/). Whitelisted fields and values only.
+const PROFILE = {
+  sqft: (v) => { const n = Math.round(Number(v)); return n >= 100 && n <= 2_000_000 ? n : null; },
+  grass: (v) => (['kbg-rye', 'rye', 'tttf', 'sunshade', 'shade', 'deep'].includes(v) ? v : null),
+  sun: (v) => (['full', 'part', 'mixed', 'shade'].includes(v) ? v : null),
+  uses: (v) => (['kids', 'dogs', 'both', 'adults', 'looks'].includes(v) ? v : null),
+  water: (v) => (['auto', 'hose', 'never'].includes(v) ? v : null),
+  ph: (v) => { const n = Math.round(Number(v) * 10) / 10; return n >= 3.5 && n <= 9.5 ? n : null; },
+  seeded: (v) => (/^\d{4}-\d{2}-\d{2}$/.test(String(v)) && Math.abs(Date.now() - Date.parse(v)) < 400 * DAY ? v : null),
+  know: (v) => { const n = Number(v); return Number.isInteger(n) && n >= 0 && n <= 3 ? n : null; },
+};
+async function profileUpdate(req, env) {
+  const b = await req.json().catch(() => ({}));
+  let t = clean(b.t, 40);
+  let f = clean(b.f, 12), v = b.v;
+  if (!t && b.s) { const r = await env.CRM.prepare('SELECT c.token FROM sessions s JOIN contacts c ON c.id = s.contact_id WHERE s.token = ?').bind(clean(b.s, 40)).first(); t = r?.token || ''; }
+  if (!f && b.sqft) { f = 'sqft'; v = b.sqft; } // older measure-tool format
+  const check = PROFILE[f];
+  const val = check ? check(typeof v === 'string' ? clean(v, 20) : v) : null;
+  if (!t || val === null) return bad('Bad request.');
+  const now = Date.now();
+  const extra = f === 'sqft' ? ', sqft = ?, measured = 1' : f === 'grass' ? ', grass = ?' : '';
+  const args = [f, JSON.stringify(val), now, now];
+  if (extra) args.push(val);
+  args.push(t);
+  const r = await env.CRM.prepare(`UPDATE contacts SET answers = json_set(json_set(COALESCE(answers, '{}'), '$.' || ?, json(?)), '$.profile_at', ?), updated = ?${extra} WHERE token = ?`).bind(...args).run();
+  return json({ ok: true, saved: r.meta.changes > 0 });
+}
+
 async function subscribe(req, env, ctx) {
   const b = await req.json().catch(() => null);
   if (!b) return bad('Bad request.');
@@ -251,7 +284,7 @@ async function subscribe(req, env, ctx) {
   }
   const a = b.answers && typeof b.answers === 'object' ? b.answers : {};
   const keep = {};
-  for (const k of ['zip', 'look', 'size', 'effort', 'problems', 'height', 'sun', 'water', 'uses', 'mower', 'sqft']) if (a[k] !== undefined) keep[k] = Array.isArray(a[k]) ? a[k].slice(0, 8).map((x) => clean(x, 20)) : typeof a[k] === 'number' ? a[k] : clean(a[k], 20);
+  for (const k of ['zip', 'look', 'size', 'effort', 'know', 'problems', 'height', 'sun', 'water', 'uses', 'mower', 'sqft']) if (a[k] !== undefined) keep[k] = Array.isArray(a[k]) ? a[k].slice(0, 8).map((x) => clean(x, 20)) : typeof a[k] === 'number' ? a[k] : clean(a[k], 20);
   const plan = buildPlan(keep, { sqft: b.sqft });
   const now = Date.now();
   const name = clean(b.name, 40).replace(/[<>]/g, '');
@@ -275,7 +308,10 @@ async function subscribe(req, env, ctx) {
       if (!sent.has('w0-plan')) await sendOne(env, contactOf(row), 'w0-plan', { s }).catch((e) => console.log('w0', e?.message));
     })());
   }
-  return json({ ok: true, t: row.token });
+  // Signed in on this device right away (same as clicking a magic link).
+  const sess = rid(32);
+  await env.CRM.prepare('INSERT INTO sessions (token, contact_id, created, last, device) VALUES (?, ?, ?, ?, ?)').bind(sess, row.id, now, now, clean(b.device, 60)).run();
+  return json({ ok: true, t: row.token, s: sess });
 }
 
 const page = (title, body) => new Response(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>${title} · Mow It Tall</title>
@@ -315,6 +351,111 @@ async function unsubscribe(req, env, url) {
   return page('Unsubscribe', `<h1>${o === 'jobs' ? 'Just the job reminders?' : 'Leaving already?'}</h1><p><small>${c.email}</small></p>
     <form method="post"><input type="hidden" name="o" value="jobs"><button class="${o === 'jobs' ? 'r' : 'q'}">Just send job reminders</button><small>A few days before each lawn job on your plan. Nothing else.</small></form>
     <form method="post"><input type="hidden" name="o" value="all"><label>Why? (optional)<textarea name="why" rows="2" maxlength="300"></textarea></label><button class="${o === 'jobs' ? 'q' : 'r'}">Unsubscribe from everything</button></form>`);
+}
+
+
+/* ------------------------------------------------------------------ sign-in (magic links) */
+const ipHash = (req) => { const ip = req.headers.get('cf-connecting-ip') || ''; return ip ? (hash(`${ip}:${new Date().toISOString().slice(0, 10)}`) >>> 0).toString(36) : ''; };
+async function login(req, env, ctx) {
+  const b = await req.json().catch(() => ({}));
+  const email = clean(b.email, 120).toLowerCase();
+  if (!EMAIL_RE.test(email)) return bad('That email doesn’t look right.');
+  const iph = ipHash(req), now = Date.now();
+  if (iph) {
+    const n = await env.CRM.prepare('SELECT COUNT(*) n FROM logins WHERE iph = ? AND created > ?').bind(iph, now - 3600000).first();
+    if (n.n >= 8) return bad('Too many tries. Give it an hour.', 429);
+  }
+  const c = await env.CRM.prepare('SELECT id, name, token FROM contacts WHERE email = ?').bind(email).first();
+  // Same answer either way, so nobody can use this to check who's on the list.
+  const ok = json({ ok: true });
+  if (!c) return ok;
+  const recent = await env.CRM.prepare('SELECT COUNT(*) n FROM logins WHERE contact_id = ? AND created > ?').bind(c.id, now - 3600000).first();
+  if (recent.n >= 5) return ok;
+  const code = rid(32);
+  await env.CRM.prepare('INSERT INTO logins (code, contact_id, iph, created) VALUES (?, ?, ?, ?)').bind(code, c.id, iph, now).run();
+  const s = await settings(env);
+  const url = `${SITE}/account/?login=${code}`;
+  const r0 = render({ subject: 'Your Mow It Tall sign-in link', pre: 'Tap to sign in. The link works once, for 30 minutes.', blocks: [
+    ['p', c.name ? `Hey ${c.name},` : 'Hey,'], ['p', 'Here’s your sign-in link for your lawn profile. It works once, for the next 30 minutes.'],
+    ['btn', 'Sign In', `/account/?login=${code}`], ['p', 'Didn’t ask for this? Ignore it. Nobody gets in without this email.<br>– Mike'],
+  ] }, { sendId: '', key: 'login', variant: '', token: c.token });
+  // Untracked, no utm (it's a key, not marketing). Sent even when the drip is switched off.
+  const html = r0.html.replace(/https:\/\/mowittall\.com\/account\/\?login=[^"&]+[^"]*/g, url);
+  ctx.waitUntil(sendMail(env, { to: email, from: { email: s.from_addr, name: s.from_name }, subject: 'Your Mow It Tall sign-in link', html, text: `Sign in to your lawn profile (works once, for 30 minutes):\n${url}\n\nDidn’t ask for this? Ignore it.` }).then((r) => { if (!r.ok) console.log('login mail', r.code); }));
+  return ok;
+}
+async function session(req, env) {
+  const b = await req.json().catch(() => ({}));
+  const code = clean(b.code, 40), now = Date.now();
+  const l = code ? await env.CRM.prepare('SELECT * FROM logins WHERE code = ?').bind(code).first() : null;
+  if (!l || l.used || now - l.created > 30 * 60000) return bad('That sign-in link expired or was already used. Get a new one below.', 410);
+  const c = await env.CRM.prepare('SELECT id, token FROM contacts WHERE id = ?').bind(l.contact_id).first();
+  if (!c) return bad('That account is gone.', 404);
+  const sess = rid(32);
+  await env.CRM.batch([
+    env.CRM.prepare('UPDATE logins SET used = ? WHERE code = ?').bind(now, code),
+    env.CRM.prepare('INSERT INTO sessions (token, contact_id, created, last, device) VALUES (?, ?, ?, ?, ?)').bind(sess, c.id, now, now, clean(b.device, 60)),
+  ]);
+  return json({ ok: true, s: sess, t: c.token });
+}
+const EDITABLE = ['name', 'zip', 'effort', 'know', 'sqft', 'sun', 'uses', 'water', 'grass', 'ph', 'mower', 'height', 'look', 'problems'];
+async function me(req, env) {
+  const tok = clean(req.headers.get('x-crm-session'), 40);
+  const ss = tok ? await env.CRM.prepare('SELECT contact_id FROM sessions WHERE token = ?').bind(tok).first() : null;
+  if (!ss) return bad('Signed out.', 401);
+  const now = Date.now();
+  let row = await env.CRM.prepare('SELECT * FROM contacts WHERE id = ?').bind(ss.contact_id).first();
+  if (!row) return bad('Signed out.', 401);
+  if (req.method === 'POST') {
+    const b = await req.json().catch(() => ({}));
+    if (b.action === 'logout') { await env.CRM.prepare('DELETE FROM sessions WHERE token = ?').bind(tok).run(); return json({ ok: true }); }
+    if (b.action === 'logout-all') { await env.CRM.prepare('DELETE FROM sessions WHERE contact_id = ?').bind(row.id).run(); return json({ ok: true }); }
+    if (b.action === 'delete') {
+      const id = row.id;
+      await env.CRM.batch([env.CRM.prepare('DELETE FROM clicks WHERE send_id IN (SELECT id FROM sends WHERE contact_id = ?)').bind(id), env.CRM.prepare('DELETE FROM sends WHERE contact_id = ?').bind(id),
+        env.CRM.prepare('DELETE FROM msgs WHERE contact_id = ?').bind(id), env.CRM.prepare('DELETE FROM sessions WHERE contact_id = ?').bind(id), env.CRM.prepare('DELETE FROM logins WHERE contact_id = ?').bind(id),
+        env.CRM.prepare('DELETE FROM contacts WHERE id = ?').bind(id)]);
+      return json({ ok: true, deleted: true });
+    }
+    if (b.action === 'pref') {
+      const v = b.pref;
+      if (v === 'all' || v === 'jobs') await env.CRM.prepare("UPDATE contacts SET pref = ?, pref_at = ?, status = 'active', unsub_at = NULL, updated = ? WHERE id = ?").bind(v, now, now, row.id).run();
+      else if (v === 'unsub') await env.CRM.prepare("UPDATE contacts SET status = 'unsubscribed', unsub_at = ?, unsub_reason = 'account page', updated = ? WHERE id = ?").bind(now, now, row.id).run();
+      else return bad('Bad choice.');
+    }
+    if (b.action === 'save' && b.fields && typeof b.fields === 'object') {
+      let answers = {}; try { answers = JSON.parse(row.answers || '{}'); } catch { /* */ }
+      const f = b.fields;
+      const pick = (k, list) => (list.includes(f[k]) ? f[k] : undefined);
+      const set = {
+        sun: f.sun === '' ? null : PROFILE.sun(f.sun), uses: f.uses === '' ? null : PROFILE.uses(f.uses), water: f.water === '' ? null : PROFILE.water(f.water),
+        grass: f.grass === '' ? null : PROFILE.grass(f.grass), ph: f.ph === '' || f.ph == null ? null : PROFILE.ph(f.ph), know: PROFILE.know(Number(f.know)),
+        effort: [0, 1, 2, 3].includes(Number(f.effort)) ? Number(f.effort) : undefined, mower: pick('mower', ['me', 'crew', 'kid', 'robot']),
+        height: pick('height', ['unknown', 'low', 'mid', 'high']), look: pick('look', ['good', 'street', 'patchy', 'weedy', 'dirt']),
+        problems: Array.isArray(f.problems) ? f.problems.filter((x) => ['weeds', 'crabgrass', 'bare', 'brown', 'grubs', 'neighbor'].includes(x)) : undefined,
+      };
+      for (const [k, v] of Object.entries(set)) { if (v === undefined) continue; if (v === null) delete answers[k]; else answers[k] = v; }
+      const sqft = f.sqft === '' ? null : PROFILE.sqft(String(f.sqft).replace(/[^0-9.]/g, ''));
+      const zip = /^\d{5}$/.test(String(f.zip || '')) ? String(f.zip) : row.zip;
+      answers.zip = zip;
+      if (sqft) answers.sqft = sqft; else if (f.sqft === '') delete answers.sqft;
+      const plan = buildPlan(answers, { sqft: sqft || 0 });
+      await env.CRM.prepare('UPDATE contacts SET name = ?, zip = ?, answers = ?, level = ?, sqft = ?, measured = ?, grass = ?, updated = ? WHERE id = ?')
+        .bind(clean(f.name, 40).replace(/[<>]/g, ''), zip, JSON.stringify(answers), plan.level, sqft || null, sqft ? 1 : 0, answers.grass || plan.grassKey, now, row.id).run();
+    }
+    row = await env.CRM.prepare('SELECT * FROM contacts WHERE id = ?').bind(row.id).first();
+  }
+  await env.CRM.prepare('UPDATE sessions SET last = ? WHERE token = ?').bind(now, tok).run();
+  const c = contactOf(row);
+  const libItems = await lib(env);
+  const coming = row.status === 'active' ? simulate(c, await sentMap(env, row.id), 45, libItems).slice(0, 5).map((x) => {
+    const e = build(x.key, c, new Date(`${x.date}T12:00:00`), libItems);
+    return { date: x.date, kind: x.kind, subject: e?.subjects?.a || nameOf(x.key, libItems) };
+  }) : [];
+  const recent = await env.CRM.prepare("SELECT subject, sent_at FROM sends WHERE contact_id = ? AND mode = 'live' AND status NOT IN ('failed','queued','skipped') ORDER BY sent_at DESC LIMIT 5").bind(row.id).all();
+  const plan = buildPlan(c.answers, { sqft: c.sqft });
+  return json({ email: row.email, name: row.name || '', zip: row.zip || '', status: row.status, pref: row.pref, sqft: row.sqft || null, measured: !!row.measured, answers: c.answers,
+    level: plan.level, levelName: LEVEL_NAMES[plan.level], profile: plan.profile.name, grassName: plan.grass?.name || '', jobs: plan.tasks.length, coming, recent: recent.results, t: row.token });
 }
 
 /* ------------------------------------------------------------------ inbound replies */
@@ -364,8 +505,9 @@ export async function crmEvents(batch, env) {
 }
 
 /* ------------------------------------------------------------------ HQ */
-const SAMPLES = [0, 1, 2, 3].map((lv) => ({ zip: '10506', look: ['street', 'patchy', 'weedy', 'good'][lv], size: 'normal', effort: lv, problems: [['weeds'], ['bare', 'crabgrass'], ['weeds', 'brown'], ['neighbor']][lv], height: ['unknown', 'mid', 'low', 'high'][lv], sun: 'full', water: 'hose', uses: ['adults', 'kids', 'dogs', 'both'][lv], mower: 'me' }));
-const sample = (lv = 1, extra = {}) => ({ id: 0, email: 'you@example.com', name: 'Mike', created: Date.now(), answers: { ...SAMPLES[lv], ...extra }, sqft: 5000, measured: false, pref: 'all', token: 'preview' });
+// Sample new subscribers for previews: quiz answers only (sun, uses, water, size come later, by email).
+const SAMPLES = [0, 1, 2, 3].map((lv) => ({ zip: '10506', look: ['street', 'patchy', 'weedy', 'good'][lv], effort: lv, know: [0, 1, 2, 3][lv], problems: [['weeds'], ['bare', 'crabgrass'], ['weeds', 'brown'], ['neighbor']][lv], height: ['unknown', 'mid', 'low', 'high'][lv], mower: 'me' }));
+const sample = (lv = 1, extra = {}) => ({ id: 0, email: 'you@example.com', name: 'Mike', created: Date.now(), answers: { ...SAMPLES[lv], ...extra }, sqft: 0, measured: false, pref: 'all', token: 'preview' });
 
 // Walk forward day by day with nextFor to see what someone would get. No sending.
 function simulate(c, sentIn, days, libItems, startTs = Date.now()) {
@@ -446,11 +588,14 @@ export async function crmAdmin(env, req, url, ctx) {
       S.prepare("SELECT pref, COUNT(*) n FROM contacts WHERE status = 'active' GROUP BY pref"),
     ]);
     const unread = await S.prepare("SELECT COUNT(*) n FROM msgs WHERE dir = 'in' AND read = 0 AND auto = 0").first();
+    const prof = await S.prepare(`SELECT COUNT(*) n, SUM(measured = 1) sqft, SUM(json_extract(answers, '$.sun') IS NOT NULL) sun, SUM(json_extract(answers, '$.uses') IS NOT NULL) uses,
+      SUM(json_extract(answers, '$.water') IS NOT NULL) water, SUM(json_extract(answers, '$.grass') IS NOT NULL) grass, SUM(json_extract(answers, '$.ph') IS NOT NULL) ph,
+      SUM(json_extract(answers, '$.seeded') IS NOT NULL) seeded FROM contacts WHERE status = 'active'`).first();
     return json({
       days, status: st.results, newN: nw.results[0].n, newPrev: nwP.results[0].n, unsubN: un.results[0].n, unsubPrev: unP.results[0].n,
       sends: sd.results[0], sendsPrev: sdP.results[0], replies: rp.results[0].n, unread: unread.n, sources: src.results,
       levels: lv.results.map((r) => ({ ...r, name: LEVEL_NAMES[r.level] || '?' })), prefs: pref.results,
-      daily: { signups: dayS.results, unsubs: dayU.results, sends: dayE.results },
+      daily: { signups: dayS.results, unsubs: dayU.results, sends: dayE.results }, profile: prof,
     });
   }
 
@@ -514,7 +659,7 @@ export async function crmAdmin(env, req, url, ctx) {
       else if (a === 'note') await env.CRM.prepare('UPDATE contacts SET note = ? WHERE id = ?').bind(clean(body.note, 1000), id).run();
       else if (a === 'delete') {
         await env.CRM.batch([env.CRM.prepare('DELETE FROM clicks WHERE send_id IN (SELECT id FROM sends WHERE contact_id = ?)').bind(id), env.CRM.prepare('DELETE FROM sends WHERE contact_id = ?').bind(id),
-          env.CRM.prepare('DELETE FROM msgs WHERE contact_id = ?').bind(id), env.CRM.prepare('DELETE FROM contacts WHERE id = ?').bind(id)]);
+          env.CRM.prepare('DELETE FROM msgs WHERE contact_id = ?').bind(id), env.CRM.prepare('DELETE FROM sessions WHERE contact_id = ?').bind(id), env.CRM.prepare('DELETE FROM logins WHERE contact_id = ?').bind(id), env.CRM.prepare('DELETE FROM contacts WHERE id = ?').bind(id)]);
         return json({ ok: true, deleted: true });
       } else if (a === 'send-next') {
         const c = contactOf(row);
