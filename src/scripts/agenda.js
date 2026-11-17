@@ -132,10 +132,20 @@ export function taskCost(t, sqft = BASE_SQFT) {
   const k = x.scale ? Math.max(0.4, sqft / BASE_SQFT) : 1;
   return [r5(x.c[0] * k), r5(x.c[1] * k)];
 }
+const sumCost = (level, sqft) => tasksFor(level).reduce((a, t) => { const c = taskCost(t, sqft); return c ? [a[0] + c[0], a[1] + c[1]] : a; }, [0, 0]);
+// Friendly yearly ranges per level for the standard lawn (Mike, Nov 16). The job-by-job sums are
+// $50–100 / $135–265 / $245–475 / $470–950; these round them. A measured lawn scales the same range.
+const LEVEL_RANGE = [[50, 150], [150, 250], [250, 500], [500, 1000]];
 export function levelCost(level, sqft = BASE_SQFT) {
-  return tasksFor(level).reduce((a, t) => { const c = taskCost(t, sqft); return c ? [a[0] + c[0], a[1] + c[1]] : a; }, [0, 0]);
+  const r = LEVEL_RANGE[level];
+  if (sqft === BASE_SQFT) return r;
+  const base = sumCost(level, BASE_SQFT), mine = sumCost(level, sqft);
+  const k = (mine[0] + mine[1]) / (base[0] + base[1]);
+  const nice = (n) => { const step = n < 200 ? 10 : n < 1000 ? 25 : 50; return Math.max(step, Math.round(n / step) * step); };
+  return [nice(r[0] * k), nice(r[1] * k)];
 }
-export const money = ([lo, hi]) => `$${lo.toLocaleString('en-US')}–${hi.toLocaleString('en-US')}`;
+const usd = (n) => `$${n.toLocaleString('en-US')}`;
+export const money = ([lo, hi]) => `${usd(lo)}–${usd(hi)}`;
 
 // "9 jobs · about 6 hours a year" for an effort level
 export function levelShort(level) {
