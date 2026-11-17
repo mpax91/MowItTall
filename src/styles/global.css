@@ -2598,3 +2598,5 @@ main[data-gate] ~ .pre-foot, main[data-gate] ~ .footer, body:has(main[data-gate]
 .gp-pitch li { margin: 0 0 6px; }
 .gp-pitch b { color: var(--sun); }
 .gp-small { font-size: 0.88rem; opacity: 0.85; }
+/* Homepage section titles all share one size (Mike, Nov 17): Your Lawn This Week, the calendar, What's Trending */
+.is-home :is(#lw-h, #cal-h, #trending-h, .row-head h2) { font-size: clamp(1.35rem, 5.4vw, 1.7rem); }
