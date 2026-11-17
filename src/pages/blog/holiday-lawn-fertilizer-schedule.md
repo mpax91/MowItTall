@@ -75,4 +75,4 @@ Keep each feeding light: about 1 pound of nitrogen per 1,000 square feet, max. M
 - **Sweep, don’t hose.** Sweep anything on the driveway back onto the grass, and keep it away from streams and ponds.
 - **Water it in.** A light rain or short watering helps. A big storm washes it away.
 
-**Bottom line:** do Labor Day no matter what. Add holidays when you want more green and don’t mind more mowing. Want your whole lawn year laid out? [Take the quiz](/plan/) and I’ll build your plan with phone reminders.
+**Bottom line:** do Labor Day no matter what. Add holidays when you want more green and don’t mind more mowing. Want your whole lawn year laid out? [Take the quiz](/plan/) and I’ll build your plan, then walk you through it all year.

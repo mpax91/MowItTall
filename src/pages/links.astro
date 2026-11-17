@@ -7,7 +7,7 @@ import { allPosts } from '../data/posts.js';
 import { SOCIALS_MAIN, SOCIALS_MORE, TIPS_ON, tipLink } from '../data/site.js';
 const latest = allPosts(import.meta.glob('./blog/[a-z]*.md', { eager: true }))[0];
 const LINKS = [
-  ['/plan/', 'Get My Free Lawn Plan', '2 minutes. No email needed.', 'plan', true],
+  ['/plan/', 'Get Your Free Lawn Plan', '2 minutes. Made for your yard.', 'plan', true],
   [latest.url, `New: ${latest.title}`, 'The latest from the blog', 'latest'],
   ['/calendar/', 'What Should I Do This Month?', 'The lawn calendar', 'calendar'],
   ['/weeds/', 'What’s That Weed?', 'Photos and easy fixes', 'weeds'],

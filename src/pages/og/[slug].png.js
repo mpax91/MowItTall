@@ -77,7 +77,7 @@ function homeCard() {
           check('Weed ID, live soil temps and games'),
         ]),
         h('div', { display: 'flex', alignItems: 'center' }, [
-          h('div', { display: 'flex', background: '#c8372d', color: '#ffffff', fontFamily: 'Bricolage', fontSize: 27, padding: '12px 24px', whiteSpace: 'nowrap', borderRadius: 10, border: '3px solid #0a2414', boxShadow: '0 5px 0 #0a2414' }, 'Get My Free Lawn Plan'),
+          h('div', { display: 'flex', background: '#c8372d', color: '#ffffff', fontFamily: 'Bricolage', fontSize: 27, padding: '12px 24px', whiteSpace: 'nowrap', borderRadius: 10, border: '3px solid #0a2414', boxShadow: '0 5px 0 #0a2414' }, 'Get Your Free Lawn Plan'),
           h('span', { color: '#f6c945', fontSize: 24, marginLeft: 20, whiteSpace: 'nowrap' }, '2 minutes · No email'),
         ]),
       ]),

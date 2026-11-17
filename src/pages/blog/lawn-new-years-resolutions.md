@@ -45,7 +45,7 @@ A big lawn makeover is a gym membership. You’re fired up in January and gone b
 - **Off-season training.** Vacuum stripes in the living room. Sharpen the blade. Tune up the mower. [The full program](/blog/lawn-off-season-training/).
 - **Stay off frozen grass.** Brown footprints in April are a January mistake.
 - **Measure your lawn** so you buy the right amount of everything this year. [Two minutes on the map](/measure/).
-- **Get your plan.** [Nine questions](/plan/), and your whole year lands in your phone calendar.
+- **Get your plan.** [Seven questions](/plan/), and I’ll walk you through your whole lawn year.
 
 ## The Bottom Line
 

@@ -24,7 +24,7 @@ export const TOOL_CATS = [
 
 export const TOOLS = [
   // Start here
-  { id: 'plan', cat: 'start', name: 'Your Free Lawn Plan', line: 'Seven questions. The few things that matter for your yard, in order, with phone reminders.', href: '/plan/', tag: 'Quiz', keys: 'quiz plan schedule reminders' },
+  { id: 'plan', cat: 'start', name: 'Your Free Lawn Plan', line: 'Seven questions. A plan made for your yard, then I’ll walk you through it all year.', href: '/plan/', tag: 'Quiz', keys: 'quiz plan schedule reminders' },
   { id: 'calendar', cat: 'start', name: 'Lawn Calendar', line: 'Every job for the year at your effort level. Couch Potato to Lawn Psycho.', href: '/calendar/', tag: 'Picker', keys: 'calendar schedule month when' },
   { id: 'measure', cat: 'start', name: 'Measure Your Yard', line: 'Trace your grass on a satellite map. Square feet written right on it.', href: '/measure/', tag: 'Map', keys: 'square feet size area map how big' },
 
