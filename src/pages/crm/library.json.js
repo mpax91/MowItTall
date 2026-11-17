@@ -16,7 +16,9 @@ const GUIDE_MONTHS = {
   'moss-in-lawn': [3, 4, 10], 'should-i-mulch-leaves-into-lawn': [10, 11], 'does-my-lawn-need-lime': [3, 9, 10],
   'spring-lawn-cleanup-checklist': [3, 4], 'snow-mold-and-vole-damage': [3], 'get-rid-of-clover-in-lawn': [5, 6, 9, 10],
   'how-long-to-wait-to-mow': [4, 9], 'how-to-stripe-your-lawn': [5, 6], 'weed-killer-and-grass-seed': [8, 9],
-  'types-of-lawn-fertilizer': [4, 5, 8],
+  'types-of-lawn-fertilizer': [4, 5, 8], 'robot-mower-settings-by-season': [3, 4, 5, 9, 10, 11], 'zero-turn-vs-riding-mower': [2, 3, 4],
+  'self-propelled-vs-push-mower': [2, 3, 4], 'what-size-lawn-mower-do-i-need': [2, 3, 4], 'grass-for-shade': [8, 9], 'how-long-to-run-sprinklers': [6, 7, 8],
+  'is-my-lawn-dead-or-dormant': [7, 8], 'how-to-overseed-lawn': [8, 9], 'how-to-water-new-grass-seed': [9], 'mushrooms-in-lawn': [6, 7, 9, 10], 'ice-melt-safe-for-lawn': [12, 1, 2, 3],
 };
 const SKIP_GUIDES = new Set(['lawn-care-cost-westchester']); // local prices: not for a Northeast-wide list
 const SKIP_TOOLS = new Set(['tool-plan', 'tool-neighbor', 'tool-calendar']); // the drip already is the plan

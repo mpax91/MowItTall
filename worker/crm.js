@@ -137,7 +137,7 @@ async function sendOne(env, c, key, { today = etToday(), libItems, s, tests, to,
   const r0 = render({ ...email, subject }, { sendId: mode === 'live' ? id : '', key, variant, token: c.token, pref: c.pref });
   if (mode === 'live') {
     const ins = await env.CRM.prepare("INSERT OR IGNORE INTO sends (id, contact_id, key, kind, test, variant, subject, links, mode, status, sent_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'live', 'queued', ?)")
-      .bind(id, c.id, key, key.startsWith('job:') ? 'job' : key.startsWith('lib:') ? 'content' : key.startsWith('month:') ? 'month' : 'welcome', test, variant, subject, JSON.stringify(r0.links), at).run();
+      .bind(id, c.id, key, key.startsWith('job:') || key.startsWith('prep:') ? 'job' : key.startsWith('lib:') ? 'content' : key.startsWith('month:') ? 'month' : 'welcome', test, variant, subject, JSON.stringify(r0.links), at).run();
     if (!ins.meta.changes) return { ok: false, dupe: true };
   }
   const r = await sendMail(env, { to: to?.email || c.email, from: { email: s.from_addr, name: s.from_name }, subject, html: r0.html, text: r0.text, unsub: mode === 'live' ? r0.unsub : '',
@@ -252,6 +252,7 @@ const PROFILE = {
   know: (v) => { const n = Number(v); return Number.isInteger(n) && n >= 0 && n <= 3 ? n : null; },
   effort: (v) => { const n = Number(v); return Number.isInteger(n) && n >= 0 && n <= 3 ? n : null; },
   mower: (v) => (['me', 'crew', 'kid', 'robot'].includes(v) ? v : null),
+  spreader: (v) => (['yes', 'no'].includes(v) ? v : null),
 };
 async function profileUpdate(req, env) {
   const b = await req.json().catch(() => ({}));

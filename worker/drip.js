@@ -79,6 +79,32 @@ export function jobTitle(t, track) {
   if (track === 'crew' && CREW_JOBS[t.id] && CREW_TASKS[t.id]?.who === 'guy') return CREW_JOBS[t.id].title;
   return t.title.replace(/\s*\([^)]*\)/g, '');
 }
+// Get-ready emails: a few weeks before the big jobs, so people buy the right stuff and use the right tool
+// in time. Sent like job reminders (they beat weekly content), only if that job is in their plan.
+export const PREP = [
+  { key: 'crabgrass', task: 'crabgrass', m: 3, d: 26 }, // ~3 weeks before Tax Day: buy it, watch the soil temperature
+  { key: 'weeds', task: 'spot-weeds', m: 5, d: 6 },     // before spot-spraying: know your weeds
+  { key: 'seed', task: 'seed', m: 8, d: 13 },           // September seeding: seed, starter fertilizer, stop weed killer
+];
+// The free tool that goes with each job (shown under the main button in the reminder).
+export const JOB_TOOLS = {
+  crabgrass: ['/resources/lawn-soil-temperature/', 'Live soil temperature (spread at about 55°F)'],
+  'spring-feed': ['/blog/how-to-read-a-fertilizer-bag/', 'Fertilizer bag decoder'],
+  'spot-weeds': ['/weeds/', 'What’s that weed? (photos)'],
+  grubs: ['/resources/whats-wrong-with-my-lawn/', 'What’s wrong with my lawn?'],
+  'july4-feed': ['/resources/should-i-water-my-lawn/', 'Should I water? (live)'],
+  summer: ['/resources/should-i-water-my-lawn/', 'Should I water? (live)'],
+  'soil-test': ['/blog/lawn-soil-test/', 'Soil test translator'],
+  aerate: ['/guides/how-to-overseed-lawn/', 'How to overseed, step by step'],
+  seed: ['/resources/can-i-seed-now/', 'Can I seed now? (live) + seed tracker'],
+  'fall-feed': ['/resources/spreader-settings/', 'Spreader settings helper'],
+  'fall-weeds': ['/weeds/', 'What’s that weed? (photos)'],
+  'columbus-feed': ['/resources/spreader-settings/', 'Spreader settings helper'],
+  lime: ['/resources/lawn-calculator/', 'Lawn calculator (lime amounts)'],
+  'thanksgiving-feed': ['/resources/spreader-settings/', 'Spreader settings helper'],
+  leaves: ['/guides/should-i-mulch-leaves-into-lawn/', 'Should I mulch the leaves?'],
+};
+const FEEDS = new Set(['crabgrass', 'spring-feed', 'july4-feed', 'fall-feed', 'columbus-feed', 'thanksgiving-feed', 'grubs', 'lime']);
 const HOLIDAY_LEAD = 4; // days before the holiday itself
 const JOB_LEAD = 2;     // days before the window opens
 // When the reminder goes out for this year's (or next year's) occurrence of a job.
@@ -98,7 +124,7 @@ export const WELCOME = [
   { key: 'w0-plan', day: 0 },
   { key: 'w1-fix', day: 2 },
   { key: 'w2-measure', day: 4, when: (c) => !c.measured },
-  { key: 'w3-ask', day: 6, when: (c) => !c.answers.sun || !c.answers.uses },
+  { key: 'w3-ask', day: 6, when: (c) => !c.answers.sun || !c.answers.uses || !c.answers.water || (!c.answers.spreader && c.answers.mower !== 'crew') },
   { key: 'w4-hello', day: 9 },
   { key: 'w5-crew', day: 12, when: (c) => c.answers.mower === 'crew' },
   { key: 'w5-family', day: 12, when: (c) => c.answers.mower !== 'crew' && isFam(c) },
@@ -111,7 +137,7 @@ export const libId = (key) => key.slice(4).replace(/:y\d+$/, '');
 // Email names for HQ (anything not listed is named from the library or the job).
 export const NAMES = {
   'w0-plan': 'Welcome: your game plan', 'w1-fix': 'Welcome: the free fix', 'w2-measure': 'Profile: measure your lawn',
-  'w3-ask': 'Profile: sun + who uses it (one tap)', 'w4-hello': 'Welcome: hi, I’m Mike', 'w5-crew': 'Welcome: talk to your landscaper',
+  'w3-ask': 'Profile: sun, who uses it, watering, spreader (one tap)', 'prep:crabgrass': 'Get ready: crabgrass preventer', 'prep:weeds': 'Get ready: know your weeds', 'prep:seed': 'Get ready: September seed shopping list', 'w4-hello': 'Welcome: hi, I’m Mike', 'w5-crew': 'Welcome: talk to your landscaper',
   'w5-family': 'Welcome: kids, dogs and lawns', 'w5-101': 'Welcome: lawn 101 in 3 minutes', 'w6-grass': 'Profile: pick your grass',
   'ask-water': 'Profile: do you water? (one tap, before summer)', 'y-review': 'One year in: pick your track for year two',
 };
@@ -164,6 +190,15 @@ export function nextFor(c, sent, today, lib = []) {
     if (statusOf(t, joined).state === 'now' && year === joined.getFullYear()) continue;
     if (today >= at && today <= new Date(on.getTime() + 2 * DAY) && joined < on) return { key, kind: 'job', task: t.id };
   }
+  // 1b. get-ready emails (same priority as jobs)
+  for (const pr of PREP) {
+    if (!plan.tasks.some((t) => t.id === pr.task)) continue;
+    const at = new Date(today.getFullYear(), pr.m - 1, pr.d, 12);
+    const key = `prep:${pr.key}:${today.getFullYear()}`;
+    if (sent.has(key) || today < at || today - at > 6 * DAY || joined > at) continue;
+    if (pr.key === 'seed' && c.answers.mower === 'crew' && CREW_TASKS.seed?.who === 'guy') continue;
+    return { key, kind: 'job' };
+  }
   if (c.pref === 'jobs') return null;
   if (last && today - last < 2 * DAY) return null;
 
@@ -187,7 +222,7 @@ export function nextFor(c, sent, today, lib = []) {
   const wk = weekOf(today);
   if (wk === 1) return sent.has(`month:${m}:${y}`) ? null : { key: `month:${m}:${y}`, kind: 'month' };
   const track = trackOf(c.answers);
-  const id = slotItem(m, wk, track);
+  const id = slotItem(m, wk, track, c.answers);
   if (id && lib.some((x) => x.id === id) && !sent.has(`lib:${id}:y${yr}`)) return { key: `lib:${id}:y${yr}`, kind: 'content' };
   const item = pickContent(c, sent, m, lib, yr);
   return item ? { key: `lib:${item.id}:y${yr}`, kind: 'content' } : null;
@@ -239,6 +274,8 @@ export function pickContent(c, sent, month, lib, yr = 1) {
 // Each returns { subjects: { a, b }, pre, blocks } where blocks are rendered by worker/mailer.js:
 //   ['p', html] ['h', text] ['steps', [{k, title, text, extra}]] ['btn', label, url] ['ps', html] ['hr']
 const hi = (c) => (c.name ? `Hey ${c.name},` : 'Hey,');
+const cap = (x) => x.charAt(0).toUpperCase() + x.slice(1);
+const starterBags = (sqft) => { const n = sqft / 5000; if (n < 0.95) return `${Math.max(10, Math.round(n * 10) * 10)}% of a 5,000 sq ft bag`; const b = Math.ceil(n - 0.05); return `${b} bag${b === 1 ? '' : 's'} of the 5,000 sq ft size`; };
 // Subject lines over ~70 characters get cut off on phones: keep whole sentences that fit.
 function shortSubject(s) {
   if (s.length <= 70) return s;
@@ -325,8 +362,12 @@ export function build(key, c, today, lib = []) {
     const blocks = [['p', hi(c)], ['p', 'Two quick questions. One tap each, no typing. Your answers change which grass I recommend and what I warn you about.']];
     if (!c.answers.sun) blocks.push(['ask', 'How much sun does the lawn get? (Think middle of a summer day.)', 'sun', [['full', 'Full sun'], ['part', 'Some shade'], ['mixed', 'Sunny front, shady back'], ['shade', 'Mostly shade']]]);
     if (!c.answers.uses) blocks.push(['ask', 'Who uses the lawn?', 'uses', [['kids', 'Kids'], ['dogs', 'Dogs'], ['both', 'Kids and dogs'], ['adults', 'Just grown-ups'], ['looks', 'Nobody. It’s for looks']]]);
+    if (!c.answers.water) blocks.push(['ask', 'Do you water?', 'water', [['auto', 'Sprinkler system'], ['hose', 'Hose, when it looks rough'], ['never', 'Nope. Rain or nothing.']]]);
+    if (!c.answers.spreader && c.answers.mower !== 'crew') blocks.push(['ask', 'Do you own a spreader?', 'spreader', [['yes', 'Yes'], ['no', 'Not yet']]]);
+    const n = blocks.filter((b) => b[0] === 'ask').length;
+    blocks[1] = ['p', `${['', 'One quick question', 'Two quick questions', 'Three quick questions', 'Four quick questions'][n]}. One tap each, no typing. Your answers change which grass I recommend, what I warn you about, and what goes in your shopping lists.`];
     blocks.push(['p', 'That’s it. Tap and you’re done.<br>– Mike']);
-    return { subjects: { a: 'Two quick questions (one tap each)', b: 'Is your lawn sunny or shady?' }, pre: 'No typing. Just tap.', blocks };
+    return { subjects: { a: `${['', 'One', 'Two', 'Three', 'Four'][n]} quick question${n === 1 ? '' : 's'} (one tap each)`, b: 'Is your lawn sunny or shady?' }, pre: 'No typing. Just tap.', blocks };
   }
   if (key === 'ask-water') {
     return {
@@ -461,11 +502,76 @@ export function build(key, c, today, lib = []) {
           : cost ? ['box', `<b>Cost:</b> about ${cost}.`] : null,
         id === 'lime' && c.answers.ph ? ['p', `<b>Your soil test said pH ${c.answers.ph}.</b> That’s low, so yes: lime this fall.`] : null,
         id === 'seed' && plan.grass ? ['p', `<b>Your grass:</b> ${plan.grass.name}${plan.grass.mix ? ` (${plan.grass.mix})` : ''}.${c.answers.grass ? '' : ' <a href="/lawn-101/#grass">Not sure? Pick it in 4 taps.</a>'}`] : null,
+        id === 'seed' ? ['p', `<b>Plus starter fertilizer</b> the same day: ${c.sqft ? starterBags(c.sqft) : '1 bag of the 5,000 sq ft size for a typical lawn'}. The one with the big middle number.`] : null,
+        FEEDS.has(id) && c.answers.spreader === 'no' ? ['p', 'No spreader yet? <a href="/blog/how-to-use-a-spreader/">Which one to get and how to use it</a> (5 minutes).'] : null,
         t.tip ? ['p', `<b>Heads up:</b> ${t.tip}`] : null,
         link ? ['btn', link[1], link[0]] : null,
+        JOB_TOOLS[id] && (!link || JOB_TOOLS[id][0] !== link[0]) ? ['p', `<b>Free tool:</b> <a href="${JOB_TOOLS[id][0]}">${JOB_TOOLS[id][1]}</a>`] : null,
         ['p', '– Mike'],
       ].filter(Boolean),
     };
+  }
+  if (key.startsWith('prep:')) {
+    const pk = key.split(':')[1];
+    const typical = (id) => (c.sqft ? `For your lawn (${Math.round(c.sqft).toLocaleString('en-US')} sq ft): ${amountFor(id, c.sqft, plan)}.` : `For a typical 5,000 sq ft lawn: ${amountFor(id, 5000, plan)}. <a href="/measure/">Measure yours</a> and I’ll do the exact math.`);
+    const spreaderNote = c.answers.spreader === 'no' ? ['p', 'No spreader yet? Grab a walk-behind broadcast spreader while you’re there. <a href="/blog/how-to-use-a-spreader/">How to use it</a>.'] : null;
+    if (pk === 'crabgrass') {
+      return {
+        subjects: { a: 'Crabgrass preventer: buy it now, spread it at 55°F', b: 'Get ready: crabgrass preventer (Tax Day)' },
+        pre: 'Tax Day is the reminder. The soil is the real trigger.',
+        blocks: [
+          ['p', hi(c)],
+          ['p', 'Heads up: crabgrass preventer season is about three weeks out. Tax Day is the reminder, but the real trigger is soil hitting about 55°F, usually when the forsythia blooms. Some years that’s early April.'],
+          ['h', 'Buy It This Week'],
+          ['box', `<b>Crabgrass preventer.</b> ${typical('crabgrass')}`],
+          spreaderNote,
+          ['p', '<b>Seeding this spring?</b> A regular preventer stops grass seed too. (I’d seed in September anyway.)'],
+          ['btn', 'Watch the Live Soil Temperature', '/resources/lawn-soil-temperature/'],
+          ['p', 'When it hits about 55°F, spread it. I’ll remind you before Tax Day too.<br>– Mike'],
+        ].filter(Boolean),
+      };
+    }
+    if (pk === 'weeds') {
+      const fam = ['kids', 'dogs', 'both'].includes(c.answers.uses);
+      return {
+        subjects: { a: 'Know your weeds before you spray', b: 'Get ready: spot-spraying weeds (mid-May)' },
+        pre: 'Thirty seconds with the weed board saves you a wasted bottle.',
+        blocks: [
+          ['p', hi(c)],
+          ['p', 'Weed spraying season starts in about a week, when dandelions and clover are growing hard. The fix depends on the weed, so figure out what you’ve actually got first.'],
+          ['btn', 'What’s That Weed? (Real Photos)', '/weeds/'],
+          ['p', 'Then buy one ready-to-spray bottle for lawns and spot-treat only the weeds you see. Not the whole lawn. Spray on a calm day that’s not too hot.'],
+          fam ? ['box', 'Kids or dogs on the lawn: keep everyone off until it dries. <a href="/blog/kid-and-pet-safe-lawn-care/">The kid and pet safe playbook</a>.'] : null,
+          ['p', 'Seeded this spring? Skip those spots until the new grass has been mowed three or four times.<br>– Mike'],
+        ].filter(Boolean),
+      };
+    }
+    if (pk === 'seed') {
+      const g = plan.grass || {};
+      const shady = ['shade', 'mixed'].includes(c.answers.sun);
+      return {
+        subjects: { a: 'Your September seed shopping list', b: 'Get ready: seed week is coming' },
+        pre: `${g.name ? `${g.name}, ` : ''}starter fertilizer, and one thing to stop doing now.`,
+        blocks: [
+          ['p', hi(c)],
+          ['p', 'September is the best month all year to grow grass around here, and the stores get picked over. Shop this month so you’re ready on day one.'],
+          ['h', 'Your Shopping List'],
+          ['list', [
+            g.name ? `<b>Seed: ${g.name}</b>${g.mix ? ` (${g.mix})` : ''}. ${cap(c.sqft ? amountFor('seed', c.sqft, plan) : `${amountFor('seed', 5000, plan)} for a typical lawn`)}.${c.answers.grass ? '' : ' <a href="/lawn-101/#grass">Not sure? Pick it in 4 taps.</a>'}` : '<b>Seed:</b> <a href="/lawn-101/#grass">pick your grass in 4 taps</a> and it tells you how many pounds.',
+            `<b>Starter fertilizer</b> (the big middle number): ${c.sqft ? starterBags(c.sqft) : '1 bag of the 5,000 sq ft size for a typical lawn'}.`,
+            plan.tasks.some((t) => t.id === 'fall-feed') ? `<b>Labor Day fertilizer:</b> ${c.sqft ? amountFor('fall-feed', c.sqft, plan) : amountFor('fall-feed', 5000, plan) + ' for a typical lawn'}. (Skip it on spots that get starter.)` : '',
+            c.answers.ph ? '' : '<b>A soil test kit</b>, if you haven’t done one. <a href="/blog/lawn-soil-test/">Here’s how</a>.',
+          ].filter(Boolean)],
+          spreaderNote,
+          ['box', '<b>Stop now:</b> no weed killer or crabgrass preventer on anything you plan to seed. Most of them stop grass seed too. <a href="/guides/weed-killer-and-grass-seed/">The wait times</a>.'],
+          shady ? ['p', 'Shady spots? Buy a shade mix that’s mostly fine fescue. <a href="/guides/grass-for-shade/">What grows in shade</a>.'] : null,
+          c.measured ? null : ['p', 'Don’t know your lawn size? <a href="/measure/">Measure it on a map</a> (one minute) so you buy the right amount.'],
+          ['btn', 'How to Overseed, Step by Step', '/guides/how-to-overseed-lawn/'],
+          ['p', '– Mike'],
+        ].filter(Boolean),
+      };
+    }
+    return null;
   }
   if (key.startsWith('y-review:')) {
     const lv = plan.level, next = Math.min(3, lv + 1);
@@ -480,6 +586,7 @@ export function build(key, c, today, lib = []) {
       blocks: [
         ['p', hi(c)],
         ['p', `It’s been a year. That’s a full lap around the lawn calendar: ${plural(plan.tasks.length, 'job')} at the ${LEVEL_NAMES[lv]} level, plus a lot of opinions about leaf blowers.`],
+        ['p', 'Year one is fixing. Year two is tuning. <a href="/blog/lawn-year-two/">What changes now</a>.'],
         ['p', 'So, year two. Pick one (one tap):'],
         ['choices', choices],
         ['p', 'Do nothing and I’ll keep going on the same plan, with any new posts mixed in.<br>– Mike'],
@@ -549,10 +656,11 @@ export function build(key, c, today, lib = []) {
 export function nameOf(key, lib = []) {
   if (NAMES[key]) return NAMES[key];
   if (key.startsWith('job:')) { const t = TASKS.find((x) => x.id === key.split(':')[1]); return `Job: ${t ? t.title : key}`; }
+  if (key.startsWith('prep:')) return NAMES[key.split(':').slice(0, 2).join(':')] || key;
   if (key.startsWith('month:')) return `Monthly: ${MONTHS_LONG[Number(key.split(':')[1]) - 1]}`;
   if (key.startsWith('lib:')) { const it = lib.find((x) => x.id === libId(key)); return it ? `${it.kind === 'tool' ? 'Tool' : it.kind === 'guide' ? 'Guide' : 'Post'}: ${it.title}` : key; }
   return key;
 }
 // Group keys across years: job:fall-feed:2027 → job:fall-feed, month:9:2027 → month:9
-export const baseKey = (key) => (key.startsWith('job:') || key.startsWith('month:') ? key.split(':').slice(0, 2).join(':') : key.startsWith('lib:') ? `lib:${libId(key)}` : key.startsWith('y-review:') ? 'y-review' : key);
+export const baseKey = (key) => (key.startsWith('job:') || key.startsWith('month:') || key.startsWith('prep:') ? key.split(':').slice(0, 2).join(':') : key.startsWith('lib:') ? `lib:${libId(key)}` : key.startsWith('y-review:') ? 'y-review' : key);
 export { WELCOME_KEYS };
