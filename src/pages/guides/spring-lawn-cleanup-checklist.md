@@ -5,14 +5,14 @@ short: "Spring Cleanup"
 description: "The spring lawn care checklist for the Northeast: when to start mowing, first mow height, and how to handle snow mold, vole tunnels, plow damage and road salt."
 seoTitle: "Spring Lawn Care Checklist: Cleanup and First Mow"
 seoDescription: "Wait for dry ground, rake lightly, fix snow mold, vole runways and plow damage, flush salt, then mow when grass hits about 5 inches. Keep the mower high."
-answer: "<b>Wait until the ground is dry enough that you don't leave footprints.</b> Then rake lightly to fluff matted spots, pick up sticks, push plow-torn sod back down, and soak salty edges with water. <b>Start mowing when the grass is actively growing and about 5 inches tall</b> (around mid-April near Westchester), and keep the mower high: <b>3.5 to 4 inches.</b> Put crabgrass preventer down around Tax Day, and skip the big spring fertilizer."
+answer: "<b>Wait until the ground is dry enough that you don't leave footprints.</b> Then rake lightly to fluff matted spots, pick up sticks, push plow-torn sod back down, and soak salty edges with water. <b>Start mowing when the grass is actively growing and about 5 inches tall</b> (around mid-April in most of the Northeast), and keep the mower high: <b>3.5 to 4 inches.</b> Put crabgrass preventer down around Tax Day, and skip the big spring fertilizer."
 date: 2026-11-16
 minutes: 4
 topics: [mowing, weeds]
 tools: [["/calendar/", "Lawn calendar"], ["/blog/lawn-mower-maintenance-diy/", "Mower tune-up checklist"], ["/guides/crabgrass-preventer-timing/", "Crabgrass preventer timing"]]
 faq:
   - q: "When should I start mowing in spring?"
-    a: "When the grass is actively growing and gets to about 5 inches, and the ground is firm enough that the mower won't leave ruts. Around Westchester that's usually mid-April, give or take a couple of weeks depending on the year."
+    a: "When the grass is actively growing and gets to about 5 inches, and the ground is firm enough that the mower won't leave ruts. In most of the Northeast that's usually mid-April, give or take a couple of weeks depending on the year."
   - q: "How short should the first mow of the year be?"
     a: "Not short. Mow at 3.5 to 4 inches and never take off more than a third of the blade. A low first cut (scalping) weakens the grass right when it's waking up and opens the door to crabgrass."
   - q: "Should I dethatch or power rake in spring?"
@@ -47,7 +47,7 @@ The snow melts, the lawn shows up looking like it just got back from a bachelor 
 
 ## When to Start Mowing
 
-Start when **the grass is growing and hits about 5 inches**, and the ground is firm. Around Westchester, that's usually mid-April. Don't mow on a calendar date. Mow on the grass.
+Start when **the grass is growing and hits about 5 inches**, and the ground is firm. In most of the Northeast, that's usually mid-April. Don't mow on a calendar date. Mow on the grass.
 
 **First mow height: 3.5 to 4 inches.** That way you only take off about a third. I know. Everybody wants a "clean-up cut." Don't scalp it. Short grass in April is a welcome mat for crabgrass in July. [How high to mow](/guides/how-high-to-mow-grass/).
 

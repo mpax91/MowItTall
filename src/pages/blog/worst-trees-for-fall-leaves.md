@@ -40,7 +40,7 @@ faq:
 
 **2. Sweetgum (menace).** Gorgeous leaves. Then the gumballs: spiky little ankle-breakers that roll under your feet, jam the mower and keep coming for months.
 
-**1. Oak (dead last).** Here we go. Tough, leathery leaves that take forever to break down. They drop in waves from October to December. Some oaks hold their dead leaves all winter, just to drop them on your clean lawn in April. Plus acorns. Millions of acorns. Every squirrel in Westchester has a timeshare in your yard. **The oak is the guest who won’t leave the party. Oaks are going down.**
+**1. Oak (dead last).** Here we go. Tough, leathery leaves that take forever to break down. They drop in waves from October to December. Some oaks hold their dead leaves all winter, just to drop them on your clean lawn in April. Plus acorns. Millions of acorns. Every squirrel in the Northeast has a timeshare in your yard. **The oak is the guest who won’t leave the party. Oaks are going down.**
 
 ## What to Do With All of It
 

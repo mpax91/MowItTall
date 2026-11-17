@@ -28,7 +28,7 @@ sources:
     url: "https://ipm.cahnr.uconn.edu/leaf_disposal_mulch_mowing/"
 ---
 
-Every fall, half of Westchester spends three Saturdays raking leaves into giant bags so the town can haul away free lawn food. Then they buy fertilizer in spring. Don't be half of Westchester.
+Every fall, half the Northeast spends three Saturdays raking leaves into giant bags so the town can haul away free lawn food. Then they buy fertilizer in spring. Don't be half the Northeast.
 
 ## Why Mulching Leaves Works
 

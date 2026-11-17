@@ -1,4 +1,4 @@
-// Common lawn weeds in Westchester and the Northeast, with plain-English fixes.
+// Common lawn weeds in the Northeast, with plain-English fixes.
 // Product types are generic on purpose; always follow the label.
 // Photos: Wikimedia Commons and iNaturalist (free licenses, credited on /weeds/), cropped and resized.
 // Files: public/img/weeds/<id>-<n>-960.webp, <id>-<n>-480.webp, <id>-thumb.webp

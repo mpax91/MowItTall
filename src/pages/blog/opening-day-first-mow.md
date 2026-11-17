@@ -13,7 +13,7 @@ topics: [mowing]
 widget: opening-day
 faq:
   - q: "When should I do the first mow of spring?"
-    a: "When the grass is actively growing and about 5 inches tall, and the ground is firm enough that you don’t leave footprints. Around Westchester that’s usually mid-April. Go by the grass, not the calendar."
+    a: "When the grass is actively growing and about 5 inches tall, and the ground is firm enough that you don’t leave footprints. In most of the Northeast that’s usually mid-April. Go by the grass, not the calendar."
   - q: "How short should I cut grass on the first mow?"
     a: "Not short. Cut to 3.5 to 4 inches and take off no more than a third of the blade. Scalping the first mow weakens the grass right when it’s waking up and gives crabgrass an opening."
   - q: "Should I bag the first mow?"
@@ -26,7 +26,7 @@ faq:
 
 ## Rule 1: Opening Day Isn’t a Date
 
-Baseball gets a schedule. You get the grass. **Opening Day is when the grass is growing and about 5 inches tall, and the field is playable.** Around Westchester, that’s usually mid-April, give or take two weeks depending on how mean March was.
+Baseball gets a schedule. You get the grass. **Opening Day is when the grass is growing and about 5 inches tall, and the field is playable.** In most of the Northeast, that’s usually mid-April, give or take two weeks depending on how mean March was.
 
 Mowing in late March because your brother-in-law did? That’s a spring training game. It doesn’t count, and you’re going to pull something.
 

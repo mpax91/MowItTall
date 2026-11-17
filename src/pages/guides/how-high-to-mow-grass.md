@@ -26,7 +26,7 @@ sources:
     url: "https://yardandgarden.extension.iastate.edu/faq/when-can-i-stop-mowing-lawn-fall"
 ---
 
-If you only change one thing about your lawn, make it this. Most bad lawns I see around Westchester aren't sick. They're just mowed too short.
+If you only change one thing about your lawn, make it this. Most bad lawns I see aren't sick. They're just mowed too short.
 
 ## Why Taller Grass Looks Better
 

@@ -92,7 +92,7 @@ function buildPin(kind, slug, fm) {
   const pinterestTitle = clip(title, 100);
   const desc = strip(fm.seoDescription || fm.description);
   const extra = tool ? ` Includes a free ${tool.replace(/^The /, '')}.` : kind === 'guide' ? ' Short answer first, then the details.' : '';
-  const description = clip(`${desc}${extra} Easy lawn care for beginners from Mike at Mow It Tall (Westchester, NY).`, 500);
+  const description = clip(`${desc}${extra} Easy lawn care for beginners from Mike at Mow It Tall (Northeast lawns).`, 500);
   return {
     path, slug: ogSlug(path), kind, title, line, tool, photo: pickPhoto(slug, fm),
     variant: hash(slug + 'v'), label: kind === 'guide' ? 'Lawn Guide' : TAG_LABEL[fm.tag] || fm.tag || 'Lawn Tips',

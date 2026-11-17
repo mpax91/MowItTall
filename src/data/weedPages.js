@@ -304,7 +304,7 @@ export const WEED_PAGES = {
     ],
     kids: 'Preventer granules: keep kids and pets off until they’re watered in, per the label. Mowing tall is the zero-worry option. One heads-up for parents: most crabgrass preventers also stop grass seed from growing for weeks, so don’t put them down where you just seeded unless the label says it’s seed-safe.',
     faq: [
-      ['When should I put down crabgrass preventer?', 'When the soil is about 55°F for a few days, usually when forsythia blooms. In Westchester and the Lower Hudson Valley, that’s typically April. Check the live soil temperature instead of guessing.'],
+      ['When should I put down crabgrass preventer?', 'When the soil is about 55°F for a few days, usually when forsythia blooms. In most of the Northeast, that’s typically April. Check the live soil temperature instead of guessing.'],
       ['Can I kill crabgrass after it comes up?', 'Yes, with a post-emergent crabgrass killer. It works best on small, young plants in early summer. Big plants in August are hard to kill, and they die at frost anyway.'],
       ['Can I seed and use crabgrass preventer at the same time?', 'Usually no. Most preventers stop grass seed too. A few products are labeled safe for new seed. Read the label, or seed in fall and prevent in spring.'],
       ['Does crabgrass come back every year?', 'Not the same plant. It dies in fall. But each plant drops thousands of seeds, so it comes back from seed unless you prevent it and keep the lawn thick.'],

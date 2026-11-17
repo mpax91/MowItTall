@@ -35,8 +35,8 @@ export function regionOf(p) {
 
 export function noteFor(p) {
   const r = regionOf(p);
-  if (r === 'near') return 'Dates on this site are set for Westchester & the Lower Hudson Valley. Yours may run a week or so different.';
-  if (r === 'far') return 'Heads up: this site is built for cool-season lawns around Westchester. The soil reading is yours, but the dates may not fit.';
+  if (r === 'near') return 'Dates on this site are set for a typical Northeast lawn. Yours may run a week or so different.';
+  if (r === 'far') return 'Heads up: this site is built for cool-season lawns in the Northeast. The soil reading is yours, but the dates may not fit.';
   return '';
 }
 

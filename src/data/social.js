@@ -66,7 +66,7 @@ export const SOCIAL = {
 };
 
 // Topic hashtags for Instagram (base tags are added to every post).
-export const BASE_TAGS = ['#lawncare', '#diylawn', '#westchesterny', '#mowittall'];
+export const BASE_TAGS = ['#lawncare', '#diylawn', '#northeastlawns', '#mowittall'];
 export const TOPIC_TAGS = {
   mowing: ['#mowing', '#lawnstripes'],
   feeding: ['#fertilizer', '#lawntips'],

@@ -18,7 +18,7 @@ faq:
   - q: "When is the best time to remove moss from a lawn?"
     a: "Rake it out in early fall, then overseed right away so grass takes the space. Spring is the second choice."
   - q: "Should I just let the moss grow?"
-    a: "In deep shade where grass keeps failing, honestly, yes. A moss patch is green, soft, never needs mowing and stays put. Plenty of shady Westchester yards look better with it."
+    a: "In deep shade where grass keeps failing, honestly, yes. A moss patch is green, soft, never needs mowing and stays put. Plenty of shady Northeast yards look better with it."
 sources:
   - name: "Penn State Extension: Lawn Management Through the Seasons"
     url: "https://extension.psu.edu/lawn-management-through-the-seasons"

@@ -1,4 +1,4 @@
-// The lawn year for Bedford, Westchester and most of the Northeast (cool-season grass).
+// The lawn year for Bedford and most of the Northeast (cool-season grass).
 // Windows are typical. Soil temperature is the real trigger, so the site shows both.
 //
 // level: the lowest effort level that gets this task (0 couch, 1 weekend, 2 overachiever, 3 psycho)

@@ -35,7 +35,7 @@ const line = `Starts around ${n.early}°F (${zoneOf(n.early).name.toLowerCase()}
   <p class="msoil-line" data-ms-line>{line}</p>
   <p class="msoil-stats"><span>Month average: <b data-ms-avg>{n.avg}°F</b></span> <span>Most days: <b data-ms-range>{n.lo}–{n.hi}°F</b></span></p>
   <ul class="msoil-key">{SOIL_ZONES.map((z) => <li><span class={`zone-dot zone-${z.id}`} aria-hidden="true"></span><span><b>{z.name}</b> ({z.min === 25 ? `under ${z.max}°F` : z.max === 85 ? `${z.min}°F+` : `${z.min}–${z.max}°F`}): {z.what}</span></li>)}</ul>
-  <p class="msoil-fine" data-ms-fine>Northeast numbers are Westchester, NY, averaged over {NE_YEARS[0]}–{NE_YEARS[1]}. Add your ZIP to see your spot. Want right now? <a href="/resources/lawn-soil-temperature/">Live soil thermometer</a>.</p>
+  <p class="msoil-fine" data-ms-fine>Northeast numbers are a {NE_YEARS[0]}–{NE_YEARS[1]} average for a typical spot north of New York City. Add your ZIP to see your spot. Want right now? <a href="/resources/lawn-soil-temperature/">Live soil thermometer</a>.</p>
 </section>
 
 <script>

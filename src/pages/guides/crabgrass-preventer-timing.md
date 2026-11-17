@@ -2,10 +2,10 @@
 layout: ../../layouts/Guide.astro
 title: "When to Put Down Crabgrass Preventer in New York"
 short: "Crabgrass Preventer Timing"
-description: "Exactly when to apply crabgrass preventer in Westchester and the Northeast, how to tell the soil is ready, and what to do if you missed it."
+description: "Exactly when to apply crabgrass preventer in the Northeast, how to tell the soil is ready, and what to do if you missed it."
 seoTitle: "When to Apply Crabgrass Preventer in New York"
-seoDescription: "Put down crabgrass preventer when soil hits about 55°F for a few days, usually early to mid April around Westchester. Forsythia is your clue."
-answer: "<b>Put it down when the soil warms to about 55°F for a few days in a row</b>, which is usually early to mid April around Westchester and the Lower Hudson Valley. The easy clue: when the forsythia bushes are blooming. Water it in within a few days."
+seoDescription: "Put down crabgrass preventer when soil hits about 55°F for a few days, usually early to mid April in most of the Northeast. Forsythia is your clue."
+answer: "<b>Put it down when the soil warms to about 55°F for a few days in a row</b>, which is usually early to mid April in most of the Northeast. The easy clue: when the forsythia bushes are blooming. Water it in within a few days."
 date: 2026-11-15
 minutes: 3
 topics: [weeds]
@@ -34,7 +34,7 @@ So timing is the whole game. Too early and the barrier wears off before crabgras
 
 - **The thermometer way:** crabgrass starts sprouting when the top couple inches of soil stay around 55°F for several days. The [live soil thermometer](/) on my homepage shows today's reading for your ZIP.
 - **The forsythia way:** those yellow shrubs bloom right about when the soil hits that range. When they're in full bloom and starting to fade, you're in the window.
-- **The calendar way (least accurate):** early to mid April around Bedford and Westchester. I put it on my calendar for Tax Day as a reminder, then check the soil.
+- **The calendar way (least accurate):** early to mid April in most of the Northeast. I put it on my calendar for Tax Day as a reminder, then check the soil.
 
 ## How to Apply It
 

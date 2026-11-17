@@ -1,6 +1,6 @@
 // Month pages at /calendar/<month>/. Jobs come from tasks.js (each job shows on ONE month page:
 // the month it lands on in /calendar/, via placeOf in agenda.js); this file adds the copy.
-// Timing is for Westchester, the Lower Hudson Valley and similar Northeast cool-season lawns.
+// Timing is for the Northeast and similar cool-season lawns.
 // Strings may contain links (rendered as HTML). Typical soil temperatures live in soilNormals.js.
 // House rules: no dormant seeding, no spring seeding pitch, seed in September, no weed killer where you seeded.
 // Mike reviews all copy.

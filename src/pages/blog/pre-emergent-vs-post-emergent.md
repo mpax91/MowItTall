@@ -15,7 +15,7 @@ faq:
   - q: "What is the difference between pre-emergent and post-emergent?"
     a: "Pre-emergent stops weed seeds from sprouting. It does nothing to weeds that are already growing. Post-emergent kills weeds that are already up. Crabgrass preventer is the most common pre-emergent; dandelion spray is the most common post-emergent."
   - q: "When should I apply pre-emergent in New York?"
-    a: "When soil temperature reaches about 55°F, which is usually around when forsythia blooms. In Westchester and the Lower Hudson Valley that’s typically April. Water it in within a few days."
+    a: "When soil temperature reaches about 55°F, which is usually around when forsythia blooms. In most of the Northeast that’s typically April. Water it in within a few days."
   - q: "Does pre-emergent kill existing weeds?"
     a: "No. Most pre-emergents only stop seeds from sprouting. A few, like dithiopyr, can also kill very young crabgrass, but dandelions, clover and grown crabgrass need a post-emergent."
   - q: "Can I seed after applying pre-emergent?"

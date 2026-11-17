@@ -102,7 +102,7 @@ export const TRAINING = [
     lede: 'Oil, air filter, spark plug, fresh gas. Beat the April rush at the repair shop, when everyone else remembers at once.',
     more: { href: '/blog/lawn-mower-maintenance-diy/', text: 'The DIY tune-up checklist' } },
   { id: 'film', label: 'Film study', word: 'SCOUTING', tone: 'close', title: 'Watch lawn videos at 11pm.',
-    lede: 'Every athlete watches film. Yours is a guy in Ohio dethatching in slow motion. Your spouse will ask what you’re watching. Say “nothing.”' },
+    lede: 'Every athlete watches film. Yours is a guy in Ohio dethatching in slow motion. Your spouse will ask what you’re watching. Say “You wouldn’t believe me if I told you.”' },
   { id: 'cardio', label: 'Cardio', word: 'STAY READY', tone: 'yes', title: 'Walk. Anywhere.',
     lede: 'Mowing season is 26 workouts. Show up in April already able to walk an hour behind a mower without complaining.',
     more: { href: '/blog/mowing-the-lawn-is-a-workout/', text: 'Mowing is a workout' } },

@@ -1,5 +1,5 @@
 // "Can I seed now?" Live: soil temperature (6 cm) + 7-day forecast highs and rain from Open-Meteo (free, no key).
-// Calendar windows are set for Westchester / Lower Hudson Valley. Mike reviews the cutoffs.
+// Calendar windows are set for the Northeast. Mike reviews the cutoffs.
 import { getPlace, noteFor } from './place.js';
 
 const md = (d) => (d.getMonth() + 1) * 100 + d.getDate(); // e.g. Sep 15 = 915

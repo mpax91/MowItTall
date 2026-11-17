@@ -4,8 +4,8 @@ title: "When to Stop Mowing in the Fall (and How Short the Last Cut Should Be)"
 short: "When to Stop Mowing"
 description: "When cool-season grass stops growing in the Northeast, how short to cut the last mow of the season, and what to do with the mower after."
 seoTitle: "When to Stop Mowing in Fall and How Short to Cut"
-seoDescription: "Keep mowing until the grass stops growing, usually mid to late November around Westchester. Drop the last mow to about 2.5 to 3 inches."
-answer: "<b>Keep mowing until the grass stops growing</b>, which around Westchester is usually mid to late November, once highs stay under about 50°F. For the last one or two mows, lower the mower to about 2.5 to 3 inches so the grass doesn't mat down under snow. Mulch the leaves on the way."
+seoDescription: "Keep mowing until the grass stops growing, usually mid to late November in most of the Northeast. Drop the last mow to about 2.5 to 3 inches."
+answer: "<b>Keep mowing until the grass stops growing</b>, which in most of the Northeast is usually mid to late November, once highs stay under about 50°F. For the last one or two mows, lower the mower to about 2.5 to 3 inches so the grass doesn't mat down under snow. Mulch the leaves on the way."
 date: 2026-11-15
 minutes: 3
 topics: [mowing]

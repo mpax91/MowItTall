@@ -5,7 +5,7 @@ short: "When to Overseed"
 description: "The best time to overseed a cool-season lawn in the Northeast, plus the step-by-step way to do it so the seed actually grows."
 seoTitle: "When to Overseed a Lawn in New York (and How)"
 seoDescription: "The best time to overseed in New York and the Northeast is September. Why August is usually too hot, and the step-by-step: mow, loosen, seed, feed, water, wait."
-answer: "<b>September is the best time to overseed</b> in New York and the Northeast. Around Westchester, aim for Labor Day through mid-September, and be done by early October. Late August only works if the heat breaks early. Spring is possible, but I don't recommend it."
+answer: "<b>September is the best time to overseed</b> in New York and the Northeast. Aim for Labor Day through mid-September, and be done by early October. Late August only works if the heat breaks early. Spring is possible, but I don't recommend it."
 updated: 2026-11-16
 date: 2026-11-15
 minutes: 4
