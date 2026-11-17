@@ -17,7 +17,6 @@ const { compact = false } = Astro.props;
     </div>
     <div class="beer-foot-text">
       <p class="beer-foot-h">Find This Helpful?</p>
-      <p class="beer-foot-sub">Say thanks with a beer.</p>
     </div>
     <div class="beer-mug beer-mug-sm beer-mug-r" aria-hidden="true">
       <svg viewBox="0 0 16 16" shape-rendering="crispEdges">
@@ -29,7 +28,7 @@ const { compact = false } = Astro.props;
       </svg>
     </div>
     {TIPS_ON
-      ? <a class="beer-foot-btn" href={TIP_URL || tipLink(5)} target="_blank" rel="noopener" data-track="tip_click" data-track-link_area="footer">Buy Me a Beer</a>
+      ? <a class="beer-foot-btn" href={TIP_URL || tipLink(5)} target="_blank" rel="noopener" data-track="tip_click" data-track-link_area="footer">Say Thanks With a Beer</a>
       : <span class="beer-foot-btn is-off" aria-disabled="true">Tip Jar Opening Soon</span>}
   </div>
 ) : (
@@ -44,12 +43,12 @@ const { compact = false } = Astro.props;
       </svg>
     </div>
     <div class="beer-body">
-      <h2 id="beer-h">Find This Helpful? Buy Me a Beer.</h2>
+      <h2 id="beer-h">Find This Helpful?</h2>
       <p>Totally optional. Just a way to say thanks.</p>
       <div class="beer-btns">
         {TIPS_ON
-          ? <a class="btn beer-btn" href={TIP_URL || tipLink(5)} target="_blank" rel="noopener" data-track="tip_click" data-track-link_area="callout">Buy Me a Beer</a>
-          : <span class="btn beer-btn is-off" aria-disabled="true">Buy Me a Beer</span>}
+          ? <a class="btn beer-btn" href={TIP_URL || tipLink(5)} target="_blank" rel="noopener" data-track="tip_click" data-track-link_area="callout">Say Thanks With a Beer</a>
+          : <span class="btn beer-btn is-off" aria-disabled="true">Say Thanks With a Beer</span>}
       </div>
       {!TIPS_ON && <p class="beer-soon">Tip jar opens soon.</p>}
     </div>
