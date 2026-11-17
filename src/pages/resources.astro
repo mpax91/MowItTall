@@ -5,7 +5,7 @@
 // Old in-page anchors (#seedwatch, #ops-overseed, #water-h…) are forwarded to the new dedicated pages.
 import Base from '../layouts/Base.astro';
 import PixelIcon from '../components/PixelIcon.astro';
-import { TOOLS, TOOL_CATS, toolsIn } from '../data/tools.js';
+import { TOOLS, TOOL_CATS, TOOL_MENU, toolsIn } from '../data/tools.js';
 import { TOOL_ICONS } from '../data/toolIcons.js';
 
 const site = 'https://mowittall.com';
@@ -33,7 +33,7 @@ const cats = TOOL_CATS.map((c) => { const tools = toolsIn(c.id); return { ...c, 
           <span class="tg-select">
             <select data-tg-select>
               <option value="">Show me everything</option>
-              {cats.map((c) => <option value={c.id} data-name={c.name}>{c.ask}</option>)}
+              {TOOL_MENU.map((m) => <option value={m.id} data-name={m.name} data-cats={m.cats.join(' ')}>{m.ask}</option>)}
             </select>
             <svg viewBox="0 0 10 6" width="14" height="9" aria-hidden="true" shape-rendering="crispEdges"><path fill="currentColor" d="M0 0h2v1h1v1h1v1h2V2h1V1h1V0h2v2H9v1H8v1H7v1H6v1H4V5H3V4H2V3H1V2H0z" /></svg>
           </span>
@@ -110,7 +110,13 @@ const cats = TOOL_CATS.map((c) => { const tools = toolsIn(c.id); return { ...c, 
   const find = root.querySelector<HTMLInputElement>('[data-tg-find]')!;
   const none = root.querySelector<HTMLElement>('[data-tg-none]')!;
   const status = root.querySelector<HTMLElement>('[data-tg-status]')!;
-  let cat = '';
+  let cat = '';          // menu choice (or a single section id from a #cat- link)
+  let cats: string[] = [];
+  const pick = (v: string) => {
+    const o = [...select.options].find((x) => x.value === v && v);
+    cat = o ? v : secs.some((x) => x.dataset.tgSec === v) ? v : '';
+    cats = o ? o.dataset.cats!.split(' ') : cat ? [cat] : [];
+  };
 
   const expand = (sec: HTMLElement, on: boolean) => {
     sec.classList.toggle('is-open', on);
@@ -124,7 +130,7 @@ const cats = TOOL_CATS.map((c) => { const tools = toolsIn(c.id); return { ...c, 
     let shown = 0;
     root.classList.toggle('is-filtered', !!(cat || q));
     secs.forEach((sec) => {
-      const mine = !cat || sec.dataset.tgSec === cat;
+      const mine = !cat || cats.includes(sec.dataset.tgSec!);
       let n = 0;
       sec.querySelectorAll<HTMLElement>('[data-tg-item]').forEach((li) => {
         const hit = !words.length || words.every((w) => li.dataset.keys!.includes(w));
@@ -136,26 +142,26 @@ const cats = TOOL_CATS.map((c) => { const tools = toolsIn(c.id); return { ...c, 
       shown += n;
     });
     none.hidden = shown > 0;
-    select.value = cat;
+    select.value = [...select.options].some((o) => o.value === cat) ? cat : '';
     status.hidden = !(cat || q);
     const tools = `${shown} tool${shown === 1 ? '' : 's'}`;
-    root.querySelector('[data-tg-status-text]')!.textContent = cat ? `${tools} in ${select.selectedOptions[0]?.dataset.name}.` : `${tools} matching “${find.value.trim()}”.`;
+    root.querySelector('[data-tg-status-text]')!.textContent = cat ? `${tools} in ${select.selectedOptions[0]?.dataset.name || secs.find((x) => x.dataset.tgSec === cat)?.querySelector('h2')?.textContent}.` : `${tools} matching “${find.value.trim()}”.`;
   }
 
   select.addEventListener('change', () => {
-    cat = select.value;
+    pick(select.value);
     find.value = '';
     history.replaceState(null, '', cat ? `#cat-${cat}` : location.pathname);
     render();
     (window as any).mitTrack?.('tool_choice', { tool_name: 'resources_filter', choice: cat || 'all' });
-    if (cat) root.querySelector(`#cat-${cat}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    if (cat) root.querySelector(`#cat-${cats[0]}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   });
   root.querySelector('[data-tg-form]')!.addEventListener('submit', (e) => { e.preventDefault(); find.blur(); });
-  root.querySelector('[data-tg-reset]')!.addEventListener('click', () => { cat = ''; find.value = ''; history.replaceState(null, '', location.pathname); render(); });
+  root.querySelector('[data-tg-reset]')!.addEventListener('click', () => { pick(''); find.value = ''; history.replaceState(null, '', location.pathname); render(); });
 
   let t = 0;
   find.addEventListener('input', () => {
-    cat = '';
+    pick('');
     render();
     clearTimeout(t);
     t = window.setTimeout(() => { if (find.value.trim().length > 1) (window as any).mitTrack?.('search', { search_term: find.value.trim().slice(0, 60), search_location: 'resources' }); }, 1200);
@@ -169,5 +175,9 @@ const cats = TOOL_CATS.map((c) => { const tools = toolsIn(c.id); return { ...c, 
   }));
 
   // #cat-seed etc. opens that section filtered (handy for links from emails and posts)
-  if (h.startsWith('cat-') && [...select.options].some((o) => o.value === h.slice(4))) { cat = h.slice(4); render(); }
+  if (h.startsWith('cat-')) { pick(h.slice(4)); if (cat) render(); }
+  window.addEventListener('hashchange', () => {
+    const v = decodeURIComponent(location.hash.slice(1));
+    if (v.startsWith('cat-')) { pick(v.slice(4)); find.value = ''; render(); }
+  });
 </script>

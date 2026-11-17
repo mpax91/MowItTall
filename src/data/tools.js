@@ -96,6 +96,16 @@ export const TOOLS = [
   { id: 'training', cat: 'fun', name: 'Off-Season Drills', line: 'Winter training for the lawn obsessed.', href: '/blog/lawn-off-season-training/#tool', tag: 'Fun', keys: 'winter off season' },
 ];
 
+// The hub's "What do you need help with?" menu: five plain choices (Mike: the full section list was
+// too many options). Each one shows one or more sections. "Show me everything" is the default.
+export const TOOL_MENU = [
+  { id: 'start', ask: 'I don’t know where to start', name: 'Start Here', cats: ['start'] },
+  { id: 'now', ask: 'What should I do this week?', name: 'Right Now', cats: ['now'] },
+  { id: 'problem', ask: 'My lawn has a problem', name: 'Problems and Weeds', cats: ['fix', 'weeds'] },
+  { id: 'grow', ask: 'Seeding, feeding or mowing', name: 'Seed, Feed and Mow', cats: ['seed', 'feed', 'job', 'mow', 'gear'] },
+  { id: 'crew', ask: 'I have a landscaper', name: 'Got a Guy?', cats: ['crew'] },
+];
+
 export const toolsIn = (cat) => TOOLS.filter((t) => t.cat === cat);
 export const toolById = (id) => TOOLS.find((t) => t.id === id);
 // Tools related to one tool: same section first, then a few staples.
