@@ -36,7 +36,17 @@ export function initMail({ root, api }) {
     ({ overview, emails, tests, inbox, people, year, settings })[s]();
   }
   // Called when the Email tab opens.
-  return { load() { if (!loaded) { loaded = true; status(); show('overview'); } } };
+  const load = () => { if (!loaded) { loaded = true; status(); show('overview'); } };
+  // openPreview: deep links from the review sheet, /admin/#mail=<key>&track=robot&level=2 (job/month/prep keys get this year).
+  const openPreview = (k, o = {}) => {
+    load();
+    const y = new Date().getFullYear();
+    if (/^(job|month|prep):[^:]+$/.test(k)) k = `${k}:${y}`;
+    else if (/^lib:[^:]+$/.test(k)) k = `${k}:y1`;
+    else if (k === 'y-review') k = `y-review:${y}`;
+    preview(k, o);
+  };
+  return { load, openPreview };
 
   /* ---------------------------------------------------------------- status bar */
   async function status() {

@@ -266,7 +266,9 @@ const TABS = [
 
       /* ---------- tabs */
       let mail: any = null;
-      let tab = (location.hash.slice(1) || 'week');
+      // Deep link to one email preview: #mail=<key>&track=diy|crew|robot&level=0-3 (used by the review sheet)
+      const deep = location.hash.startsWith('#mail=') ? new URLSearchParams(location.hash.slice(1)) : null;
+      let tab = deep ? 'members' : (location.hash.slice(1) || 'week');
       function show(t: string) {
         tab = root!.querySelector(`[data-panel="${t}"]`) ? t : 'week';
         root!.querySelectorAll<HTMLElement>('[data-panel]').forEach((p) => (p.hidden = p.dataset.panel !== tab));
@@ -478,6 +480,7 @@ const TABS = [
           mail = initMail({ root, api });
           renderSocial(); await loadOverview(); show(tab);
           initHQ({ root, api, show });
+          if (deep) mail.openPreview(deep.get('mail') || '', { track: deep.get('track') || undefined, level: deep.has('level') ? Number(deep.get('level')) : 1 });
         } catch (err: any) { $('[data-msg]').textContent = err.message; }
       }
       $('[data-key-form]').addEventListener('submit', (e) => { e.preventDefault(); key = $<HTMLInputElement>('[data-key]').value.trim(); start(); });
