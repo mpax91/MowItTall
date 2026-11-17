@@ -7,6 +7,9 @@
 import { buildPlan, fmtDate } from '../data/gamePlan.js';
 import { yardTotal } from './yard.js';
 import { getPlace, setZip } from './place.js';
+import { levelHours } from './agenda.js';
+
+const REACT_MS = 2400; // how long a reaction stays up before moving on (tap to skip)
 
 const STEPS = [
   { id: 'zip', q: 'Where’s your lawn?', hint: 'Your ZIP code. It times everything for your area.', type: 'zip' },
@@ -21,7 +24,7 @@ const STEPS = [
     ],
   },
   {
-    id: 'effort', q: 'How much effort are we talking?', hint: 'Pick the real answer, not the New Year’s resolution answer.', type: 'one',
+    id: 'effort', q: 'How much time will you give your lawn?', hint: 'Not counting mowing. Pick the real answer, not the New Year’s resolution answer.', hours: true, type: 'one',
     options: [
       { v: 0, t: 'Couch Potato', s: 'I will mow. That’s the deal. Don’t make it weird.', r: 'Honest. I can work with honest.' },
       { v: 1, t: 'Good Enough Guy', s: 'A Saturday morning here and there. Nice lawn, no obsession.', r: 'Where most great lawns live.' },
@@ -78,7 +81,7 @@ export function initQuiz(root) {
   const $ = (s) => root.querySelector(s);
   const card = $('[data-card]');
   const result = $('[data-result]');
-  let step = 0, busy = false;
+  let step = 0, timer = 0;
   let answers = {};
   try { answers = JSON.parse(localStorage.getItem(KEY)) || {}; } catch { answers = {}; }
 
@@ -124,11 +127,12 @@ export function initQuiz(root) {
     body.innerHTML = `<div class="quiz-options" role="group" aria-label="${esc(s.q)}">${options
       .map((o) => {
         const on = multi ? (current || []).includes(o.v) : current === o.v;
-        return `<button type="button" class="quiz-opt" data-v="${o.v}" aria-pressed="${on}"><strong>${o.t}</strong><span>${o.s}</span></button>`;
+        const time = s.hours ? `<em class="quiz-time">About ${levelHours(o.v)} hours a year</em>` : '';
+        return `<button type="button" class="quiz-opt" data-v="${o.v}" aria-pressed="${on}"><strong>${o.t}</strong>${time}<span>${o.s}</span></button>`;
       }).join('')}</div>`;
+    const group = body.querySelector('.quiz-options');
     body.querySelectorAll('.quiz-opt').forEach((b) => {
       b.addEventListener('click', () => {
-        if (busy) return;
         const opt = options.find((o) => String(o.v) === b.dataset.v);
         if (multi) {
           const set = new Set(answers[s.id] || []);
@@ -143,10 +147,23 @@ export function initQuiz(root) {
         body.querySelectorAll('.quiz-opt').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
         save();
         next.disabled = false;
-        // The reaction line, then on to the next question.
-        if (opt.r) { hint.textContent = opt.r; hint.classList.add('is-react'); }
-        busy = true;
-        setTimeout(() => { busy = false; go(1); }, opt.r ? 900 : 200);
+        clearTimeout(timer);
+        group.querySelector('.quiz-react')?.remove();
+        if (!opt.r) { timer = setTimeout(() => go(1), 250); return; }
+        // The reaction: a speech bubble right under the pick (where the thumb and eyes already are),
+        // the other answers fade, and a bar shows when it moves on. Tap the bubble or Next to skip.
+        group.classList.add('is-picked');
+        b.classList.remove('is-pop'); void b.offsetWidth; b.classList.add('is-pop');
+        const bubble = document.createElement('button');
+        bubble.type = 'button';
+        bubble.className = 'quiz-react';
+        bubble.setAttribute('aria-live', 'polite');
+        bubble.innerHTML = `<span class="quiz-react-t">${esc(opt.r)}</span><span class="quiz-react-go">Next question <b aria-hidden="true">→</b></span><i style="animation-duration:${REACT_MS}ms"></i>`;
+        bubble.addEventListener('click', () => { clearTimeout(timer); go(1); });
+        b.after(bubble);
+        bubble.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        next.textContent = 'Next →';
+        timer = setTimeout(() => go(1), REACT_MS);
       });
     });
     if (multi) next.textContent = (current || []).length ? 'Next' : 'Nothing. I’m Perfect.';
@@ -154,6 +171,7 @@ export function initQuiz(root) {
   }
 
   function go(d) {
+    clearTimeout(timer);
     if (d > 0 && STEPS[step]?.type === 'zip' && answers.zip?.length === 5 && answers.zip !== getPlace().zip) setZip(answers.zip);
     if (d > 0 && step === 0) track('quiz_start', { quiz_name: 'lawn_plan' });
     if (d > 0 && STEPS[step]) {

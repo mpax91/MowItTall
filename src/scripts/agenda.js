@@ -153,6 +153,10 @@ export function levelShort(level) {
   const hrs = Math.max(1, Math.round(list.reduce((s, t) => s + (t.minutes || 0), 0) / 60));
   return `${plural(list.length, 'job')} · +${plural(hrs, 'hr')}`;
 }
+// extra hours a year (besides mowing) for an effort level, as a number
+export function levelHours(level) {
+  return Math.max(1, Math.round(tasksFor(level).reduce((s, t) => s + (t.minutes || 0), 0) / 60));
+}
 export function levelSummary(level) {
   const list = tasksFor(level);
   const mins = list.reduce((s, t) => s + (t.minutes || 0), 0);
