@@ -110,20 +110,20 @@ export const tasksFor = (level) => TASKS.filter((t) => t.level <= level);
 export const BASE_SQFT = 5000;
 const COST = {
   blade: { c: [0, 25] },                     // free with a file, ~$25 at a shop
-  crabgrass: { c: [30, 50], scale: true },   // 1 bag of preventer
-  'spring-feed': { c: [35, 60], scale: true },
+  crabgrass: { c: [25, 50], scale: true },   // 1 bag of preventer
+  'spring-feed': { c: [50, 75], scale: true },
   'spot-weeds': { c: [12, 25] },             // ready-to-spray bottle
-  grubs: { c: [30, 50], scale: true },       // preventive grub bag
-  'july4-feed': { c: [20, 35], scale: true },// half dose
+  grubs: { c: [25, 50], scale: true },       // preventive grub bag
+  'july4-feed': { c: [25, 50], scale: true },// half dose
   'soil-test': { c: [20, 30] },
-  aerate: { c: [80, 120] },                  // half-day core aerator rental
-  seed: { c: [40, 80], scale: true },        // thin-spot overseeding
+  aerate: { c: [100, 250] },                 // rent one, or hire it out
+  seed: { c: [25, 75], scale: true },        // thin-spot overseeding
   'fall-feed': { c: [50, 75], scale: true },  // the big one: a fuller bag
   'fall-weeds': { c: [15, 30], scale: true },
-  'columbus-feed': { c: [35, 60], scale: true },
-  lime: { c: [25, 40], scale: true },        // ~3 bags pelletized
-  'thanksgiving-feed': { c: [35, 60], scale: true },
-  winter: { c: [15, 30] },                   // oil, spark plug, fuel stabilizer
+  'columbus-feed': { c: [50, 75], scale: true },
+  lime: { c: [25, 50], scale: true },        // ~3 bags pelletized
+  'thanksgiving-feed': { c: [50, 75], scale: true },
+  winter: { c: [0, 15] },                    // free, or ~$15 if you use fuel stabilizer
 };
 const r5 = (n) => Math.round(n / 5) * 5;
 export function taskCost(t, sqft = BASE_SQFT) {
@@ -168,7 +168,7 @@ function taskCard(t, y, today, sqft) {
   const s = today ? status(t, y, today) : null;
   const more = MORE[t.id];
   const fm = (n) => (n >= 60 && n % 60 === 0 ? `${n / 60} hr` : `${n} min`);
-  const mins = t.minRange ? ` · ${t.minRange[0]}–${t.minRange[1]} min` : t.minutes ? ` · ${fm(t.minutes)}` : '';
+  const mins = t.minRange ? ` · ~${t.minRange[0]}–${t.minRange[1]} min` : t.minutes ? ` · ~${fm(t.minutes)}` : '';
   const cost = taskCost(t, sqft);
   const price = cost ? ` · ~${money(cost)}` : '';
   return `<details class="ag-ev is-${k}${s ? ` is-${s.state}` : ''}" id="t-${t.id}-${y}" data-task="${t.id}">

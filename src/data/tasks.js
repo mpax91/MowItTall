@@ -27,7 +27,7 @@ export const TASKS = [
     title: 'Rake out dead patches',
     short: 'A quick, firm rake wakes the lawn up and shows you where it’s thin.',
     why: 'Wait until the ground is dry enough that you don’t leave footprints.',
-    start: [3, 20], end: [4, 15], level: 2, minutes: 45,
+    start: [3, 20], end: [4, 15], level: 2, minutes: 60,
   },
   {
     id: 'crabgrass',
@@ -116,6 +116,7 @@ export const TASKS = [
     title: 'Fall weed control',
     short: 'Weeds pull spray down to their roots in fall. It works better now than spring.',
     why: 'One pass on a mild day takes out most of what bugged you all summer.',
+    tip: 'Seeded this fall? Skip those spots. Weed killer can hurt new grass, so wait until it has been mowed three or four times.',
     start: [9, 20], end: [10, 20], level: 2, minutes: 30, when: ['weeds'],
   },
   {
@@ -147,8 +148,8 @@ export const TASKS = [
     id: 'thanksgiving-feed',
     brief: 'One last meal before the freeze.',
     title: 'Thanksgiving feeding (Lawn Psycho only)',
-    short: 'One last feeding after the grass stops growing but is still green.',
-    why: 'Do it before the ground freezes. Then put the spreader away until spring.',
+    short: 'One last feeding after the grass stops growing but is still green. Think of it as a winterizer.',
+    why: 'The grass tucks it away for winter, so it wakes up earlier and greener than most of the street in spring. Do it before the ground freezes, then put the spreader away.',
     start: [11, 15], end: [11, 30], level: 3, minutes: 30, holiday: true,
   },
   {
@@ -157,7 +158,7 @@ export const TASKS = [
     title: 'Last mow of the year',
     short: 'Drop the deck one notch to about 3 inches for the final cut.',
     why: 'Shorter grass going into winter is less likely to mat down and get moldy.',
-    start: [11, 1], end: [11, 30], level: 1, minutes: 45,
+    start: [11, 1], end: [11, 30], level: 1, minutes: 60,
   },
   {
     id: 'winter',
