@@ -39,18 +39,20 @@ function diamond(): Band[] {
   return out;
 }
 function spiral(): Band[] {
-  // concentric square rings mowed clockwise: left side moves away (light), right side toward you (dark)
-  const i = 15, out: Band[] = [];
-  let k = 0;
-  for (; H - 2 * k * i >= 2 * i; k++) {
-    const x0 = k * i, y0 = k * i, x1 = W - k * i, y1 = H - k * i;
-    out.push({ d: `M${x0} ${y0}L${x1} ${y0}L${x1 - i} ${y0 + i}L${x0 + i} ${y0 + i}z`, fill: MD });
-    out.push({ d: `M${x1} ${y0}L${x1} ${y1}L${x1 - i} ${y1 - i}L${x1 - i} ${y0 + i}z`, fill: DK });
-    out.push({ d: `M${x1} ${y1}L${x0} ${y1}L${x0 + i} ${y1 - i}L${x1 - i} ${y1 - i}z`, fill: DD });
-    out.push({ d: `M${x0} ${y1}L${x0} ${y0}L${x0 + i} ${y0 + i}L${x0 + i} ${y1 - i}z`, fill: LT });
+  // A round spiral like Mike's photo: one light band (half a lap wide) winding out from the center over a dark lawn.
+  // Archimedean: radius grows by one lap width (p) per turn. One path per turn so the draw-in animation spirals out.
+  const p = 30, cx = W / 2, cy = H / 2, out: Band[] = [];
+  const turns = Math.ceil((Math.hypot(cx, cy) + p) / p);
+  const pt = (th: number, off: number) => {
+    const r = (p * th) / (2 * Math.PI) + off;
+    return `${(cx + r * Math.cos(th)).toFixed(1)} ${(cy + r * Math.sin(th)).toFixed(1)}`;
+  };
+  for (let t = 0; t < turns; t++) {
+    // each turn overlaps the next a hair (0.03 rad) so no seam shows where they meet
+    const n = 30 + t * 14, a0 = Math.max(0, t * 2 * Math.PI - 0.03), span = 2 * Math.PI + 0.06, ths = Array.from({ length: n + 1 }, (_, j) => a0 + (span * j) / n);
+    const edge = [...ths.map((th) => pt(th, 0)), ...ths.reverse().map((th) => pt(th, p / 2))];
+    out.push({ d: `M${edge.join('L')}z`, fill: LT });
   }
-  // the last strip down the middle
-  out.push({ d: `M${k * i} ${k * i}H${W - k * i}V${H - k * i}H${k * i}z`, fill: MD });
   return out;
 }
 
@@ -67,9 +69,9 @@ const PATTERNS = [
   { k: 'diamond', name: 'Diamond', bands: diamond(), diff: 4, time: 'About twice as long', word: 'COUNTRY CLUB',
     take: 'A checkerboard turned 45 degrees. Two diagonal passes that cross. This is the one people stop their car for.',
     steps: ['Edge laps first.', 'Mow diagonal stripes corner to corner.', 'Mow the whole lawn again on the opposite diagonal.', 'Use a fixed point (a tree, a light post) for both first stripes so they cross square.', 'Worth it before a party. Not worth it every week.'] },
-  { k: 'spiral', name: 'Spiral', bands: spiral(), diff: 3, time: 'Normal mow, more turning', word: 'THE BOX',
-    take: 'Start on the outside and work your way in, lap after lap. Each side of the box catches the light differently, so it looks framed, like a picture. Best on square-ish lawns.',
-    steps: ['Start at the outside edge and mow a full lap.', 'Keep going around, each lap just inside the last, overlapping a few inches.', 'Make clean square corners. Slow down and pivot instead of swinging wide.', 'Keep going until you hit the middle.', 'Mow your way out across the box once to get the mower out, or mow the last lap backwards.'] },
+  { k: 'spiral', name: 'Spiral', bands: spiral(), diff: 3, time: 'Normal mow, more turning', word: 'THE BULLSEYE',
+    take: 'Start on the outside and work your way in, one long lap that keeps getting tighter. You get light and dark rings, like a giant target. Works on almost any lawn shape.',
+    steps: ['Start at the outside edge and mow a full lap.', 'Keep going around, each lap just inside the last, overlapping a few inches.', 'Keep the curve smooth and steady. No sharp turns, no stopping.', 'Keep going until you hit the middle. The last few laps get tight, so slow down.', 'Mow straight out once to get the mower out, or mow the last lap backwards.'] },
 ];
 ---
 <section class="window tool sp" id={id} aria-labelledby={`${id}-h`} data-stripe-picker>
@@ -86,8 +88,8 @@ const PATTERNS = [
         <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`${p.name} stripe pattern`}>
           <defs><clipPath id={`${id}-clip-${p.k}`}><rect width={W} height={H} rx="6" /></clipPath></defs>
           <g clip-path={`url(#${id}-clip-${p.k})`}>
-            <rect width={W} height={H} fill={MD} />
-            {p.bands.map((b, j) => <path d={b.d} fill={b.fill} stroke={p.k === 'spiral' ? 'rgba(10,36,20,0.18)' : undefined} stroke-width="0.6" style={`--d:${Math.min(j, 60) * 18}ms`} />)}
+            <rect width={W} height={H} fill={p.k === 'spiral' ? DK : MD} />
+            {p.bands.map((b, j) => <path d={b.d} fill={b.fill} style={`--d:${Math.min(j, 60) * 18}ms`} />)}
           </g>
           <rect x="1.5" y="1.5" width={W - 3} height={H - 3} rx="6" fill="none" stroke="#0a2414" stroke-width="3" />
         </svg>

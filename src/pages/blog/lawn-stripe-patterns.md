@@ -32,7 +32,7 @@ People ask me about my stripes more than anything else. At parties. At the hardw
 
 1. **Diamond.** Two diagonal passes crossing. People pull over. This is the country club look, and it takes about twice as long, which is why you save it for parties.
 2. **Checkerboard.** The ballpark. Straight stripes one way, then the whole lawn again the other way. Twice the work, four times the compliments.
-3. **The spiral.** Start at the edge, keep going around, end in the middle. It looks like a framed painting. Your neighbors will assume you have a plan. You do not. You are just going in circles.
+3. **The spiral.** Start at the edge, keep going around, end in the middle. It looks like a giant target. Your neighbors will assume you have a plan. You do not. You are just going in circles.
 4. **Diagonal.** Straight stripes turned 45 degrees. Looks fancier than it is. Perfect for square lawns.
 5. **Straight.** Last on the list, first in my heart. The classic. If you only ever mow one pattern, mow this one, pointed at your front door.
 
