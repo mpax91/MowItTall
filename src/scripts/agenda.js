@@ -4,10 +4,11 @@
 import { TASKS, MONTHS, MONTHS_LONG, windowText } from '../data/tasks.js';
 
 export const LEVELS = [
-  { name: 'Couch Potato', note: 'The bare minimum' },
-  { name: 'Good Enough Guy', note: 'A little effort' },
-  { name: 'Curb Appeal Hunter', note: 'Nicest on the street' },
-  { name: 'Lawn Psycho', note: 'Everything. All of it.' },
+  // react: what the neighbors will say (Mike's lines, Nov 16)
+  { name: 'Couch Potato', note: 'The bare minimum', react: 'What changed back here? New trees or something?' },
+  { name: 'Good Enough Guy', note: 'A little effort', react: 'Did you get a new lawn mower?' },
+  { name: 'Curb Appeal Hunter', note: 'Nicest on the street', react: 'Wow. Can I get the name of your landscaping company?' },
+  { name: 'Lawn Psycho', note: 'Everything. All of it.', react: 'You got a grounds crew working overtime over here?' },
 ];
 
 // what kind of job each task is (color + legend)

@@ -30,7 +30,7 @@ const description =
       <div class="ag-cal" data-cal hidden>
         <div class="ag-cal-head">
           <h2 class="ag-cal-title" data-cal-title tabindex="-1">Your Lawn Year</h2>
-          <p class="ag-cal-sub" data-cal-sub></p>
+          <p class="ag-react"><span>What the neighbors will say</span><q data-cal-sub></q></p>
         </div>
         <nav class="ag-pills" aria-label="Jump to a month">
           <ul data-pills>
@@ -50,7 +50,7 @@ const description =
 </Base>
 
 <script>
-  import { agendaHTML, rollingMonths, icsFor, levelSummary, levelCost, money, BASE_SQFT, LEVELS } from '../scripts/agenda.js';
+  import { agendaHTML, rollingMonths, icsFor, levelCost, money, BASE_SQFT, LEVELS } from '../scripts/agenda.js';
 
   const root = document.querySelector('[data-agenda-root]');
   const cal = root.querySelector('[data-cal]');
@@ -108,7 +108,7 @@ const description =
     buttons.forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.level) === level)));
     listEl.innerHTML = agendaHTML({ months, today, level, sqft });
     titleEl.textContent = `Your Lawn Year: ${LEVELS[level].name}`;
-    subEl.textContent = `${levelSummary(level).replace(/^./, (c) => c.toUpperCase())} on top of mowing · about ${money(levelCost(level, sqft))} in supplies.`;
+    subEl.textContent = LEVELS[level].react;
     nudge.innerHTML = nudgeHTML();
     cal.hidden = false;
     if (scroll) {

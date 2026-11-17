@@ -2243,7 +2243,9 @@ main > section.ag-wrap { padding-top: 6px; }
 .ag-cal { scroll-margin-top: 8px; }
 .ag-cal-head { margin: 4px 0 10px; }
 .ag-cal-title { margin: 0; font-size: 1.5rem; outline: none; }
-.ag-cal-sub { margin: 4px 0 0; color: var(--sun); font-size: 0.95rem; }
+.ag-react { margin: 10px 0 0; padding: 10px 14px 12px; background: var(--paper); color: var(--ink); border: 2px solid var(--win-edge); border-radius: 14px 14px 14px 4px; box-shadow: 0 3px 0 rgba(5, 20, 10, 0.35); }
+.ag-react span { display: block; font-size: 0.72rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: #4a6552; }
+.ag-react q { display: block; margin-top: 2px; font-family: var(--display); font-weight: 750; font-size: 1.12rem; line-height: 1.25; }
 /* month pills: one sideways row; the fade + peeking pill shows there's more */
 .ag-pills { position: relative; margin: 0 calc(-1 * var(--gutter)) 14px; }
 .ag-pills::after { content: ''; position: absolute; top: 0; right: 0; bottom: 6px; width: 36px; pointer-events: none; background: linear-gradient(90deg, rgba(23, 61, 39, 0), #173d27 85%); }
