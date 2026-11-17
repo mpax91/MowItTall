@@ -37,7 +37,7 @@ const MORE = {
   'thanksgiving-feed': ['/blog/holiday-lawn-fertilizer-schedule/', 'The holiday schedule'],
   'soil-test': ['/blog/lawn-soil-test/', 'How to do a soil test'],
   lime: ['/blog/lawn-soil-test/', 'Read your soil test'],
-  seed: ['/lawn-101/#grass', 'Pick your grass seed'],
+  seed: ['/guides/when-to-overseed-lawn/', 'When and how to seed'],
   'fall-weeds': ['/blog/fall-kill-weeds-or-plant-seed/', 'Weeds or seed first?'],
   'spot-weeds': ['/weeds/', 'Name that weed'],
   leaves: ['/blog/you-never-needed-a-leaf-blower/', 'Mulch, don’t blow'],
@@ -69,7 +69,7 @@ function holidayDate(id, y) {
     'thanksgiving-feed': nth(y, 10, 4, 4),
   }[id] || null;
 }
-const placeOf = (t, y) => holidayDate(t.id, y) || new Date(y, t.start[0] - 1, t.start[1]);
+export const placeOf = (t, y) => holidayDate(t.id, y) || new Date(y, t.start[0] - 1, t.start[1]);
 
 // one-line mood for each month header (Claude's copy; Mike to review)
 const MOOD = ['Asleep', 'Still asleep', 'Waking up', 'Go time', 'Growing fast', 'Heating up', 'Survival mode', 'Hang in there', 'Prime time', 'Peak season', 'Winding down', 'Off season'];

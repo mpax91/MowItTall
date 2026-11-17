@@ -592,7 +592,39 @@ main.nb-page > section.nb-rules { padding: 26px 0 0; }
 /* month pages */
 .mo-when { display: inline-block; font-size: 0.82rem; font-weight: 700; color: var(--sun); }
 .prose .mo-skip li::marker { content: '✕  '; color: #ff8d84; }
-.mo-nav { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; margin: 28px 0 0; }
+.mo-nav { margin: 28px 0 0; }
+.mo-pn { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.mo-step { display: flex; flex-direction: column; gap: 2px; padding: 12px 14px; border-radius: 12px; background: var(--paper); color: var(--ink) !important; text-decoration: none !important; border: 3px solid #0a2414; box-shadow: 0 4px 0 #0a2414; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+.mo-step:active { transform: translateY(2px); box-shadow: 0 2px 0 #0a2414; }
+.mo-step span { font-size: 0.75rem; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; color: #2f6e47; }
+.mo-step b { font: 800 1.12rem/1.2 var(--display, inherit); white-space: nowrap; }
+.mo-next { text-align: right; }
+.mo-all { display: block; margin: 14px auto 0; text-align: center; font-weight: 700; color: var(--paper); }
+.prose .mo-note { padding: 12px 14px; border-left: 4px solid var(--sun); background: rgba(10, 36, 20, 0.45); border-radius: 0 10px 10px 0; }
+.prose .mo-jobs em { display: block; margin-top: 4px; font-style: normal; color: var(--sun); font-size: 0.95rem; }
+/* typical soil for the month (MonthSoil) */
+.msoil { padding: 20px 18px; }
+.msoil h2 { margin: 0 0 4px; font-size: 1.4rem; }
+.msoil-sub { margin: 0 0 10px; color: #e3efdc; font-size: 0.95rem; }
+.msoil-where { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 8px; color: #cbbca4; }
+.msoil-thermo { position: relative; padding-top: 48px; margin: 6px 0 4px; }
+.msoil-band { position: absolute; top: 46px; height: 22px; border: 2px dashed rgba(255, 255, 255, 0.85); border-radius: 8px; pointer-events: none; }
+.msoil-dot { position: absolute; top: 0; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; font-size: 0.75rem; line-height: 1.1; }
+.msoil-dot b { padding: 2px 7px; border-radius: 6px; background: #f1f6ec; color: #12301d; font-size: 0.95rem; border: 2px solid #0a2414; }
+.msoil-dot i { font-style: normal; color: #e3efdc; margin-top: 2px; }
+.msoil-dot::after { content: ''; width: 3px; height: 12px; background: #f1f6ec; margin-top: 1px; }
+.msoil-start b { background: #f6c945; }
+.msoil-end.is-below { top: 62px; flex-direction: column-reverse; }
+.msoil-thermo.has-below { padding-bottom: 46px; }
+.msoil-thermo.has-below .thermo-ticks { visibility: hidden; height: 0; margin: 0; }
+.msoil-line { margin: 8px 0 6px; font-weight: 700; }
+.msoil-stats { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 0 0 10px; color: #e3efdc; }
+.msoil-key { list-style: none; margin: 0 0 10px; padding: 0; font-size: 0.88rem; color: #e3efdc; }
+.msoil-key li { display: flex; gap: 8px; margin: 0 0 4px; padding: 0; }
+.msoil-key .zone-dot { margin-top: 3px; }
+.msoil-fine { margin: 0; font-size: 0.85rem; color: #cbbca4; }
+.msoil-fine a { color: inherit; }
+.msoil.is-loading .msoil-thermo, .msoil.is-loading .msoil-stats { opacity: 0.5; }
 .mo-index { margin: 26px 0 0; }
 .mo-index h2 { font-size: 1.35rem; margin-bottom: 10px; }
 .mo-index ul { list-style: none; display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 0; }

@@ -134,7 +134,7 @@ const changes = [
   {
     icon: icons.seed,
     title: 'Seed in fall, not spring',
-    body: 'Late August through September is when new grass does best around here.',
+    body: 'September is when new grass does best around here.',
     effort: 'One weekend',
   },
 ];

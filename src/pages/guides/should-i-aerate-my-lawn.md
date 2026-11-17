@@ -5,7 +5,7 @@ short: "Lawn Aeration"
 description: "Whether your lawn actually needs aeration, the best time to aerate cool-season grass, core vs. spike aerators, and how to do it yourself."
 seoTitle: "Should I Aerate My Lawn? When and How (Cool-Season)"
 seoDescription: "Aerate cool-season lawns in late summer or early fall, ideally right before overseeding. How to tell if you need it and how to do it."
-answer: "<b>Aerate in late August through September</b>, ideally right before you overseed. Use a core aerator (it pulls out plugs), not spikes. Most home lawns only need it every one to three years, mainly if the soil is hard, gets heavy traffic or is clay."
+answer: "<b>Aerate in September</b>, right before you overseed. Use a core aerator (it pulls out plugs), not spikes. Most home lawns only need it every one to three years, mainly if the soil is hard, gets heavy traffic or is clay."
 date: 2026-11-15
 minutes: 3
 topics: [seeding, soil]
@@ -40,7 +40,7 @@ None of these? Skip it this year.
 
 ## When
 
-- **Best:** late August through September, right before overseeding.
+- **Best:** September, right before overseeding.
 - **OK:** early spring, but it can break up a crabgrass preventer barrier. Aerate first, then apply the preventer.
 - **No:** summer heat, frozen ground or soggy soil.
 

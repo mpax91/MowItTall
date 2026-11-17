@@ -9,7 +9,7 @@ export const OPS = [
   {
     id: 'overseed', group: 'grow', label: 'Overseed the lawn', word: 'BEST IN SEPTEMBER', tone: 'yes',
     title: 'Overseeding, in order',
-    lede: 'Late August through September is the sweet spot. The order matters more than the products.',
+    lede: 'September is the sweet spot. The order matters more than the products.',
     sections: [{ h: 'The order', ordered: true, list: [
       '<b>Weeds first, if any.</b> Kill weeds 2 to 4 weeks before you seed. The weed killer label says how long to wait.',
       '<b>Mow low.</b> About 2 inches, and bag the clippings this one time. Seed needs to hit dirt, not land on a mattress.',

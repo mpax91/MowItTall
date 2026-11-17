@@ -120,6 +120,6 @@ Flip it over and read the label. This is where the truth lives.
 
 Most lawns around here are already a mix. When you overseed, match what you have, or grab a blend that fits your sun. Want stripes in the sun? Bluegrass and rye. Got sun out front and shade out back? A sun and shade mix lets each grass win its own spot.
 
-And when do you seed? [Late August through September](/lawn-101/). Fall is the best time all year to grow grass around here. Spring seed fights crabgrass and summer heat. Fall seed gets two cool seasons to grow up.
+And when do you seed? [September](/guides/when-to-overseed-lawn/). Fall is the best time all year to grow grass around here. [Spring seed](/blog/spring-seeding/) fights crabgrass and summer heat. Fall seed gets two cool seasons to grow up.
 
 **Bottom line:** pick the grass that fits your yard, not the bag with the prettiest picture. Then [take the quiz](/plan/) and I’ll tell you when to seed, feed and mow it.

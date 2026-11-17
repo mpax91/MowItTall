@@ -47,7 +47,7 @@ export function processArticle(html, self, { autolink = true } = {}) {
     let node = t;
     for (const r of rules) {
       if (added.length >= MAX_AUTO) break;
-      if (added.some((a) => a.to === r.to)) continue;
+      if (added.some((a) => norm(a.to) === norm(r.to))) continue;
       const v = node.nodeValue;
       const m = v.match(r.rx);
       if (!m) continue;

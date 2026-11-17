@@ -8,35 +8,35 @@ export function verdict({ soilNow, soilNext, highs, rainTotal, rainMax, now = ne
   const t = md(now);
   const hot = highs >= 86;
   let v;
-  if (t >= 815 && t <= 930) {
+  if (t >= 901 && t <= 930) {
     if (hot) v = { word: 'WAIT A FEW DAYS', tone: 'close', line: `It’s the right time of year, but highs near ${Math.round(highs)}°F will cook baby grass. Seed when this heat breaks.` };
     else if (soilNow > 78) v = { word: 'ALMOST', tone: 'close', line: `Soil is still ${Math.round(soilNow)}°F. A little warm. Another week and it’s perfect.` };
     else v = { word: 'YES. GO.', tone: 'yes', line: 'This is the best seeding window of the whole year. Warm soil, cooling air, fewer weeds. Get the seed down.' };
+  } else if (t >= 815 && t <= 831) {
+    v = !hot && highs > 0 && highs <= 82 && soilNow <= 78
+      ? { word: 'EARLY, BUT OK', tone: 'close', line: 'Heat broke early this year, so late August can work. Most years I wait for September, when the nights cool off and the lawn stops fighting summer.' }
+      : { word: 'HOLD FOR SEPTEMBER', tone: 'close', line: `August usually beats up new grass${hot ? ` (highs near ${Math.round(highs)}°F this week)` : ''}. Buy your seed, get a soil test, and seed in September.` };
   } else if (t >= 1001 && t <= 1015) {
     v = soilNow >= 50
       ? { word: 'LAST CALL', tone: 'close', line: `Soil is ${Math.round(soilNow)}°F, still warm enough. Go now with perennial rye or tall fescue. Bluegrass is too slow this late.` }
-      : { word: 'TOO LATE', tone: 'no', line: `Soil dropped to ${Math.round(soilNow)}°F. New grass won’t get tough enough before frost. Wait for spring, or dormant seed after Thanksgiving.` };
-  } else if ((t >= 1116 || t <= 228) && soilNext < 40) {
-    v = { word: 'DORMANT SEED IT?', tone: 'close', line: 'Too cold to sprout, which is the point. Seed thrown on frozen bare spots now just sits there and comes up in spring. Totally legit. Bit of a gamble.' };
-  } else if (t >= 1016 && t <= 1231) {
-    v = { word: 'NOT NOW', tone: 'no', line: `Too cold for new grass to get established (soil ${Math.round(soilNow)}°F), but not cold enough for dormant seeding yet. Wait until the ground stays cold, or until spring.` };
-  } else if (t <= 314) {
-    v = { word: 'NOT YET', tone: 'no', line: 'Ground’s still too cold. Dormant seeding works until the snow melts. Otherwise wait for spring.' };
+      : { word: 'TOO LATE', tone: 'no', line: `Soil dropped to ${Math.round(soilNow)}°F. New grass won’t get tough enough before frost. Skip seeding until next September.` };
+  } else if (t >= 1016 || t <= 314) {
+    v = { word: 'NOT NOW', tone: 'no', line: `Too cold for new grass to get established${soilNow ? ` (soil ${Math.round(soilNow)}°F)` : ''}. Skip seeding for now. Mark next September on the calendar.` };
   } else if (t <= 531) {
-    if (soilNow < 50) v = { word: 'NOT YET', tone: 'no', line: `Soil is ${Math.round(soilNow)}°F. Grass seed wants 50°F or warmer to sprout. Give it a week or two.` };
-    else v = { word: 'YES (FALL IS BETTER)', tone: 'close', line: 'Spring seeding works. The catch: the new grass has to survive summer, and crabgrass preventer stops seed too. Seed the bare spots and skip preventer there.' };
+    if (soilNow < 50) v = { word: 'NOT YET', tone: 'no', line: `Soil is ${Math.round(soilNow)}°F. Grass seed wants 50°F or warmer to sprout. And honestly? I’d wait for fall.` };
+    else v = { word: 'YOU CAN. I WOULDN’T.', tone: 'close', line: 'Spring seed sprouts right alongside crabgrass, then has to survive summer with baby roots. Crabgrass preventer blocks grass seed too. Fall is way better.' };
   } else if (t <= 814) {
     v = hot
-      ? { word: 'TOO HOT', tone: 'no', line: `Highs near ${Math.round(highs)}°F. Seed would need watering three times a day and still struggle. Mark late August on the calendar.` }
-      : { word: 'RISKY', tone: 'close', line: 'Summer seed fights heat and crabgrass. Small patches with a hose nearby? Fine. The real window opens around August 15.' };
+      ? { word: 'TOO HOT', tone: 'no', line: `Highs near ${Math.round(highs)}°F. Seed would need watering three times a day and still struggle. Mark September on the calendar.` }
+      : { word: 'RISKY', tone: 'close', line: 'Summer seed fights heat and crabgrass. Small patches with a hose nearby? Fine. The real window is September.' };
   }
   let rain;
   if (rainMax >= 1.5) rain = `Heads-up: a downpour (about ${rainMax.toFixed(1)} in in a day) is coming. Heavy rain can wash seed around. Seed after it, or rake it in well.`;
   else if (rainTotal >= 0.5) rain = `About ${rainTotal.toFixed(1)} in of rain is coming this week. Free watering. Seed right before it.`;
   else if (rainTotal >= 0.15) rain = `A little rain coming (${rainTotal.toFixed(2)} in). You’ll still need the hose.`;
   else rain = 'Dry week ahead. New seed would need a light watering once or twice a day.';
-  if (v.tone === 'no' || v.word.startsWith('DORMANT')) rain = '';
-  return { ...v, rain, go: v.tone === 'yes' || v.word === 'LAST CALL' || v.word.startsWith('YES') };
+  if (v.tone === 'no') rain = '';
+  return { ...v, rain, go: v.tone === 'yes' || v.word === 'LAST CALL' || v.word === 'EARLY, BUT OK' };
 }
 
 let seq = 0;
@@ -88,6 +88,6 @@ async function load(el, place) {
     if (mine !== seq) return;
     $('[data-sn-word]').textContent = 'CAN’T TELL';
     $('[data-sn-word]').dataset.tone = 'close';
-    $('[data-sn-line]').textContent = 'Couldn’t reach the weather data. Rule of thumb: late August through September is the best time to seed around here.';
+    $('[data-sn-line]').textContent = 'Couldn’t reach the weather data. Rule of thumb: September is the best time to seed around here.';
   }
 }

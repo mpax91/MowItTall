@@ -4,17 +4,18 @@ title: "When to Overseed Your Lawn in New York and the Northeast"
 short: "When to Overseed"
 description: "The best time to overseed a cool-season lawn in the Northeast, plus the step-by-step way to do it so the seed actually grows."
 seoTitle: "When to Overseed a Lawn in New York (and How)"
-seoDescription: "The best time to overseed in New York and the Northeast is mid-August to late September. Step-by-step: mow, loosen, seed, feed, water, wait."
-answer: "<b>Late August through September is the best time to overseed</b> in New York and the Northeast. Around Westchester, aim for the last two weeks of August through mid-September, and try to be done by early October. Spring works too, but it's a distant second."
+seoDescription: "The best time to overseed in New York and the Northeast is September. Why August is usually too hot, and the step-by-step: mow, loosen, seed, feed, water, wait."
+answer: "<b>September is the best time to overseed</b> in New York and the Northeast. Around Westchester, aim for Labor Day through mid-September, and be done by early October. Late August only works if the heat breaks early. Spring is possible, but I don't recommend it."
+updated: 2026-11-16
 date: 2026-11-15
 minutes: 4
 topics: [seeding]
 tools: [["/resources/can-i-seed-now/", "Can I seed now?"], ["/resources/lawn-calculator/", "How much seed do I need?"], ["/lawn-101/#grass", "Pick your grass seed"], ["/resources/can-i-seed-now/#seedwatch", "Is my seed working?"]]
 faq:
   - q: "Is October too late to overseed?"
-    a: "Early October is usually OK in the Lower Hudson Valley if you use fast grass like perennial ryegrass. By mid-October the soil is cooling and young grass may not be tough enough for winter. If you missed it, wait for next August or try spring."
+    a: "Early October is usually OK in the Lower Hudson Valley if you use fast grass like perennial ryegrass. By mid-October the soil is cooling and young grass may not be tough enough for winter. If you missed it, wait for next September."
   - q: "Can I overseed in the spring?"
-    a: "You can, but it's harder. Weeds sprout at the same time, summer heat hits young grass before its roots are deep, and most crabgrass preventers stop grass seed too. If you seed in spring, skip the regular crabgrass preventer."
+    a: "You can, but I don't recommend it. Crabgrass sprouts at the same time, summer heat hits young grass before its roots are deep, and most crabgrass preventers stop grass seed too. If you do it anyway, skip the regular preventer or use mesotrione at seeding. [Spring seeding, honestly](/blog/spring-seeding/)."
   - q: "How much grass seed do I need to overseed?"
     a: "About half the rate for a brand-new lawn. That's roughly 2 to 4 pounds per 1,000 square feet depending on the grass. The bag lists both rates. My lawn calculator does the math for your yard."
   - q: "Do I need to aerate before overseeding?"
@@ -28,16 +29,16 @@ sources:
     url: "https://yardandgarden.extension.iastate.edu/how-to/late-summer-and-fall-lawn-care"
 ---
 
-Fall is when cool-season grass wants to grow. The soil is still warm from summer, so seed sprouts fast. The air is cooler, so young grass doesn't cook. And most weeds are done for the year, so nothing's competing.
+Fall is when cool-season grass wants to grow. In September the soil is still warm from summer, so seed sprouts fast. The nights are cooler, so young grass doesn't cook. And most weeds are done for the year, so nothing's competing.
 
 New grass also gets two cool seasons (fall and spring) to build roots before its first summer. Spring seed gets zero.
 
 ## The Timing, by Month
 
-- **Mid to late August:** the best window. Water bills are the only downside.
-- **September:** still great. Most people around here seed Labor Day weekend.
+- **August:** usually too hot here. Lawns are stressed, nights are warm, and baby grass needs watering three times a day. Buy your seed and get a [soil test](/blog/lawn-soil-test/) instead. (Extension guides often say mid-August works. In a cool year it does. Most years around here, I wait.)
+- **September:** the best window. Labor Day weekend through mid-September is the sweet spot.
 - **Early October:** OK with fast grass (perennial ryegrass). Getting risky.
-- **Mid-October on:** too late for most lawns. Save the seed for next year.
+- **Mid-October on:** too late. Skip seeding until next September. No seeding over the winter either.
 
 My [Can I seed now?](/resources/can-i-seed-now/) tool checks your soil temperature and gives a straight yes or no.
 
@@ -55,5 +56,5 @@ My [Can I seed now?](/resources/can-i-seed-now/) tool checks your soil temperatu
 ## Don't Do These
 
 - **Don't put down a regular crabgrass preventer** within a few months of seeding. It stops grass seed too. Read the label for the wait time.
-- **Don't kill weeds the same week you seed.** Most weed sprays say to wait a few weeks before seeding. [Weeds or seed first?](/blog/fall-kill-weeds-or-plant-seed/)
+- **Don't kill weeds the same week you seed.** Most weed sprays say to wait a few weeks before seeding, and new grass can't be sprayed until it's been mowed a few times. [Weed killer and grass seed](/guides/weed-killer-and-grass-seed/).
 - **Don't let it dry out** in the first two weeks. That's how most seed dies.

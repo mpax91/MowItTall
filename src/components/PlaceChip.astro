@@ -1,17 +1,18 @@
 ---
 // A tappable location chip: "📍 Bedford, NY · change". Opens a small inline box to type a ZIP
 // or use GPS. Every chip on the page stays in sync through the 'mit:place' event.
-interface Props { id: string }
-const { id } = Astro.props;
+// homeLabel: what to show for the default spot instead of "Bedford, NY" (month pages say "Northeast").
+interface Props { id: string; homeLabel?: string }
+const { id, homeLabel } = Astro.props;
 ---
-<div class="place" data-place>
+<div class="place" data-place data-home-label={homeLabel}>
   <button type="button" class="place-chip" data-place-btn aria-expanded="false" aria-controls={`${id}-panel`}>
     <svg class="place-pin" viewBox="0 0 7 9" width="12" height="15" aria-hidden="true" shape-rendering="crispEdges">
       <path fill="#0a2414" d="M2 0h3v1h1v1h1v3h-1v1h-1v1h-1v2h-1v-2h-1v-1h-1v-1h-1v-3h1v-1h1z" />
       <path fill="#c8372d" d="M2 1h3v1h1v3h-1v1h-1v1h-1v-1h-1v-1h-1v-3h1z" />
       <path fill="#f1f6ec" d="M3 2h1v2h-1z" />
     </svg>
-    <span data-place-name>Bedford, NY</span>
+    <span data-place-name>{homeLabel || 'Bedford, NY'}</span>
     <span class="place-change">change</span>
   </button>
   <div class="place-panel" id={`${id}-panel`} data-place-panel hidden>
@@ -22,7 +23,7 @@ const { id } = Astro.props;
     </form>
     <div class="place-links">
       <button type="button" class="place-link" data-place-gps>Use My Location</button>
-      <button type="button" class="place-link" data-place-home hidden>Back to Bedford</button>
+      <button type="button" class="place-link" data-place-home hidden>Back to {homeLabel || 'Bedford'}</button>
     </div>
     <p class="place-msg" data-place-msg role="status"></p>
   </div>
@@ -35,7 +36,7 @@ const { id } = Astro.props;
 
   function paint(p) {
     for (const c of chips) {
-      c.querySelector('[data-place-name]').textContent = p.name;
+      c.querySelector('[data-place-name]').textContent = p.home && (c as HTMLElement).dataset.homeLabel ? (c as HTMLElement).dataset.homeLabel : p.name;
       c.querySelector('[data-place-home]').hidden = !!p.home;
     }
   }

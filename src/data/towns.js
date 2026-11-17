@@ -4,7 +4,7 @@
 export const TOWNS = [
   {
     slug: 'bedford-ny', name: 'Bedford', state: 'NY', zip: '10506', lat: 41.2043, lon: -73.6437, county: 'Westchester County', timing: 'same', home: true,
-    answer: 'Bedford lawns run on the standard northern Westchester schedule: crabgrass preventer in April when the forsythia blooms, a light feeding around Memorial Day, seeding from mid-August through September, and the big feeding around Labor Day. The real challenges here are shade, rocky soil and deer, not the calendar.',
+    answer: 'Bedford lawns run on the standard northern Westchester schedule: crabgrass preventer in April when the forsythia blooms, a light feeding around Memorial Day, seeding in September, and the big feeding around Labor Day. The real challenges here are shade, rocky soil and deer, not the calendar.',
     intro: 'This is home. My stripes are in Bedford, and every date on this site starts here. The town takes in three hamlets, Bedford Village, Bedford Hills and Katonah, and the lawns have a lot in common: big lots, old trees, stone walls and soil that grows rocks better than grass.',
     notes: [
       ['Shade is the big one', 'Mature oaks and maples cover a lot of Bedford yards. Grass wants at least 4 to 6 hours of sun. Under the big trees, use a fine fescue shade mix or call it a mulch bed.'],
@@ -15,14 +15,14 @@ export const TOWNS = [
     ],
     faq: [
       ['When should I put down crabgrass preventer in Bedford, NY?', 'Usually mid to late April, when soil holds around 55°F, about when the forsythia is in full bloom. Check the live soil reading on this page instead of guessing.'],
-      ['When is the best time to seed a lawn in Bedford?', 'Mid-August through September. Spring works as a backup once soil passes 50°F, but fall-seeded grass is much stronger by summer.'],
+      ['When is the best time to seed a lawn in Bedford?', 'September. Spring seeding is possible but a fight with crabgrass and summer heat; fall-seeded grass is much stronger by summer.'],
       ['Why is there so much moss in my Bedford lawn?', 'Usually shade, plus acidic or compacted soil. Trim branches if you can, test the pH, and overseed with a shade mix in early fall.'],
     ],
     near: ['bedford-village-ny', 'bedford-hills-ny', 'katonah-ny', 'pound-ridge-ny'],
   },
   {
     slug: 'bedford-village-ny', name: 'Bedford Village', state: 'NY', zip: '10506', lat: 41.2043, lon: -73.6437, county: 'Westchester County', timing: 'same',
-    answer: 'Bedford Village lawns follow the standard northern Westchester calendar: crabgrass preventer in April, seed from mid-August through September, feed around Labor Day. The local twist is old trees and old houses, so shade and tired soil are the usual problems.',
+    answer: 'Bedford Village lawns follow the standard northern Westchester calendar: crabgrass preventer in April, seed in September, feed around Labor Day. The local twist is old trees and old houses, so shade and tired soil are the usual problems.',
     intro: 'Bedford Village is the historic center of town: the green, the old colonial houses, the stone walls. Beautiful. Also, a lot of those trees have been shading the same lawn for a century.',
     notes: [
       ['Century-old shade', 'The big maples and oaks around the green and the older streets throw serious shade. Overseed shady areas with fine fescue, not bluegrass.'],
@@ -31,14 +31,14 @@ export const TOWNS = [
       ['Horse country on the edges', 'Out toward the back roads, lawns blend into pasture. If horses are nearby, keep creeping Charlie under control: it’s known to be toxic to horses.'],
     ],
     faq: [
-      ['When should I seed my lawn in Bedford Village?', 'Mid-August through September is best. Shady yards do best with a fine fescue mix seeded in late August.'],
+      ['When should I seed my lawn in Bedford Village?', 'September is best. Shady yards do best with a fine fescue mix seeded early in the month.'],
       ['Why is grass thin under the trees near the Bedford Village green?', 'Shade plus tree roots competing for water and food. Shade-tolerant fine fescue helps, but under very dense trees, mulch or a groundcover is the honest answer.'],
     ],
     near: ['bedford-ny', 'pound-ridge-ny', 'bedford-hills-ny', 'katonah-ny'],
   },
   {
     slug: 'bedford-hills-ny', name: 'Bedford Hills', state: 'NY', zip: '10507', lat: 41.2368, lon: -73.6948, county: 'Westchester County', timing: 'same',
-    answer: 'Bedford Hills lawns run on the same schedule as the rest of Bedford: crabgrass preventer in April, a light Memorial Day feeding, seed in late August and September, and the big feeding around Labor Day. Smaller lots near the train mean more sun and more foot traffic.',
+    answer: 'Bedford Hills lawns run on the same schedule as the rest of Bedford: crabgrass preventer in April, a light Memorial Day feeding, seed in September, and the big feeding around Labor Day. Smaller lots near the train mean more sun and more foot traffic.',
     intro: 'Bedford Hills is the train hamlet. Closer to the station you get neighborhood streets and smaller yards. Head out the back roads and it turns into classic Bedford: wooded, rocky and big.',
     notes: [
       ['Smaller, sunnier yards in town', 'Lots near the station tend to be smaller and sunnier than the rest of Bedford. That’s great for grass and also great for crabgrass. Don’t skip the April preventer.'],
@@ -54,7 +54,7 @@ export const TOWNS = [
   },
   {
     slug: 'katonah-ny', name: 'Katonah', state: 'NY', zip: '10536', lat: 41.2590, lon: -73.6854, county: 'Westchester County', timing: 'same',
-    answer: 'Katonah lawns follow the northern Westchester calendar: crabgrass preventer in April when the forsythia blooms, seed from mid-August through September, and the most important feeding around Labor Day. In the village, lots are smaller and sunnier; outside it, expect shade, rock and deer.',
+    answer: 'Katonah lawns follow the northern Westchester calendar: crabgrass preventer in April when the forsythia blooms, seed in September, and the most important feeding around Labor Day. In the village, lots are smaller and sunnier; outside it, expect shade, rock and deer.',
     intro: 'Katonah is the hamlet that literally moved. The whole village relocated in the 1890s to make room for the reservoir, and some of the old houses rolled to their new spots. Your lawn has been through less than that. Probably.',
     notes: [
       ['Village lots vs. country lots', 'Around the Victorian houses near the train, yards are smaller and sunnier. Out toward the back roads it’s big, wooded and shady. Very different lawns, same town.'],
@@ -70,7 +70,7 @@ export const TOWNS = [
   },
   {
     slug: 'mount-kisco-ny', name: 'Mount Kisco', state: 'NY', zip: '10549', lat: 41.2043, lon: -73.7271, county: 'Westchester County', timing: 'same',
-    answer: 'Mount Kisco lawns run on the standard northern Westchester schedule: crabgrass preventer in April, seed in late August and September, feed around Labor Day. Smaller, sunnier yards in the village mean crabgrass and heat are bigger issues than shade.',
+    answer: 'Mount Kisco lawns run on the standard northern Westchester schedule: crabgrass preventer in April, seed in September, feed around Labor Day. Smaller, sunnier yards in the village mean crabgrass and heat are bigger issues than shade.',
     intro: 'Mount Kisco is the busy one. More houses, more sidewalks, smaller yards, more sun. Which means less shade to fight and more crabgrass to fight instead.',
     notes: [
       ['More sun, more crabgrass', 'Sunny yards near sidewalks and driveways are crabgrass heaven. Preventer in April along the hard edges, and mow at 3.5 to 4 inches all summer.'],
@@ -86,7 +86,7 @@ export const TOWNS = [
   },
   {
     slug: 'pound-ridge-ny', name: 'Pound Ridge', state: 'NY', zip: '10576', lat: 41.2087, lon: -73.5748, county: 'Westchester County', timing: 'late',
-    answer: 'Pound Ridge follows the northern Westchester calendar, but wooded, higher spots can run a few days behind Bedford in spring: crabgrass preventer in mid to late April by soil temperature, seed from mid-August into September. Shade, rock, deer and well water shape everything here.',
+    answer: 'Pound Ridge follows the northern Westchester calendar, but wooded, higher spots can run a few days behind Bedford in spring: crabgrass preventer in mid to late April by soil temperature, seed in September. Shade, rock, deer and well water shape everything here.',
     intro: 'Pound Ridge is the woods. Big lots, tall trees, rock everywhere, and the biggest park in Westchester next door. Lawns here are clearings, not carpets, and that’s OK.',
     notes: [
       ['Woods, not lawns', 'Most yards are carved out of the forest. Keep the lawn to the sunny part and let the shady edge be mulch, moss or woodland.'],
@@ -103,7 +103,7 @@ export const TOWNS = [
   },
   {
     slug: 'somers-ny', name: 'Somers', state: 'NY', zip: '10589', lat: 41.3279, lon: -73.6954, county: 'Westchester County', timing: 'same',
-    answer: 'Somers lawns run on the northern Westchester calendar: crabgrass preventer in April, a light Memorial Day feeding, seed in late August and September, and the big feeding around Labor Day. Many Somers lawns are in newer neighborhoods, so thin topsoil and full sun are common.',
+    answer: 'Somers lawns run on the northern Westchester calendar: crabgrass preventer in April, a light Memorial Day feeding, seed in September, and the big feeding around Labor Day. Many Somers lawns are in newer neighborhoods, so thin topsoil and full sun are common.',
     intro: 'Somers is the birthplace of the American circus, which is the most fun fact any town can have. Your lawn shouldn’t be a circus, though. Somers has a lot of newer neighborhoods, and those come with their own lawn quirks.',
     notes: [
       ['Newer neighborhoods, thin topsoil', 'Newer subdivisions often got a thin layer of topsoil over packed fill. Lawns there dry out fast and thin out. Aerate in fall, topdress with compost and seed.'],
@@ -113,13 +113,13 @@ export const TOWNS = [
     ],
     faq: [
       ['Why does my newer Somers lawn dry out so fast?', 'Newer neighborhoods often have thin topsoil over packed ground, so roots stay shallow. Core aerate in fall, topdress with compost and overseed. Mow at 3.5 to 4 inches to keep the soil shaded.'],
-      ['When should I seed my lawn in Somers?', 'Mid-August through September. Spring is the backup once soil passes 50°F.'],
+      ['When should I seed my lawn in Somers?', 'September. Spring is possible, but crabgrass and summer heat make it a gamble.'],
     ],
     near: ['katonah-ny', 'north-salem-ny', 'yorktown-ny', 'goldens-bridge-ny'],
   },
   {
     slug: 'lewisboro-ny', name: 'Lewisboro', state: 'NY', zip: '10590', lat: 41.2700, lon: -73.5900, county: 'Westchester County', timing: 'late',
-    answer: 'Lewisboro lawns follow the northern Westchester calendar, with wooded and higher spots running a few days behind in spring: crabgrass preventer in mid to late April by soil temperature, seed from mid-August into September. Lakes, wells, shade and rock are the local factors.',
+    answer: 'Lewisboro lawns follow the northern Westchester calendar, with wooded and higher spots running a few days behind in spring: crabgrass preventer in mid to late April by soil temperature, seed in September. Lakes, wells, shade and rock are the local factors.',
     intro: 'Lewisboro is a town of hamlets: South Salem, Goldens Bridge, Cross River, Vista and Waccabuc. Lakes, woods, stone walls and a lot of driveways that are longer than some people’s lawns.',
     notes: [
       ['Lake houses', 'Around Lake Waccabuc, Lake Truesdale and the other lakes, keep fertilizer well away from the shore. Use lawn food with a 0 in the middle unless a soil test says you need phosphorus. Leave an unmowed strip along the water.'],
@@ -135,7 +135,7 @@ export const TOWNS = [
   },
   {
     slug: 'south-salem-ny', name: 'South Salem', state: 'NY', zip: '10590', lat: 41.2490, lon: -73.5470, county: 'Westchester County', timing: 'late',
-    answer: 'South Salem lawns run on the northern Westchester calendar, often a few days behind Bedford in spring on higher, wooded lots: crabgrass preventer in mid to late April by soil temperature, seed from mid-August into September. Plan around shade, rock, wells and deer.',
+    answer: 'South Salem lawns run on the northern Westchester calendar, often a few days behind Bedford in spring on higher, wooded lots: crabgrass preventer in mid to late April by soil temperature, seed in September. Plan around shade, rock, wells and deer.',
     intro: 'South Salem is the classic wooded Lewisboro hamlet: winding roads, stone walls, lakes and trees on every side. Gorgeous for a fall drive. Tough for grass.',
     notes: [
       ['Shade first', 'Most yards are under or next to woods. Use fine fescue shade mix and keep the lawn to the sunniest part of the yard.'],
@@ -151,7 +151,7 @@ export const TOWNS = [
   },
   {
     slug: 'north-salem-ny', name: 'North Salem', state: 'NY', zip: '10560', lat: 41.3343, lon: -73.5946, county: 'Westchester County', timing: 'late',
-    answer: 'North Salem lawns follow the northern Westchester calendar, often a few days behind Bedford in spring: crabgrass preventer in mid to late April by soil temperature, seed from mid-August into September. Unlike most of the area, many yards here are open and sunny, so drought and heat matter more than shade.',
+    answer: 'North Salem lawns follow the northern Westchester calendar, often a few days behind Bedford in spring: crabgrass preventer in mid to late April by soil temperature, seed in September. Unlike most of the area, many yards here are open and sunny, so drought and heat matter more than shade.',
     intro: 'North Salem is horse country. Rolling fields, horse farms, the Titicus Reservoir and a Japanese stroll garden at the Hammond Museum. More sky than most of northern Westchester, which changes the lawn game.',
     notes: [
       ['Open, sunny yards', 'Big open lawns get full sun and wind, so they dry out faster than wooded towns. Mow at 3.5 to 4 inches and consider tall fescue if you won’t water.'],
@@ -167,7 +167,7 @@ export const TOWNS = [
   },
   {
     slug: 'goldens-bridge-ny', name: 'Goldens Bridge', state: 'NY', zip: '10526', lat: 41.2937, lon: -73.6765, county: 'Westchester County', timing: 'same',
-    answer: 'Goldens Bridge lawns run on the northern Westchester calendar: crabgrass preventer in April when the forsythia blooms, seed from mid-August through September, and the big feeding around Labor Day. Neighborhood lots are smaller and sunnier than the rest of Lewisboro.',
+    answer: 'Goldens Bridge lawns run on the northern Westchester calendar: crabgrass preventer in April when the forsythia blooms, seed in September, and the big feeding around Labor Day. Neighborhood lots are smaller and sunnier than the rest of Lewisboro.',
     intro: 'Goldens Bridge is the train-and-684 corner of Lewisboro, right near the Muscoot Reservoir. Commuter-friendly neighborhoods with real lawns, plus wooded lots as you head up the hills.',
     notes: [
       ['Neighborhood lawns', 'Closer-together houses mean sunnier yards and lawns your neighbors can see. Good stripe territory.'],
@@ -183,7 +183,7 @@ export const TOWNS = [
   },
   {
     slug: 'yorktown-ny', name: 'Yorktown', state: 'NY', zip: '10598', lat: 41.2709, lon: -73.7776, county: 'Westchester County', timing: 'same',
-    answer: 'Yorktown lawns follow the northern Westchester calendar: crabgrass preventer in April, a light Memorial Day feeding, seed in late August and September, and the big feeding around Labor Day. Classic suburban lots mean more sun, more crabgrass and more neighbors comparing lawns.',
+    answer: 'Yorktown lawns follow the northern Westchester calendar: crabgrass preventer in April, a light Memorial Day feeding, seed in September, and the big feeding around Labor Day. Classic suburban lots mean more sun, more crabgrass and more neighbors comparing lawns.',
     intro: 'Yorktown is the big suburban town of northern Westchester: Yorktown Heights, Mohegan Lake, Shrub Oak, Jefferson Valley, Crompond. Lots of classic neighborhood lawns, which means lots of lawn competition. Good. Let’s win.',
     notes: [
       ['Suburban, sunny lots', 'Typical neighborhood yards get decent sun, so bluegrass and rye do well. So does crabgrass. Preventer in April, mow tall.'],
@@ -199,7 +199,7 @@ export const TOWNS = [
   },
   {
     slug: 'mamaroneck-ny', name: 'Mamaroneck', state: 'NY', zip: '10543', lat: 40.9487, lon: -73.7326, county: 'Westchester County', timing: 'early',
-    answer: 'Mamaroneck is down on Long Island Sound, so spring usually arrives sooner than in northern Westchester: crabgrass preventer often goes down a week or so earlier, by soil temperature. Seed from late August through September and feed around Labor Day. Smaller lots, salt air and flooding are the local factors.',
+    answer: 'Mamaroneck is down on Long Island Sound, so spring usually arrives sooner than in northern Westchester: crabgrass preventer often goes down a week or so earlier, by soil temperature. Seed in September and feed around Labor Day. Smaller lots, salt air and flooding are the local factors.',
     intro: 'Mamaroneck is southern Westchester on the water. Smaller yards, a harbor, and soil that warms up earlier than mine up in Bedford. Same grass, different clock.',
     notes: [
       ['Earlier spring', 'Being on the Sound and farther south, soil here often warms ahead of northern Westchester. Watch the live reading in April. Preventer might be due before Bedford’s is.'],
@@ -209,13 +209,13 @@ export const TOWNS = [
     ],
     faq: [
       ['When should I put down crabgrass preventer in Mamaroneck?', 'When soil holds around 55°F, which near the Sound can come a week or so earlier than in northern Westchester. Often early to mid-April. Check the live reading.'],
-      ['How do I fix my lawn after flooding in Mamaroneck?', 'Rake out debris and silt once it dries, give it a couple of weeks to see what greens up, then reseed dead spots in late August or September.'],
+      ['How do I fix my lawn after flooding in Mamaroneck?', 'Rake out debris and silt once it dries, give it a couple of weeks to see what greens up, then reseed dead spots in September.'],
     ],
     near: ['montclair-nj', 'yorktown-ny', 'mount-kisco-ny', 'bedford-ny'],
   },
   {
     slug: 'montclair-nj', name: 'Montclair', state: 'NJ', zip: '07042', lat: 40.8259, lon: -74.2090, county: 'Essex County', timing: 'early',
-    answer: 'Montclair is a bit warmer than northern Westchester, so spring jobs often come a week or so earlier: crabgrass preventer in early to mid-April by soil temperature. Seed from late August through September and feed around Labor Day. Big old trees and small lots mean shade is the main fight.',
+    answer: 'Montclair is a bit warmer than northern Westchester, so spring jobs often come a week or so earlier: crabgrass preventer in early to mid-April by soil temperature. Seed in September and feed around Labor Day. Big old trees and small lots mean shade is the main fight.',
     intro: 'Montclair sits on the slope of the First Watchung Mountain, with grand old houses, huge street trees and the Presby Iris Gardens. Same cool-season grass as Westchester, a slightly earlier clock, and a lot more shade per square foot.',
     notes: [
       ['Big trees, small yards', 'Mature street and yard trees shade most Montclair lawns. Use a fine fescue shade mix and trim low branches to let light in.'],
@@ -224,7 +224,7 @@ export const TOWNS = [
       ['Old house, old soil', 'Yards around older homes can be compacted and acidic. Core aerate, get a soil test and topdress when you seed.'],
     ],
     faq: [
-      ['When should I seed my lawn in Montclair, NJ?', 'Late August through September is best. Shady yards should use a fine fescue shade mix.'],
+      ['When should I seed my lawn in Montclair, NJ?', 'September is best. Shady yards should use a fine fescue shade mix.'],
       ['When should I put down crabgrass preventer in Montclair?', 'When soil holds around 55°F, often early to mid-April in Montclair, about a week ahead of northern Westchester. Check the live reading on this page.'],
     ],
     near: ['mamaroneck-ny', 'bedford-ny', 'yorktown-ny', 'mount-kisco-ny'],
@@ -243,7 +243,7 @@ export const TOWN_CAL = [
   ['First mow at 3.5–4 inches', 'Late March to mid-April'],
   ['Light feeding', 'Around Memorial Day'],
   ['Grub prevention (only if you’ve had grubs)', 'June to mid-July'],
-  ['Seed thin spots', 'Mid-August through September'],
+  ['Seed thin spots', 'September'],
   ['The big feeding', 'Around Labor Day'],
   ['Fall feeding + spray perennial weeds', 'Around Columbus Day, into October'],
   ['Mow leaves into the lawn', 'Mid-October through November'],

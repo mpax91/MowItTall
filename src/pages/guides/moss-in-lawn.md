@@ -40,7 +40,7 @@ Moss is the lawn's way of telling you grass doesn't like it there. Kill it witho
 2. **Let in light.** Trim low tree branches. Even a little more sun helps.
 3. **Kill and rake (optional).** An iron-based moss killer turns it black in a few days. Or skip the product and just rake it out hard with a metal rake. Moss has tiny roots.
 4. **Loosen the soil.** Core aerate packed areas. [Aeration guide](/guides/should-i-aerate-my-lawn/).
-5. **Overseed in late August or September** with grass that fits: fine fescue for shade, tall fescue for part sun. [Pick your grass](/lawn-101/#grass).
+5. **Overseed in September** with grass that fits: fine fescue for shade, tall fescue for part sun. [Pick your grass](/lawn-101/#grass).
 6. **Feed it in fall** so the new grass fills in thick. [When to fertilize](/guides/when-to-fertilize-lawn/).
 
 ## Or Let It Win

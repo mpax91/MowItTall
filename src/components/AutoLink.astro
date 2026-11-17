@@ -1,0 +1,9 @@
+---
+// Wraps hand-built article content (month pages, etc.) and adds the same build-time internal links
+// as posts and guides (src/lib/autolink.js + src/data/autolinks.js).
+import { processArticle } from '../lib/autolink.js';
+interface Props { self: string }
+const { self } = Astro.props;
+const { html } = processArticle(await Astro.slots.render('default'), self);
+---
+<Fragment set:html={html} />

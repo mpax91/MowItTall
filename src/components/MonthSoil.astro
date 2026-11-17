@@ -1,0 +1,102 @@
+---
+// Typical soil temperature for one month (month pages). NOT today's reading: what the soil usually
+// does in this month, so the July page makes sense in November. Defaults to the Northeast numbers
+// (soilNormals.js, built in). With a ZIP (PlaceChip, or carried over from the homepage/quiz) the browser
+// pulls the same month for the last 5 years from Open-Meteo's free archive and averages it. Cached per spot.
+import PlaceChip from './PlaceChip.astro';
+import { NE_SOIL, NE_YEARS, SOIL_ZONES } from '../data/soilNormals.js';
+import { MONTHS_LONG } from '../data/tasks.js';
+interface Props { month: number } // 1–12
+const { month } = Astro.props;
+const n = NE_SOIL[month - 1];
+const name = MONTHS_LONG[month - 1];
+const short = name.slice(0, 3);
+const lastDay = new Date(2025, month, 0).getDate();
+const LO = 25, HI = 85;
+const pct = (t) => Math.max(0, Math.min(100, ((t - LO) / (HI - LO)) * 100));
+const zoneOf = (t) => SOIL_ZONES.find((z) => t < z.max) || SOIL_ZONES[SOIL_ZONES.length - 1];
+const trend = (e, l) => (Math.abs(e - l) <= 2 ? 'holds steady around' : l < e ? 'cools to about' : 'warms to about');
+const close = Math.abs(pct(n.early) - pct(n.late)) < 14;
+const line = `Starts around ${n.early}°F (${zoneOf(n.early).name.toLowerCase()}) and ${trend(n.early, n.late)} ${n.late}°F (${zoneOf(n.late).name.toLowerCase()}) by the end of the month.`;
+---
+<section class="window msoil" aria-labelledby="msoil-h" data-msoil data-month={month} data-last={lastDay} data-default={JSON.stringify(n)}>
+  <h2 id="msoil-h">Typical Soil in {name}</h2>
+  <p class="msoil-sub">Not today’s reading. This is what the soil usually does in {name}, about 2 inches down.</p>
+  <div class="msoil-where"><span>For</span> <PlaceChip id="msoil-place" homeLabel="the Northeast" /></div>
+
+  <div class={`msoil-thermo${close ? ' has-below' : ''}`} role="img" aria-label={`Typical ${name} soil: about ${n.early}°F early in the month, ${n.late}°F late in the month`} data-ms-thermo>
+    <div class="thermo-track">{SOIL_ZONES.map((z) => <span class={`thermo-zone zone-${z.id}`} style={`flex-grow:${z.max - z.min}`}></span>)}</div>
+    <span class="msoil-band" data-ms-band style={`left:${pct(n.lo)}%;width:${pct(n.hi) - pct(n.lo)}%`}></span>
+    <span class="msoil-dot msoil-start" data-ms-start style={`left:${pct(n.early)}%`}><b data-ms-early>{n.early}°</b><i>{short} 1</i></span>
+    <span class={`msoil-dot msoil-end${close ? ' is-below' : ''}`} data-ms-end style={`left:${pct(n.late)}%`}><b data-ms-late>{n.late}°</b><i>{short} {lastDay}</i></span>
+    <div class="thermo-ticks" aria-hidden="true">{[30, 40, 50, 60, 70, 80].map((t) => <span style={`left:${pct(t)}%`}>{t}°</span>)}</div>
+  </div>
+
+  <p class="msoil-line" data-ms-line>{line}</p>
+  <p class="msoil-stats"><span>Month average: <b data-ms-avg>{n.avg}°F</b></span> <span>Most days: <b data-ms-range>{n.lo}–{n.hi}°F</b></span></p>
+  <ul class="msoil-key">{SOIL_ZONES.map((z) => <li><span class={`zone-dot zone-${z.id}`} aria-hidden="true"></span><span><b>{z.name}</b> ({z.min === 25 ? `under ${z.max}°F` : z.max === 85 ? `${z.min}°F+` : `${z.min}–${z.max}°F`}): {z.what}</span></li>)}</ul>
+  <p class="msoil-fine" data-ms-fine>Northeast numbers are Westchester, NY, averaged over {NE_YEARS[0]}–{NE_YEARS[1]}. Add your ZIP to see your spot. Want right now? <a href="/resources/lawn-soil-temperature/">Live soil thermometer</a>.</p>
+</section>
+
+<script>
+  import { getPlace } from '../scripts/place.js';
+  const ZONES = [[40, 'asleep'], [50, 'winding down / waking up'], [56, 'go time'], [68, 'prime growing'], [999, 'heat stress']] as const;
+  const zone = (t: number) => ZONES.find(([max]) => t < max)![1];
+  const pct = (t: number) => Math.max(0, Math.min(100, ((t - 25) / 60) * 100));
+  const trend = (e: number, l: number) => (Math.abs(e - l) <= 2 ? 'holds steady around' : l < e ? 'cools to about' : 'warms to about');
+  type N = { early: number; late: number; avg: number; lo: number; hi: number };
+
+  async function normalsFor(lat: number, lon: number, m: number, last: number): Promise<N> {
+    const key = `mit-soilnorm:${lat.toFixed(2)},${lon.toFixed(2)}:${m}`;
+    try { const c = JSON.parse(localStorage.getItem(key) || 'null'); if (c && c.avg) return c; } catch { /* private mode */ }
+    const y0 = new Date().getFullYear() - 1, mm = String(m).padStart(2, '0');
+    const years = [0, 1, 2, 3, 4].map((k) => y0 - k);
+    const all: [number, number][] = [];
+    await Promise.all(years.map(async (y) => {
+      const u = `https://archive-api.open-meteo.com/v1/archive?latitude=${lat.toFixed(3)}&longitude=${lon.toFixed(3)}&start_date=${y}-${mm}-01&end_date=${y}-${mm}-${String(last).padStart(2, '0')}&daily=soil_temperature_0_to_7cm_mean&temperature_unit=fahrenheit&timezone=America%2FNew_York`;
+      const r = await fetch(u);
+      if (!r.ok) throw new Error(String(r.status));
+      const j = await r.json();
+      j.daily.time.forEach((t: string, i: number) => { const v = j.daily.soil_temperature_0_to_7cm_mean[i]; if (v != null) all.push([Number(t.slice(8, 10)), v]); });
+    }));
+    if (all.length < 20) throw new Error('thin');
+    const mean = (a: number[]) => a.reduce((s, v) => s + v, 0) / a.length;
+    const vals = all.map(([, v]) => v).sort((a, b) => a - b);
+    const q = (p: number) => vals[Math.min(vals.length - 1, Math.floor(p * vals.length))];
+    const out = {
+      early: Math.round(mean(all.filter(([d]) => d <= 7).map(([, v]) => v))),
+      late: Math.round(mean(all.filter(([d]) => d >= 24).map(([, v]) => v))),
+      avg: Math.round(mean(vals)), lo: Math.round(q(0.1)), hi: Math.round(q(0.9)),
+    };
+    try { localStorage.setItem(key, JSON.stringify(out)); } catch { /* private mode */ }
+    return out;
+  }
+
+  document.querySelectorAll<HTMLElement>('[data-msoil]').forEach((box) => {
+    const m = Number(box.dataset.month), last = Number(box.dataset.last);
+    const def: N = JSON.parse(box.dataset.default!);
+    const $ = (s: string) => box.querySelector<HTMLElement>(s)!;
+    const fine = $('[data-ms-fine]'), defFine = fine.innerHTML;
+    function paint(n: N, label: string | null) {
+      $('[data-ms-early]').textContent = `${n.early}°`; $('[data-ms-late]').textContent = `${n.late}°`;
+      $('[data-ms-start]').style.left = `${pct(n.early)}%`; $('[data-ms-end]').style.left = `${pct(n.late)}%`;
+      const near = Math.abs(pct(n.early) - pct(n.late)) < 14;
+      $('[data-ms-end]').classList.toggle('is-below', near); $('[data-ms-thermo]').classList.toggle('has-below', near);
+      const b = $('[data-ms-band]'); b.style.left = `${pct(n.lo)}%`; b.style.width = `${pct(n.hi) - pct(n.lo)}%`;
+      $('[data-ms-avg]').textContent = `${n.avg}°F`; $('[data-ms-range]').textContent = `${n.lo}–${n.hi}°F`;
+      $('[data-ms-line]').textContent = `Starts around ${n.early}°F (${zone(n.early)}) and ${trend(n.early, n.late)} ${n.late}°F (${zone(n.late)}) by the end of the month.`;
+      $('[data-ms-thermo]').setAttribute('aria-label', `Typical soil: about ${n.early}°F early in the month, ${n.late}°F late in the month`);
+      fine.innerHTML = label ? `Averaged for ${label} over the last 5 years. Want right now? <a href="/resources/lawn-soil-temperature/">Live soil thermometer</a>.` : defFine;
+    }
+    async function update() {
+      const p = getPlace();
+      if (p.home) return paint(def, null);
+      box.classList.add('is-loading');
+      try { paint(await normalsFor(p.lat, p.lon, m, last), p.name); }
+      catch { paint(def, null); fine.innerHTML = `Couldn’t load the numbers for ${p.name}, so these are the Northeast averages. ` + defFine; }
+      box.classList.remove('is-loading');
+    }
+    window.addEventListener('mit:place', update);
+    update();
+  });
+</script>

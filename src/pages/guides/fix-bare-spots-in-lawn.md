@@ -4,8 +4,8 @@ title: "How to Fix Bare Spots in Your Lawn"
 short: "Fix Bare Spots"
 description: "How to patch bare spots in a cool-season lawn: find the cause, prep the soil, pick seed, and keep it alive until it fills in."
 seoTitle: "How to Fix Bare Spots in Your Lawn (Step by Step)"
-seoDescription: "Find out why the spot died, loosen the soil, add seed that matches your lawn, cover lightly and keep it damp. Best done late August to September."
-answer: "<b>Figure out why the spot died, loosen the soil, add a thin layer of compost or topsoil, spread seed that matches your lawn, press it in and keep it damp until it fills in.</b> Late August through September is the best time in the Northeast. Spring works if you skip the regular crabgrass preventer on those spots."
+seoDescription: "Find out why the spot died, loosen the soil, add seed that matches your lawn, cover lightly and keep it damp. Best done in September."
+answer: "<b>Figure out why the spot died, loosen the soil, add a thin layer of compost or topsoil, spread seed that matches your lawn, press it in and keep it damp until it fills in.</b> September is the best time in the Northeast. Spring patches can work if you skip the regular crabgrass preventer on those spots, but expect a fight with crabgrass."
 date: 2026-11-15
 minutes: 3
 topics: [seeding, dogs-kids]
@@ -58,4 +58,4 @@ More causes and fixes: the [damage report](/blog/dog-pee-kids-bouncy-houses-lawn
 
 ## Timing
 
-Late August through September is best. Spring patches work, but new grass faces summer heat soon after, and most crabgrass preventers stop seed too, so don't put a regular preventer on patched spots.
+September is best. Spring patches can work, but new grass faces crabgrass and summer heat soon after, and most crabgrass preventers stop seed too, so don't put a regular preventer on patched spots.

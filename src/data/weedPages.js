@@ -28,13 +28,13 @@ export const WEED_PAGES = {
     steps: [
       ['Pull a few by hand', 'Wait for a soaking rain. Push a weed puller or a long screwdriver straight down next to the root, wiggle, and lift. Leave half the root behind and it grows back.'],
       ['Pop the flowers if you can’t pull', 'No time? Mow or snap the yellow heads before they turn into puffballs. It doesn’t kill the plant, but it stops the next generation.'],
-      ['Spot-spray in fall', 'For a lot of them, use a broadleaf lawn weed killer in September or October on a calm day in the 60s. Spray the weed, not the whole lawn.'],
+      ['Spot-spray in fall', 'For a lot of them, use a broadleaf lawn weed killer in October on a calm day in the 60s. Spray the weed, not the whole lawn, and skip any spots you seeded in September.'],
       ['Thicken the lawn', 'Overseed thin spots in fall, mow at 3.5 to 4 inches, and feed on Labor Day. Tall, thick grass gives seeds nowhere to land.'],
     ],
     kids: 'Pulling is zero worry and kids are great at it. Pay by the root, not by the flower, or you’ll get a bucket of heads. If you spray, keep kids and pets off until it dries, and spot-spray instead of blanket spraying. Dandelion flowers are one of the first foods bees get in spring, so a few in April is a nice thing to leave.',
     faq: [
       ['Why do dandelions keep coming back?', 'Two reasons. Pieces of the taproot left in the ground grow new plants, and new seeds blow in from neighbors every spring. Pull the whole root and keep the grass thick so new seeds can’t take hold.'],
-      ['When is the best time to kill dandelions?', 'Fall, in September or October. The plant is sending food down to its roots for winter, so a weed killer gets pulled down with it and kills the root. Spring spraying burns the leaves, but the root often survives.'],
+      ['When is the best time to kill dandelions?', 'Fall, usually October (skip spots you seeded in September). The plant is sending food down to its roots for winter, so a weed killer gets pulled down with it and kills the root. Spring spraying burns the leaves, but the root often survives.'],
       ['Does pulling dandelions make more?', 'Only if you snap the root. A broken taproot can sprout one or more new plants. Pull after a rain, when the soil is soft and the whole root slides out.'],
       ['Are dandelions bad for my lawn?', 'Not really. They don’t kill grass. They just fill in where grass is thin. A few are fine, and bees love them. A lot of them means the lawn needs to be thicker.'],
     ],
@@ -196,14 +196,14 @@ export const WEED_PAGES = {
     why: 'Shade and moisture, plus a stubborn root system. Violets spread by underground stems and by seed.',
     steps: [
       ['Dig small clumps', 'Use a garden knife or narrow trowel and get the thick, white rhizomes. Any piece you leave can regrow.'],
-      ['Spot-spray in fall', 'Use a broadleaf lawn weed killer that lists violets on the label in September or October. Adding a little extra time between rain and spraying helps it stick.'],
+      ['Spot-spray in fall', 'Use a broadleaf lawn weed killer that lists violets on the label in October, skipping any spots you seeded. Adding a little extra time between rain and spraying helps it stick.'],
       ['Repeat next fall', 'Expect 2 seasons. Violets are tough, and the waxy leaves don’t soak up much.'],
       ['Let in light and thicken the grass', 'Trim branches if you can and overseed with a shade mix.'],
     ],
     kids: 'Violets are harmless, and the flowers are actually edible (people candy them). If you spray, keep kids and pets off until it’s dry, and don’t eat flowers from a lawn that’s been treated.',
     faq: [
       ['Why are wild violets so hard to kill?', 'Their leaves are waxy, so spray beads up and rolls off, and their thick underground stems store a lot of food. Spray in fall, use a product labeled for violets and expect to repeat.'],
-      ['When should I spray wild violets?', 'Early fall, in September or October. Like most perennial weeds, they’re moving food to their roots then, so the spray reaches the roots.'],
+      ['When should I spray wild violets?', 'Fall, usually October. Like most perennial weeds, they’re moving food to their roots then, so the spray reaches the roots.'],
       ['Should I leave wild violets in my lawn?', 'In a shady corner where grass struggles anyway, it’s a fine call. They’re native, early bees use them and they look nice in spring. Just keep them out of the sunny lawn.'],
     ],
     guides: [['/guides/moss-in-lawn/', 'Moss in the lawn'], ['/blog/kid-and-pet-safe-lawn-care/', 'Kid- and pet-safe weed control']],
@@ -369,8 +369,8 @@ export const WEED_PAGES = {
     steps: [
       ['Mow at 3.5 to 4 inches', 'Tall grass shades out the seeds and favors your deep-rooted grass.'],
       ['Water deep, not often', 'Frequent short watering keeps the top inch wet, which is exactly what Poa annua loves.'],
-      ['Choose: preventer or seed', 'A preventer in late August stops fall sprouting. But it blocks grass seed too. If your lawn is thin, seed instead.'],
-      ['Seed the summer holes', 'When it dies off in July, seed those spots in late August and September.'],
+      ['Choose: preventer or seed', 'A preventer in late August stops fall sprouting. But it blocks grass seed too. If your lawn is thin, seed in September instead.'],
+      ['Seed the summer holes', 'When it dies off in July, seed those spots in September.'],
     ],
     kids: 'Harmless. Mowing higher and watering less are about as kid-safe as lawn care gets.',
     faq: [
@@ -404,7 +404,7 @@ export const WEED_PAGES = {
     steps: [
       ['Water less', 'Cut back on watering in those spots. Rough bluegrass needs it more than your good grass does.'],
       ['Rake out small patches', 'A hard rake pulls up a lot of it because of its weak runners. Reseed right after.'],
-      ['Kill and reseed big patches', 'In mid-August, spray the patch with a non-selective weed killer (it kills everything it touches), wait the label’s time, then rake and seed by early September.'],
+      ['Kill and reseed big patches', 'In mid-August, spray the patch with a non-selective weed killer (it kills everything it touches), wait the label’s time, then rake and seed in September.'],
       ['Read your seed label', 'Look for “Poa trivialis” or “rough bluegrass” on the bag and skip it. Look for low “other crop” and “weed seed” numbers too.'],
     ],
     kids: 'Rough bluegrass itself is harmless. If you use a kill-everything spray to start over, keep kids and pets off until it’s dry and follow the label to the letter. Raking out small patches is the zero-worry route.',

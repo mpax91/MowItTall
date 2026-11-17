@@ -35,6 +35,7 @@ export const TASKS = [
     title: 'Tax Day: crabgrass preventer',
     short: 'Pay the IRS, then stop the crabgrass. It keeps seeds from sprouting.',
     why: 'Tax Day is the reminder. The real trigger is soil at about 55°F, usually when the forsythia blooms.',
+    tip: 'Seeding this spring? A regular preventer stops grass seed too. Skip it on those spots, or use mesotrione.',
     start: [4, 1], end: [4, 30], level: 1, minutes: 30, when: ['crabgrass'],
   },
   {
@@ -52,6 +53,7 @@ export const TASKS = [
     title: 'Spot-spray weeds',
     short: 'Hit dandelions and clover while they’re actively growing.',
     why: 'Spray on a calm day that’s not too hot, and only where you see weeds.',
+    tip: 'Seeded this spring? Skip those spots. New grass can’t take weed killer until it’s been mowed three or four times.',
     start: [5, 15], end: [6, 15], level: 1, minutes: 20, when: ['weeds'],
   },
   {
@@ -92,15 +94,15 @@ export const TASKS = [
     title: 'Core aerate',
     short: 'Pulls plugs of soil so air, water and seed can get to the roots.',
     why: 'Rent a machine with a neighbor and split the cost. Seed right after.',
-    start: [8, 25], end: [9, 25], level: 3, minutes: 120,
+    start: [9, 1], end: [9, 25], level: 3, minutes: 120,
   },
   {
     id: 'seed',
     brief: 'The best time all year to grow grass.',
     title: 'Seed thin spots',
-    short: 'The best time all year to grow new grass around here.',
-    why: 'Rake the bare spots, spread seed, keep it damp for two to three weeks.',
-    start: [8, 25], end: [9, 30], level: 2, minutes: 60, when: ['bare', 'patchy'],
+    short: 'September is the best time all year to grow new grass around here.',
+    why: 'Rake the bare spots, spread seed, keep it damp for two to three weeks. Skip weed killer on those spots this fall.',
+    start: [9, 1], end: [9, 30], level: 2, minutes: 60, when: ['bare', 'patchy'],
   },
   {
     id: 'fall-feed',
@@ -112,12 +114,12 @@ export const TASKS = [
   },
   {
     id: 'fall-weeds',
-    brief: 'Weed spray works best in fall.',
+    brief: 'Weed spray works best in fall. Skip spots you seeded.',
     title: 'Fall weed control',
-    short: 'Weeds pull spray down to their roots in fall. It works better now than spring.',
+    short: 'Weeds pull spray down to their roots in fall. Only on grass you didn’t seed this fall.',
     why: 'One pass on a mild day takes out most of what bugged you all summer.',
-    tip: 'Seeded this fall? Skip those spots. Weed killer can hurt new grass, so wait until it has been mowed three or four times.',
-    start: [9, 20], end: [10, 20], level: 2, minutes: 30, when: ['weeds'],
+    tip: 'Seeded in September? Skip those spots. New grass can’t take weed killer until it’s been mowed three or four times, which usually means next spring.',
+    start: [10, 1], end: [10, 25], level: 2, minutes: 30, when: ['weeds'],
   },
   {
     id: 'columbus-feed',

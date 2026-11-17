@@ -2,7 +2,7 @@
 // Each rule links the FIRST mention of `re` (case-insensitive regex source) to `to`, once per page.
 // Skipped when the page is `to`, already links to `to`, or is listed in `not`.
 // Keep phrases specific so links land where a reader would expect them. Put more specific rules first.
-export const MAX_AUTO = 6;
+export const MAX_AUTO = 8;
 
 export const LINKS = [
   // Running jokes and references that need context
@@ -13,6 +13,12 @@ export const LINKS = [
   { re: 'labor day feeding|feed(?:ing)? (?:on|around) labor day', to: '/blog/holiday-lawn-fertilizer-schedule/' },
   { re: 'fertilizer bag|the bag says|three numbers on the bag', to: '/blog/how-to-read-a-fertilizer-bag/' },
   { re: 'spreader settings?|half the setting|half rate', to: '/blog/spreader-settings-half-rate-twice/' },
+  { re: 'slow-release|slowly available nitrogen|water[- ]insoluble nitrogen', to: '/guides/types-of-lawn-fertilizer/#slow-release' },
+  { re: 'quick-release|fast-release|fast-acting nitrogen', to: '/guides/types-of-lawn-fertilizer/#quick-release' },
+  { re: 'starter fertilizer', to: '/guides/types-of-lawn-fertilizer/#starter' },
+  { re: 'organic fertilizer|natural organic', to: '/guides/types-of-lawn-fertilizer/#organic' },
+  { re: 'weed and feed|weed-and-feed', to: '/guides/types-of-lawn-fertilizer/#weed-and-feed' },
+  { re: 'winterizer', to: '/guides/types-of-lawn-fertilizer/#winterizer' },
   { re: 'iron (?:spray|supplement)|spray tan', to: '/blog/nitrogen-iron-lawn-before-party/' },
   { re: 'granules?(?: or | vs\\.? )spray', to: '/blog/granules-vs-spray/' },
   // Mowing
@@ -33,6 +39,8 @@ export const LINKS = [
   { re: 'soil tests?', to: '/blog/lawn-soil-test/' },
   { re: 'lime', to: '/guides/does-my-lawn-need-lime/' },
   { re: 'soil thermometer|soil temperature', to: '/resources/lawn-soil-temperature/' },
+  { re: 'spring seed(?:ing)?|seed(?:ing)? in (?:the )?spring', to: '/blog/spring-seeding/' },
+  { re: 'mesotrione|tenacity|siduron', to: '/guides/weed-killer-and-grass-seed/' },
   { re: 'overseed(?:ing)?|seed(?:ing)? (?:the )?thin spots', to: '/guides/when-to-overseed-lawn/' },
   { re: 'bare spots?|dead patch(?:es)?', to: '/guides/fix-bare-spots-in-lawn/' },
   { re: 'kentucky bluegrass|perennial rye(?:grass)?|tall fescue|fine fescue', to: '/blog/grass-types-northeast/' },
@@ -42,12 +50,22 @@ export const LINKS = [
   // Weeds and pests
   { re: 'crabgrass preventer|pre-emergent', to: '/guides/crabgrass-preventer-timing/' },
   { re: 'post-emergent|weed killer', to: '/blog/pre-emergent-vs-post-emergent/' },
+  // Weeds: every named weed links to its weed page (first mention per page)
   { re: 'crabgrass', to: '/weeds/crabgrass/' },
   { re: 'dandelions?', to: '/weeds/dandelion/' },
-  { re: 'creeping charlie', to: '/weeds/creeping-charlie/' },
-  { re: 'nutsedge', to: '/weeds/nutsedge/' },
-  { re: 'clover', to: '/guides/get-rid-of-clover-in-lawn/' },
-  { re: '(?<!peat )moss', to: '/guides/moss-in-lawn/' },
+  { re: '(?:white )?clover', to: '/weeds/clover/' },
+  { re: 'creeping charlie|ground ivy', to: '/weeds/creeping-charlie/' },
+  { re: '(?:yellow )?nutsedge', to: '/weeds/nutsedge/' },
+  { re: '(?:yellow )?wood sorrel|oxalis', to: '/weeds/oxalis/' },
+  { re: '(?:broadleaf )?plantain', to: '/weeds/plantain/' },
+  { re: 'wild violets?|violets', to: '/weeds/violet/' },
+  { re: '(?:purple )?deadnettle|henbit', to: '/weeds/deadnettle/' },
+  { re: 'chickweed', to: '/weeds/chickweed/' },
+  { re: 'annual bluegrass|poa annua', to: '/weeds/annual-bluegrass/' },
+  { re: 'rough bluegrass|poa trivialis', to: '/weeds/rough-bluegrass/' },
+  { re: 'nimblewill', to: '/weeds/nimblewill/' },
+  { re: '(?:japanese )?stiltgrass', to: '/weeds/stiltgrass/' },
+  { re: '(?<!peat )moss', to: '/weeds/moss/' },
   { re: 'grubs?', to: '/guides/grubs-in-lawn/' },
   { re: 'snow mold|voles?', to: '/guides/snow-mold-and-vole-damage/' },
   { re: 'skunks?|moles?', to: '/blog/animals-in-your-lawn/' },

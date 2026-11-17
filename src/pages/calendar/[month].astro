@@ -1,10 +1,13 @@
 ---
-// Month pages (/calendar/april/ …): jobs from tasks.js, copy from monthPages.js, live soil gauge.
+// Month pages (/calendar/april/ …): jobs from tasks.js (each job on ONE month: the month it lands on
+// in /calendar/), copy from monthPages.js, typical soil temps for the month (MonthSoil).
 import Base from '../../layouts/Base.astro';
-import SoilGauge from '../../components/SoilGauge.astro';
+import MonthSoil from '../../components/MonthSoil.astro';
+import AutoLink from '../../components/AutoLink.astro';
 import { TASKS, MONTHS_LONG, windowText } from '../../data/tasks.js';
 import { MONTH_PAGES } from '../../data/monthPages.js';
-import { LEVELS } from '../../scripts/agenda.js';
+import { NE_SOIL } from '../../data/soilNormals.js';
+import { placeOf } from '../../scripts/agenda.js';
 
 export function getStaticPaths() {
   return MONTH_PAGES.map((m, i) => ({ params: { month: m.slug }, props: { m, i } }));
@@ -14,94 +17,87 @@ const name = MONTHS_LONG[i];
 const n = i + 1;
 const site = 'https://mowittall.com';
 const path = `/calendar/${m.slug}/`;
-const jobs = TASKS.filter((t) => t.start[0] <= n && t.end[0] >= n).sort((a, b) => a.level - b.level || a.start[0] - b.start[0] || a.start[1] - b.start[1]);
+const Y = 2026;
+const jobs = TASKS.filter((t) => placeOf(t, Y).getMonth() + 1 === n).sort((a, b) => a.level - b.level || placeOf(a, Y) - placeOf(b, Y));
 const core = jobs.filter((t) => t.level <= 1), extra = jobs.filter((t) => t.level >= 2);
-const prev = MONTH_PAGES[(i + 11) % 12], next = MONTH_PAGES[(i + 1) % 12];
+const pi = (i + 11) % 12, ni = (i + 1) % 12;
+const prev = MONTH_PAGES[pi], next = MONTH_PAGES[ni];
 const title = `Lawn Care in ${name}: What to Do (and Skip) | Mow It Tall`;
-const cut = (t, n) => (t.length <= n ? t : t.slice(0, t.lastIndexOf(' ', n - 1)).replace(/[,;:]$/, '') + '…');
-const description = cut(`Northeast lawn care in ${name}: ${m.answer.replace(/<[^>]+>/g, '')}`, 158);
-const faq = m.faq.map(([q, a]) => ({ q, a }));
+const strip = (h) => h.replace(/<[^>]+>/g, '');
+const cut = (t, k) => (t.length <= k ? t : t.slice(0, t.lastIndexOf(' ', k - 1)).replace(/[,;:]$/, '') + '…');
+const description = cut(`Northeast lawn care in ${name}: ${strip(m.answer)}`, 158);
+const soil = NE_SOIL[i];
 const jsonLd = { '@graph': [
   { '@type': 'Article', '@id': `${site}${path}#article`, headline: `Lawn Care in ${name}`, description, datePublished: '2026-11-16', dateModified: '2026-11-16', inLanguage: 'en-US',
     author: { '@id': `${site}/#mike` }, publisher: { '@id': `${site}/#org` }, mainEntityOfPage: `${site}${path}`, image: [`${site}/og/calendar-${m.slug}.png`] },
-  { '@type': 'FAQPage', '@id': `${site}${path}#faq`, mainEntity: faq.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) },
 ] };
-const lvl = (t) => LEVELS[t.level].name;
+const [lead, ...rest] = m.answer.split('. ');
 ---
 <Base title={title} description={description} path={path} jsonLd={jsonLd} crumbs={[['Lawn Calendar', '/calendar/'], [name, path]]} dl={{ post_topics: 'calendar' }}>
   <main id="main" class="post guide mo">
     <header class="post-head">
       <span class="clip-tag">Lawn Calendar</span>
       <h1>Lawn Care in {name}</h1>
-      <p class="post-meta">By <a href="/yards/">Mike</a>, Bedford, NY. For cool-season lawns in Westchester, the Lower Hudson Valley and the Northeast. Typical soil this month: {m.soil}°F.</p>
     </header>
     <section class="window guide-answer" aria-labelledby="qa-h">
       <h2 id="qa-h">What to Do in {name}</h2>
-      <p set:html={`<b>${m.answer.split('. ')[0]}.</b> ${m.answer.split('. ').slice(1).join('. ')}`} />
+      <p set:html={`<b>${lead}${rest.length ? '.' : ''}</b> ${rest.join('. ')}`} />
     </section>
 
     <article class="prose">
-      <p>{m.intro}</p>
+      <AutoLink self={path}>
+        <p set:html={m.intro} />
+        {m.note && <p class="mo-note" set:html={m.note} />}
 
-      {jobs.length > 0 ? (
-        <>
-          <h2>{name} Lawn Jobs</h2>
-          {core.length > 0 && <h3>For Everyone</h3>}
-          <ul class="mo-jobs">
-            {core.map((t) => (
-              <li><strong>{t.title}</strong> <span class="mo-when">{windowText(t)} · {lvl(t)}</span><br />{t.short} {t.why}</li>
-            ))}
-          </ul>
-          {extra.length > 0 && (
-            <>
-              <h3>Extra Credit</h3>
-              <ul class="mo-jobs">
-                {extra.map((t) => (
-                  <li><strong>{t.title}</strong> <span class="mo-when">{windowText(t)} · {lvl(t)}</span><br />{t.short} {t.why}</li>
-                ))}
-              </ul>
-            </>
-          )}
-        </>
-      ) : (
-        <>
-          <h2>{name} Lawn Jobs</h2>
+        <h2>{name} Lawn Jobs</h2>
+        {jobs.length > 0 ? (
+          <>
+            {core.length > 0 && <h3>For Everyone</h3>}
+            <ul class="mo-jobs">
+              {core.map((t) => (
+                <li><strong>{t.title.replace(/\s*\(Lawn Psycho only\)/, "")}</strong> <span class="mo-when">{windowText(t)}</span><br />{t.short} {t.why}{t.tip && <> <em>{t.tip}</em></>}</li>
+              ))}
+            </ul>
+            {extra.length > 0 && (
+              <>
+                <h3>Extra Credit</h3>
+                <ul class="mo-jobs">
+                  {extra.map((t) => (
+                    <li><strong>{t.title.replace(/\s*\(Lawn Psycho only\)/, "")}</strong> <span class="mo-when">{windowText(t)}</span><br />{t.short} {t.why}{t.tip && <> <em>{t.tip}</em></>}</li>
+                  ))}
+                </ul>
+              </>
+            )}
+          </>
+        ) : (
           <p>None on the calendar. That’s not a typo. The best thing you can do for your lawn in {name} is leave it alone.</p>
-        </>
-      )}
-      {m.extra.length > 0 && (
-        <>
-          <h3>Also Worth Doing</h3>
-          <ul>{m.extra.map((x) => <li>{x}</li>)}</ul>
-        </>
-      )}
+        )}
+        {m.extra.length > 0 && (
+          <>
+            <h3>Also Worth Doing</h3>
+            <ul>{m.extra.map((x) => <li set:html={x} />)}</ul>
+          </>
+        )}
 
-      <h2>Mowing in {name}</h2>
-      <p>{m.mow}</p>
+        <h2>Mowing in {name}</h2>
+        <p set:html={m.mow} />
 
-      <h2>What to Skip in {name}</h2>
-      <ul class="mo-skip">{m.skip.map((x) => <li>{x}</li>)}</ul>
+        <h2>What to Skip in {name}</h2>
+        <ul class="mo-skip">{m.skip.map((x) => <li set:html={x} />)}</ul>
 
-      <h2>Go by the Soil, Not the Date</h2>
-      <p>Typical soil around here in {name} runs in the {m.soil}°F. But a warm or cold year can shift everything by a couple of weeks. Here’s the real number, right now:</p>
+        <h2>Go by the Soil, Not the Date</h2>
+        <p>Grass and weeds go by soil temperature, not the calendar. Around here, {name} soil usually runs from about {Math.min(soil.early, soil.late)}°F to {Math.max(soil.early, soil.late)}°F. A warm or cold year can shift everything by a couple of weeks.</p>
+      </AutoLink>
     </article>
 
-    <div class="tp-tool"><SoilGauge /></div>
-
-    <section class="guide-faq" aria-labelledby="faq-h">
-      <h2 id="faq-h">{name} Lawn Questions</h2>
-      {faq.map((f) => <details><summary>{f.q}</summary><p>{f.a}</p></details>)}
-    </section>
-
-    <nav class="guide-tools" aria-label="Read next" data-pagefind-ignore>
-      <h2>Read Next</h2>
-      <ul>{m.guides.map(([href, label]) => <li><a class="bf-chip" href={href}>{label}</a></li>)}</ul>
-    </nav>
+    <div class="tp-tool"><MonthSoil month={n} /></div>
 
     <nav class="mo-nav" aria-label="Other months" data-pagefind-ignore>
-      <a class="btn btn-small btn-quiet" href={`/calendar/${prev.slug}/`}>← {MONTHS_LONG[(i + 11) % 12]}</a>
-      <a class="btn btn-small btn-quiet" href="/calendar/">Full Calendar</a>
-      <a class="btn btn-small btn-quiet" href={`/calendar/${next.slug}/`}>{MONTHS_LONG[(i + 1) % 12]} →</a>
+      <div class="mo-pn">
+        <a class="mo-step mo-prev" href={`/calendar/${prev.slug}/`} rel="prev"><span>Previous</span><b>← {MONTHS_LONG[pi]}</b></a>
+        <a class="mo-step mo-next" href={`/calendar/${next.slug}/`} rel="next"><span>Next</span><b>{MONTHS_LONG[ni]} →</b></a>
+      </div>
+      <a class="mo-all" href="/calendar/">See the Full Lawn Calendar</a>
     </nav>
 
     <aside class="window post-cta" data-pagefind-ignore data-cta-loc="month_end">

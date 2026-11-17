@@ -145,7 +145,7 @@ const seedJson = JSON.stringify(SEEDS);
         if (!Number.isFinite(t)) return;
         el.hidden = false;
         el.innerHTML = t < 50
-          ? `<b>Soil in ${p.name}: ${t}°F.</b> Below about 50°F, seed slows way down and may just sit until spring. That’s called dormant seeding, and it works. Nothing’s wrong.`
+          ? `<b>Soil in ${p.name}: ${t}°F.</b> Below about 50°F, seed slows way down. If it went down in September, give it time. If it’s November, it may not make it before winter.`
           : t > 80
             ? `<b>Soil in ${p.name}: ${t}°F.</b> That’s hot for cool-season seed. Keep the surface damp and expect some losses.`
             : `<b>Soil in ${p.name}: ${t}°F.</b> Right in the sweet spot (50–70°F) for sprouting.`;

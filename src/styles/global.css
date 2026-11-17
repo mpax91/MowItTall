@@ -2558,3 +2558,6 @@ main[data-gate] ~ .pre-foot, main[data-gate] ~ .footer, body:has(main[data-gate]
 .share-note { min-height: 1.3em; margin: 8px 0 0; font-size: 0.88rem; font-weight: 700; text-align: center; color: #2f6e47; word-break: break-all; }
 .qa-time { display: block; margin-top: 2px; font: 600 0.82rem var(--body, inherit); letter-spacing: 0; text-transform: none; opacity: 0.8; }
 .fs-foot a { color: inherit; text-decoration: underline; }
+/* Plan CTA boxes are centered everywhere (Mike, Nov 16) */
+.post-cta, .plan-card { text-align: center; }
+.post-cta p, .plan-card p { margin-left: auto; margin-right: auto; max-width: 34em; }

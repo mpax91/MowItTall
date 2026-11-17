@@ -16,7 +16,7 @@ faq:
   - q: "What kills clover but not grass?"
     a: "A broadleaf weed killer made for lawns. Products with triclopyr, dicamba, fluroxypyr or MCPP do the best job on clover. Spot-spray the patches, and read the label for your grass type."
   - q: "When is the best time to kill clover?"
-    a: "Fall, from mid-September to late October. Clover is pulling food down to its roots for winter, and the spray goes with it. Late spring is second best. Skip hot, dry summer days."
+    a: "Fall, mostly October (late September if you aren't seeding; skip any spots you seeded). Clover is pulling food down to its roots for winter, and the spray goes with it. Late spring is second best. Skip hot, dry summer days."
   - q: "Is clover good for your lawn?"
     a: "In a lot of ways, yes. It adds nitrogen to the soil, stays green when grass browns in July, handles dog pee, and feeds bees. Some people even overseed with microclover on purpose."
   - q: "Can I pull clover by hand?"
@@ -42,7 +42,7 @@ Clover is the weed with the best PR team in the business. Lucky charms. Bee lawn
 
 1. **Feed the grass.** This is the big one. Follow the [holiday schedule](/blog/holiday-lawn-fertilizer-schedule/): Memorial Day, Labor Day, Columbus Day. A fed lawn crowds clover out over a season or two.
 2. **Mow tall.** 3.5 to 4 inches. Shade it out.
-3. **Spot-spray in fall.** A broadleaf lawn weed killer, mid-September to late October. The ones that hit clover hardest list **triclopyr, dicamba, fluroxypyr or MCPP** on the label. Spray the patches, not the whole lawn.
+3. **Spot-spray in fall.** A broadleaf lawn weed killer in October (late September if you aren't seeding, and never on new seed). The ones that hit clover hardest list **triclopyr, dicamba, fluroxypyr or MCPP** on the label. Spray the patches, not the whole lawn.
 4. **Mow off the flowers first.** If the clover's blooming, bees are on it. Mow, wait a day, then spray.
 5. **Overseed the gaps** in late summer so grass takes the space. [When to overseed](/guides/when-to-overseed-lawn/).
 

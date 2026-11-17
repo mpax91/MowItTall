@@ -19,7 +19,7 @@ faq:
   - q: "Is fall a good time to kill weeds?"
     a: "Yes. In fall, perennial weeds like dandelions and clover send energy down to their roots for winter, and weed killer goes along with it. That makes fall spraying more effective than spring."
   - q: "When should I overseed in the Northeast?"
-    a: "Late August through September. Soil is still warm, air is cooler, and weeds are slowing down. Early October works for fast grasses like perennial rye."
+    a: "September. Soil is still warm, nights are cooler, and weeds are slowing down. Late August only in a cool year. Early October works for fast grasses like perennial rye."
 ---
 
 **Fall is the best time to kill weeds. Fall is also the best time to plant grass seed. And most weed killers stop grass seed from growing.** So you have to pick, or you have to time it, or you have to use the one trick. Let’s go through all three.
