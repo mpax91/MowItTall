@@ -72,22 +72,27 @@ const placeOf = (t, y) => holidayDate(t.id, y) || new Date(y, t.start[0] - 1, t.
 
 // one-line mood for each month header (Claude's copy; Mike to review)
 const MOOD = ['Asleep', 'Still asleep', 'Waking up', 'Go time', 'Growing fast', 'Heating up', 'Survival mode', 'Hang in there', 'Prime time', 'Peak season', 'Winding down', 'Off season'];
-// "Nothing new" line for a month with no new jobs at the chosen level (one per month so no two match).
-// Nov–Feb lines are Mike's; the rest are Claude's copy, Mike to review.
+// Line for a month with no new jobs at the chosen level, after "No specific tasks." (one per month so
+// no two match). Nov–Feb are Mike's; the rest are Claude's copy, Mike to review.
 const QUIET = [
-  'Nothing new. Just try to stay off the frozen lawn.',
-  'Nothing new. It’s sleeping, not dead. Admire it from a distance and don’t panic.',
-  'Nothing new. Let it wake up on its own.',
-  'Nothing new. Let it wake up, then mow with the deck up high.',
-  'Nothing new. Mow tall and leave the clippings on the lawn.',
-  'Nothing new. Mow tall, mow often, leave the clippings.',
-  'Nothing new. Mow high and let it ride out the heat. Brown in a dry spell is just napping.',
-  'Nothing new. Keep mowing tall. Labor Day is coming.',
-  'Nothing new. Keep mowing tall while it grows like crazy.',
-  'Nothing new. Keep the leaves off it. Halloween is game day.',
-  'Nothing new. Just stay on top of the leaves and get ready for the last mow of the year.',
-  'Nothing new. Just put the mower away right.',
+  'Just try to stay off the frozen lawn.',
+  'It’s sleeping, not dead. Admire it from a distance and don’t panic.',
+  'Let it wake up on its own.',
+  'Let it wake up, then mow with the deck up high.',
+  'Mow tall and leave the clippings on the lawn.',
+  'Mow tall, mow often, leave the clippings.',
+  '', // July: see NOTE
+  '', // August: see NOTE
+  'Keep mowing tall while it grows like crazy.',
+  'Keep the leaves off it. Halloween is game day.',
+  'Just stay on top of the leaves and get ready for the last mow of the year.',
+  'Just put the mower away right.',
 ];
+// Summer mowing notes: shown at every effort level, even when the month has jobs (Mike, Nov 16).
+const NOTE = {
+  7: 'Mow less often. Growth slows in the heat, so go by the grass, not the calendar, and follow <a href="/blog/one-third-rule-mowing/">the one-third rule</a>: never cut off more than a third of the blade at once.',
+  8: 'The grass starts checking out in the heat. Mow only when it needs it, keep the deck high, and if it goes a little brown in a dry spell, it’s napping, not dead.',
+};
 
 const SMALL = new Set(['a', 'an', 'the', 'and', 'or', 'of', 'to', 'in', 'on', 'at', 'by', 'for', 'up', 'as']);
 export const tc = (x) => x.split(' ').map((w, i, a) => (i && i < a.length - 1 && SMALL.has(w.toLowerCase()) ? w.toLowerCase() : w.split('-').map((p) => p.charAt(0).toUpperCase() + p.slice(1)).join('-'))).join(' ');
@@ -194,8 +199,9 @@ export function agendaHTML({ months, today = null, level = 3, sqft = BASE_SQFT }
     html += `<section class="ag-month${isCur ? ' is-current' : ''}" id="m-${y}-${m}" data-ym="${y}-${m}" aria-label="${MONTHS_LONG[m - 1]} ${y}">
 <h2 class="ag-mhead"><span class="ag-mname">${label}</span><span class="ag-mood">${MOOD[m - 1]}${jobs ? ` · ${plural(jobs, 'job')}` : ''}</span></h2>`;
     if (!sorted.length) {
-      html += `<p class="ag-empty">${QUIET[m - 1]}</p>`;
+      html += `<p class="ag-empty">No specific tasks. ${NOTE[m] || QUIET[m - 1]}</p>`;
     }
+    if (sorted.length && NOTE[m]) html += `<p class="ag-empty">${NOTE[m]}</p>`;
     for (const r of sorted) {
       const isToday = todayKey === ymd(r.d);
       html += `<div class="ag-day${isToday ? ' is-today' : ''}"><p class="ag-date"><span>${DOW[r.d.getDay()]}</span><b>${r.d.getDate()}</b></p><div class="ag-items">${r.ev.map((t) => taskCard(t, y, today, sqft)).join('')}</div></div>`;

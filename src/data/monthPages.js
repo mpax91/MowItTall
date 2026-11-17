@@ -32,7 +32,7 @@ export const MONTH_PAGES = [
   },
   {
     slug: 'march', soil: 'high 30s to 40s',
-    answer: 'Sharpen your mower blade, raise the mower to 3.5 to 4 inches, and give the lawn a light rake once the ground is dry and firm. Hold off on crabgrass preventer until the soil warms up, usually in April.',
+    answer: 'Sharpen your mower blade and give the lawn a light rake once the ground is dry and firm. Save the first mow, at 3.5 to 4 inches, for when the grass is actually growing. Hold off on crabgrass preventer until the soil warms up, usually in April.',
     intro: 'March is pre-season. The grass starts waking up, you get excited, and then it snows again. Get the gear ready and wait for firm ground.',
     skip: ['Heavy raking or anything on wet, soft ground. Footprints and ruts last for months.', 'Early fertilizer. A big spring feeding means more mowing and more disease later.', 'Crabgrass preventer before the soil hits about 55°F.'],
     mow: 'Usually no mowing until late March or April. Wait until the grass is actually growing.',

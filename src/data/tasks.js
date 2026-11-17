@@ -19,7 +19,7 @@ export const TASKS = [
     title: 'Raise your mower to 3.5–4 inches',
     short: 'The single easiest upgrade. Tall grass shades out weeds and handles heat.',
     why: 'Set it once in spring and leave it there all season.',
-    start: [3, 25], end: [4, 20], level: 0, minutes: 5,
+    start: [4, 1], end: [4, 25], level: 0, minutes: 5,
   },
   {
     id: 'cleanup',
