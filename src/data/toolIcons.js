@@ -1,5 +1,33 @@
 // 12×12 pixel icons for the /resources/ sections (palette in pixels.js).
 export const TOOL_ICONS = {
+  weed: [
+    '....yyy.....',
+    '...yyyyy....',
+    '...yyYyy....',
+    '....yyy.....',
+    '.....g......',
+    '.l...g...l..',
+    '.ll..g..ll..',
+    '..lllglll...',
+    '....lgl.....',
+    '.....g......',
+    'lglglglglgl.',
+    'gggggggggggg',
+  ],
+  wrench: [
+    '.......SS...',
+    '......SS..S.',
+    '......SS.SS.',
+    '......SSSSs.',
+    '.....SSSSs..',
+    '....SSSss...',
+    '...SSSs.....',
+    '..SSSs......',
+    '.SSSs.......',
+    'SSSs........',
+    'sSs.........',
+    '.s..........',
+  ],
   flag: [
     '..s.........',
     '..srrrrrr...',

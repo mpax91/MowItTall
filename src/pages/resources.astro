@@ -1,7 +1,7 @@
 ---
 // /resources/: the tool hub. A grid of every free tool, sorted by the question in the visitor's head
 // (see TOOL_CATS in src/data/tools.js for the order and why). Each card goes to that tool's own page.
-// Filter chips ("What are you trying to do?") show one section; the find box searches names and keywords.
+// "What do you need help with?" menu (a plain select: tight, and native on phones) shows one section; the search box matches names and keywords.
 // Old in-page anchors (#seedwatch, #ops-overseed, #water-h…) are forwarded to the new dedicated pages.
 import Base from '../layouts/Base.astro';
 import PixelIcon from '../components/PixelIcon.astro';
@@ -25,22 +25,26 @@ const cats = TOOL_CATS.map((c) => { const tools = toolsIn(c.id); return { ...c, 
   <main id="main" class="tg-page" data-tool-grid>
     <section class="page-head page-head-hub">
       <h1>Free Lawn Tools</h1>
-      <p class="lede">{TOOLS.length} free tools that do the thinking for you, sorted by what you’re trying to figure out. Tap one. No account, no email, no gas blower.</p>
+      <p class="lede">{TOOLS.length} free tools that do the thinking for you. No account, no email, no gas blower.</p>
 
-      <div class="tg-pick">
-        <h2 class="tg-ask" id="tg-ask">What Are You Trying to Do?</h2>
-        <div class="tg-chips" role="group" aria-labelledby="tg-ask">
-          <button type="button" class="tg-chip" data-tg-cat="" aria-pressed="true">Show Everything</button>
-          {cats.filter((c) => c.id !== 'start').map((c) => (
-            <button type="button" class="tg-chip" data-tg-cat={c.id} aria-pressed="false">{c.short}</button>
-          ))}
-        </div>
-        <label class="tg-find">
-          <span class="sr-only">Find a tool</span>
-          <svg viewBox="0 0 12 12" width="18" height="18" aria-hidden="true" shape-rendering="crispEdges"><path fill="currentColor" d="M3 1h4v1h1v1h1v4H8v1H7v1H3V8H2V7H1V3h1V2h1zm0 2v4h4V3zm5 6h1v1h1v1h1v1h-1v-1h-1v-1H8z" /></svg>
-          <input type="search" placeholder="Find a tool (try “seed”)" autocomplete="off" enterkeyhint="search" data-tg-find />
+      <form class="tg-form" data-tg-form>
+        <label class="tg-field">
+          <span class="tg-label">What Do You Need Help With?</span>
+          <span class="tg-select">
+            <select data-tg-select>
+              <option value="">Show me everything</option>
+              {cats.map((c) => <option value={c.id} data-name={c.name}>{c.ask}</option>)}
+            </select>
+            <svg viewBox="0 0 10 6" width="14" height="9" aria-hidden="true" shape-rendering="crispEdges"><path fill="currentColor" d="M0 0h2v1h1v1h1v1h2V2h1V1h1V0h2v2H9v1H8v1H7v1H6v1H4V5H3V4H2V3H1V2H0z" /></svg>
+          </span>
         </label>
-      </div>
+        <label class="tg-find">
+          <span class="sr-only">Or search the tools</span>
+          <svg viewBox="0 0 12 12" width="16" height="16" aria-hidden="true" shape-rendering="crispEdges"><path fill="currentColor" d="M3 1h4v1h1v1h1v4H8v1H7v1H3V8H2V7H1V3h1V2h1zm0 2v4h4V3zm5 6h1v1h1v1h1v1h-1v-1h-1v-1H8z" /></svg>
+          <input type="search" placeholder="Or search: crabgrass, mower…" autocomplete="off" enterkeyhint="search" data-tg-find />
+        </label>
+      </form>
+      <p class="tg-status" data-tg-status hidden><span data-tg-status-text></span> <button type="button" class="tg-reset" data-tg-reset>Show Everything</button></p>
     </section>
 
     <p class="tg-none" data-tg-none hidden>No tool for that yet. <a href="/plan/">Take the 2-minute quiz</a> or <a href="/search/">search the whole site</a>.</p>
@@ -101,10 +105,11 @@ const cats = TOOL_CATS.map((c) => { const tools = toolsIn(c.id); return { ...c, 
   }
 
   const root = document.querySelector<HTMLElement>('[data-tool-grid]')!;
-  const chips = [...root.querySelectorAll<HTMLButtonElement>('[data-tg-cat]')];
+  const select = root.querySelector<HTMLSelectElement>('[data-tg-select]')!;
   const secs = [...root.querySelectorAll<HTMLElement>('[data-tg-sec]')];
   const find = root.querySelector<HTMLInputElement>('[data-tg-find]')!;
   const none = root.querySelector<HTMLElement>('[data-tg-none]')!;
+  const status = root.querySelector<HTMLElement>('[data-tg-status]')!;
   let cat = '';
 
   const expand = (sec: HTMLElement, on: boolean) => {
@@ -119,30 +124,34 @@ const cats = TOOL_CATS.map((c) => { const tools = toolsIn(c.id); return { ...c, 
     let shown = 0;
     root.classList.toggle('is-filtered', !!(cat || q));
     secs.forEach((sec) => {
-      const inCat = !cat || sec.dataset.tgSec === cat || (q && !cat);
+      const mine = !cat || sec.dataset.tgSec === cat;
       let n = 0;
       sec.querySelectorAll<HTMLElement>('[data-tg-item]').forEach((li) => {
         const hit = !words.length || words.every((w) => li.dataset.keys!.includes(w));
-        li.hidden = !(inCat && hit);
+        li.hidden = !(mine && hit);
         if (!li.hidden) n++;
       });
-      sec.hidden = n === 0 || (!!cat && sec.dataset.tgSec !== cat && sec.dataset.tgSec !== 'start') || (!!cat && sec.dataset.tgSec === 'start' && !q);
-      if (cat === sec.dataset.tgSec || q) sec.classList.add('is-open'); else if (!sec.dataset.userOpen) expand(sec, false);
-      if (!sec.hidden) shown += n;
+      sec.hidden = n === 0;
+      if (cat || q) sec.classList.add('is-open'); else if (!sec.dataset.userOpen) expand(sec, false);
+      shown += n;
     });
     none.hidden = shown > 0;
-    chips.forEach((c) => c.setAttribute('aria-pressed', String(c.dataset.tgCat === cat)));
+    select.value = cat;
+    status.hidden = !(cat || q);
+    const tools = `${shown} tool${shown === 1 ? '' : 's'}`;
+    root.querySelector('[data-tg-status-text]')!.textContent = cat ? `${tools} in ${select.selectedOptions[0]?.dataset.name}.` : `${tools} matching “${find.value.trim()}”.`;
   }
 
-  chips.forEach((c) => c.addEventListener('click', () => {
-    cat = c.dataset.tgCat || '';
+  select.addEventListener('change', () => {
+    cat = select.value;
     find.value = '';
     history.replaceState(null, '', cat ? `#cat-${cat}` : location.pathname);
     render();
     (window as any).mitTrack?.('tool_choice', { tool_name: 'resources_filter', choice: cat || 'all' });
-    const target = cat ? root.querySelector(`#cat-${cat}`) : null;
-    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }));
+    if (cat) root.querySelector(`#cat-${cat}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  });
+  root.querySelector('[data-tg-form]')!.addEventListener('submit', (e) => { e.preventDefault(); find.blur(); });
+  root.querySelector('[data-tg-reset]')!.addEventListener('click', () => { cat = ''; find.value = ''; history.replaceState(null, '', location.pathname); render(); });
 
   let t = 0;
   find.addEventListener('input', () => {
@@ -160,5 +169,5 @@ const cats = TOOL_CATS.map((c) => { const tools = toolsIn(c.id); return { ...c, 
   }));
 
   // #cat-seed etc. opens that section filtered (handy for links from emails and posts)
-  if (h.startsWith('cat-') && chips.some((c) => c.dataset.tgCat === h.slice(4))) { cat = h.slice(4); render(); }
+  if (h.startsWith('cat-') && [...select.options].some((o) => o.value === h.slice(4))) { cat = h.slice(4); render(); }
 </script>

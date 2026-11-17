@@ -6,20 +6,23 @@
 // the seasonal jobs (seed, feed) → doing a job right → mowing/gear → landscaper people → fun.
 // Each section shows its top `show` cards; the rest sit behind "Show N More".
 //
+// TOOL_CATS.ask is the line in the hub's "What do you need help with?" menu.
 // Tool fields: id, name (Title Case), line (one short, funny line: what it answers), href,
 // tag: 'Live' (uses live weather/soil) | 'Quiz' | 'Calculator' | 'Checklist' | 'Map' | 'Picker' | 'Game' | 'Fun'
 // keys: extra words for the filter box. Tools that live inside a blog post link to `#tool`.
 
 export const TOOL_CATS = [
-  { id: 'start', name: 'Start Here', short: 'Start Here', why: 'Do these once. Every other tool gets smarter after.', show: 3, icon: 'flag' },
-  { id: 'now', name: 'Right Now', short: 'Right Now', why: 'Live answers for your ZIP, this week. Check before you do anything.', show: 4, icon: 'sun' },
-  { id: 'fix', name: 'Something’s Wrong', short: 'Something’s Wrong', why: 'Brown spots, weeds, holes, mystery mushrooms. Find out what it is and the fix.', show: 4, icon: 'glass' },
-  { id: 'seed', name: 'Seed and Grass', short: 'Seed', why: 'What to plant, when to plant it, and whether it’s working.', show: 4, icon: 'seed' },
-  { id: 'feed', name: 'Feed and Soil', short: 'Feed & Soil', why: 'Fertilizer, lime and soil tests, minus the chemistry class.', show: 4, icon: 'bag' },
-  { id: 'job', name: 'Do the Job Right', short: 'Do It Right', why: 'Steps in order and exact amounts, so you buy once and do it once.', show: 4, icon: 'list' },
-  { id: 'mow', name: 'Mowing and Gear', short: 'Mowing & Gear', why: 'How tall, how often, what to buy, and what to skip.', show: 4, icon: 'mower' },
-  { id: 'crew', name: 'Got a Guy?', short: 'Got a Guy', why: 'For people with a landscaper. What to say, what to pay, and how to grade them.', show: 4, icon: 'phone' },
-  { id: 'fun', name: 'Just for Fun', short: 'Fun', why: 'Lawn nonsense. Scientifically important lawn nonsense.', show: 4, icon: 'game' },
+  { id: 'start', ask: 'I don’t know where to start', name: 'Start Here', why: 'Take the 2-minute quiz. I’ll tell you the three or four things your lawn actually needs. Everything else can wait.', show: 3, icon: 'flag' },
+  { id: 'now', ask: 'What should I do right now?', name: 'Right Now', why: 'Live answers for your ZIP, this week. Check before you do anything.', show: 4, icon: 'sun' },
+  { id: 'fix', ask: 'My lawn has a problem', name: 'Something’s Wrong', why: 'Brown spots, holes, dog spots, mystery damage. Find the cause and the fix.', show: 4, icon: 'glass' },
+  { id: 'weeds', ask: 'Weeds', name: 'Weeds', why: 'Name it, then kill it (or make peace with it).', show: 4, icon: 'weed' },
+  { id: 'seed', ask: 'Planting grass seed', name: 'Seed and Grass', why: 'What to plant, when to plant it, and whether it’s working.', show: 4, icon: 'seed' },
+  { id: 'feed', ask: 'Fertilizer and soil', name: 'Feed and Soil', why: 'Fertilizer, lime and soil tests, minus the chemistry class.', show: 4, icon: 'bag' },
+  { id: 'job', ask: 'Doing a job right', name: 'Do the Job Right', why: 'Steps in order and exact amounts, so you buy once and do it once.', show: 4, icon: 'list' },
+  { id: 'mow', ask: 'Mowing tips', name: 'Mowing', why: 'How tall, how often, and how to get the stripes.', show: 4, icon: 'mower' },
+  { id: 'gear', ask: 'Buying or fixing gear', name: 'Gear', why: 'What to buy, what to skip, and how to keep it running.', show: 4, icon: 'wrench' },
+  { id: 'crew', ask: 'I have a landscaper', name: 'Got a Guy?', why: 'What to say, what to pay, and how to grade them.', show: 4, icon: 'phone' },
+  { id: 'fun', ask: 'Just here for fun', name: 'Just for Fun', why: 'Lawn nonsense. Scientifically important lawn nonsense.', show: 4, icon: 'game' },
 ];
 
 export const TOOLS = [
@@ -33,15 +36,15 @@ export const TOOLS = [
   { id: 'seed-now', cat: 'now', name: 'Can I Seed Now?', line: 'Soil temperature plus the forecast. A straight yes or no on seeding.', href: '/resources/can-i-seed-now/', tag: 'Live', keys: 'seed overseed plant grass when' },
   { id: 'soil-temp', cat: 'now', name: 'Soil Temperature', line: 'Live soil thermometer for your ZIP. It runs the whole lawn year.', href: '/resources/lawn-soil-temperature/', tag: 'Live', keys: 'soil temperature crabgrass preventer 55' },
   { id: 'mow-check', cat: 'now', name: 'Can I Mow Right Now?', line: 'Day, time and mower type. Find out if the neighbors will hate you.', href: '/blog/lawn-mowing-etiquette/#tool', tag: 'Live', keys: 'mow time early late sunday etiquette noise' },
-  { id: 'mulch-bag', cat: 'now', name: 'Mulch or Bag Today?', line: 'Leave the clippings or bag them? It depends on today.', href: '/blog/mulching-vs-bagging/#tool', tag: 'Picker', keys: 'clippings mulch bag leaves' },
+  { id: 'mulch-bag', cat: 'mow', name: 'Mulch or Bag Today?', line: 'Leave the clippings or bag them? It depends on today.', href: '/blog/mulching-vs-bagging/#tool', tag: 'Picker', keys: 'clippings mulch bag leaves' },
 
   // Something's wrong
   { id: 'dx', cat: 'fix', name: 'What’s Wrong With My Lawn?', line: 'Tap what you see. Get the likely cause, how to check, and the fix.', href: '/resources/whats-wrong-with-my-lawn/', tag: 'Picker', keys: 'brown spots dead patches yellow grubs fungus disease mushrooms' },
-  { id: 'weeds', cat: 'fix', name: 'What’s That Weed?', line: 'Real photos of the 15 weeds you’ll actually find. Swipe, match, fix.', href: '/weeds/', tag: 'Picker', keys: 'weed id identify dandelion clover crabgrass' },
+  { id: 'weeds', cat: 'weeds', name: 'What’s That Weed?', line: 'Real photos of the 15 weeds you’ll actually find. Swipe, match, fix.', href: '/weeds/', tag: 'Picker', keys: 'weed id identify dandelion clover crabgrass' },
   { id: 'critters', cat: 'fix', name: 'Who Dug Up My Lawn?', line: 'Holes, tunnels and torn-up turf. Skunk, vole, mole or raccoon?', href: '/blog/animals-in-your-lawn/#tool', tag: 'Picker', keys: 'animals holes moles voles skunks grubs digging' },
   { id: 'spot-fixer', cat: 'fix', name: 'Dog Pee and Damage Fixer', line: 'Dog spots, bouncy house squares, kiddie pool circles. How to fix each one.', href: '/blog/dog-pee-kids-bouncy-houses-lawn/#tool', tag: 'Picker', keys: 'dog pee urine spots damage kids pool' },
-  { id: 'pre-post', cat: 'fix', name: 'Pre or Post?', line: 'Preventer or weed killer? Tell me the weed and the month.', href: '/blog/pre-emergent-vs-post-emergent/#tool', tag: 'Picker', keys: 'pre-emergent post-emergent weed killer preventer' },
-  { id: 'weed-playbook', cat: 'fix', name: 'Kid and Pet Safe Weed Plan', line: 'Kids and dogs on the lawn? The gentlest way to handle each weed.', href: '/blog/kid-and-pet-safe-lawn-care/#tool', tag: 'Picker', keys: 'kids pets dogs safe organic weeds' },
+  { id: 'pre-post', cat: 'weeds', name: 'Pre or Post?', line: 'Preventer or weed killer? Tell me the weed and the month.', href: '/blog/pre-emergent-vs-post-emergent/#tool', tag: 'Picker', keys: 'pre-emergent post-emergent weed killer preventer' },
+  { id: 'weed-playbook', cat: 'weeds', name: 'Kid and Pet Safe Weed Plan', line: 'Kids and dogs on the lawn? The gentlest way to handle each weed.', href: '/blog/kid-and-pet-safe-lawn-care/#tool', tag: 'Picker', keys: 'kids pets dogs safe organic weeds' },
 
   // Seed and grass
   { id: 'grass', cat: 'seed', name: 'What Grass Seed Should I Buy?', line: 'Four questions about sun, kids and watering. One seed, plus how much.', href: '/resources/what-grass-seed-should-i-buy/', tag: 'Quiz', keys: 'grass type seed picker fescue rye bluegrass shade' },
@@ -64,10 +67,10 @@ export const TOOLS = [
   // Mowing and gear
   { id: 'third', cat: 'mow', name: '1/3 Rule Calculator', line: 'How low can you go today without stressing the grass?', href: '/blog/one-third-rule-mowing/#tool', tag: 'Calculator', keys: 'mowing height one third rule how tall' },
   { id: 'stripes', cat: 'mow', name: 'Stripe Pattern Picker', line: 'Straight, diagonal, checkerboard, diamonds. Difficulty and how-to for each.', href: '/blog/lawn-stripe-patterns/#tool', tag: 'Picker', keys: 'stripes pattern striping' },
-  { id: 'blade', cat: 'mow', name: 'Blade Sharpness Check', line: 'Look at a grass tip. Find out if your blade is a butter knife.', href: '/blog/sharpen-your-mower-blade/#tool', tag: 'Checklist', keys: 'blade sharpen dull' },
-  { id: 'mower-match', cat: 'mow', name: 'Mower Matchmaker', line: 'Push, self-propelled, riding or zero-turn? Swipe right on the right one.', href: '/blog/walk-behind-vs-riding-vs-zero-turn-mower/#tool', tag: 'Quiz', keys: 'buy mower riding zero turn push robot' },
-  { id: 'need', cat: 'mow', name: 'Do I Need This?', line: 'Tap the thing your neighbor bought. Get my verdict.', href: '/blog/lawn-stuff-you-dont-need/#tool', tag: 'Picker', keys: 'buy gear dethatcher roller products' },
-  { id: 'tuneup', cat: 'mow', name: 'Mower Tune-Up Checklist', line: 'The 30-minute DIY tune-up. Oil, plug, filter, blade.', href: '/blog/lawn-mower-maintenance-diy/#tool', tag: 'Checklist', keys: 'maintenance oil spark plug filter' },
+  { id: 'blade', cat: 'gear', name: 'Blade Sharpness Check', line: 'Look at a grass tip. Find out if your blade is a butter knife.', href: '/blog/sharpen-your-mower-blade/#tool', tag: 'Checklist', keys: 'blade sharpen dull' },
+  { id: 'mower-match', cat: 'gear', name: 'Mower Matchmaker', line: 'Push, self-propelled, riding or zero-turn? Swipe right on the right one.', href: '/blog/walk-behind-vs-riding-vs-zero-turn-mower/#tool', tag: 'Quiz', keys: 'buy mower riding zero turn push robot' },
+  { id: 'need', cat: 'gear', name: 'Do I Need This?', line: 'Tap the thing your neighbor bought. Get my verdict.', href: '/blog/lawn-stuff-you-dont-need/#tool', tag: 'Picker', keys: 'buy gear dethatcher roller products' },
+  { id: 'tuneup', cat: 'gear', name: 'Mower Tune-Up Checklist', line: 'The 30-minute DIY tune-up. Oil, plug, filter, blade.', href: '/blog/lawn-mower-maintenance-diy/#tool', tag: 'Checklist', keys: 'maintenance oil spark plug filter' },
   { id: 'workout', cat: 'mow', name: 'Mowing Calorie Calculator', line: 'Push mower = cardio. Riding mower = a hobby with a cupholder.', href: '/blog/mowing-the-lawn-is-a-workout/#tool', tag: 'Calculator', keys: 'calories exercise steps workout' },
 
   // Got a guy

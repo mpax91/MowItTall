@@ -816,21 +816,29 @@ main.nb-page > section.nb-rules { padding: 26px 0 0; }
 .ml-prof span, .ml-prof b { position: relative; z-index: 1; }
 
 /* ---------- /resources/ tool grid (tg-*) */
-.tg-pick { margin-top: 6px; }
-.tg-ask { font-size: 1.15rem; margin: 0 0 10px; }
-.tg-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.tg-chip {
-  font: 700 0.92rem/1 var(--body); color: var(--paper); background: rgba(0, 0, 0, 0.22);
-  border: 2px solid rgba(238, 245, 230, 0.35); border-radius: 999px; padding: 9px 13px; cursor: pointer;
-  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+.tg-form {
+  margin-top: 4px; padding: 14px; border-radius: 12px; background: var(--paper); color: var(--ink);
+  border: 2px solid #0a2414; box-shadow: 0 4px 0 #0a2414; display: grid; gap: 10px;
 }
-.tg-chip[aria-pressed='true'] { background: #f6c945; border-color: #f6c945; color: #12301d; }
+.tg-field { display: grid; gap: 7px; }
+.tg-label { font: 800 1.12rem/1.15 var(--display); color: var(--ink); }
+.tg-select { position: relative; display: block; }
+.tg-select select {
+  -webkit-appearance: none; appearance: none; width: 100%; box-sizing: border-box; cursor: pointer;
+  font: 700 1rem/1.2 var(--body); color: #fff; background: #1f5a37; text-overflow: ellipsis; border: 2px solid #0a2414; border-radius: 9px;
+  padding: 14px 42px 14px 14px; box-shadow: inset 0 -3px 0 rgba(0, 0, 0, 0.25);
+}
+.tg-select select:focus-visible { outline: 3px solid #f6c945; outline-offset: 2px; }
+.tg-select svg { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #f6c945; pointer-events: none; }
 .tg-find {
-  display: flex; align-items: center; gap: 8px; margin-top: 12px; padding: 0 12px;
-  background: var(--paper); color: var(--ink); border-radius: 10px; border: 2px solid #0a2414;
+  display: flex; align-items: center; gap: 8px; padding: 0 12px; color: #3b5a43;
+  background: #fff; border-radius: 9px; border: 2px solid #c5d6bc;
 }
-.tg-find input { flex: 1; min-width: 0; border: 0; background: transparent; font: 1rem var(--body); color: var(--ink); padding: 12px 0; outline: none; }
-.tg-find:focus-within { box-shadow: 0 0 0 3px #f6c945; }
+.tg-find input { flex: 1; min-width: 0; border: 0; background: transparent; font: 0.98rem var(--body); color: var(--ink); padding: 11px 0; outline: none; }
+.tg-find:focus-within { border-color: #1f5a37; }
+.tg-status { margin: 12px 0 0; font-size: 0.95rem; color: var(--paper-dim); display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; }
+.tg-status[hidden] { display: none; }
+.tg-reset { font: 700 0.9rem/1 var(--body); color: var(--paper); background: none; border: 0; padding: 4px 0; text-decoration: underline; cursor: pointer; }
 .tg-none { padding: 18px var(--col) 0; color: var(--paper-dim); }
 .tg-none a { color: var(--paper); font-weight: 700; }
 main > section.tg-sec { padding-top: 26px; padding-bottom: 6px; scroll-margin-top: 12px; }
