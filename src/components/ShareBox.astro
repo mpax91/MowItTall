@@ -5,8 +5,10 @@
 // Instagram has no web share link: on phones it opens the share sheet (Instagram is in it); elsewhere it copies the link.
 import { siFacebook, siInstagram, siThreads, siX, siPinterest, siReddit, siBluesky } from 'simple-icons';
 import { allPins, pinUrl } from '../data/pins.js';
-interface Props { path: string; title: string; kind?: 'post' | 'guide' }
-const { path, title, kind = 'post' } = Astro.props;
+import { tipLink, TIPS_ON, TIP_URL } from '../data/site.js';
+// end: the one closing box on posts and guides (Nov 17): "Find This Helpful?" + Share This + the beer tip button.
+interface Props { path: string; title: string; kind?: 'post' | 'guide'; end?: boolean }
+const { path, title, kind = 'post', end = false } = Astro.props;
 const site = 'https://mowittall.com';
 const u = (src: string) => `${site}${path}?utm_source=${src}&utm_medium=share`;
 const enc = encodeURIComponent;
@@ -28,12 +30,17 @@ const items = [
   { id: 'more', name: 'More', href: '', svg: 'M5 12h.01M12 12h.01M19 12h.01', stroke: true, color: '#12301d', native: true, onlyNative: true },
 ];
 ---
-<aside class="share" data-share data-share-url={`${site}${path}`} data-share-title={title} data-pagefind-ignore>
-  <p class="share-q"><b>Know someone who needs this?</b> <span>Send it to them. Takes two taps.</span></p>
-  <button type="button" class="btn share-open" data-share-open aria-haspopup="dialog">
-    <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5M5 13v7h14v-7" /></svg>
-    Share This
-  </button>
+<aside class:list={['share', end && 'share-end']} data-share data-share-url={`${site}${path}`} data-share-title={title} data-pagefind-ignore>
+  {end
+    ? <p class="share-q"><b>Find This Helpful?</b> <span>Send it to someone who needs it, or say thanks with a beer.</span></p>
+    : <p class="share-q"><b>Know someone who needs this?</b> <span>Send it to them. Takes two taps.</span></p>}
+  <div class="share-btns">
+    <button type="button" class="btn share-open" data-share-open aria-haspopup="dialog">
+      <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5M5 13v7h14v-7" /></svg>
+      Share This
+    </button>
+    {end && TIPS_ON && <a class="btn share-beer" href={TIP_URL || tipLink(5)} target="_blank" rel="noopener" data-track="tip_click" data-track-link_area="post_end">Say Thanks With a Beer</a>}
+  </div>
   <dialog class="share-sheet" aria-labelledby={`share-h-${kind}`}>
     <div class="share-top">
       <h2 id={`share-h-${kind}`}>Share This</h2>

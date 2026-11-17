@@ -1,12 +1,11 @@
 ---
 import Base from './Base.astro';
-import BeerCallout from '../components/BeerCallout.astro';
 import ShareBox from '../components/ShareBox.astro';
 import { PIN_TOOLS } from '../data/pins.js';
 import { processArticle } from '../lib/autolink.js';
 import { topicBySlug } from '../data/topics.js';
 import { ogSlug } from '../data/og.js';
-import { allPosts as allPostsFn, readMinutes } from '../data/posts.js';
+import { allPosts as allPostsFn } from '../data/posts.js';
 import MowCheck from '../components/MowCheck.astro';
 import MowWorkout from '../components/MowWorkout.astro';
 import Playlist from '../components/Playlist.astro';
@@ -63,7 +62,6 @@ const related = [
 ].slice(0, 3);
 const date = (frontmatter.date instanceof Date ? frontmatter.date.toISOString() : String(frontmatter.date)).slice(0, 10);
 const art = processArticle(await Astro.slots.render('default'), path, { autolink: frontmatter.autolink !== false });
-const minutes = readMinutes(frontmatter, art.words);
 const tool = frontmatter.pinTool || (widget && PIN_TOOLS[widget]) || '';
 const summary = frontmatter.summary || description;
 const posting = {
@@ -104,14 +102,12 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [posting, crumbs, .
       <span class="clip-tag">{tag}</span>
       <h1>{title}</h1>
     </header>
-    <table class="post-sum" data-pagefind-ignore>
-      <tbody>
-        <tr><th scope="row">In Short</th><td>{summary}</td></tr>
-        <tr><th scope="row">Read Time</th><td>About {minutes} min</td></tr>
-        {tool && <tr><th scope="row">Free Tool</th><td><a href="#tool" data-track="toc_click" data-track-target="tool">{tool.replace(/^The /, '')} ↓</a></td></tr>}
-      </tbody>
-    </table>
-    <article class="prose">
+    <section class="post-short" data-pagefind-ignore aria-label="The short version">
+      <p class="post-short-h">The Short Version</p>
+      <p class="post-short-t">{summary}</p>
+      {tool && <a class="post-short-tool" href="#tool" data-track="toc_click" data-track-target="tool"><span>Try the Tool</span> {tool.replace(/^The /, '')} <b aria-hidden="true">↓</b></a>}
+    </section>
+    <article class="prose prose-card">
       <Fragment set:html={art.html} />
     </article>
     {widget === 'seed-watch' && (
@@ -243,13 +239,7 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [posting, crumbs, .
         })();
       </script>
     )}
-    <ShareBox path={path} title={title} kind="post" />
-    {topics.length > 0 && (
-      <nav class="post-topics" aria-label="More on these topics" data-pagefind-ignore>
-        <span>More on:</span>
-        {topics.map((t) => <a class="bf-chip" href={`/blog/topic/${t}/`}>{topicBySlug[t].name}</a>)}
-      </nav>
-    )}
+    <ShareBox path={path} title={title} kind="post" end />
     {related.length > 0 && (
       <nav class="related" aria-labelledby="related-h" data-pagefind-ignore>
         <h2 id="related-h">Read These Next</h2>
@@ -260,9 +250,8 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [posting, crumbs, .
         </ul>
       </nav>
     )}
-    <BeerCallout />
     <aside class="window post-cta" data-pagefind-ignore>
-      <h2>Want the Short Version for Your Yard?</h2>
+      <h2>Want This Timed for Your Yard?</h2>
       <p>Seven quick questions, one minute. A plan made for your yard, then I’ll walk you through it all year, one short email at a time.</p>
       <a class="btn" href="/plan/">Get Your Free Lawn Plan</a>
     </aside>

@@ -1,0 +1,85 @@
+---
+// Homepage "Most Popular" (Mike, Nov 17): the two features Mike wants front and center.
+// 1) Measure Your Yard: a little top-down yard where a shape draws itself and the square feet pop in.
+// 2) What's That Weed?: a swipe strip of the weeds people ask about most (photo thumbs → weed pages).
+// Weed photos are free-licensed; credits live on /weeds/ (linked under the strip).
+import { WEEDS } from '../data/weeds.js';
+const TOP = ['dandelion', 'crabgrass', 'clover', 'creeping-charlie', 'nutsedge', 'violet'];
+const weeds = TOP.map((id) => WEEDS.find((w) => w.id === id)).filter(Boolean);
+// Lawn outline (a front yard bending around the driveway). Corner dots + label sit on these.
+const pts = [[118, 40], [300, 40], [300, 160], [150, 160], [150, 112], [118, 112]];
+const d = 'M' + pts.map((p) => p.join(',')).join(' L') + ' Z';
+---
+<section class="row-sec pop" id="popular" aria-labelledby="popular-h">
+  <div class="row-head">
+    <h2 id="popular-h">Most Popular</h2>
+    <a class="row-all" href="/resources/" aria-label="See all free tools">All Tools</a>
+  </div>
+
+  <a class="pop-card pop-measure" href="/measure/" data-track="tool_click" data-track-tool_name="measure" data-track-link_area="home_popular">
+    <svg class="pop-map" viewBox="0 0 320 180" role="img" aria-label="A yard seen from above, with the lawn outlined and labeled 4,820 square feet">
+      <defs>
+        <pattern id="popStripe" width="24" height="180" patternUnits="userSpaceOnUse">
+          <rect width="12" height="180" fill="#3f8a4f" /><rect x="12" width="12" height="180" fill="#357a45" />
+        </pattern>
+      </defs>
+      <rect width="320" height="180" fill="#2c6b3c" />
+      <rect x="118" y="40" width="182" height="120" fill="url(#popStripe)" />
+      <rect x="118" y="112" width="32" height="48" fill="#2c6b3c" />
+      <!-- road + driveway -->
+      <rect y="166" width="320" height="14" fill="#5b5f58" />
+      <rect x="20" y="96" width="80" height="70" fill="#8a8c82" />
+      <!-- house -->
+      <rect x="14" y="14" width="92" height="82" fill="#9a4b3c" />
+      <path d="M14 14 L60 55 L106 14 M60 55 L60 96" stroke="#7a3a2e" stroke-width="3" fill="none" />
+      <!-- trees -->
+      <circle cx="292" cy="20" r="17" fill="#1f5230" /><circle cx="286" cy="16" r="7" fill="#2b6a3d" />
+      <circle cx="130" cy="18" r="12" fill="#1f5230" />
+      <!-- the outline that draws itself -->
+      <path class="pop-line" d={d} pathLength="100" />
+      {pts.map(([x, y], i) => <rect class="pop-dot" x={x - 4} y={y - 4} width="8" height="8" style={`--i:${i}`} />)}
+      <g class="pop-label">
+        <rect x="174" y="83" width="92" height="30" rx="5" fill="#f1f6ec" stroke="#12301d" stroke-width="2.5" />
+        <text x="220" y="103" text-anchor="middle">4,820 sq ft</text>
+      </g>
+    </svg>
+    <span class="pop-body">
+      <span class="pop-title">Measure Your Yard</span>
+      <span class="pop-sub">Find your house, tap the corners, get your square feet. Every bag and seed amount on the site then fits your lawn.</span>
+      <span class="pop-btn">Measure My Lawn</span>
+    </span>
+  </a>
+
+  <div class="pop-card pop-weeds">
+    <span class="pop-body">
+      <a class="pop-title" href="/weeds/" data-track="tool_click" data-track-tool_name="weeds" data-track-link_area="home_popular">What’s That Weed?</a>
+      <span class="pop-sub">Real photos you’ll actually recognize. Tap one for the easy fix.</span>
+    </span>
+    <ul class="pop-strip" aria-label="Common lawn weeds">
+      {weeds.map((w) => (
+        <li>
+          <a href={`/weeds/${w.id}/`} data-track="tool_click" data-track-tool_name="weeds" data-track-choice={w.id} data-track-link_area="home_popular">
+            <img src={`/img/weeds/${w.id}-thumb.webp`} alt="" width="76" height="76" loading="lazy" decoding="async" />
+            <span>{w.name}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+    <span class="pop-body pop-body-end">
+      <a class="pop-btn" href="/weeds/" data-track="tool_click" data-track-tool_name="weeds" data-track-link_area="home_popular">Find My Weed</a>
+      <a class="pop-credit" href="/weeds/#credits-h">Photo credits</a>
+    </span>
+  </div>
+</section>
+
+<script>
+  // Draw the outline once the card scrolls into view (instantly if reduced motion).
+  const card = document.querySelector('.pop-measure');
+  if (card) {
+    if (!('IntersectionObserver' in window) || matchMedia('(prefers-reduced-motion: reduce)').matches) card.classList.add('is-on');
+    else {
+      const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { card.classList.add('is-on'); io.disconnect(); } }, { threshold: 0.45 });
+      io.observe(card);
+    }
+  }
+</script>

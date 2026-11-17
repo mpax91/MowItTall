@@ -14,11 +14,11 @@ import { SOCIALS_MAIN, SAME_AS, MIKE_PROFILES, X_HANDLE, CONTACT_EMAIL } from '.
 const OG = allOgPages();
 const PINS = allPins();
 const FOOT_TOPICS = ['mowing', 'feeding', 'seeding', 'weeds', 'soil', 'gear'].map((slug) => TOPICS.find((t) => t.slug === slug)).filter(Boolean);
+// Footer (Nov 17 simplify): short on purpose. Everything else stays live and is reached from hubs, in-line links,
+// emails and search. Before dropping a hub from here, make sure some other page still links to it (audit: orphans).
 const FOOTER = [
-  { title: 'Start Here', links: [['/plan/', 'Free Lawn Plan'], ['/account/', 'Your Lawn Profile'], ['/lawn-101/', 'Lawn 101'], ['/calendar/', 'Lawn Calendar'], ['/guides/', 'Lawn Guides'], ['/lawn-care/', 'Lawn Care by Town'], ['/search/', 'Search the Site']] },
-  { title: 'Free Tools', links: [['/weeds/', 'What’s That Weed?'], ['/measure/', 'Measure Your Yard'], ['/resources/whats-wrong-with-my-lawn/', 'What’s Wrong With My Lawn?'], ['/resources/should-i-water-my-lawn/', 'Should I Water?'], ['/resources/can-i-seed-now/', 'Can I Seed Now?'], ['/resources/lawn-calculator/', 'Lawn Calculator'], ['/resources/', 'All Free Tools']] },
-  { title: 'The Blog', links: [['/blog/', 'All Posts'], ...FOOT_TOPICS.map((t) => [`/blog/topic/${t.slug}/`, t.name.replace(/\b(\w)/g, (m) => m.toUpperCase()).replace(' For ', ' for ')])] },
-  { title: 'Just for Fun', links: [['/games/', 'Lawn Games'], ['/hall/', 'Hall of Fame & Shame'], ['/yards/', 'Mike’s Yard'], ['/neighbor/', 'Send to a Neighbor'], ['/merch/', 'Merch']] },
+  { title: 'The Basics', links: [['/plan/', 'Free Lawn Plan'], ['/calendar/', 'Lawn Calendar'], ['/measure/', 'Measure Your Yard'], ['/weeds/', 'What’s That Weed?'], ['/resources/', 'All Free Tools'], ['/blog/', 'The Blog']] },
+  { title: 'More', links: [['/yards/', 'Mike’s Yard'], ['/games/', 'Lawn Games'], ['/hall/', 'Hall of Fame & Shame'], ['/merch/', 'Merch']] },
 ];
 
 interface Props {
@@ -72,11 +72,12 @@ const pageItems = !jsonLd ? [] : Array.isArray(jsonLd) ? jsonLd.flatMap((j) => j
 const seen = new Set();
 const graph = [...pageItems.map(({ '@context': _c, ...rest }) => rest), ...crumbLd, ...siteGraph].filter((n) => !n['@id'] || (seen.has(n['@id']) ? false : (seen.add(n['@id']), true)));
 const ld = { '@context': 'https://schema.org', '@graph': graph };
+// Main nav (Nov 17 simplify): four jobs, not four content types.
 const NAV = [
-  { href: '/lawn-101/', label: 'Lawn 101', match: (p) => p.startsWith('/lawn-101') || p.startsWith('/weeds') || p.startsWith('/yards') },
-  { href: '/resources/', label: 'Resources', match: (p) => p.startsWith('/resources') || p.startsWith('/measure') },
+  { href: '/calendar/', label: 'Calendar', match: (p) => p.startsWith('/calendar') },
+  { href: '/weeds/', label: 'Weeds', match: (p) => p.startsWith('/weeds') },
+  { href: '/measure/', label: 'Measure', match: (p) => p.startsWith('/measure') },
   { href: '/blog/', label: 'Blog', match: (p) => p.startsWith('/blog') },
-  { href: '/games/', label: 'Games', match: (p) => p.startsWith('/games') },
 ];
 ---
 <!doctype html>

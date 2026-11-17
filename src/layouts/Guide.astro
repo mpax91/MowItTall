@@ -25,6 +25,7 @@ const guides = allPosts(import.meta.glob('../pages/guides/[a-z]*.md', { eager: t
   .filter((g) => g.url !== path).map((g) => ({ ...g, s: score(g) })).filter((g) => g.s > 0).sort((a, b) => b.s - a.s).slice(0, 4);
 const posts = allPosts(import.meta.glob('../pages/blog/[a-z]*.md', { eager: true }))
   .map((p) => ({ ...p, s: score(p) })).filter((p) => p.s > 0).sort((a, b) => b.s - a.s || new Date(b.date) - new Date(a.date)).slice(0, 3);
+const next = [...guides.slice(0, 2), ...posts.slice(0, 1), ...guides.slice(2)].slice(0, 3);
 const jsonLd = { '@graph': [
   {
     '@type': 'Article', '@id': `${site}${path}#article`, headline: title, description, datePublished: date, dateModified: modified, inLanguage: 'en-US',
@@ -36,7 +37,7 @@ const jsonLd = { '@graph': [
 ] };
 ---
 <Base title={metaTitle} description={frontmatter.seoDescription || description} path={path} jsonLd={jsonLd} type="article" published={date} modified={modified}
-  crumbs={[['Guides', '/guides/'], [short, path]]} dl={{ post_topics: topics.join(','), published: date }}>
+  beer={false} crumbs={[['Guides', '/guides/'], [short, path]]} dl={{ post_topics: topics.join(','), published: date }}>
   <main id="main" class="post guide">
     <header class="post-head">
       <span class="clip-tag">Guide</span>
@@ -44,11 +45,11 @@ const jsonLd = { '@graph': [
     </header>
     {answer && (
       <section class="window guide-answer" aria-labelledby="qa-h">
-        <h2 id="qa-h">The Short Answer <span class="qa-time">About {readMinutes(frontmatter, art.words)} min read</span></h2>
+        <h2 id="qa-h">The Short Answer</h2>
         <p set:html={answer} />
       </section>
     )}
-    <article class="prose">
+    <article class="prose prose-card">
       <Fragment set:html={art.html} />
     </article>
     {tools.length > 0 && (
@@ -70,20 +71,11 @@ const jsonLd = { '@graph': [
         <ul>{sources.map((s) => <li><a href={s.url} rel="noopener" target="_blank">{s.name}</a></li>)}</ul>
       </aside>
     )}
-    <ShareBox path={path} title={title} kind="guide" />
-    <aside class="guide-bio" data-pagefind-ignore>
-      <p><b>Who’s Mike?</b> A homeowner in Bedford, NY, known around town as the lawn guy because of the stripes. No lawn company, no products to sell you. <a href="/yards/">See the yard</a>.</p>
-    </aside>
-    {guides.length > 0 && (
-      <nav class="related guide-more" aria-labelledby="more-g" data-pagefind-ignore>
-        <h2 id="more-g">More Straight Answers</h2>
-        <ul class="clip-list">{guides.map((g) => <li><a class="clip" href={g.url}><span class="clip-tag">Guide</span><span class="clip-title">{g.title}</span></a></li>)}</ul>
-      </nav>
-    )}
-    {posts.length > 0 && (
-      <nav class="related" aria-labelledby="more-p" data-pagefind-ignore>
-        <h2 id="more-p">The Fun Version (From the Blog)</h2>
-        <ul class="clip-list">{posts.map((p) => <li><a class="clip" href={p.url}><span class="clip-tag">{p.tag}</span><span class="clip-title">{p.title}</span></a></li>)}</ul>
+    <ShareBox path={path} title={title} kind="guide" end />
+    {next.length > 0 && (
+      <nav class="related" aria-labelledby="more-g" data-pagefind-ignore>
+        <h2 id="more-g">Read These Next</h2>
+        <ul class="clip-list">{next.map((g) => <li><a class="clip" href={g.url}><span class="clip-tag">{g.tag || 'Guide'}</span><span class="clip-title">{g.title}</span></a></li>)}</ul>
       </nav>
     )}
     <aside class="window post-cta" data-pagefind-ignore data-cta-loc="guide_end">
