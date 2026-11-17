@@ -91,8 +91,8 @@ const QUIET = [
 ];
 // Summer mowing notes: shown at every effort level, even when the month has jobs (Mike, Nov 16).
 const NOTE = {
-  7: 'Mow less often. Growth slows in the heat, so go by the grass, not the calendar, and follow <a href="/blog/one-third-rule-mowing/">the one-third rule</a>: never cut off more than a third of the blade at once.',
-  8: 'The grass starts checking out in the heat. Mow only when it needs it, keep the deck high, and if it goes a little brown in a dry spell, it’s napping, not dead.',
+  7: 'You probably don’t need to mow as often as the last few months. Go by the grass, not the calendar.',
+  8: 'Probably mow even less often than July as the grass starts to check out in the heat. If it goes a little brown in a dry spell, it’s napping, not dead.',
 };
 
 const SMALL = new Set(['a', 'an', 'the', 'and', 'or', 'of', 'to', 'in', 'on', 'at', 'by', 'for', 'up', 'as']);
@@ -207,7 +207,7 @@ export function agendaHTML({ months, today = null, level = 3, sqft = BASE_SQFT }
       const isToday = todayKey === ymd(r.d);
       html += `<div class="ag-day${isToday ? ' is-today' : ''}"><p class="ag-date"><span>${DOW[r.d.getDay()]}</span><b>${r.d.getDate()}</b></p><div class="ag-items">${r.ev.map((t) => taskCard(t, y, today, sqft)).join('')}</div></div>`;
     }
-    html += `<a class="ag-mlink" href="/calendar/${MONTHS_LONG[m - 1].toLowerCase()}/">More on ${MONTHS_LONG[m - 1]} lawn care →</a></section>`;
+    html += `<a class="ag-mlink" href="/calendar/${MONTHS_LONG[m - 1].toLowerCase()}/">More on ${MONTHS_LONG[m - 1]} Lawn Care →</a></section>`;
   });
   return html;
 }

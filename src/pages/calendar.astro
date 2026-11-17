@@ -9,22 +9,21 @@ const title = 'Lawn Care Calendar for the Northeast: What to Do Each Month';
 const description =
   'A month-by-month lawn care schedule for the Northeast. Pick how much effort you want and get every job with its date window, starting this month.';
 ---
-<Base title={title} description={description} path="/calendar/" crumbs={[["Resources", "/resources/"], ["Lawn Calendar", "/calendar/"]]}>
+<Base title={title} description={description} path="/calendar/" crumbs={[["Lawn Calendar", "/calendar/"]]}>
   <main id="main">
     <section class="page-head page-head-hub">
       <h1>The Lawn Calendar</h1>
-      <p class="lede">Every lawn job for the year, in order, starting this month. Pick how much effort you want and I’ll build your calendar. Timing is set for the Northeast.</p>
+      <p class="lede">Every lawn job for the year, starting this month. Pick your effort level and I’ll build your calendar.</p>
     </section>
 
     <section class="ag-wrap" data-agenda-root>
       <div class="ag-controls window" id="effort">
-        <h2 class="ag-ctl-label" id="ag-lv-h">How Much Effort Do You Want to Put In?</h2>
+        <h2 class="ag-ctl-label" id="ag-lv-h">How Much Effort Do You Want?</h2>
         <div class="ag-seg" role="group" aria-labelledby="ag-lv-h">
           {LEVELS.map((l, i) => (
             <button type="button" data-level={i} aria-pressed="false"><b>{l.name}</b><span>{l.note}</span><em>{levelShort(i)}</em><em class="ag-cost" data-cost>{money(levelCost(i))}</em></button>
           ))}
         </div>
-        <p class="ag-note" data-note>Per year. Hours are extra time on top of your normal mowing. Costs are supplies for a typical 5,000 sq ft lawn, assuming you already own a mower and spreader. <a href="/measure/">Measure yours</a> for your numbers.</p>
       </div>
 
       <div class="ag-cal" data-cal hidden>
@@ -38,11 +37,11 @@ const description =
           </ul>
         </nav>
         <div class="ag-months" data-agenda></div>
+        <div class="ag-nudge" data-nudge></div>
         <div class="ag-end window">
           <h2 class="ag-end-h">Put It on Your Phone</h2>
           <p>One reminder for each job. It repeats every year, so you only do this once.</p>
           <button type="button" class="btn ag-ics" data-ics>Add to My Phone Calendar</button>
-          <div class="ag-nudge" data-nudge></div>
         </div>
       </div>
     </section>
@@ -74,7 +73,6 @@ const description =
   } catch { /* private mode */ }
   if (sqft !== BASE_SQFT) {
     buttons.forEach((b) => { b.querySelector('[data-cost]').textContent = money(levelCost(Number(b.dataset.level), sqft)); });
-    root.querySelector('[data-note]').textContent = `Per year. Hours are extra time on top of your normal mowing. Costs are supplies sized to your ${sqft.toLocaleString('en-US')} sq ft lawn, assuming you already own a mower and spreader.`;
   }
 
   // month pills in calendar order (this month first), each jumps to its month

@@ -2260,7 +2260,7 @@ main > section.ag-wrap { padding-top: 6px; }
 .ag-end-h { margin: 0 0 4px; font-size: 1.2rem; }
 .ag-end > p { margin: 0 0 12px; color: #e3efdc; font-size: 0.95rem; }
 .ag-nudge:empty { display: none; }
-.ag-nudge { margin-top: 14px; padding-top: 12px; border-top: 2px dashed rgba(238, 245, 230, 0.3); display: grid; gap: 8px; }
+.ag-nudge { margin: 6px 0 16px; padding: 12px 14px; border: 2px dashed rgba(238, 245, 230, 0.35); border-radius: 10px; display: grid; gap: 8px; }
 .ag-nudge p { margin: 0; font-size: 0.95rem; color: #e3efdc; }
 .ag-nudge b { color: #fff; }
 .ag-nudge button { padding: 0; font: inherit; font-weight: 700; color: var(--sun); background: none; border: 0; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
@@ -2274,8 +2274,8 @@ main > section.ag-wrap { padding-top: 6px; }
 .ag-mhead {
   position: sticky; top: 0; z-index: 6; display: flex; align-items: baseline; justify-content: space-between; gap: 10px;
   margin: 0 calc(-1 * var(--gutter)) 6px; padding: 12px var(--gutter) 10px;
-  background: repeating-linear-gradient(90deg, #1d4a2f 0 28px, #183f28 28px 56px);
-  border-bottom: 3px solid var(--win-edge); box-shadow: 0 3px 0 rgba(159, 211, 106, 0.25);
+  background: linear-gradient(180deg, #2a6340, #163c24);
+  border-top: 2px solid rgba(238, 245, 230, 0.18); border-bottom: 3px solid var(--win-edge); box-shadow: 0 3px 0 rgba(5, 20, 10, 0.35);
 }
 @media (min-width: 760px) { .ag-mhead { margin-inline: -16px; padding-inline: 16px; border-radius: 0 0 8px 8px; } }
 .ag-mname { font-family: var(--display); font-weight: 800; font-size: 1.45rem; letter-spacing: -0.02em; line-height: 1.1; }
