@@ -1,3 +1,4 @@
+import { crmPublic, crmAdmin, crmInbound, crmEvents, dripTick } from './crm.js';
 import { PLAYBOOK } from './playbook.js';
 import { ingest, summary, exportRows, nightly, rollup, evInit, etDate } from './events.js';
 import { seoTick, seoReport } from './seo.js';
@@ -232,6 +233,7 @@ async function dash(env, req, url) {
   const key = req.headers.get('x-admin-key') || url.searchParams.get('key');
   if (!isAdmin(env, key)) return bad('Wrong key.', 401);
   const p = url.pathname;
+  if (p.startsWith('/api/admin/crm/')) return await crmAdmin(env, req, url);
   if (p === '/api/admin/overview') {
     const week = Date.now() - 7 * 86400000;
     const [posts, votes, uploads, posted] = await env.DB.batch([
@@ -370,7 +372,7 @@ export default {
       return Response.redirect(`https://mowittall.com${url.pathname}${url.search}`, 301);
     }
     // The build's SEO audit report is for HQ only (read by the hourly job through ASSETS).
-    if (url.pathname.startsWith('/_audit/')) return new Response('Not found', { status: 404 });
+    if (url.pathname.startsWith('/_audit/') || url.pathname.startsWith('/crm/')) return new Response('Not found', { status: 404 });
     if (!url.pathname.startsWith('/api/')) {
       if (req.method === 'GET' || req.method === 'HEAD') {
         try { await init(env.DB); const r = await shortRedirect(req, env, ctx, url); if (r) return r; } catch { /* fall through to the page */ }
@@ -378,6 +380,10 @@ export default {
       return env.ASSETS.fetch(req);
     }
     // First-party event log: no Hall database needed, never errors back to the page.
+    // Email: sign-ups, open/click tracking, unsubscribe (worker/crm.js, own database).
+    if (url.pathname.startsWith('/api/crm/') || url.pathname.startsWith('/api/m/')) {
+      try { return await crmPublic(req, env, ctx, url); } catch (e) { console.log('crm', e?.message); return json({ error: 'Something broke on our end. Try again in a minute.' }, 500); }
+    }
     if (url.pathname === '/api/e') return req.method === 'POST' ? await ingest(req, env, ctx).catch(() => new Response(null, { status: 204 })) : bad('Not found.', 404);
     // Read-only export for MikeCOS: EXPORT_KEY (if set) works here as well as the admin password.
     if (url.pathname === '/api/admin/events/export' && env.EXPORT_KEY && req.headers.get('x-export-key') === env.EXPORT_KEY) {
@@ -404,7 +410,16 @@ export default {
   async scheduled(event, env, ctx) {
     ctx.waitUntil((async () => {
       try { await init(env.DB); await seoTick(env); } catch (e) { console.log('seo tick failed', e?.message); }
+      try { await dripTick(env, event.scheduledTime || Date.now()); } catch (e) { console.log('drip tick failed', e?.message); }
       if (new Date(event.scheduledTime || Date.now()).getUTCHours() === 7) await nightly(env);
     })());
+  },
+  // Replies to the drip (Email Routing rule: mike@mowittall.com → this worker). Stored for HQ → Email → Inbox.
+  async email(message, env, ctx) {
+    try { await crmInbound(message, env, ctx); } catch (e) { console.log('inbound failed', e?.message); }
+  },
+  // Delivery events (delivered / bounced / complained) from Cloudflare Email Service via a Queue.
+  async queue(batch, env) {
+    await crmEvents(batch, env);
   },
 };

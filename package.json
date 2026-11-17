@@ -20,6 +20,7 @@
     "leaflet-rotate": "^0.6.2",
     "pagefind": "^1.6.0",
     "polylabel": "^2.1.0",
+    "postal-mime": "^4.2.1",
     "qrcode-generator": "^2.0.4"
   },
   "devDependencies": {

@@ -1,0 +1,392 @@
+// The email drip: one year of lawn email, built from the site (Nov 17 2026).
+//
+// What goes out, in priority order, at most one email a day (8am Eastern):
+//   1. Job reminders: every job in the person's plan (src/data/tasks.js, same levels as /calendar/), a few
+//      days before it's due, with the amount for their lawn. Holiday jobs go out the Thursday-ish before.
+//   2. Welcome series: day 0 game plan, day 2 free fix, day 4 measure, day 7 hello from Mike, day 10 extra.
+//   3. Weekly content (Thursdays): a pinned seasonal email if one is due, else "your month" on the first
+//      Thursday of the month, else the best unsent post/guide/tool from /crm/library.json (in season first,
+//      then matching their problems). Every new post joins the pool automatically.
+// Cadence rules: one email a day max, content needs 2 quiet days before it, "jobs only" people get only
+// job reminders. Everything is a pure function of (contact, what they've been sent, today), so HQ can
+// preview anyone's next email and simulate a whole year without sending anything.
+//
+// Copy is Claude's, in Mike's voice. Mike reviews it (HQ → Email → Year at a Glance shows every email).
+import { buildPlan, amountFor, costFor, TASK_LINKS, LEVEL_NAMES, fmtDate } from '../src/data/gamePlan.js';
+import { TASKS, statusOf, MONTHS_LONG } from '../src/data/tasks.js';
+import { placeOf } from '../src/scripts/agenda.js';
+import { MONTH_PAGES } from '../src/data/monthPages.js';
+
+const DAY = 86400000;
+const strip = (s) => String(s || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+const plural = (n, w) => `${n} ${w}${n === 1 ? '' : 's'}`;
+const firstSentence = (s) => (strip(s).match(/^.*?[.!?](\s|$)/) || [strip(s)])[0].trim();
+
+// Eastern calendar day of a timestamp, as a Date at noon (same convention as `today`).
+const ET_FMT = new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', year: 'numeric', month: 'numeric', day: 'numeric' });
+export function etDay(ts) {
+  const p = Object.fromEntries(ET_FMT.formatToParts(new Date(ts)).map((x) => [x.type, x.value]));
+  return new Date(Number(p.year), Number(p.month) - 1, Number(p.day), 12);
+}
+
+/* ------------------------------------------------------------------ job reminders */
+// Subject lines for each job. A = the punchy one, B = plain "what and when" (the job-subject test).
+export const JOB_SUBJECTS = {
+  blade: 'Your mower blade is probably dull. 20-minute fix.',
+  raise: 'The free lawn upgrade: one lever, ten seconds',
+  cleanup: 'Time to wake the lawn up (one rake, one hour)',
+  crabgrass: 'Tax Day is coming. So is the crabgrass.',
+  'spring-feed': 'Memorial Day weekend: feed the lawn before the burgers',
+  'spot-weeds': 'Weeds are growing. That’s actually good news.',
+  grubs: 'Grub check: 5 minutes, one square foot',
+  'july4-feed': 'July 4th feeding: half a dose, and only if you water',
+  summer: 'Summer mode: mow tall, water deep, don’t panic',
+  'soil-test': 'Blood work for your lawn (it’s $25)',
+  aerate: 'Aeration season. Hire it or rent it, then seed.',
+  seed: 'It’s seed week. September is the whole game.',
+  'fall-feed': 'Labor Day is Monday. Feed the lawn.',
+  'fall-weeds': 'Fall weed control (skip anything you seeded)',
+  'columbus-feed': 'Columbus Day: the pre-game feed for Halloween',
+  leaves: 'Don’t rake. Mow the leaves.',
+  lime: 'Did your soil test say lime? Now’s the time.',
+  'thanksgiving-feed': 'The Thanksgiving winterizer (Lawn Psychos only)',
+  'last-mow': 'The last mow of the year',
+  winter: 'Put the mower to bed right (and it starts in April)',
+};
+const HOLIDAY_LEAD = 4; // days before the holiday itself
+const JOB_LEAD = 2;     // days before the window opens
+// When the reminder goes out for this year's (or next year's) occurrence of a job.
+function jobDates(t, today) {
+  const s = statusOf(t, today);
+  const y = s.state === 'past' ? today.getFullYear() + 1 : today.getFullYear();
+  const on = placeOf(t, y);
+  const hol = t.holiday || t.id === 'crabgrass'; // Tax Day counts as a holiday here
+  let at = new Date(on.getTime() - (hol ? HOLIDAY_LEAD : JOB_LEAD) * DAY);
+  if (!hol) { const dow = at.getDay(); if (dow === 6) at = new Date(at.getTime() - 2 * DAY); if (dow === 0) at = new Date(at.getTime() - 3 * DAY); }
+  return { s, on, at, year: y };
+}
+
+/* ------------------------------------------------------------------ seasonal pins */
+// Library items pinned to a date: they become that week's content email (± 3 days).
+export const PINNED = [
+  { id: 'blog/lawn-new-years-resolutions', m: 1, d: 2 },
+  { id: 'blog/lawn-weed-bracket', m: 3, d: 5 },
+  { id: 'blog/opening-day-first-mow', m: 3, d: 26 },
+  { id: 'blog/lawn-mowing-etiquette', m: 5, d: 7 },
+  { id: 'blog/lawn-mowing-playlist', m: 6, d: 11 },
+  { id: 'blog/halloween-is-the-lawn-super-bowl', m: 10, d: 23 },
+  { id: 'blog/lawn-gift-guide', m: 12, d: 3 },
+];
+
+/* ------------------------------------------------------------------ welcome series */
+export const WELCOME = [
+  { key: 'w0-plan', day: 0 },
+  { key: 'w1-fix', day: 2 },
+  { key: 'w2-measure', day: 4, when: (c) => !c.measured },
+  { key: 'w3-hello', day: 7 },
+  { key: 'w4-crew', day: 10, when: (c) => c.answers.mower === 'crew' },
+  { key: 'w4-family', day: 10, when: (c) => c.answers.mower !== 'crew' && ['kids', 'dogs', 'both'].includes(c.answers.uses) },
+];
+const WELCOME_KEYS = new Set(WELCOME.map((w) => w.key));
+
+// Email names for HQ (anything not listed is named from the library or the job).
+export const NAMES = {
+  'w0-plan': 'Welcome: your game plan', 'w1-fix': 'Welcome: the free fix', 'w2-measure': 'Welcome: measure your lawn',
+  'w3-hello': 'Welcome: hi, I’m Mike', 'w4-crew': 'Welcome: talk to your landscaper', 'w4-family': 'Welcome: kids, dogs and lawns',
+};
+// A/B tests: which test an email belongs to. Arms are 'a' and 'b' unless HQ adds more.
+export function testFor(key) {
+  if (key === 'w0-plan') return 'welcome-subject';
+  if (key.startsWith('job:')) return 'job-subject';
+  if (key.startsWith('lib:')) return 'content-subject';
+  if (key.startsWith('month:')) return 'month-subject';
+  return '';
+}
+export const TESTS = {
+  'welcome-subject': { name: 'Welcome subject: personality vs. name', arms: { a: 'Your lawn game plan, <profile>', b: '<Name>, here’s exactly what to do this week' } },
+  'job-subject': { name: 'Job reminders: punchy vs. plain', arms: { a: 'Punchy line (e.g. “Labor Day is Monday. Feed the lawn.”)', b: 'Plain: “Lawn reminder: <job> (<date>)”' } },
+  'content-subject': { name: 'Weekly emails: the hook vs. the post title', arms: { a: 'The hook (social copy)', b: 'The post title' } },
+  'month-subject': { name: 'Monthly email: count vs. question', arms: { a: 'Your <Month> lawn: <N> things', b: 'What does the lawn need in <Month>?' } },
+};
+
+/* ------------------------------------------------------------------ the scheduler */
+// c = { id, created, answers, sqft, measured, pref, level }, sent = Map(key → sent_at), today = Date at noon
+// (UTC-local, representing the Eastern date). Returns { key, kind } or null. Pure: used for sending,
+// HQ previews, "upcoming" counts and the Year at a Glance simulation.
+export function nextFor(c, sent, today, lib = []) {
+  // Gaps are counted in Eastern calendar days, not hours (a 2pm send and an 8am send two days later = 2 days).
+  let last = 0, lastContent = 0;
+  for (const [k, at] of sent) {
+    const day = etDay(at).getTime();
+    if (day > last) last = day;
+    if (!k.startsWith('job:') && day > lastContent) lastContent = day;
+  }
+  if (last && last >= today.getTime()) return null; // already emailed today
+  const created = new Date(c.created);
+  const age = Math.floor((Date.UTC(today.getFullYear(), today.getMonth(), today.getDate()) - Date.UTC(created.getUTCFullYear(), created.getUTCMonth(), created.getUTCDate())) / DAY);
+
+  // 0. the welcome email first (unless they joined long before sending was turned on)
+  if (!sent.has('w0-plan') && age <= 14 && c.pref !== 'jobs') return { key: 'w0-plan', kind: 'welcome' };
+
+  // 1. job reminders
+  const plan = buildPlan(c.answers, { today, sqft: c.sqft });
+  const joined = new Date(created.getUTCFullYear(), created.getUTCMonth(), created.getUTCDate(), 12);
+  for (const t of plan.tasks) {
+    const { on, at, year } = jobDates(t, today);
+    const key = `job:${t.id}:${year}`;
+    if (sent.has(key)) continue;
+    // Already "this week" when they signed up (the welcome email covered it): skip until next year.
+    if (statusOf(t, joined).state === 'now' && year === joined.getFullYear()) continue;
+    if (today >= at && today <= new Date(on.getTime() + 2 * DAY) && joined < on) return { key, kind: 'job', task: t.id };
+  }
+  if (c.pref === 'jobs') return null;
+  if (last && today - last < 2 * DAY) return null;
+
+  // 2. rest of the welcome series
+  if (age <= 21) {
+    for (const w of WELCOME) {
+      if (w.key === 'w0-plan' || sent.has(w.key)) continue;
+      if (w.when && !w.when(c)) continue;
+      if (age >= w.day) return { key: w.key, kind: 'welcome' };
+      return null; // wait for it
+    }
+  }
+  // 3. weekly content: Thursdays, with 5 quiet content days before
+  if (today.getDay() !== 4 || (lastContent && today - lastContent < 5 * DAY) || age < 9) return null;
+  const m = today.getMonth() + 1, d = today.getDate(), y = today.getFullYear();
+  for (const p of PINNED) {
+    const pd = new Date(y, p.m - 1, p.d, 12);
+    if (Math.abs(today - pd) <= 3 * DAY && !sent.has(`lib:${p.id}`) && lib.some((x) => x.id === p.id)) return { key: `lib:${p.id}`, kind: 'content' };
+  }
+  if (d <= 7 && !sent.has(`month:${m}:${y}`)) return { key: `month:${m}:${y}`, kind: 'month' };
+  const item = pickContent(c, sent, m, lib);
+  return item ? { key: `lib:${item.id}`, kind: 'content' } : null;
+}
+
+// Best unsent library item: in season > matches their problems > newest. Landscaper posts only for people
+// with a landscaper; kids/dogs posts get a boost for families.
+export function pickContent(c, sent, month, lib) {
+  const a = c.answers || {};
+  const crew = a.mower === 'crew', fam = ['kids', 'dogs', 'both'].includes(a.uses);
+  const probs = new Set(a.problems || []);
+  const want = new Set();
+  if (probs.has('weeds') || probs.has('crabgrass') || a.look === 'weedy') want.add('weeds');
+  if (probs.has('bare') || a.look === 'patchy' || a.look === 'dirt') want.add('seeding');
+  if (probs.has('brown')) { want.add('mowing'); want.add('soil'); }
+  if (probs.has('grubs')) want.add('dogs-kids');
+  let best = null, bestScore = -1;
+  for (const it of lib) {
+    if (sent.has(`lib:${it.id}`)) continue;
+    if (PINNED.some((p) => p.id === it.id)) continue; // pinned ones wait for their date
+    const topics = it.topics || [];
+    if (topics.includes('got-a-guy') && !crew) continue;
+    const months = it.months || [];
+    if (months.length && !months.includes(month)) {
+      // out of season: only evergreen items (no months) are allowed off-season
+      continue;
+    }
+    let score = months.length ? 100 : 20;
+    if (topics.some((t) => want.has(t))) score += 30;
+    if (crew && topics.includes('got-a-guy')) score += 40;
+    if (fam && topics.includes('dogs-kids')) score += 25;
+    if (it.kind === 'tool') score += 10;
+    if (it.kind === 'guide') score -= 5;
+    score += (it.date ? new Date(it.date).getTime() / 1e12 : 0); // newer wins ties
+    if (score > bestScore) { best = it; bestScore = score; }
+  }
+  return best;
+}
+
+/* ------------------------------------------------------------------ email builders */
+// Each returns { subjects: { a, b }, pre, blocks } where blocks are rendered by worker/mailer.js:
+//   ['p', html] ['h', text] ['steps', [{k, title, text, extra}]] ['btn', label, url] ['ps', html] ['hr']
+const hi = (c) => (c.name ? `Hey ${c.name},` : 'Hey,');
+const A = (url, text) => `<a href="${url}">${text}</a>`;
+
+function jobBlock(j) {
+  const extra = [];
+  if (j.who) extra.push(`<b>${j.who.who === 'guy' ? 'Your guy' : 'You'}:</b> ${j.who.line}`);
+  if (j.amount) extra.push(`<b>For your lawn:</b> ${j.amount}.`);
+  return extra.join('<br>');
+}
+
+export function build(key, c, today, lib = []) {
+  const plan = buildPlan(c.answers, { today, sqft: c.sqft });
+  const name = c.name || '';
+  const nextLine = () => {
+    const n = plan.upcoming.find((x) => x.on > new Date(today.getTime() + 3 * DAY));
+    return n ? `P.S. Next up for you: <b>${n.title}</b>, around ${fmtDate(n.on)}. I’ll remind you a few days before.` : '';
+  };
+
+  if (key === 'w0-plan') {
+    const steps = [];
+    if (plan.doNow) steps.push({ k: 'This week', title: plan.doNow.title, text: plan.doNow.short + (plan.alsoNow.length ? ` Also good right now: ${plan.alsoNow.map((x) => x.title.replace(/\s*\([^)]*\)/g, '')).join(', ')}.` : ''), extra: jobBlock(plan.doNow), link: plan.doNow.link });
+    else steps.push({ k: 'This week', title: 'Nothing. Enjoy it.', text: 'Your lawn doesn’t need anything right now. Leaving it alone is the plan.' });
+    steps.push({ k: 'Your free fix', title: plan.fix.title, text: plan.fix.short, link: plan.fix.link });
+    if (plan.next) steps.push({ k: `Next up · ${fmtDate(plan.next.on)}`, title: plan.next.title, text: plan.next.short, extra: jobBlock(plan.next) });
+    return {
+      subjects: { a: `Your lawn game plan, ${plan.profile.name.replace(/^The /, '')}`, b: `${name ? `${name}, here’s` : 'Here’s'} exactly what to do this week` },
+      pre: 'Three steps, then I’ll take it from here.',
+      blocks: [
+        ['p', hi(c)],
+        ['p', `You’re <b>${plan.profile.name}</b>. ${plan.profile.blurb}`],
+        ['h', 'Your game plan'],
+        ['steps', steps],
+        ['p', `That’s it for now. Your full year is <b>${plural(plan.tasks.length, 'job')}</b>, about ${plural(plan.hours, 'hour')}${plan.crew ? ' of your time' : ' plus mowing'}.`],
+        ['btn', 'See Your Whole Lawn Year', `/calendar/?level=${plan.level}`],
+        ['h', 'What happens next'],
+        ['p', 'I’ll email you a few days before each job, with how much to buy for your lawn. In between, about once a week, I’ll send one useful thing from the site: a tool, a hot take, a straight answer. Short. Funny-ish. Never a sales pitch.'],
+        ['p', 'One favor: if this landed in Promotions, drag it to your Primary inbox. Otherwise the reminders get lost, and then what are we even doing.'],
+        ['p', 'Questions? Just hit reply. It comes straight to me.<br>– Mike'],
+      ],
+    };
+  }
+  if (key === 'w1-fix') {
+    const f = plan.fix;
+    return {
+      subjects: { a: 'The 10-second lawn fix that costs $0', b: 'Do this before you buy anything' },
+      pre: f.title,
+      blocks: [
+        ['p', hi(c)],
+        ['p', 'Before you buy a single bag of anything, do this one thing. It’s free, and it beats most products on the shelf.'],
+        ['h', f.title],
+        ['p', f.short],
+        f.link ? ['btn', f.link[1], f.link[0]] : null,
+        ['p', 'Small changes. Big stripes. That’s the whole idea.<br>– Mike'],
+        ['ps', nextLine()],
+      ].filter(Boolean),
+    };
+  }
+  if (key === 'w2-measure') {
+    return {
+      subjects: { a: 'How big is your lawn, really?', b: 'Measure your lawn in 60 seconds (no tape measure)' },
+      pre: 'Every bag tells you how much it covers. Now you’ll know.',
+      blocks: [
+        ['p', hi(c)],
+        ['p', 'Every bag of seed or fertilizer says how many square feet it covers. Most people guess, buy two, and use one. Or buy one and stripe the lawn by running out halfway.'],
+        ['p', 'So I built a tool: tap the corners of your lawn on a satellite photo, and it writes the square feet right inside each area. Takes about a minute. Nothing about your address is saved on my end.'],
+        ['btn', 'Measure My Lawn', `/measure/?t=${c.token || ''}`],
+        ['p', 'Measure from this link and my reminders will use your exact number for “how much to buy.”'],
+        ['p', '– Mike'],
+        ['ps', nextLine()],
+      ],
+    };
+  }
+  if (key === 'w3-hello') {
+    return {
+      subjects: { a: 'Who is this guy?', b: 'Quick hello (and one question for you)' },
+      pre: 'Hit reply. I read every one.',
+      blocks: [
+        ['p', hi(c)],
+        ['p', 'Quick hello. I’m Mike. I live in Bedford, NY, and somewhere along the way I became “the lawn guy” because of the stripes in my yard. I’m not a landscaper and I don’t sell anything. I just figured out that a great lawn is mostly a few small habits, done at the right time.'],
+        ['p', 'That’s what Mow It Tall is. And that’s what these emails are.'],
+        ['h', 'One question'],
+        ['p', '<b>What’s the one thing about your lawn that bugs you most?</b> Hit reply and tell me. One sentence is fine. I read every one, and the good questions become posts.'],
+        ['btn', 'See My Lawn (Proof It Works)', '/yards/'],
+        ['p', '– Mike'],
+      ],
+    };
+  }
+  if (key === 'w4-crew') {
+    return {
+      subjects: { a: 'Your landscaper isn’t ignoring you. Nobody asked.', b: 'One text to send your landscaper' },
+      pre: 'Mow at 3.5 inches, leave the clippings, sharpen the blades.',
+      blocks: [
+        ['p', hi(c)],
+        ['p', 'Most landscapers mow short so they can come back less often. It’s not personal. Nobody ever asked them to do it differently.'],
+        ['p', 'One friendly text fixes most of it: mow at 3.5 inches, leave the clippings, keep the blades sharp. Tap what you want and I’ll write the text for you.'],
+        ['btn', 'Write the Text for Me', '/blog/what-to-tell-your-landscaper/?asks=tall,clippings,blade#crewtext'],
+        ['p', 'Then do the 15-minute jobs yourself (the feedings). That’s where the money is.<br>– Mike'],
+        ['ps', nextLine()],
+      ],
+    };
+  }
+  if (key === 'w4-family') {
+    return {
+      subjects: { a: 'Kids, dogs and lawn stuff: what’s actually safe', b: 'A lawn the kids and dog can actually use' },
+      pre: 'Spot-treat, keep off until it dries, water in granules.',
+      blocks: [
+        ['p', hi(c)],
+        ['p', 'A lawn that gets used is a good lawn. Let the dog pee. Rent the bouncy house.'],
+        ['p', 'The safety part is simpler than the internet makes it: spot-treat weeds instead of spraying everything, keep everyone off until it dries, water in granules, and read the label. Most of a great lawn needs no chemicals at all.'],
+        ['btn', 'The Kid and Pet Safe Playbook', '/blog/kid-and-pet-safe-lawn-care/'],
+        ['p', '– Mike'],
+        ['ps', nextLine()],
+      ],
+    };
+  }
+  if (key.startsWith('job:')) {
+    const id = key.split(':')[1];
+    const t = TASKS.find((x) => x.id === id);
+    if (!t) return null;
+    const { on } = jobDates(t, today);
+    const amount = amountFor(id, c.sqft, plan), cost = costFor(t, c.sqft);
+    const link = TASK_LINKS[id];
+    const j = plan.upcoming.concat(plan.doNow ? [plan.doNow] : [], plan.alsoNow).find((x) => x && x.id === id);
+    const when = t.holiday ? fmtDate(on) : `${fmtDate(on)} – ${fmtDate(new Date(on.getFullYear(), t.end[0] - 1, t.end[1]))}`;
+    return {
+      subjects: { a: JOB_SUBJECTS[id] || t.title, b: `Lawn reminder: ${t.title} (${fmtDate(on)})` },
+      pre: t.short,
+      blocks: [
+        ['p', hi(c)],
+        ['h', t.title],
+        ['p', `<b>When:</b> ${when}${t.holiday ? ' (or that weekend)' : ''}`],
+        ['p', `${t.short} ${t.why}`],
+        j && j.who ? ['p', `<b>${j.who.who === 'guy' ? 'Your guy' : 'You'}:</b> ${j.who.line}`] : null,
+        amount ? ['box', `<b>For your lawn${c.sqft ? ` (${Math.round(c.sqft).toLocaleString('en-US')} sq ft)` : ''}:</b> ${amount}.${cost ? `<br><b>Cost:</b> about ${cost}.` : ''}`] : cost ? ['box', `<b>Cost:</b> about ${cost}.`] : null,
+        t.tip ? ['p', `<b>Heads up:</b> ${t.tip}`] : null,
+        link ? ['btn', link[1], link[0]] : null,
+        ['p', '– Mike'],
+      ].filter(Boolean),
+    };
+  }
+  if (key.startsWith('month:')) {
+    const m = Number(key.split(':')[1]);
+    const mp = MONTH_PAGES[m - 1];
+    const jobs = plan.tasks.filter((t) => { const { on } = jobDates(t, today); return on.getMonth() + 1 === m; });
+    const mn = MONTHS_LONG[m - 1];
+    return {
+      subjects: { a: jobs.length ? `Your ${mn} lawn: ${plural(jobs.length, 'thing')} to do` : `Your ${mn} lawn: nothing on your list`, b: `What does the lawn need in ${mn}?` },
+      pre: firstSentence(mp?.answer),
+      blocks: [
+        ['p', hi(c)],
+        ['p', strip(mp?.answer)],
+        jobs.length ? ['h', `On your list this month (${LEVEL_NAMES[plan.level]})`] : null,
+        jobs.length ? ['list', jobs.map((t) => `<b>${t.title}</b> · ${fmtDate(jobDates(t, today).on)}`)] : ['p', 'Nothing on your list this month. Enjoy it. I’ll email you when it’s time.'],
+        ['btn', `${mn} Lawn Care, Start to Finish`, `/calendar/${mp?.slug || ''}/`],
+        ['p', '– Mike'],
+      ].filter(Boolean),
+    };
+  }
+  if (key.startsWith('lib:')) {
+    const it = lib.find((x) => x.id === key.slice(4));
+    if (!it) return null;
+    const label = it.kind === 'tool' ? 'Try It (Free)' : it.tool ? 'Read It + Try the Tool' : it.kind === 'guide' ? 'Get the Straight Answer' : 'Read It';
+    return {
+      subjects: { a: it.hook, b: it.kind === 'tool' ? it.title : it.title },
+      pre: firstSentence(it.take),
+      blocks: [
+        ['p', hi(c)],
+        ['h', it.hook],
+        ['p', it.take],
+        it.tool && it.kind !== 'tool' ? ['p', `There’s a free tool built in: <b>${it.tool}</b>.`] : null,
+        ['btn', label, it.url],
+        ['p', '– Mike'],
+        ['ps', nextLine()],
+      ].filter(Boolean),
+    };
+  }
+  return null;
+}
+
+// HQ name for any key.
+export function nameOf(key, lib = []) {
+  if (NAMES[key]) return NAMES[key];
+  if (key.startsWith('job:')) { const t = TASKS.find((x) => x.id === key.split(':')[1]); return `Job: ${t ? t.title : key}`; }
+  if (key.startsWith('month:')) return `Monthly: ${MONTHS_LONG[Number(key.split(':')[1]) - 1]}`;
+  if (key.startsWith('lib:')) { const it = lib.find((x) => x.id === key.slice(4)); return it ? `${it.kind === 'tool' ? 'Tool' : it.kind === 'guide' ? 'Guide' : 'Post'}: ${it.title}` : key; }
+  return key;
+}
+// Group keys across years: job:fall-feed:2027 → job:fall-feed, month:9:2027 → month:9
+export const baseKey = (key) => (key.startsWith('job:') || key.startsWith('month:') ? key.split(':').slice(0, 2).join(':') : key);
+export { WELCOME_KEYS };

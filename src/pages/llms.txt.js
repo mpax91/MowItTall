@@ -10,7 +10,7 @@ import { MONTHS_LONG } from '../data/tasks.js';
 
 const SITE = 'https://mowittall.com';
 const TOOLS = [
-  ['/plan/', 'Free lawn plan quiz', '9 questions; returns a personal lawn care plan with dates, amounts and phone calendar reminders.'],
+  ['/plan/', 'Free lawn plan quiz', '10 questions; returns a short lawn game plan (this week, a free fix, next up) with phone calendar reminders and an optional weekly email with reminders timed to each job.'],
   ['/calendar/', 'Lawn care calendar', 'What to do each month for cool-season lawns in the Northeast.'],
   ['/measure/', 'Lawn square footage calculator', 'Draw your lawn on a satellite map to get square feet per area and a total.'],
   ['/weeds/', 'Lawn weed identification guide', 'Photos and fixes for 16 common Northeast lawn weeds, including crabgrass, nutsedge, clover and creeping Charlie.'],

@@ -131,6 +131,10 @@ const description =
     track('tool_choice', { tool_name: 'lawn_calendar', choice: LEVELS[level].name, method: 'nudge' });
   });
 
+  // Links from the quiz results and emails open straight to a level: /calendar/?level=2
+  const qLevel = Number(new URLSearchParams(location.search).get('level'));
+  if (Number.isInteger(qLevel) && qLevel >= 0 && qLevel <= 3 && new URLSearchParams(location.search).has('level')) show(qLevel, { scroll: true });
+
   root.querySelector('[data-ics]').addEventListener('click', () => {
     const blob = new Blob([icsFor(level, today)], { type: 'text/calendar' });
     const a = document.createElement('a');

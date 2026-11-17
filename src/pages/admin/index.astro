@@ -31,7 +31,7 @@ const items = [
 ];
 const data = JSON.stringify({ items, baseTags: BASE_TAGS, topicTags: TOPIC_TAGS, boards: [...new Set([PIN_BOARD_DEFAULT, ...Object.values(PIN_BOARDS)])] });
 const TABS = [
-  ['week', 'This Week'], ['todo', 'To-Do'], ['seo', 'SEO & AEO'], ['analytics', 'Analytics'], ['social', 'Social'], ['photos', 'Photos'], ['links', 'Short Links'], ['build', 'Build Plan'], ['money', 'Tips & Payments'], ['members', 'Members & Email'],
+  ['week', 'This Week'], ['todo', 'To-Do'], ['seo', 'SEO & AEO'], ['analytics', 'Analytics'], ['social', 'Social'], ['photos', 'Photos'], ['links', 'Short Links'], ['build', 'Build Plan'], ['money', 'Tips & Payments'], ['members', 'Email'],
 ];
 ---
 <Base title="HQ | Mow It Tall" description="Mow It Tall dashboard" path="/admin/" noindex>
@@ -240,21 +240,15 @@ const TABS = [
 
       <!-- ===== Members & email ===== -->
       <section class="dash-panel" data-panel="members" hidden>
-        <p class="dash-note">For when you’re ready to go live with email. The plan is in the project notes (accounts, CRM and email plan); here’s the order I’d build it.</p>
-        <div class="dash-cards">
-          <article class="dash-card"><h3>1. Email Sign-Ups + Reminders</h3><p>“Email me my plan and reminders” on the quiz results. Holiday feeding, crabgrass and seeding reminders go out automatically. Members list here with sign-up date, ZIP and opt-in status. Needs an email service (you pick) and a mailing address for the footer.</p></article>
-          <article class="dash-card"><h3>2. Accounts</h3><p>Sign in with a magic link (no passwords). Saves their plan, yard map, done list and progress photos. Here: member list, search, delete an account.</p></article>
-          <article class="dash-card"><h3>3. Newsletters and Courses</h3><p>Write a newsletter here, preview it, send it to everyone or a group (by town, effort level, grass type). Drip courses (like a 6-week “first lawn” email course) run on their own.</p></article>
-          <article class="dash-card"><h3>4. Alerts</h3><p>Weekly “water or skip”, “soil hit 55°F: crabgrass preventer this weekend”, “Labor Day is Monday: feed”. Built from the tools the site already has.</p></article>
-        </div>
-        <h2 class="dash-h">Members, Email, Reminders and Texts: To-Dos</h2>
-        <div data-mini="crm"></div>
+        <div data-mail-root></div>
+        <details class="dash-more pb"><summary>Email To-Dos</summary><div data-mini="crm"></div></details>
       </section>
     </div>
   </main>
 
   <script>
     import { initHQ } from '../../scripts/hq.js';
+    import { initMail } from '../../scripts/hqMail.js';
     const root = document.querySelector<HTMLElement>('[data-dash]');
     if (root) {
       const $ = <T extends Element = HTMLElement>(s: string) => root.querySelector<T>(s)!;
@@ -271,6 +265,7 @@ const TABS = [
       const ago = (t: number) => { const d = Math.floor((Date.now() - t) / DAY); return d < 1 ? 'today' : d === 1 ? 'yesterday' : d < 14 ? `${d} days ago` : `${Math.round(d / 7)} weeks ago`; };
 
       /* ---------- tabs */
+      let mail: any = null;
       let tab = (location.hash.slice(1) || 'week');
       function show(t: string) {
         tab = root!.querySelector(`[data-panel="${t}"]`) ? t : 'week';
@@ -279,6 +274,7 @@ const TABS = [
         history.replaceState(null, '', `#${tab}`);
         if (tab === 'photos') loadPhotos();
         if (tab === 'social') renderSocial();
+        if (tab === 'members') mail?.load();
       }
       root.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((b) => b.addEventListener('click', () => show(b.dataset.tab!)));
 
@@ -479,6 +475,7 @@ const TABS = [
           const s = await api('/api/admin/social'); log = s.log;
           try { localStorage.setItem('mit-admin', key); } catch {}
           $('[data-msg]').textContent = ''; $('[data-key-form]').hidden = true; $('[data-app]').hidden = false;
+          mail = initMail({ root, api });
           renderSocial(); await loadOverview(); show(tab);
           initHQ({ root, api, show });
         } catch (err: any) { $('[data-msg]').textContent = err.message; }

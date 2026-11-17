@@ -16,8 +16,14 @@
   // EV = the first-party event log (worker/events.js), its own database so it never crowds the Hall photos.
   "d1_databases": [
     { "binding": "DB", "database_name": "mowittall-hall" },
-    { "binding": "EV", "database_name": "mowittall-events" }
+    { "binding": "EV", "database_name": "mowittall-events" },
+    // Email CRM: contacts, sends, opens/clicks, replies, A/B tests (worker/crm.js). Auto-created on deploy.
+    { "binding": "CRM", "database_name": "mowittall-crm" }
   ],
+  // Cloudflare Email Service (Workers Paid). The domain must be onboarded under Email Service → Sending.
+  "send_email": [{ "name": "EMAIL" }],
+  // Delivery events (bounces/complaints): once the "mowittall-mail-events" queue and its Email Service event
+  // subscription exist, add:  "queues": { "consumers": [{ "queue": "mowittall-mail-events" }] },
   // Hourly at :17. The SEO autopilot (worker/seo.js) runs every hour and decides what's due; the event
   // log's nightly rebuild runs on the 7:17 UTC run (~2:17am Eastern).
   "triggers": { "crons": ["17 * * * *"] },

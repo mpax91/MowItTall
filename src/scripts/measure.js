@@ -1,3 +1,4 @@
+try { const t = new URLSearchParams(location.search).get('t'); if (t && /^[a-z0-9]{16,40}$/.test(t)) localStorage.setItem('mit-crm', t); } catch { /* */ }
 // Measure your yard: trace grass on a satellite map, get square feet written inside each area.
 // Free imagery (Esri World Imagery) and free address search (Esri geocoder, no key, not stored).
 // Shapes are saved on the visitor's phone only (localStorage 'mit-yard').
@@ -730,6 +731,12 @@ export function initMeasure(root) {
       }));
     } catch { /* private mode */ }
     window.dispatchEvent(new CustomEvent('mit:yard', { detail: { total: Math.round(total()) } }));
+    // Email subscribers: their reminders use the measured size ("how much to buy"). Token from the
+    // quiz sign-up or the ?t= link in the "measure your lawn" email.
+    try {
+      const t = localStorage.getItem('mit-crm');
+      if (t && total() >= 100) navigator.sendBeacon('/api/crm/update', new Blob([JSON.stringify({ t, sqft: Math.round(total()) })], { type: 'application/json' }));
+    } catch { /* private mode */ }
   }
 
   function load() {

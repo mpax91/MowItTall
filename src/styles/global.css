@@ -2561,3 +2561,36 @@ main[data-gate] ~ .pre-foot, main[data-gate] ~ .footer, body:has(main[data-gate]
 /* Plan CTA boxes are centered everywhere (Mike, Nov 16) */
 .post-cta, .plan-card { text-align: center; }
 .post-cta p, .plan-card p { margin-left: auto; margin-right: auto; max-width: 34em; }
+
+/* ---------- quiz results: the 3-step game plan + email sign-up (Nov 17) */
+.quiz-hint.is-react { color: var(--sun); font-weight: 700; }
+.gp-blurb { color: var(--paper-dim); margin: 0 0 18px; }
+.gp-blurb b { color: var(--sun); }
+.gp-h { font-size: 1.35rem; margin: 0 0 10px; }
+.gp-steps { list-style: none; margin: 0 0 10px; padding: 0; counter-reset: gp; display: grid; gap: 10px; }
+.gp-step { counter-increment: gp; position: relative; background: var(--paper); color: var(--ink); border-radius: 12px; padding: 14px 14px 14px 56px; }
+.gp-step::before { content: counter(gp); position: absolute; left: 14px; top: 14px; width: 30px; height: 30px; border-radius: 50%; background: var(--red, #c8372d); color: #fff; font-family: var(--display); font-weight: 800; display: grid; place-items: center; }
+.gp-step h3 { font-size: 1.15rem; margin: 0 0 4px; color: var(--ink); }
+.gp-step p { margin: 0 0 6px; font-size: 0.97rem; }
+.gp-k { font-size: 0.75rem !important; font-weight: 800; letter-spacing: 0.07em; text-transform: uppercase; color: #2f7d34; margin: 0 0 2px !important; }
+.gp-amt, .gp-who { background: #e3eed9; border-radius: 8px; padding: 6px 9px; }
+.gp-when { color: #4a5d4b; font-size: 0.9rem !important; }
+.gp-link { font-weight: 700; color: var(--ink); }
+.gp-link::after { content: ' →'; }
+.gp-total { color: var(--paper-dim); margin: 0 0 22px; font-size: 0.97rem; }
+.gp-total a { color: var(--paper); font-weight: 700; }
+.gp-total a::after { content: ' →'; }
+.gp-mail { padding: 18px 16px; margin: 0 0 18px; text-align: center; }
+.gp-mail h3 { font-size: 1.4rem; margin: 0 0 6px; }
+.gp-mail p { color: #e3efdc; margin: 0 0 14px; }
+.gp-form { display: grid; gap: 10px; }
+.gp-form .quiz-input { margin: 0; width: 100%; }
+.gp-form .btn { width: 100%; }
+.gp-hp { position: absolute; left: -9999px; width: 1px; height: 1px; opacity: 0; }
+.gp-msg { min-height: 1.2em; margin: 0 !important; font-size: 0.92rem; color: var(--sun) !important; }
+.gp-actions { display: flex; justify-content: center; margin: 0 0 10px; }
+.gp-actions .btn { width: 100%; }
+.gp-fine { text-align: center; color: var(--paper-dim); font-size: 0.92rem; }
+.gp-fine .linkish { color: var(--paper-dim); }
+@media print { .gp-mail, .gp-actions, .gp-fine { display: none !important; } .gp-step { border: 1px solid #999; } }
+.gp-fine .linkish { background: none; border: 0; padding: 4px 2px; font: inherit; text-decoration: underline; cursor: pointer; }
