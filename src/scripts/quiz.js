@@ -267,6 +267,8 @@ export function initQuiz(root) {
     const btn = form.querySelector('button'); btn.disabled = true; msg.textContent = 'Sending…';
     let sess = {}, device = ''; try { sess = JSON.parse(localStorage.getItem('mit-sess') || '{}'); device = localStorage.getItem('mit-device') || ''; } catch { /* */ }
     const { done, ...a } = answers;
+    // Anything they already did on the site counts: a grass pick from the grass picker skips that email.
+    try { const g = localStorage.getItem('mit-grass'); if (g) a.grass = g; } catch { /* */ }
     try {
       const r = await fetch('/api/crm/subscribe', {
         method: 'POST', headers: { 'content-type': 'application/json' },

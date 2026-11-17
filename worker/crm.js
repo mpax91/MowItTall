@@ -293,7 +293,7 @@ async function subscribe(req, env, ctx) {
   }
   const a = b.answers && typeof b.answers === 'object' ? b.answers : {};
   const keep = {};
-  for (const k of ['zip', 'look', 'size', 'effort', 'know', 'problems', 'height', 'sun', 'water', 'uses', 'mower', 'sqft']) if (a[k] !== undefined) keep[k] = Array.isArray(a[k]) ? a[k].slice(0, 8).map((x) => clean(x, 20)) : typeof a[k] === 'number' ? a[k] : clean(a[k], 20);
+  for (const k of ['zip', 'look', 'size', 'effort', 'know', 'problems', 'height', 'sun', 'water', 'uses', 'mower', 'sqft', 'grass', 'spreader']) if (a[k] !== undefined) keep[k] = Array.isArray(a[k]) ? a[k].slice(0, 8).map((x) => clean(x, 20)) : typeof a[k] === 'number' ? a[k] : clean(a[k], 20);
   const plan = buildPlan(keep, { sqft: b.sqft });
   const now = Date.now();
   const name = clean(b.name, 40).replace(/[<>]/g, '');
@@ -302,12 +302,13 @@ async function subscribe(req, env, ctx) {
   let row;
   if (old) {
     row = await env.CRM.prepare(`UPDATE contacts SET name = COALESCE(NULLIF(?, ''), name), zip = ?, answers = ?, level = ?, sqft = CASE WHEN measured = 1 THEN sqft ELSE ? END,
-      grass = ?, status = 'active', pref = 'all', updated = ?, unsub_at = NULL WHERE id = ? RETURNING *`)
-      .bind(name, keep.zip || '', JSON.stringify(keep), plan.level, Math.round(plan.sqft) || null, plan.grassKey, now, old.id).first();
+      measured = CASE WHEN ? > 0 THEN 1 ELSE measured END, grass = ?, status = 'active', pref = 'all', updated = ?, unsub_at = NULL WHERE id = ? RETURNING *`)
+      .bind(name, keep.zip || '', JSON.stringify(keep), plan.level, Math.round(plan.sqft) || null, Number(b.sqft) > 0 ? 1 : 0, plan.grassKey, now, old.id).first();
   } else {
-    row = await env.CRM.prepare(`INSERT INTO contacts (email, name, zip, answers, level, sqft, grass, status, pref, token, source, utm, device, iph, created, updated)
-      VALUES (?, ?, ?, ?, ?, ?, ?, 'active', 'all', ?, ?, ?, ?, ?, ?, ?) RETURNING *`)
-      .bind(email, name, keep.zip || '', JSON.stringify(keep), plan.level, Math.round(plan.sqft) || null, plan.grassKey, rid(24), clean(b.source, 20) || 'quiz', utm, clean(b.device, 60), iph, now, now).first();
+    // The quiz only sends sqft when the lawn was measured on the map (src/scripts/quiz.js), so it counts as measured.
+    row = await env.CRM.prepare(`INSERT INTO contacts (email, name, zip, answers, level, sqft, measured, grass, status, pref, token, source, utm, device, iph, created, updated)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', 'all', ?, ?, ?, ?, ?, ?, ?) RETURNING *`)
+      .bind(email, name, keep.zip || '', JSON.stringify(keep), plan.level, Math.round(plan.sqft) || null, Number(b.sqft) > 0 ? 1 : 0, plan.grassKey, rid(24), clean(b.source, 20) || 'quiz', utm, clean(b.device, 60), iph, now, now).first();
   }
   // The welcome email goes out right away (if sending is on and they haven't had it).
   const s = await settings(env);
