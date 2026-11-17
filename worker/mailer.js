@@ -55,6 +55,9 @@ export function render(email, { sendId, key, variant, token, pref = 'all' }) {
       const [, q, field, opts] = b;
       parts.push(`<div style="background:${C.soft};border-radius:12px;padding:14px 14px 8px;margin:0 0 16px"><p style="margin:0 0 10px;font:800 16px/1.4 ${FONT};color:${C.ink}">${q}</p>${opts.map(([v, label]) => `<a href="${escA(track(`/saved/?f=${field}&v=${v}`))}" style="display:inline-block;margin:0 6px 8px 0;padding:10px 14px;border-radius:999px;background:#ffffff;border:2px solid ${C.ink};font:700 15px/1.2 ${FONT};color:${C.ink};text-decoration:none">${label}</a>`).join('')}</div>`);
       plain.push(`${q}\n${opts.map(([v, label]) => `- ${label}: ${links[links.length - opts.length + opts.findIndex((o) => o[0] === v)]}`).join('\n')}`);
+    } else if (t === 'choices') {
+      parts.push(`<div style="margin:0 0 16px">${a.map(([label, url]) => `<a href="${escA(track(url))}" style="display:block;margin:0 0 8px;padding:13px 16px;border-radius:10px;background:#ffffff;border:2px solid ${C.ink};font:800 16px/1.3 ${FONT};color:${C.ink};text-decoration:none">${label} &rarr;</a>`).join('')}</div>`);
+      plain.push(a.map(([label]) => `- ${label}: ${links[links.length - a.length + a.findIndex((x) => x[0] === label)]}`).join('\n'));
     } else if (t === 'hr') { parts.push(`<hr style="border:0;border-top:1px solid #cfdcc5;margin:18px 0">`); }
   }
   const unsub = `${SITE}/api/m/u?t=${token || ''}${sendId ? `&s=${sendId}` : ''}`;
@@ -68,7 +71,7 @@ export function render(email, { sendId, key, variant, token, pref = 'all' }) {
     <tr><td style="background:${C.paper};border-radius:14px;padding:24px 22px 10px">${parts.join('\n')}</td></tr>
     <tr><td style="padding:16px 6px 0;font:13px/1.6 ${FONT};color:#b9d8b4;text-align:center">
       You’re getting this because you signed up at mowittall.com.<br>
-      <a href="${escA(track('/account/'))}" style="color:#e3efdc">Your lawn profile</a> &nbsp;·&nbsp; ${pref === 'jobs' ? 'Job reminders only' : `<a href="${escA(unsub)}&o=jobs" style="color:#e3efdc">Just job reminders</a>`} &nbsp;·&nbsp; <a href="${escA(unsub)}" style="color:#e3efdc">Unsubscribe</a><br>
+      <a href="${escA(track('/account/'))}" style="color:#e3efdc">Your lawn profile</a> &nbsp;·&nbsp; <a href="${escA(track('/track/'))}" style="color:#e3efdc">Change my track</a><br>${pref === 'jobs' ? 'Job reminders only' : `<a href="${escA(unsub)}&o=jobs" style="color:#e3efdc">Just job reminders</a>`} &nbsp;·&nbsp; <a href="${escA(unsub)}" style="color:#e3efdc">Unsubscribe</a><br>
       ${ADDRESS}
     </td></tr>
   </table>

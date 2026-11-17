@@ -16,6 +16,8 @@ import { buildPlan, amountFor, costFor, TASK_LINKS, LEVEL_NAMES, fmtDate } from 
 import { TASKS, statusOf, MONTHS_LONG } from '../src/data/tasks.js';
 import { placeOf } from '../src/scripts/agenda.js';
 import { MONTH_PAGES } from '../src/data/monthPages.js';
+import { CREW_TASKS } from '../src/data/crew.js';
+import { trackOf, slotItem, moreItems, weekOf, SKIP, scheduled } from './calendar.js';
 
 const DAY = 86400000;
 const strip = (s) => String(s || '').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
@@ -53,6 +55,30 @@ export const JOB_SUBJECTS = {
   'last-mow': 'The last mow of the year',
   winter: 'Put the mower to bed right (and it starts in April)',
 };
+// Robot track: the mowing jobs, rewritten for a robot (Claude's copy, Mike to review).
+export const ROBOT_JOBS = {
+  raise: { title: 'Set the robot to its highest cut', subject: 'Robot owners: one setting to change this week', short: 'Set the cutting height to the top, 3.5 inches or as close as it goes. It mows every day, so tall and often is perfect.', why: 'Tall grass shades out weeds and handles summer heat.', link: ['/blog/robot-mower-judging-you/', 'Your robot is judging you'] },
+  blade: { title: 'Swap the robot’s blades', subject: 'Your robot’s blades are probably dull', short: 'Those little razor blades dull fast. Swap in a fresh set (your manual says how often).', why: 'Dull blades tear the tips, and the whole lawn looks a shade browner.', link: ['/blog/robot-mower-judging-you/', 'More robot rules'] },
+  summer: { title: 'Summer mode for robot lawns', subject: 'Summer mode: tall cut, fewer runs, deep water', short: 'Keep the cut tall, and cut back how often it runs when the grass stops growing in the heat. If you water, go deep: about an inch a week, early morning.', why: 'A robot running every day in a drought just wears paths.', link: ['/resources/should-i-water-my-lawn/', 'Should I water? (live)'] },
+  'last-mow': { title: 'The robot’s last runs', subject: 'Time to bring the robot in', short: 'Drop it a notch to about 3 inches for its last few runs, then bring it in once the grass stops growing.', why: 'A little shorter going into winter means less matted grass and snow mold.', link: ['/guides/when-to-stop-mowing/', 'When to stop mowing'] },
+  winter: { title: 'Put the robot to bed', subject: 'Put the robot to bed for winter', short: 'Clean the deck and wheels, charge it, and store it inside for the winter. Check your manual about the charging station.', why: 'Cold is hard on the battery. Spring-you will thank fall-you.' },
+  leaves: { title: 'Leaves vs. the robot', subject: 'Your robot hates leaf piles', short: 'Robots choke on heavy leaves. Pause it during big leaf drops, mulch them with a regular mower or rake them off, then let it back out.', why: 'A thick layer of leaves smothers the grass and invites snow mold.', link: ['/guides/should-i-mulch-leaves-into-lawn/', 'Should I mulch the leaves?'] },
+};
+// Landscaper track: jobs your guy does become "text your guy" emails (asks = ids in the text builder).
+export const CREW_JOBS = {
+  blade: { title: 'Sharp blades on your guy’s mower', subject: 'Text your guy: when were the blades sharpened?', asks: 'blades' },
+  raise: { title: 'Ask for 3.5 inches this year', subject: 'Text your guy: 3.5 inches this year', asks: 'tall,clippings' },
+  cleanup: { title: 'A gentle spring cleanup', subject: 'Text your guy: easy on the spring cleanup', asks: 'spring' },
+  summer: { title: 'Summer mowing: high, and skip dry weeks', subject: 'Text your guy: mow high, skip the dry weeks', asks: 'drought,tall' },
+  aerate: { title: 'Core aeration (hire it)', subject: 'Aeration: hire it, but you buy the seed', asks: 'seedtime' },
+  leaves: { title: 'Mow the leaves in, don’t haul them', subject: 'Text your guy: mow the leaves in', asks: 'leaves' },
+  'last-mow': { title: 'Last mow at about 3 inches', subject: 'Text your guy: last mow at 3 inches', asks: 'lastmow' },
+};
+export function jobTitle(t, track) {
+  if (track === 'robot' && ROBOT_JOBS[t.id]) return ROBOT_JOBS[t.id].title;
+  if (track === 'crew' && CREW_JOBS[t.id] && CREW_TASKS[t.id]?.who === 'guy') return CREW_JOBS[t.id].title;
+  return t.title.replace(/\s*\([^)]*\)/g, '');
+}
 const HOLIDAY_LEAD = 4; // days before the holiday itself
 const JOB_LEAD = 2;     // days before the window opens
 // When the reminder goes out for this year's (or next year's) occurrence of a job.
@@ -65,18 +91,6 @@ function jobDates(t, today) {
   if (!hol) { const dow = at.getDay(); if (dow === 6) at = new Date(at.getTime() - 2 * DAY); if (dow === 0) at = new Date(at.getTime() - 3 * DAY); }
   return { s, on, at, year: y };
 }
-
-/* ------------------------------------------------------------------ seasonal pins */
-// Library items pinned to a date: they become that week's content email (± 3 days).
-export const PINNED = [
-  { id: 'blog/lawn-new-years-resolutions', m: 1, d: 2 },
-  { id: 'blog/lawn-weed-bracket', m: 3, d: 5 },
-  { id: 'blog/opening-day-first-mow', m: 3, d: 26 },
-  { id: 'blog/lawn-mowing-etiquette', m: 5, d: 7 },
-  { id: 'blog/lawn-mowing-playlist', m: 6, d: 11 },
-  { id: 'blog/halloween-is-the-lawn-super-bowl', m: 10, d: 23 },
-  { id: 'blog/lawn-gift-guide', m: 12, d: 3 },
-];
 
 /* ------------------------------------------------------------------ welcome series */
 const isFam = (c) => ['kids', 'dogs', 'both'].includes(c.answers.uses);
@@ -92,13 +106,14 @@ export const WELCOME = [
   { key: 'w6-grass', day: 15, when: (c) => !c.answers.grass },
 ];
 const WELCOME_KEYS = new Set(WELCOME.map((w) => w.key));
+export const libId = (key) => key.slice(4).replace(/:y\d+$/, '');
 
 // Email names for HQ (anything not listed is named from the library or the job).
 export const NAMES = {
   'w0-plan': 'Welcome: your game plan', 'w1-fix': 'Welcome: the free fix', 'w2-measure': 'Profile: measure your lawn',
   'w3-ask': 'Profile: sun + who uses it (one tap)', 'w4-hello': 'Welcome: hi, I’m Mike', 'w5-crew': 'Welcome: talk to your landscaper',
   'w5-family': 'Welcome: kids, dogs and lawns', 'w5-101': 'Welcome: lawn 101 in 3 minutes', 'w6-grass': 'Profile: pick your grass',
-  'ask-water': 'Profile: do you water? (one tap, before summer)',
+  'ask-water': 'Profile: do you water? (one tap, before summer)', 'y-review': 'One year in: pick your track for year two',
 };
 // A/B tests: which test an email belongs to. Arms are 'a' and 'b' unless HQ adds more.
 export function testFor(key) {
@@ -143,6 +158,7 @@ export function nextFor(c, sent, today, lib = []) {
     if (sent.has(key)) continue;
     // Their soil test is in (from the soil test translator): no need to nag, and no lime if pH is fine.
     if (t.id === 'soil-test' && c.answers.ph) continue;
+    if (t.id === 'winter' && c.answers.mower === 'crew') continue; // their mower, their problem
     if (t.id === 'lime' && Number(c.answers.ph) >= 6) continue;
     // Already "this week" when they signed up (the welcome email covered it): skip until next year.
     if (statusOf(t, joined).state === 'now' && year === joined.getFullYear()) continue;
@@ -160,23 +176,26 @@ export function nextFor(c, sent, today, lib = []) {
       return null; // wait for it
     }
   }
-  // 3. weekly content: Thursdays, with 5 quiet content days before
+  // 3. the lawn year (worker/calendar.js): Thursdays, with 5 quiet content days before
   if (today.getDay() !== 4 || (lastContent && today - lastContent < 5 * DAY) || age < 9) return null;
-  const m = today.getMonth() + 1, d = today.getDate(), y = today.getFullYear();
+  const m = today.getMonth() + 1, y = today.getFullYear();
+  const yr = Math.floor(age / 365) + 1; // subscription year: content repeats in year two
+  // One year in: let them pick a track for year two.
+  if (age >= 358 && !sent.has(`y-review:${yr}`) && !sent.has(`y-review:${yr - 1}`) && age - 358 < 60) return { key: `y-review:${yr}`, kind: 'content' };
   // Before summer, ask whether they water (changes grass picks and the summer advice).
   if (!c.answers.water && m >= 5 && m <= 7 && !sent.has('ask-water')) return { key: 'ask-water', kind: 'content' };
-  for (const p of PINNED) {
-    const pd = new Date(y, p.m - 1, p.d, 12);
-    if (Math.abs(today - pd) <= 3 * DAY && !sent.has(`lib:${p.id}`) && lib.some((x) => x.id === p.id)) return { key: `lib:${p.id}`, kind: 'content' };
-  }
-  if (d <= 7 && !sent.has(`month:${m}:${y}`)) return { key: `month:${m}:${y}`, kind: 'month' };
-  const item = pickContent(c, sent, m, lib);
-  return item ? { key: `lib:${item.id}`, kind: 'content' } : null;
+  const wk = weekOf(today);
+  if (wk === 1) return sent.has(`month:${m}:${y}`) ? null : { key: `month:${m}:${y}`, kind: 'month' };
+  const track = trackOf(c.answers);
+  const id = slotItem(m, wk, track);
+  if (id && lib.some((x) => x.id === id) && !sent.has(`lib:${id}:y${yr}`)) return { key: `lib:${id}:y${yr}`, kind: 'content' };
+  const item = pickContent(c, sent, m, lib, yr);
+  return item ? { key: `lib:${item.id}:y${yr}`, kind: 'content' } : null;
 }
 
 // Best unsent library item: in season > matches their problems > newest. Landscaper posts only for people
 // with a landscaper; kids/dogs posts get a boost for families.
-export function pickContent(c, sent, month, lib) {
+export function pickContent(c, sent, month, lib, yr = 1) {
   const a = c.answers || {};
   const crew = a.mower === 'crew', fam = ['kids', 'dogs', 'both'].includes(a.uses);
   const probs = new Set(a.problems || []);
@@ -187,13 +206,13 @@ export function pickContent(c, sent, month, lib) {
   if (probs.has('grubs')) want.add('dogs-kids');
   // Variety: don't send the same kind (guide, post, tool) twice in a row.
   let lastKind = '', lastAt = 0;
-  for (const [k, at] of sent) if (k.startsWith('lib:') && at > lastAt) { lastAt = at; lastKind = (lib.find((x) => `lib:${x.id}` === k) || {}).kind || ''; }
+  for (const [k, at] of sent) if (k.startsWith('lib:') && at > lastAt) { lastAt = at; lastKind = (lib.find((x) => libId(k) === x.id) || {}).kind || ''; }
+  const track = trackOf(a);
   // Already covered by the welcome series (or already done on the site).
   const skip = new Set(['tool-measure', c.answers.grass ? 'tool-grass' : '']);
-  let best = null, bestScore = -1;
+  let best = null, bestScore = -Infinity;
   for (const it of lib) {
-    if (sent.has(`lib:${it.id}`) || skip.has(it.id)) continue;
-    if (PINNED.some((p) => p.id === it.id)) continue; // pinned ones wait for their date
+    if (sent.has(`lib:${it.id}:y${yr}`) || skip.has(it.id) || SKIP[track].has(it.id)) continue;
     const topics = it.topics || [];
     if (topics.includes('got-a-guy') && !crew) continue;
     const months = it.months || [];
@@ -207,6 +226,7 @@ export function pickContent(c, sent, month, lib) {
     if (fam && topics.includes('dogs-kids')) score += 25;
     if (it.kind === 'tool') score += 10;
     if (it.kind === lastKind) score -= 25;
+    if (scheduled(track).has(it.id)) score -= 60; // save it for its own week
     const know = Number(a.know ?? 1);
     if (it.kind === 'guide') score += know >= 2 ? -15 : know === 0 ? 10 : -5; // beginners get straight answers first
     score += (it.date ? new Date(it.date).getTime() / 1e12 : 0); // newer wins ties
@@ -343,7 +363,7 @@ export function build(key, c, today, lib = []) {
         ['p', hi(c)],
         ['p', 'Most landscapers mow short so they can come back less often. It’s not personal. Nobody ever asked them to do it differently.'],
         ['p', 'One friendly text fixes most of it: mow at 3.5 inches, leave the clippings, keep the blades sharp. Tap what you want and I’ll write the text for you.'],
-        ['btn', 'Write the Text for Me', '/blog/what-to-tell-your-landscaper/?asks=tall,clippings,blade#crewtext'],
+        ['btn', 'Write the Text for Me', '/blog/what-to-tell-your-landscaper/?asks=tall,clippings,blades#crewtext'],
         ['p', 'Then do the 15-minute jobs yourself (the feedings). That’s where the money is.<br>– Mike'],
         ['ps', nextLine()],
       ],
@@ -400,8 +420,33 @@ export function build(key, c, today, lib = []) {
     const link = TASK_LINKS[id];
     const j = plan.upcoming.concat(plan.doNow ? [plan.doNow] : [], plan.alsoNow).find((x) => x && x.id === id);
     const hol = t.holiday || id === 'crabgrass';
-    const title = t.title.replace(/\s*\([^)]*\)/g, '');
+    const track = trackOf(c.answers);
+    const title = jobTitle(t, track);
     const when = id === 'crabgrass' ? `${fmtDate(on)} (really: when the soil hits 55°F, around when the forsythia blooms)` : hol ? fmtDate(on) : `${fmtDate(on)} – ${fmtDate(new Date(on.getFullYear(), t.end[0] - 1, t.end[1]))}`;
+    if (track === 'crew' && CREW_TASKS[id]?.who === 'guy' && CREW_JOBS[id]) {
+      return {
+        subjects: { a: CREW_JOBS[id].subject, b: `Lawn reminder: ${title} (${fmtDate(on)})` },
+        pre: CREW_TASKS[id].line,
+        blocks: [
+          ['p', hi(c)],
+          ['h', title],
+          ['p', `<b>When:</b> ${when}`],
+          ['p', 'This one’s on your landscaper. One friendly text does it:'],
+          ['box', CREW_TASKS[id].line],
+          ['btn', 'Write the Text for Me', `/blog/what-to-tell-your-landscaper/?asks=${CREW_JOBS[id].asks}#crewtext`],
+          id === 'aerate' ? ['p', 'Then seed right after, with seed you picked. <a href="/lawn-101/#grass">Pick your grass</a>.'] : null,
+          ['p', '– Mike'],
+        ].filter(Boolean),
+      };
+    }
+    const rb = track === 'robot' ? ROBOT_JOBS[id] : null;
+    if (rb) {
+      return {
+        subjects: { a: rb.subject, b: `Lawn reminder: ${title} (${fmtDate(on)})` },
+        pre: rb.short,
+        blocks: [['p', hi(c)], ['h', title], ['p', `<b>When:</b> ${when}`], ['p', `${rb.short} ${rb.why}`], rb.link ? ['btn', rb.link[1], rb.link[0]] : null, ['p', '– Mike']].filter(Boolean),
+      };
+    }
     return {
       subjects: { a: JOB_SUBJECTS[id] || title, b: `Lawn reminder: ${title} (${fmtDate(on)})` },
       pre: t.short,
@@ -422,26 +467,49 @@ export function build(key, c, today, lib = []) {
       ].filter(Boolean),
     };
   }
+  if (key.startsWith('y-review:')) {
+    const lv = plan.level, next = Math.min(3, lv + 1);
+    const choices = [];
+    if (lv < 3) choices.push([`Level up: ${LEVEL_NAMES[next]}`, `/track/?set=effort-${next}`]);
+    choices.push(['Same plan again', '/track/?set=keep']);
+    choices.push(['Just the job reminders', `/api/m/u?t=${c.token || ''}&o=jobs`]);
+    choices.push(['I’m good, stop the emails', `/api/m/u?t=${c.token || ''}`]);
+    return {
+      subjects: { a: 'One year of lawn emails. What’s next?', b: 'Pick your track for year two' },
+      pre: 'Level up, run it back, or just the reminders.',
+      blocks: [
+        ['p', hi(c)],
+        ['p', `It’s been a year. That’s a full lap around the lawn calendar: ${plural(plan.tasks.length, 'job')} at the ${LEVEL_NAMES[lv]} level, plus a lot of opinions about leaf blowers.`],
+        ['p', 'So, year two. Pick one (one tap):'],
+        ['choices', choices],
+        ['p', 'Do nothing and I’ll keep going on the same plan, with any new posts mixed in.<br>– Mike'],
+      ],
+    };
+  }
   if (key.startsWith('month:')) {
     const m = Number(key.split(':')[1]);
     const mp = MONTH_PAGES[m - 1];
-    const jobs = plan.tasks.filter((t) => { const { on } = jobDates(t, today); return on.getMonth() + 1 === m; });
+    const jobs = plan.tasks.filter((t) => { const { on } = jobDates(t, today); return on.getMonth() + 1 === m && !(t.id === 'winter' && c.answers.mower === 'crew') && !(t.id === 'lime' && Number(c.answers.ph) >= 6) && !(t.id === 'soil-test' && c.answers.ph); });
     const mn = MONTHS_LONG[m - 1];
+    const tr = trackOf(c.answers);
+    const more = moreItems(m, tr).filter((id) => !SKIP[tr].has(id)).map((id) => lib.find((x) => x.id === id)).filter(Boolean);
     return {
       subjects: { a: jobs.length ? `Your ${mn} lawn: ${plural(jobs.length, 'thing')} to do` : `Your ${mn} lawn: nothing on your list`, b: `What does the lawn need in ${mn}?` },
       pre: firstSentence(mp?.answer),
       blocks: [
         ['p', hi(c)],
-        ['p', strip(mp?.answer)],
+        ['p', tr === 'crew' ? `Your landscaper has the mowing. Here’s what’s on you in ${mn}.` : tr === 'robot' ? `The robot has the mowing (keep it on its highest setting). Here’s the rest of ${mn}.` : strip(mp?.answer)],
         jobs.length ? ['h', `On your list this month (${LEVEL_NAMES[plan.level]})`] : null,
-        jobs.length ? ['list', jobs.map((t) => `<b>${t.title}</b> · ${fmtDate(jobDates(t, today).on)}`)] : ['p', 'Nothing on your list this month. Enjoy it. I’ll email you when it’s time.'],
+        jobs.length ? ['list', jobs.map((t) => `<b>${jobTitle(t, tr)}</b> · ${fmtDate(jobDates(t, today).on)}${tr === 'crew' && CREW_TASKS[t.id]?.who === 'guy' ? ' (text your guy)' : ''}`)] : ['p', 'Nothing on your list this month. Enjoy it. I’ll email you when it’s time.'],
         ['btn', `${mn} Lawn Care, Start to Finish`, `/calendar/${mp?.slug || ''}/`],
+        more.length ? ['h', `Also Good in ${mn}`] : null,
+        more.length ? ['list', more.map((it) => `<a href="${it.url}">${it.title}</a>${it.kind === 'tool' ? ' (free tool)' : ''}`)] : null,
         ['p', '– Mike'],
       ].filter(Boolean),
     };
   }
   if (key.startsWith('lib:')) {
-    const it = lib.find((x) => x.id === key.slice(4));
+    const it = lib.find((x) => x.id === libId(key));
     if (!it) return null;
     if (it.kind === 'guide') {
       const sub = it.short && it.short.length >= 25 ? shortSubject(it.short) : `Straight answer: ${it.title}`;
@@ -482,9 +550,9 @@ export function nameOf(key, lib = []) {
   if (NAMES[key]) return NAMES[key];
   if (key.startsWith('job:')) { const t = TASKS.find((x) => x.id === key.split(':')[1]); return `Job: ${t ? t.title : key}`; }
   if (key.startsWith('month:')) return `Monthly: ${MONTHS_LONG[Number(key.split(':')[1]) - 1]}`;
-  if (key.startsWith('lib:')) { const it = lib.find((x) => x.id === key.slice(4)); return it ? `${it.kind === 'tool' ? 'Tool' : it.kind === 'guide' ? 'Guide' : 'Post'}: ${it.title}` : key; }
+  if (key.startsWith('lib:')) { const it = lib.find((x) => x.id === libId(key)); return it ? `${it.kind === 'tool' ? 'Tool' : it.kind === 'guide' ? 'Guide' : 'Post'}: ${it.title}` : key; }
   return key;
 }
 // Group keys across years: job:fall-feed:2027 → job:fall-feed, month:9:2027 → month:9
-export const baseKey = (key) => (key.startsWith('job:') || key.startsWith('month:') ? key.split(':').slice(0, 2).join(':') : key);
+export const baseKey = (key) => (key.startsWith('job:') || key.startsWith('month:') ? key.split(':').slice(0, 2).join(':') : key.startsWith('lib:') ? `lib:${libId(key)}` : key.startsWith('y-review:') ? 'y-review' : key);
 export { WELCOME_KEYS };

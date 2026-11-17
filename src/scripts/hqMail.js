@@ -15,7 +15,7 @@ export function initMail({ root, api }) {
   const box = root.querySelector('[data-mail-root]');
   if (!box) return;
   let sub = 'overview', days = 28, loaded = false;
-  let pq = '', pstatus = '', poff = 0, ylevel = 1, ycrew = false;
+  let pq = '', pstatus = '', poff = 0, ylevel = 1, ytrack = 'diy';
   const SUBS = [['overview', 'Overview'], ['emails', 'Emails'], ['tests', 'A/B Tests'], ['inbox', 'Inbox'], ['people', 'People'], ['year', 'Year at a Glance'], ['settings', 'Settings']];
   box.innerHTML = `
     <div class="ml-status" data-ml-status></div>
@@ -118,6 +118,7 @@ export function initMail({ root, api }) {
   async function preview(key, opts = {}) {
     const qs = new URLSearchParams({ key, level: String(opts.level ?? 1), variant: opts.variant || 'a' });
     if (opts.contact) qs.set('contact', opts.contact);
+    if (opts.track) qs.set('track', opts.track);
     if (opts.date) qs.set('date', opts.date);
     open('<p class="hall-msg">Loading preview…</p>');
     try {
@@ -127,13 +128,13 @@ export function initMail({ root, api }) {
         <p class="ml-row"><button type="button" class="cp-chip" data-v="a" aria-pressed="${qs.get('variant') === 'a'}">Subject A</button><button type="button" class="cp-chip" data-v="b" aria-pressed="${qs.get('variant') === 'b'}">Subject B</button>
         <button type="button" class="btn btn-quiet" data-send>Send Me a Test</button></p><p class="dash-fine" data-sendmsg></p>
         <iframe class="ml-frame" title="Email preview" sandbox="allow-popups"></iframe>
-        <p class="dash-fine">Shown for ${opts.contact ? 'this person' : `a sample ${LEVELS[opts.level ?? 1]}`}. Copy lives in worker/drip.js (ask Claude to change it).</p>`;
+        <p class="dash-fine">Shown for ${opts.contact ? 'this person' : `a sample ${LEVELS[opts.level ?? 1]}${opts.track && opts.track !== 'diy' ? ` (${opts.track === 'crew' ? 'landscaper' : 'robot'} track)` : ''}`}. Copy lives in worker/drip.js (ask Claude to change it).</p>`;
       dlgBody.querySelector('iframe').srcdoc = r.html;
       dlgBody.querySelectorAll('[data-v]').forEach((b) => b.addEventListener('click', () => preview(key, { ...opts, variant: b.dataset.v })));
       dlgBody.querySelector('[data-send]').addEventListener('click', async (e) => {
         e.target.disabled = true;
         const m = dlgBody.querySelector('[data-sendmsg]');
-        try { await api('/api/admin/crm/test-send', { method: 'POST', body: JSON.stringify({ key, level: opts.level ?? 1, contact: opts.contact, variant: qs.get('variant'), date: opts.date }) }); m.textContent = 'Sent to your test address.'; }
+        try { await api('/api/admin/crm/test-send', { method: 'POST', body: JSON.stringify({ key, level: opts.level ?? 1, contact: opts.contact, variant: qs.get('variant'), date: opts.date, track: opts.track }) }); m.textContent = 'Sent to your test address.'; }
         catch (er) { m.textContent = er.message; e.target.disabled = false; }
       });
     } catch (e) { dlgBody.innerHTML = err(e); }
@@ -255,12 +256,12 @@ export function initMail({ root, api }) {
   /* ---------------------------------------------------------------- year at a glance */
   async function year() {
     body.innerHTML = '<p class="hall-msg">Working out a year of email…</p>';
-    let r; try { r = await api(`/api/admin/crm/year?level=${ylevel}${ycrew ? '&crew=1' : ''}`); } catch (e) { body.innerHTML = err(e); return; }
+    let r; try { r = await api(`/api/admin/crm/year?level=${ylevel}&track=${ytrack}`); } catch (e) { body.innerHTML = err(e); return; }
     const kinds = r.items.reduce((m, x) => { m[x.kind] = (m[x.kind] || 0) + 1; return m; }, {});
     let lastM = '';
     body.innerHTML = `
-      <p class="dash-note">Every email a new subscriber would get over the next 12 months if they signed up today, worked out by the same code that sends them. Tap one to preview it. Content comes from ${r.poolSize} posts, guides and tools, and every new post joins automatically.</p>
-      <div class="ml-row">${LEVELS.map((n, i) => `<button type="button" class="cp-chip" data-yl="${i}" aria-pressed="${i === ylevel}">${n}</button>`).join('')}<label class="ml-check"><input type="checkbox" data-yc ${ycrew ? 'checked' : ''}> Has a landscaper</label></div>
+      <p class="dash-note">Every email a new subscriber would get over the next 12 months if they signed up today, worked out by the same code that sends them. One calendar for everyone (worker/calendar.js); the track swaps mowing content for landscaper or robot versions. Tap one to preview it. Content comes from ${r.poolSize} posts, guides and tools, and every new post joins automatically.</p>
+      <div class="ml-row">${LEVELS.map((n, i) => `<button type="button" class="cp-chip" data-yl="${i}" aria-pressed="${i === ylevel}">${n}</button>`).join('')}</div><div class="ml-row">${[['diy', 'I mow'], ['crew', 'Landscaper mows'], ['robot', 'Robot mows']].map(([k, t]) => `<button type="button" class="cp-chip" data-yt="${k}" aria-pressed="${k === ytrack}">${t}</button>`).join('')}</div>
       <p><b>${r.items.length} emails</b> in a year: ${kinds.welcome || 0} welcome, ${kinds.job || 0} job reminders, ${kinds.month || 0} monthly, ${kinds.content || 0} weekly.</p>
       <ol class="ml-year">${r.items.map((x) => {
         const m = new Date(`${x.date}T12:00:00`).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
@@ -269,8 +270,8 @@ export function initMail({ root, api }) {
           <button type="button" class="linkish" data-yk="${esc(x.key)}" data-yd="${x.date}">${esc(x.subject)}</button><small>${KIND[x.kind] || x.kind} · ${esc(x.name)}</small></li>`;
       }).join('')}</ol>`;
     body.querySelectorAll('[data-yl]').forEach((b) => b.addEventListener('click', () => { ylevel = Number(b.dataset.yl); year(); }));
-    body.querySelector('[data-yc]').addEventListener('change', (e) => { ycrew = e.target.checked; year(); });
-    body.querySelectorAll('[data-yk]').forEach((b) => b.addEventListener('click', () => preview(b.dataset.yk, { level: ylevel, date: b.dataset.yd })));
+    body.querySelectorAll('[data-yt]').forEach((b) => b.addEventListener('click', () => { ytrack = b.dataset.yt; year(); }));
+    body.querySelectorAll('[data-yk]').forEach((b) => b.addEventListener('click', () => preview(b.dataset.yk, { level: ylevel, date: b.dataset.yd, track: ytrack })));
   }
 
   /* ---------------------------------------------------------------- settings */

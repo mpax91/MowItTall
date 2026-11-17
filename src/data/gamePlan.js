@@ -97,7 +97,7 @@ export function buildPlan(answers = {}, opts = {}) {
 
   // Step 2: the one free habit that matters most for this person.
   let fix;
-  if (crew) fix = { id: 'crew', title: 'Send your guy one text', short: 'Ask for 3.5 inches, clippings left on the lawn, and a sharp blade. It fixes more lawns than any product.', link: ['/blog/what-to-tell-your-landscaper/?asks=tall,clippings,blade#crewtext', 'Write the text for me'] };
+  if (crew) fix = { id: 'crew', title: 'Send your guy one text', short: 'Ask for 3.5 inches, clippings left on the lawn, and a sharp blade. It fixes more lawns than any product.', link: ['/blog/what-to-tell-your-landscaper/?asks=tall,clippings,blades#crewtext', 'Write the text for me'] };
   else if (answers.height === 'low' || answers.height === 'unknown') fix = { id: 'raise', title: 'Raise the mower to 3.5–4 inches', short: 'Free, ten seconds, and it fixes half your problems. Tall grass shades out weeds and handles the heat.', link: ['/guides/how-high-to-mow-grass/', 'How high to mow'] };
   else if (answers.mower === 'robot') fix = { id: 'robot', title: 'Set the robot to its highest setting', short: 'It mows a little every day, so tall and often is perfect. Trim the edges yourself on Saturday.', link: ['/blog/robot-mower-judging-you/', 'Your robot is judging you'] };
   else fix = { id: 'clippings', title: 'Leave the clippings on the lawn', short: 'They’re free fertilizer and they don’t cause thatch. Take the bag off and keep the mulch plug in.', link: ['/blog/stop-bagging-your-clippings/', 'Why I never bag'] };

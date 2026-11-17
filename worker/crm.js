@@ -250,6 +250,8 @@ const PROFILE = {
   ph: (v) => { const n = Math.round(Number(v) * 10) / 10; return n >= 3.5 && n <= 9.5 ? n : null; },
   seeded: (v) => (/^\d{4}-\d{2}-\d{2}$/.test(String(v)) && Math.abs(Date.now() - Date.parse(v)) < 400 * DAY ? v : null),
   know: (v) => { const n = Number(v); return Number.isInteger(n) && n >= 0 && n <= 3 ? n : null; },
+  effort: (v) => { const n = Number(v); return Number.isInteger(n) && n >= 0 && n <= 3 ? n : null; },
+  mower: (v) => (['me', 'crew', 'kid', 'robot'].includes(v) ? v : null),
 };
 async function profileUpdate(req, env) {
   const b = await req.json().catch(() => ({}));
@@ -266,6 +268,12 @@ async function profileUpdate(req, env) {
   if (extra) args.push(val);
   args.push(t);
   const r = await env.CRM.prepare(`UPDATE contacts SET answers = json_set(json_set(COALESCE(answers, '{}'), '$.' || ?, json(?)), '$.profile_at', ?), updated = ?${extra} WHERE token = ?`).bind(...args).run();
+  // Effort or who mows changed: that's a track change. Recompute the level the emails use.
+  if (r.meta.changes && (f === 'effort' || f === 'mower')) {
+    const row = await env.CRM.prepare('SELECT answers FROM contacts WHERE token = ?').bind(t).first();
+    let a = {}; try { a = JSON.parse(row?.answers || '{}'); } catch { /* */ }
+    await env.CRM.prepare('UPDATE contacts SET level = ? WHERE token = ?').bind(buildPlan(a).level, t).run();
+  }
   return json({ ok: true, saved: r.meta.changes > 0 });
 }
 
@@ -707,7 +715,8 @@ export async function crmAdmin(env, req, url, ctx) {
     const cid = Number(q.get('contact') || body.contact || 0);
     let c;
     if (cid) { const row = await env.CRM.prepare('SELECT * FROM contacts WHERE id = ?').bind(cid).first(); if (row) c = contactOf(row); }
-    if (!c) c = sample(Math.max(0, Math.min(3, Number(q.get('level') ?? body.level ?? 1))), body.crew || q.get('crew') ? { mower: 'crew' } : {});
+    const tr = q.get('track') || body.track || ((body.crew || q.get('crew')) ? 'crew' : 'diy');
+    if (!c) c = sample(Math.max(0, Math.min(3, Number(q.get('level') ?? body.level ?? 1))), { mower: tr === 'crew' ? 'crew' : tr === 'robot' ? 'robot' : 'me' });
     const key = clean(q.get('key') || body.key, 120);
     const date = q.get('date') || body.date;
     const today = date ? new Date(`${date}T12:00:00`) : etToday();
@@ -727,7 +736,8 @@ export async function crmAdmin(env, req, url, ctx) {
 
   if (p === 'year') {
     const lv = Math.max(0, Math.min(3, Number(q.get('level') ?? 1)));
-    const c = sample(lv, q.get('crew') ? { mower: 'crew' } : {});
+    const tr = q.get('track') || (q.get('crew') ? 'crew' : 'diy');
+    const c = sample(lv, { mower: tr === 'crew' ? 'crew' : tr === 'robot' ? 'robot' : 'me' });
     const items = simulate(c, new Map(), 365, libItems).map((x) => {
       const e = build(x.key, c, new Date(`${x.date}T12:00:00`), libItems);
       return { ...x, name: nameOf(x.key, libItems), subject: e?.subjects?.a || '', subjectB: e?.subjects?.b || '' };

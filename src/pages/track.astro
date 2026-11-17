@@ -1,0 +1,70 @@
+---
+// "Change my track" (linked from every lawn email). Tracks = who mows (me / landscaper / robot / kid) +
+// effort level. One tap saves to the subscriber's profile (src/scripts/profile.js); the next email follows
+// the new track. ?set=effort-2 / mower-crew / keep applies a choice straight from an email button.
+import Base from '../layouts/Base.astro';
+---
+<Base title="Change Your Lawn Email Track | Mow It Tall" description="Switch who mows or how much effort you want. The emails follow." path="/track/" noindex beer={false}>
+  <main id="main" class="page track-page" data-track>
+    <h1>Change Your Track</h1>
+    <p class="track-lede">Tap to switch. The very next email follows your new track. Nothing to save.</p>
+    <p class="track-msg" data-msg role="status"></p>
+
+    <section class="window track-card">
+      <h2>Who Mows?</h2>
+      <div class="track-opts" data-group="mower">
+        <button type="button" class="quiz-opt" data-v="me" aria-pressed="false"><strong>I do</strong><span>The full plan, mowing tips included.</span></button>
+        <button type="button" class="quiz-opt" data-v="crew" aria-pressed="false"><strong>A landscaper or lawn service</strong><span>No mowing lectures. What to ask your guy, plus the 15-minute jobs worth doing yourself.</span></button>
+        <button type="button" class="quiz-opt" data-v="robot" aria-pressed="false"><strong>A robot</strong><span>Robot settings, blade swaps, and everything that isn’t mowing.</span></button>
+        <button type="button" class="quiz-opt" data-v="kid" aria-pressed="false"><strong>A kid I pay</strong><span>Same as “I do.” Forward the mowing ones to your employee.</span></button>
+      </div>
+    </section>
+
+    <section class="window track-card">
+      <h2>How Much Effort?</h2>
+      <div class="track-opts" data-group="effort">
+        <button type="button" class="quiz-opt" data-v="0" aria-pressed="false"><strong>Couch Potato</strong><span>The few jobs that matter most. Fewest reminders.</span></button>
+        <button type="button" class="quiz-opt" data-v="1" aria-pressed="false"><strong>Good Enough Guy</strong><span>A Saturday morning here and there.</span></button>
+        <button type="button" class="quiz-opt" data-v="2" aria-pressed="false"><strong>Curb Appeal Hunter</strong><span>People slow down when they drive by.</span></button>
+        <button type="button" class="quiz-opt" data-v="3" aria-pressed="false"><strong>Lawn Psycho</strong><span>Every job, every holiday feeding.</span></button>
+      </div>
+    </section>
+
+    <p class="track-fine">Want fewer emails instead? Use “Just job reminders” at the bottom of any email. Everything else about your lawn lives in <a href="/account/">your lawn profile</a>.</p>
+  </main>
+  <style>
+    .track-page { max-width: calc(620px + 2 * var(--gutter)); }
+    .track-page h1 { font-size: clamp(2rem, 8vw, 2.8rem); margin-bottom: 8px; }
+    .track-lede, .track-fine { color: var(--paper-dim); }
+    .track-fine a { color: var(--paper); font-weight: 700; }
+    .track-card { padding: 16px; margin: 0 0 14px; }
+    .track-card h2 { font-size: 1.3rem; margin: 0 0 10px; }
+    .track-opts { display: grid; gap: 10px; }
+    .track-msg { min-height: 1.4em; color: var(--sun); font-weight: 700; }
+  </style>
+  <script>
+    import { saveProfile, hasProfile } from '../scripts/profile.js';
+    const LEVELS = ['Couch Potato', 'Good Enough Guy', 'Curb Appeal Hunter', 'Lawn Psycho'];
+    const MOWER = { me: 'I mow', crew: 'Landscaper track', robot: 'Robot track', kid: 'Kid mows (same as I mow)' };
+    const msg = document.querySelector('[data-msg]')!;
+    const press = (g: string, v: string) => document.querySelectorAll<HTMLButtonElement>(`[data-group="${g}"] [data-v]`).forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === v)));
+    function choose(g: string, v: string) {
+      if (!hasProfile()) { msg.textContent = 'Open this page from a link in one of my emails (on this phone), or sign in to your lawn profile first.'; return; }
+      saveProfile(g, g === 'effort' ? Number(v) : v);
+      press(g, v);
+      msg.textContent = g === 'effort' ? `Done. You’re on ${LEVELS[Number(v)]} now.` : `Done. ${MOWER[v as keyof typeof MOWER]} it is.`;
+      (window as any).mitTrack && (window as any).mitTrack('tool_choice', { tool_name: 'email_track', choice: `${g}:${v}` });
+    }
+    document.querySelectorAll<HTMLElement>('[data-group]').forEach((grp) => grp.addEventListener('click', (e) => {
+      const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-v]'); if (b) choose(grp.dataset.group!, b.dataset.v!);
+    }));
+    // Show the current track when signed in.
+    let sess = ''; try { sess = localStorage.getItem('mit-session') || ''; } catch {}
+    if (sess) fetch('/api/crm/me', { headers: { 'x-crm-session': sess } }).then((r) => (r.ok ? r.json() : null)).then((d) => { if (d) { press('mower', d.answers?.mower || 'me'); press('effort', String(d.answers?.effort ?? d.level)); } }).catch(() => {});
+    // One-tap choices from the "one year in" email.
+    const set = new URLSearchParams(location.search).get('set') || '';
+    const m = set.match(/^(effort|mower)-([a-z0-9]+)$/);
+    if (m) choose(m[1], m[2]);
+    else if (set === 'keep') msg.textContent = hasProfile() ? 'Same plan for year two. See you on Labor Day.' : 'Got it. Same plan for year two.';
+  </script>
+</Base>
