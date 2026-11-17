@@ -10,7 +10,7 @@ const description =
   'A month-by-month lawn care schedule for the Northeast. Pick how much effort you want and get every job with its date window, starting this month.';
 ---
 <Base title={title} description={description} path="/calendar/" crumbs={[["Lawn Calendar", "/calendar/"]]}>
-  <main id="main">
+  <main id="main" data-gate>
     <section class="page-head page-head-hub">
       <h1>The Lawn Calendar</h1>
       <p class="lede">Every lawn job for the year, starting this month. Pick your effort level and I’ll build your calendar.</p>
@@ -18,7 +18,8 @@ const description =
 
     <section class="ag-wrap" data-agenda-root>
       <div class="ag-controls window" id="effort">
-        <h2 class="ag-ctl-label" id="ag-lv-h">How Much Effort Do You Want?</h2>
+        <h2 class="ag-ctl-label" id="ag-lv-h">How Much Effort Will You Put In?</h2>
+        <p class="ag-pick" data-pick>Pick one to build your calendar.</p>
         <div class="ag-seg" role="group" aria-labelledby="ag-lv-h">
           {LEVELS.map((l, i) => (
             <button type="button" data-level={i} aria-pressed="false"><b>{l.name}</b><span>{l.note}</span><em>{levelShort(i)}</em><em class="ag-cost" data-cost>{money(levelCost(i))}</em></button>
@@ -109,6 +110,8 @@ const description =
     subEl.textContent = LEVELS[level].react;
     nudge.innerHTML = nudgeHTML();
     cal.hidden = false;
+    main.removeAttribute('data-gate');
+    pick.textContent = 'Pick one to build your calendar.';
     if (scroll) {
       requestAnimationFrame(() => {
         cal.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -138,9 +141,23 @@ const description =
     track('calendar_download', { tool_name: 'lawn_calendar', choice: LEVELS[level].name });
   });
 
-  // coming back: show the calendar you picked last time on this page (no jump)
-  try {
-    const saved = localStorage.getItem('mit-cal-level');
-    if (saved != null && /^[0-3]$/.test(saved)) show(Number(saved), { scroll: false });
-  } catch { /* private mode */ }
+  // Until a level is picked, the page ends at the effort box (CSS hides the footer via main[data-gate]).
+  // Trying to scroll first wiggles the box and flashes the "Pick one" line.
+  const main = document.querySelector('main');
+  const box = root.querySelector('.ag-controls');
+  const pick = root.querySelector('[data-pick]');
+  let last = 0, startY = 0;
+  function prompt() {
+    if (!main.hasAttribute('data-gate')) return;
+    const now = Date.now();
+    if (now - last < 1200) return;
+    last = now;
+    box.classList.remove('is-nudge'); void box.offsetWidth; box.classList.add('is-nudge');
+    pick.textContent = 'Pick one first to see your calendar.';
+    track('calendar_gate_prompt', { tool_name: 'lawn_calendar' });
+  }
+  addEventListener('wheel', (e) => { if (e.deltaY > 0) prompt(); }, { passive: true });
+  addEventListener('touchstart', (e) => { startY = e.touches[0].clientY; }, { passive: true });
+  addEventListener('touchmove', (e) => { if (startY - e.touches[0].clientY > 30) prompt(); }, { passive: true });
+  addEventListener('keydown', (e) => { if (['ArrowDown', 'PageDown', ' ', 'End'].includes(e.key) && !(e.target as HTMLElement).closest('button')) prompt(); });
 </script>
