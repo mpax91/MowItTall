@@ -1,0 +1,95 @@
+---
+// "Save your lawn to your profile" (Nov 17). The sign-up box under Measure Your Yard: the measured size, the ZIP
+// and any quiz answers on this device go to /api/crm/subscribe with source 'measure'. Already on the list here?
+// It just confirms the size is saved (measure.js saves it to the profile on every change).
+---
+<div class="window gp-mail save-lawn" data-save-lawn>
+  <div data-sl-out>
+    <h2>Save Your Lawn to Your Profile</h2>
+    <p>Right now your lawn only lives on this device. Save it and it’s yours for good:</p>
+    <ul class="gp-pitch">
+      <li><b>Always have your number.</b> Your <span data-sl-size>lawn size</span> is saved, on any phone or computer.</li>
+      <li><b>Know exactly what to buy.</b> Every reminder tells you how many bags of seed and fertilizer your lawn takes.</li>
+      <li><b>Never miss a window.</b> A heads-up a few days before each lawn job, timed for your area.</li>
+      <li><b>No password.</b> Sign in anywhere with just your email.</li>
+    </ul>
+    <p class="gp-small">About one email a week. Short. Never a sales pitch. One click to leave.</p>
+    <form class="gp-form" data-sl-form novalidate>
+      <label class="sr-only" for="sl-name">First name</label>
+      <input id="sl-name" name="name" class="quiz-input" autocomplete="given-name" placeholder="First name (optional)" maxlength="40">
+      <label class="sr-only" for="sl-email">Email</label>
+      <input id="sl-email" name="email" class="quiz-input" type="email" inputmode="email" autocomplete="email" placeholder="you@email.com" required maxlength="120">
+      <input name="website" class="gp-hp" tabindex="-1" autocomplete="off" aria-hidden="true">
+      <button type="submit" class="btn">Save My Lawn</button>
+      <p class="gp-msg" data-sl-msg role="status"></p>
+    </form>
+    <p class="gp-small">Already saved it on another device? <a href="/account/">Sign in</a>.</p>
+  </div>
+  <div data-sl-in hidden></div>
+</div>
+
+<style>
+  .save-lawn { max-width: 560px; margin: 0 auto 18px; }
+  .save-lawn h2 { font-size: 1.4rem; margin: 0 0 6px; }
+  .save-lawn .gp-small a, .save-lawn [data-sl-in] a { color: var(--paper); font-weight: 700; }
+</style>
+
+<script>
+  import { yardTotal } from '../scripts/yard.js';
+  import { getPlace } from '../scripts/place.js';
+  const box = document.querySelector<HTMLElement>('[data-save-lawn]');
+  if (box) {
+    const ls = { get: (k: string) => { try { return localStorage.getItem(k) || ''; } catch { return ''; } }, set: (k: string, v: string) => { try { localStorage.setItem(k, v); } catch {} } };
+    const track = (e: string, p: object = {}) => (window as any).mitTrack && (window as any).mitTrack(e, p);
+    const out = box.querySelector<HTMLElement>('[data-sl-out]')!, inn = box.querySelector<HTMLElement>('[data-sl-in]')!;
+    const fmt = (n: number) => `${n.toLocaleString()} sq ft`;
+    const tip = 'Add <b>mike@mowittall.com</b> to your contacts so the reminders don’t land in Promotions.';
+    const done = (state: string) => {
+      const t = yardTotal();
+      const msg: Record<string, string> = {
+        saved: `<h2>Saved to Your Lawn Profile</h2><p>${t ? `<b>${fmt(t)}</b>. ` : ''}Every reminder uses it to tell you exactly how much to buy. Measure again anytime and it updates.</p><p class="gp-small"><a href="/account/">See Your Lawn Profile</a></p>`,
+        sent: `<h2>Saved. You’re In.</h2><p>Your lawn${t ? ` (${fmt(t)})` : ''} is in your profile and your first email is in your inbox. ${tip}</p><p class="gp-small"><a href="/account/">See Your Lawn Profile</a></p>`,
+        queued: `<h2>Saved. You’re In.</h2><p>Your lawn${t ? ` (${fmt(t)})` : ''} is in your profile. Your first email is on its way soon. ${tip}</p><p class="gp-small"><a href="/account/">See Your Lawn Profile</a> · <a href="/plan/">Take the 1-Minute Quiz</a> to tune your plan</p>`,
+        existing: `<h2>Welcome Back</h2><p>That email’s already on the list. I just sent it a sign-in link: tap it on this device and your new measurement saves to your profile.</p>`,
+      };
+      inn.innerHTML = msg[state] || msg.saved;
+      out.hidden = true; inn.hidden = false;
+    };
+    const refresh = () => {
+      const t = yardTotal();
+      box.querySelector('[data-sl-size]')!.textContent = t ? fmt(t) : 'lawn size';
+      if (ls.get('mit-email') && ls.get('mit-crm')) done('saved');
+    };
+    refresh();
+    window.addEventListener('mit:yard', refresh);
+
+    const form = box.querySelector<HTMLFormElement>('[data-sl-form]')!;
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = form.querySelector('[data-sl-msg]')!, btn = form.querySelector('button')!;
+      const email = (form.elements.namedItem('email') as HTMLInputElement).value.trim();
+      const name = (form.elements.namedItem('name') as HTMLInputElement).value.trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { msg.textContent = 'That email doesn’t look right.'; return; }
+      btn.disabled = true; msg.textContent = 'Saving…';
+      // Anything else they've done on this device comes along: quiz answers, grass pick, ZIP.
+      let quiz: any = {}, sess: any = {}; try { quiz = JSON.parse(ls.get('mit-quiz') || '{}'); sess = JSON.parse(ls.get('mit-sess') || '{}'); } catch {}
+      const { done: d0, at, ...answers } = quiz.done ? quiz : ({} as any);
+      const place = getPlace();
+      if (!answers.zip && place && !(place as any).home && place.zip) answers.zip = place.zip;
+      if (ls.get('mit-grass')) answers.grass = ls.get('mit-grass');
+      try {
+        const r = await fetch('/api/crm/subscribe', {
+          method: 'POST', headers: { 'content-type': 'application/json' },
+          body: JSON.stringify({ email, name, answers, sqft: yardTotal(), source: 'measure', device: ls.get('mit-device'), s: ls.get('mit-session'), website: (form.elements.namedItem('website') as HTMLInputElement).value,
+            utm: { src: sess.src, med: sess.med, camp: sess.camp, land: sess.land } }),
+        });
+        const j = await r.json().catch(() => ({}));
+        if (!r.ok) throw new Error(j.error || 'Something broke. Try again in a minute.');
+        if (j.existing) { done('existing'); track('sign_up_existing', { method: 'measure' }); return; }
+        ls.set('mit-email', '1'); if (j.t) ls.set('mit-crm', j.t); if (j.s) ls.set('mit-session', j.s);
+        if (!j.again) track('generate_lead', { method: 'measure', form_id: 'save_lawn' });
+        done(j.again ? 'saved' : j.sent ? 'sent' : 'queued');
+      } catch (err: any) { msg.textContent = err.message; btn.disabled = false; }
+    });
+  }
+</script>

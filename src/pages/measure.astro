@@ -2,6 +2,7 @@
 import Base from '../layouts/Base.astro';
 import YardMeasure from '../components/YardMeasure.astro';
 import MowWorkout from '../components/MowWorkout.astro';
+import SaveLawn from '../components/SaveLawn.astro';
 
 const title = 'Lawn Square Footage Calculator: Measure Your Yard';
 const description =
@@ -63,6 +64,10 @@ const jsonLd = [
       <YardMeasure />
     </section>
 
+
+    <section class="plan plan-mid" aria-label="Save your lawn" data-mz-after hidden>
+      <SaveLawn />
+    </section>
 
     <section class="plan plan-mid" aria-labelledby="use-h" data-mz-after hidden>
       <div class="window tool-card">

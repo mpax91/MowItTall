@@ -43,6 +43,8 @@ export async function evInit(db) {
         landing TEXT, source TEXT, medium TEXT, campaign TEXT, channel TEXT,
         country TEXT, region TEXT, city TEXT, dev_type TEXT, os TEXT, browser TEXT, eid TEXT)`),
       db.prepare('CREATE INDEX IF NOT EXISTS ev_raw_date ON ev_raw (date, session)'),
+      // Per-person timelines in HQ → Email (worker/crm.js looks events up by the subscriber's device ids).
+      db.prepare('CREATE INDEX IF NOT EXISTS ev_raw_device ON ev_raw (device, at)'),
       // page_leave is sent twice on purpose (beacon now + re-sent from the next page); the id makes the copy a no-op.
       db.prepare('CREATE UNIQUE INDEX IF NOT EXISTS ev_raw_eid ON ev_raw (eid) WHERE eid IS NOT NULL'),
       db.prepare(`CREATE TABLE IF NOT EXISTS ev_days (date TEXT PRIMARY KEY, sessions INTEGER NOT NULL, users INTEGER NOT NULL,

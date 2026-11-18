@@ -309,11 +309,14 @@ export function build(key, c, today, lib = []) {
     steps.push({ k: 'Your free fix', title: plan.fix.title, text: plan.fix.short, link: plan.fix.link });
     if (plan.next) steps.push({ k: `Next up · ${fmtDate(plan.next.on)}`, title: plan.next.title, text: plan.next.short, extra: jobBlock(plan.next) });
     return {
-      subjects: { a: `Your lawn game plan, ${plan.profile.name.replace(/^The /, '')}`, b: `${name ? `${name}, here’s` : 'Here’s'} exactly what to do this week` },
+      subjects: { a: c.answers.effort === undefined ? 'Your lawn is saved. Here’s your game plan' : `Your lawn game plan, ${plan.profile.name.replace(/^The /, '')}`, b: `${name ? `${name}, here’s` : 'Here’s'} exactly what to do this week` },
       pre: 'Three steps, then I’ll take it from here.',
       blocks: [
         ['p', hi(c)],
-        ['p', `You’re <b>${plan.profile.name}</b>. ${plan.profile.blurb}`],
+        // Signed up from Measure Your Yard (no quiz yet): start them on the common plan and point at the quiz.
+        ...(c.answers.effort === undefined
+          ? [['p', `Your lawn is saved${c.sqft ? `: <b>${Math.round(c.sqft).toLocaleString()} sq ft</b>` : ''}. I started you on the plan most people pick. Take the 1-minute quiz and every email after this one fits your lawn and how much time you’ve got.`], ['btn', 'Take the 1-Minute Quiz', '/plan/']]
+          : [['p', `You’re <b>${plan.profile.name}</b>. ${plan.profile.blurb}`]]),
         ['h', 'Your game plan'],
         ['steps', steps],
         ['p', `That’s it for now. Your full year is <b>${plural(plan.tasks.length, 'job')}</b>, about ${plural(plan.hours, 'hour')}${plan.crew ? ' of your time' : ' plus mowing'}.`],

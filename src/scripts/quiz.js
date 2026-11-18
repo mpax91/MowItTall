@@ -8,6 +8,7 @@ import { buildPlan, fmtDate } from '../data/gamePlan.js';
 import { yardTotal } from './yard.js';
 import { getPlace, setZip } from './place.js';
 import { levelHours } from './agenda.js';
+import { syncQuiz } from './profile.js';
 
 const REACT_MS = 2400; // how long a reaction stays up before moving on (tap to skip)
 
@@ -81,7 +82,7 @@ export function initQuiz(root) {
   const $ = (s) => root.querySelector(s);
   const card = $('[data-card]');
   const result = $('[data-result]');
-  let step = 0, timer = 0;
+  let step = 0, timer = 0, fromNudge = false;
   let answers = {};
   try { answers = JSON.parse(localStorage.getItem(KEY)) || {}; } catch { answers = {}; }
 
@@ -182,7 +183,7 @@ export function initQuiz(root) {
     if (d < 0 && STEPS[step]) track('quiz_back', { quiz_name: 'lawn_plan', step_number: step + 1, question_id: STEPS[step].id });
     step = Math.max(0, Math.min(STEPS.length, step + d));
     save();
-    if (step === STEPS.length) { answers.done = true; save(); showResult(true); return; }
+    if (step === STEPS.length) { answers.done = true; answers.at = Date.now(); save(); syncQuiz(answers); showResult(true); return; }
     render();
     card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
@@ -234,7 +235,7 @@ export function initQuiz(root) {
       <p class="gp-total"><b>${plural(plan.tasks.length, 'job')} a year</b>, about ${plural(plan.hours, 'hour')}${plan.crew ? ' of your time' : ' plus mowing'}.${more ? ` <a href="/calendar/?level=${level}#cal">See all ${plan.tasks.length}</a>` : ''}</p>
 
       <div class="window gp-mail" data-mail>
-        ${joined ? doneHTML(true) : `
+        ${joined ? doneHTML('again') : `
         <h3>Let Me Walk You Through It</h3>
         <p>That’s the plan. The rest comes by email, one easy step at a time, and every email remembers your answers.</p>
         <ul class="gp-pitch">
@@ -271,11 +272,28 @@ export function initQuiz(root) {
     });
     const form = result.querySelector('[data-mail-form]');
     if (form) form.addEventListener('submit', (e) => { e.preventDefault(); subscribe(form, plan); });
-    result.scrollIntoView({ block: 'start' });
+    // From the "email me my plan" reminder (Base.astro): straight to the email box.
+    if (location.hash === '#mail' && form) {
+      fromNudge = true;
+      history.replaceState(null, '', location.pathname + location.search);
+      result.querySelector('[data-mail]').scrollIntoView({ block: 'center' });
+      setTimeout(() => form.email.focus({ preventScroll: true }), 300);
+    } else result.scrollIntoView({ block: 'start' });
   }
 
-  function doneHTML(again) {
-    return `<h3>${again ? 'You’re on the List' : 'You’re In'}</h3><p>${again ? 'Your lawn emails are on the way. Check your inbox (and the Promotions tab) for the next one.' : 'Your game plan is in your inbox. Can’t find it? Look in Promotions or Spam and drag it to your inbox, so the reminders show up. First real step lands in a couple of days.'}</p>`;
+  // After sign-up. 'sent': the game plan email just went out. 'queued': saved, emails start soon (sending is off
+  // while the site is new). 'again': already signed up on this device (plan updated). 'existing': that email was
+  // already on the list from another device, so a sign-in link went out instead.
+  function doneHTML(state) {
+    const tip = 'Add <b>mike@mowittall.com</b> to your contacts so the reminders don’t land in Promotions.';
+    const body = {
+      sent: `Your game plan is in your inbox. Can’t find it? Look in Promotions or Spam and drag it to your inbox. First real step lands in a couple of days. ${tip}`,
+      queued: `You’re on the list and your plan is saved to your lawn profile. Your first email (this game plan, plus how much to buy for your lawn) is on its way soon. ${tip}`,
+      again: 'Your plan is saved to your lawn profile, and every email uses it. Change anything anytime.',
+      existing: 'That email’s already on the list. I just sent it a sign-in link: tap it and this device will remember you (and your new answers).',
+    }[state] || '';
+    const head = { sent: 'You’re In', queued: 'You’re In', again: 'You’re on the List', existing: 'Welcome Back' }[state] || 'You’re In';
+    return `<h3>${head}</h3><p>${body}</p>${state === 'existing' ? '' : '<p class="gp-small"><a href="/account/">See Your Lawn Profile</a></p>'}`;
   }
 
   async function subscribe(form, plan) {
@@ -283,20 +301,21 @@ export function initQuiz(root) {
     const email = form.email.value.trim(), name = form.name.value.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email)) { msg.textContent = 'That email doesn’t look right.'; form.email.focus(); return; }
     const btn = form.querySelector('button'); btn.disabled = true; msg.textContent = 'Sending…';
-    let sess = {}, device = ''; try { sess = JSON.parse(localStorage.getItem('mit-sess') || '{}'); device = localStorage.getItem('mit-device') || ''; } catch { /* */ }
-    const { done, ...a } = answers;
+    let sess = {}, device = '', session = ''; try { sess = JSON.parse(localStorage.getItem('mit-sess') || '{}'); device = localStorage.getItem('mit-device') || ''; session = localStorage.getItem('mit-session') || ''; } catch { /* */ }
+    const { done, at, ...a } = answers;
     // Anything they already did on the site counts: a grass pick from the grass picker skips that email.
     try { const g = localStorage.getItem('mit-grass'); if (g) a.grass = g; } catch { /* */ }
     try {
       const r = await fetch('/api/crm/subscribe', {
         method: 'POST', headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ email, name, answers: a, sqft: plan.sqft, source: 'quiz', device, website: form.website.value, utm: { src: sess.src, med: sess.med, camp: sess.camp, land: sess.land } }),
+        body: JSON.stringify({ email, name, answers: a, sqft: plan.sqft, source: fromNudge ? 'nudge' : 'quiz', device, s: session, website: form.website.value, utm: { src: sess.src, med: sess.med, camp: sess.camp, land: sess.land } }),
       });
       const j = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(j.error || 'Something broke. Try again in a minute.');
+      if (j.existing) { form.closest('[data-mail]').innerHTML = doneHTML('existing'); track('sign_up_existing', { method: 'quiz' }); return; }
       try { localStorage.setItem('mit-email', '1'); if (j.t) localStorage.setItem('mit-crm', j.t); if (j.s) localStorage.setItem('mit-session', j.s); } catch { /* */ }
-      track('generate_lead', { method: 'quiz', form_id: 'lawn_year_email', effort_level: plan.level, lawn_profile: plan.profile.name });
-      form.closest('[data-mail]').innerHTML = doneHTML(false);
+      if (!j.again) track('generate_lead', { method: 'quiz', form_id: 'lawn_year_email', effort_level: plan.level, lawn_profile: plan.profile.name });
+      form.closest('[data-mail]').innerHTML = doneHTML(j.again ? 'again' : j.sent ? 'sent' : 'queued');
     } catch (err) {
       msg.textContent = err.message; btn.disabled = false;
     }

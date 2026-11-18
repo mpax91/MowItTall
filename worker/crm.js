@@ -44,6 +44,26 @@ const SCHEMA = [
   'CREATE TABLE IF NOT EXISTS logins (code TEXT PRIMARY KEY, contact_id INTEGER, iph TEXT, created INTEGER, used INTEGER)',
   'CREATE TABLE IF NOT EXISTS sessions (token TEXT PRIMARY KEY, contact_id INTEGER, created INTEGER, last INTEGER, device TEXT)',
   'CREATE INDEX IF NOT EXISTS sessions_contact ON sessions(contact_id)',
+  // Nov 17 (funnel build): every device a person uses (the same `mit-device` id the event log uses, so their
+  // site visits before and after signing up show in HQ), and a log of what they do (sign-up, profile answers,
+  // sign-ins, visits, email settings).
+  'CREATE TABLE IF NOT EXISTS contact_devices (contact_id INTEGER, device TEXT, first_at INTEGER, last_at INTEGER, visits INTEGER DEFAULT 0, PRIMARY KEY (contact_id, device))',
+  'CREATE INDEX IF NOT EXISTS cd_device ON contact_devices(device)',
+  'CREATE TABLE IF NOT EXISTS activity (id INTEGER PRIMARY KEY AUTOINCREMENT, contact_id INTEGER, type TEXT, detail TEXT, at INTEGER)',
+  'CREATE INDEX IF NOT EXISTS activity_contact ON activity(contact_id, at)',
+  'CREATE INDEX IF NOT EXISTS activity_type ON activity(type, at)',
+];
+const DEVICE_RE = /^[a-z0-9-]{8,40}$/i;
+// Statements to batch: log something a person did / remember a device of theirs.
+const logAct = (env, cid, type, detail = '') => env.CRM.prepare('INSERT INTO activity (contact_id, type, detail, at) VALUES (?, ?, ?, ?)').bind(cid, type, String(detail ?? '').slice(0, 300), Date.now());
+const linkDev = (env, cid, d) => (DEVICE_RE.test(String(d || ''))
+  ? env.CRM.prepare('INSERT INTO contact_devices (contact_id, device, first_at, last_at, visits) VALUES (?, ?, ?, ?, 0) ON CONFLICT (contact_id, device) DO UPDATE SET last_at = excluded.last_at').bind(cid, String(d), Date.now(), Date.now())
+  : null);
+const forget = (env, id) => [
+  env.CRM.prepare('DELETE FROM clicks WHERE send_id IN (SELECT id FROM sends WHERE contact_id = ?)').bind(id), env.CRM.prepare('DELETE FROM sends WHERE contact_id = ?').bind(id),
+  env.CRM.prepare('DELETE FROM msgs WHERE contact_id = ?').bind(id), env.CRM.prepare('DELETE FROM sessions WHERE contact_id = ?').bind(id),
+  env.CRM.prepare('DELETE FROM logins WHERE contact_id = ?').bind(id), env.CRM.prepare('DELETE FROM contact_devices WHERE contact_id = ?').bind(id),
+  env.CRM.prepare('DELETE FROM activity WHERE contact_id = ?').bind(id), env.CRM.prepare('DELETE FROM contacts WHERE id = ?').bind(id),
 ];
 let ready = false;
 export async function crmInit(env) {
@@ -55,12 +75,19 @@ export async function crmInit(env) {
 
 /* ------------------------------------------------------------------ settings */
 const DEFAULTS = { mode: 'off', test_to: '', from_name: 'Mike from Mow It Tall', from_addr: 'mike@mowittall.com', forward_to: '', auto_winner: '1', min_arm: '200' };
+// The drip clock (Nov 17): sign-ups that come in while sending is off don't lose their welcome series.
+// A person's emails count days from the later of their sign-up and the day sending first went Live.
+// Before that (Off/Test), previews treat everyone as starting today. Test contacts (Mike) use their sign-up date.
+let liveSince = 0;
 async function settings(env) {
   const { results } = await env.CRM.prepare('SELECT k, v FROM crm_kv').all();
   const s = { ...DEFAULTS };
   for (const r of results) if (r.k in DEFAULTS) s[r.k] = r.v;
+  liveSince = Number((results.find((r) => r.k === 'live_since') || {}).v) || 0;
+  s.live_since = liveSince;
   return s;
 }
+const clockOf = (r) => (r.is_test ? r.created : Math.max(r.created || 0, liveSince || Date.now()));
 const setKv = (env, k, v) => env.CRM.prepare('INSERT INTO crm_kv (k, v, at) VALUES (?, ?, ?) ON CONFLICT (k) DO UPDATE SET v = excluded.v, at = excluded.at').bind(k, String(v), Date.now()).run();
 
 /* ------------------------------------------------------------------ time (Eastern) */
@@ -86,7 +113,7 @@ async function lib(env) {
 
 const contactOf = (r) => {
   let answers = {}; try { answers = JSON.parse(r.answers || '{}'); } catch { /* */ }
-  return { id: r.id, email: r.email, name: r.name || '', created: r.created, answers, sqft: r.sqft || 0, measured: !!r.measured, pref: r.pref || 'all', token: r.token, level: r.level, is_test: r.is_test };
+  return { id: r.id, email: r.email, name: r.name || '', created: clockOf(r), answers, sqft: r.sqft || 0, measured: !!r.measured, pref: r.pref || 'all', token: r.token, level: r.level, is_test: r.is_test };
 };
 async function sentMap(env, cid) {
   const { results } = await env.CRM.prepare("SELECT key, sent_at FROM sends WHERE contact_id = ? AND mode = 'live' AND status NOT IN ('failed', 'queued')").bind(cid).all();
@@ -206,6 +233,7 @@ export async function crmPublic(req, env, ctx, url) {
   if (p === '/api/crm/login' && req.method === 'POST') return login(req, env, ctx);
   if (p === '/api/crm/session' && req.method === 'POST') return session(req, env);
   if (p === '/api/crm/me') return me(req, env);
+  if (p === '/api/crm/hello' && req.method === 'POST') return hello(req, env);
   let m = p.match(/^\/api\/m\/o\/([a-z0-9]{8,20})\.gif$/);
   if (m) {
     ctx.waitUntil((async () => {
@@ -254,11 +282,35 @@ const PROFILE = {
   mower: (v) => (['me', 'crew', 'kid', 'robot'].includes(v) ? v : null),
   spreader: (v) => (['yes', 'no'].includes(v) ? v : null),
 };
+// Quiz answers (taken or retaken after signing up) merge into the profile; the rest of the profile stays.
+const QUIZ = {
+  zip: (v) => (/^\d{5}$/.test(String(v)) ? String(v) : null),
+  look: (v) => (['good', 'street', 'patchy', 'weedy', 'dirt'].includes(v) ? v : null),
+  effort: PROFILE_NUM03, know: PROFILE_NUM03,
+  problems: (v) => (Array.isArray(v) ? v.filter((x) => ['weeds', 'crabgrass', 'bare', 'brown', 'grubs', 'neighbor'].includes(x)).slice(0, 6) : null),
+  height: (v) => (['unknown', 'low', 'mid', 'high'].includes(v) ? v : null),
+  mower: (v) => (['me', 'crew', 'kid', 'robot'].includes(v) ? v : null),
+};
+function PROFILE_NUM03(v) { const n = Number(v); return Number.isInteger(n) && n >= 0 && n <= 3 ? n : null; }
+async function quizUpdate(env, t, a) {
+  const row = await env.CRM.prepare('SELECT id, answers, sqft FROM contacts WHERE token = ?').bind(t).first();
+  if (!row) return bad('Not found.', 404);
+  let ans = {}; try { ans = JSON.parse(row.answers || '{}'); } catch { /* */ }
+  for (const [k, check] of Object.entries(QUIZ)) { const v = check(a[k]); if (v !== null && v !== undefined) ans[k] = v; }
+  ans.quiz_at = Date.now();
+  const plan = buildPlan(ans, { sqft: row.sqft || 0 });
+  await env.CRM.batch([
+    env.CRM.prepare('UPDATE contacts SET answers = ?, level = ?, zip = COALESCE(?, zip), updated = ? WHERE id = ?').bind(JSON.stringify(ans), plan.level, ans.zip || null, Date.now(), row.id),
+    logAct(env, row.id, 'quiz', `${LEVEL_NAMES[plan.level]}${ans.mower ? ` · ${ans.mower}` : ''}`),
+  ]);
+  return json({ ok: true, saved: true });
+}
 async function profileUpdate(req, env) {
   const b = await req.json().catch(() => ({}));
   let t = clean(b.t, 40);
   let f = clean(b.f, 12), v = b.v;
   if (!t && b.s) { const r = await env.CRM.prepare('SELECT c.token FROM sessions s JOIN contacts c ON c.id = s.contact_id WHERE s.token = ?').bind(clean(b.s, 40)).first(); t = r?.token || ''; }
+  if (t && b.answers && typeof b.answers === 'object') return quizUpdate(env, t, b.answers);
   if (!f && b.sqft) { f = 'sqft'; v = b.sqft; } // older measure-tool format
   const check = PROFILE[f];
   const val = check ? check(typeof v === 'string' ? clean(v, 20) : v) : null;
@@ -275,9 +327,34 @@ async function profileUpdate(req, env) {
     let a = {}; try { a = JSON.parse(row?.answers || '{}'); } catch { /* */ }
     await env.CRM.prepare('UPDATE contacts SET level = ? WHERE token = ?').bind(buildPlan(a).level, t).run();
   }
+  if (r.meta.changes) {
+    const c = await env.CRM.prepare('SELECT id FROM contacts WHERE token = ?').bind(t).first();
+    if (c) await env.CRM.batch([logAct(env, c.id, 'profile', `${f}=${val}`), linkDev(env, c.id, clean(b.d, 60))].filter(Boolean));
+  }
   return json({ ok: true, saved: r.meta.changes > 0 });
 }
 
+// Once per browser session for anyone on the list (Base.astro): ties this device to them and logs the visit,
+// so HQ can show who's coming back to the site (and from which device), not just who opens emails.
+async function hello(req, env) {
+  const b = await req.json().catch(() => ({}));
+  const d = clean(b.d, 60), now = Date.now();
+  let c = null;
+  if (b.s) c = await env.CRM.prepare('SELECT c.id FROM sessions s JOIN contacts c ON c.id = s.contact_id WHERE s.token = ?').bind(clean(b.s, 40)).first();
+  if (!c && b.t) c = await env.CRM.prepare('SELECT id FROM contacts WHERE token = ?').bind(clean(b.t, 40)).first();
+  if (!c) return json({ ok: false });
+  const prev = DEVICE_RE.test(d) ? await env.CRM.prepare('SELECT last_at, visits FROM contact_devices WHERE contact_id = ? AND device = ?').bind(c.id, d).first() : null;
+  const fresh = !prev || now - (prev.last_at || 0) > 30 * 60000 || !prev.visits;
+  const stmts = [];
+  if (DEVICE_RE.test(d)) stmts.push(env.CRM.prepare('INSERT INTO contact_devices (contact_id, device, first_at, last_at, visits) VALUES (?, ?, ?, ?, 1) ON CONFLICT (contact_id, device) DO UPDATE SET last_at = excluded.last_at, visits = visits + ?')
+    .bind(c.id, d, now, now, fresh ? 1 : 0));
+  if (fresh) stmts.push(logAct(env, c.id, 'visit', clean(b.p, 120)));
+  if (stmts.length) await env.CRM.batch(stmts);
+  return json({ ok: true });
+}
+
+// Where sign-ups can come from (each one is its own row in HQ → Email → Funnel).
+const SOURCES = ['quiz', 'measure', 'nudge', 'account'];
 async function subscribe(req, env, ctx) {
   const b = await req.json().catch(() => null);
   if (!b) return bad('Bad request.');
@@ -294,34 +371,77 @@ async function subscribe(req, env, ctx) {
   const a = b.answers && typeof b.answers === 'object' ? b.answers : {};
   const keep = {};
   for (const k of ['zip', 'look', 'size', 'effort', 'know', 'problems', 'height', 'sun', 'water', 'uses', 'mower', 'sqft', 'grass', 'spreader']) if (a[k] !== undefined) keep[k] = Array.isArray(a[k]) ? a[k].slice(0, 8).map((x) => clean(x, 20)) : typeof a[k] === 'number' ? a[k] : clean(a[k], 20);
-  const plan = buildPlan(keep, { sqft: b.sqft });
+  if (keep.effort !== undefined) keep.quiz_at = Date.now(); // they took the quiz (measure-only sign-ups haven't)
+  const source = SOURCES.includes(b.source) ? b.source : 'quiz';
+  const device = clean(b.device, 60);
+  const sqftIn = PROFILE.sqft(b.sqft) || 0; // only a lawn measured on the map
   const now = Date.now();
   const name = clean(b.name, 40).replace(/[<>]/g, '');
   const utm = JSON.stringify({ src: clean(b.utm?.src, 60), med: clean(b.utm?.med, 30), camp: clean(b.utm?.camp, 60), land: clean(b.utm?.land, 120) });
+  const s = await settings(env);
   const old = await env.CRM.prepare('SELECT * FROM contacts WHERE email = ?').bind(email).first();
   let row;
   if (old) {
-    row = await env.CRM.prepare(`UPDATE contacts SET name = COALESCE(NULLIF(?, ''), name), zip = ?, answers = ?, level = ?, sqft = CASE WHEN measured = 1 THEN sqft ELSE ? END,
-      measured = CASE WHEN ? > 0 THEN 1 ELSE measured END, grass = ?, status = 'active', pref = 'all', updated = ?, unsub_at = NULL WHERE id = ? RETURNING *`)
-      .bind(name, keep.zip || '', JSON.stringify(keep), plan.level, Math.round(plan.sqft) || null, Number(b.sqft) > 0 ? 1 : 0, plan.grassKey, now, old.id).first();
+    // Already on the list. Only someone signed in as this person (on this device) gets to change the profile
+    // or gets a session back. Anyone else: we never hand out the account. Their emails restart if they had
+    // unsubscribed (they typed their email into a sign-up box), and they get a sign-in link by email.
+    const sess = clean(b.s || req.headers.get('x-crm-session'), 40);
+    const mine = sess ? await env.CRM.prepare('SELECT 1 x FROM sessions WHERE token = ? AND contact_id = ?').bind(sess, old.id).first() : null;
+    if (!mine) {
+      const stmts = [logAct(env, old.id, 'resignup', `${source}, not signed in: sent a sign-in link`)];
+      if (old.status === 'unsubscribed') {
+        stmts.push(env.CRM.prepare("UPDATE contacts SET status = 'active', pref = 'all', unsub_at = NULL, updated = ? WHERE id = ?").bind(now, old.id));
+        stmts.push(logAct(env, old.id, 'resub', source));
+      }
+      await env.CRM.batch(stmts);
+      ctx.waitUntil(sendLoginLink(env, old, iph).catch((e) => console.log('relink', e?.message)));
+      return json({ ok: true, existing: true });
+    }
+    let prev = {}; try { prev = JSON.parse(old.answers || '{}'); } catch { /* */ }
+    const merged = { ...prev, ...keep };
+    const sqft = sqftIn || (old.measured ? old.sqft : 0);
+    const plan = buildPlan(merged, { sqft });
+    row = await env.CRM.prepare(`UPDATE contacts SET name = COALESCE(NULLIF(?, ''), name), zip = COALESCE(NULLIF(?, ''), zip), answers = ?, level = ?, sqft = ?, measured = ?, grass = ?,
+      status = CASE WHEN status IN ('bounced', 'complained') THEN status ELSE 'active' END, unsub_at = CASE WHEN status IN ('bounced', 'complained') THEN unsub_at ELSE NULL END, updated = ? WHERE id = ? RETURNING *`)
+      .bind(name, merged.zip || '', JSON.stringify(merged), plan.level, sqft || null, sqft ? 1 : 0, merged.grass || plan.grassKey, now, old.id).first();
+    await env.CRM.batch([logAct(env, row.id, 'resignup', source), linkDev(env, row.id, device)].filter(Boolean));
   } else {
-    // The quiz only sends sqft when the lawn was measured on the map (src/scripts/quiz.js), so it counts as measured.
+    const plan = buildPlan(keep, { sqft: sqftIn });
     row = await env.CRM.prepare(`INSERT INTO contacts (email, name, zip, answers, level, sqft, measured, grass, status, pref, token, source, utm, device, iph, created, updated)
       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active', 'all', ?, ?, ?, ?, ?, ?, ?) RETURNING *`)
-      .bind(email, name, keep.zip || '', JSON.stringify(keep), plan.level, Math.round(plan.sqft) || null, Number(b.sqft) > 0 ? 1 : 0, plan.grassKey, rid(24), clean(b.source, 20) || 'quiz', utm, clean(b.device, 60), iph, now, now).first();
+      .bind(email, name, keep.zip || '', JSON.stringify(keep), plan.level, sqftIn || null, sqftIn ? 1 : 0, keep.grass || plan.grassKey, rid(24), source, utm, device, iph, now, now).first();
+    await env.CRM.batch([logAct(env, row.id, 'signup', source), linkDev(env, row.id, device)].filter(Boolean));
   }
   // The welcome email goes out right away (if sending is on and they haven't had it).
-  const s = await settings(env);
+  let sent = false;
   if (s.mode === 'live' || (s.mode === 'test' && row.is_test)) {
-    ctx.waitUntil((async () => {
-      const sent = await sentMap(env, row.id);
-      if (!sent.has('w0-plan')) await sendOne(env, contactOf(row), 'w0-plan', { s }).catch((e) => console.log('w0', e?.message));
-    })());
+    const had = (await sentMap(env, row.id)).has('w0-plan');
+    sent = !had;
+    if (!had) ctx.waitUntil(sendOne(env, contactOf(row), 'w0-plan', { s }).catch((e) => console.log('w0', e?.message)));
   }
   // Signed in on this device right away (same as clicking a magic link).
   const sess = rid(32);
-  await env.CRM.prepare('INSERT INTO sessions (token, contact_id, created, last, device) VALUES (?, ?, ?, ?, ?)').bind(sess, row.id, now, now, clean(b.device, 60)).run();
-  return json({ ok: true, t: row.token, s: sess });
+  await env.CRM.prepare('INSERT INTO sessions (token, contact_id, created, last, device) VALUES (?, ?, ?, ?, ?)').bind(sess, row.id, now, now, device).run();
+  return json({ ok: true, t: row.token, s: sess, sent, live: s.mode === 'live', again: !!old });
+}
+
+// "I'm already on the list": a sign-in link instead of the account. Max 5 an hour per person.
+async function sendLoginLink(env, c, iph = '') {
+  const now = Date.now();
+  const recent = await env.CRM.prepare('SELECT COUNT(*) n FROM logins WHERE contact_id = ? AND created > ?').bind(c.id, now - 3600000).first();
+  if (recent.n >= 5) return;
+  const code = rid(32);
+  await env.CRM.prepare('INSERT INTO logins (code, contact_id, iph, created) VALUES (?, ?, ?, ?)').bind(code, c.id, iph, now).run();
+  const s = await settings(env);
+  const url = `${SITE}/account/?login=${code}`;
+  const r0 = render({ subject: 'Your Mow It Tall sign-in link', pre: 'Tap to sign in. The link works once, for 30 minutes.', blocks: [
+    ['p', c.name ? `Hey ${c.name},` : 'Hey,'], ['p', 'Here’s your sign-in link for your lawn profile. It works once, for the next 30 minutes, and keeps this device signed in.'],
+    ['btn', 'Sign In', `/account/?login=${code}`], ['p', 'Didn’t ask for this? Ignore it. Nobody gets in without this email.<br>– Mike'],
+  ] }, { sendId: '', key: 'login', variant: '', token: c.token });
+  // Untracked, no utm (it's a key, not marketing). Sent even when the drip is switched off.
+  const html = r0.html.replace(/https:\/\/mowittall\.com\/account\/\?login=[^"&]+[^"]*/g, url);
+  const r = await sendMail(env, { to: c.email, from: { email: s.from_addr, name: s.from_name }, subject: 'Your Mow It Tall sign-in link', html, text: `Sign in to your lawn profile (works once, for 30 minutes):\n${url}\n\nDidn’t ask for this? Ignore it.` });
+  if (!r.ok) console.log('login mail', r.code);
 }
 
 const page = (title, body) => new Response(`<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex"><title>${title} · Mow It Tall</title>
@@ -342,16 +462,17 @@ async function unsubscribe(req, env, url) {
     const o = clean(form.o || url.searchParams.get('o') || 'all', 10);
     const oneClick = url.searchParams.get('oc') === '1' || form['List-Unsubscribe'] === 'One-Click';
     if (o === 'resub') {
-      await env.CRM.prepare("UPDATE contacts SET status = 'active', pref = 'all', unsub_at = NULL, updated = ? WHERE id = ?").bind(now, c.id).run();
+      await env.CRM.batch([env.CRM.prepare("UPDATE contacts SET status = 'active', pref = 'all', unsub_at = NULL, updated = ? WHERE id = ?").bind(now, c.id), logAct(env, c.id, 'resub', 'unsubscribe page')]);
       return page('Welcome back', '<h1>You’re back in.</h1><p>Good call. The next email will show up on its regular schedule.</p>');
     }
     if (o === 'jobs' && !oneClick) {
-      await env.CRM.prepare("UPDATE contacts SET pref = 'jobs', pref_at = ?, updated = ? WHERE id = ?").bind(now, now, c.id).run();
+      await env.CRM.batch([env.CRM.prepare("UPDATE contacts SET pref = 'jobs', pref_at = ?, updated = ? WHERE id = ?").bind(now, now, c.id), logAct(env, c.id, 'pref', 'jobs (unsubscribe page)')]);
       return page('Job reminders only', '<h1>Done. Job reminders only.</h1><p>You’ll only hear from me a few days before a lawn job on your plan. That’s it.</p><form method="post"><input type="hidden" name="o" value="all"><button class="q">Actually, unsubscribe me from everything</button></form>');
     }
     await env.CRM.batch([
       env.CRM.prepare("UPDATE contacts SET status = 'unsubscribed', unsub_at = ?, unsub_reason = ?, updated = ? WHERE id = ?").bind(now, clean(form.why, 300) || (oneClick ? 'one-click' : ''), now, c.id),
       env.CRM.prepare('UPDATE sends SET unsub_at = COALESCE(unsub_at, ?) WHERE id = ? AND contact_id = ?').bind(now, sid, c.id),
+      logAct(env, c.id, 'unsub', clean(form.why, 300) || (oneClick ? 'one-click' : 'unsubscribe page')),
     ]);
     if (oneClick) return new Response('Unsubscribed', { status: 200 });
     return page('Unsubscribed', '<h1>You’re unsubscribed.</h1><p>No more emails. No hard feelings. Keep mowing it tall.</p><form method="post"><input type="hidden" name="o" value="resub"><button class="q">Oops, resubscribe me</button></form>');
@@ -379,19 +500,7 @@ async function login(req, env, ctx) {
   // Same answer either way, so nobody can use this to check who's on the list.
   const ok = json({ ok: true });
   if (!c) return ok;
-  const recent = await env.CRM.prepare('SELECT COUNT(*) n FROM logins WHERE contact_id = ? AND created > ?').bind(c.id, now - 3600000).first();
-  if (recent.n >= 5) return ok;
-  const code = rid(32);
-  await env.CRM.prepare('INSERT INTO logins (code, contact_id, iph, created) VALUES (?, ?, ?, ?)').bind(code, c.id, iph, now).run();
-  const s = await settings(env);
-  const url = `${SITE}/account/?login=${code}`;
-  const r0 = render({ subject: 'Your Mow It Tall sign-in link', pre: 'Tap to sign in. The link works once, for 30 minutes.', blocks: [
-    ['p', c.name ? `Hey ${c.name},` : 'Hey,'], ['p', 'Here’s your sign-in link for your lawn profile. It works once, for the next 30 minutes.'],
-    ['btn', 'Sign In', `/account/?login=${code}`], ['p', 'Didn’t ask for this? Ignore it. Nobody gets in without this email.<br>– Mike'],
-  ] }, { sendId: '', key: 'login', variant: '', token: c.token });
-  // Untracked, no utm (it's a key, not marketing). Sent even when the drip is switched off.
-  const html = r0.html.replace(/https:\/\/mowittall\.com\/account\/\?login=[^"&]+[^"]*/g, url);
-  ctx.waitUntil(sendMail(env, { to: email, from: { email: s.from_addr, name: s.from_name }, subject: 'Your Mow It Tall sign-in link', html, text: `Sign in to your lawn profile (works once, for 30 minutes):\n${url}\n\nDidn’t ask for this? Ignore it.` }).then((r) => { if (!r.ok) console.log('login mail', r.code); }));
+  ctx.waitUntil(sendLoginLink(env, { ...c, email }, iph).catch((e) => console.log('login', e?.message)));
   return ok;
 }
 async function session(req, env) {
@@ -405,6 +514,8 @@ async function session(req, env) {
   await env.CRM.batch([
     env.CRM.prepare('UPDATE logins SET used = ? WHERE code = ?').bind(now, code),
     env.CRM.prepare('INSERT INTO sessions (token, contact_id, created, last, device) VALUES (?, ?, ?, ?, ?)').bind(sess, c.id, now, now, clean(b.device, 60)),
+    logAct(env, c.id, 'login', 'email link'),
+    ...[linkDev(env, c.id, clean(b.device, 60))].filter(Boolean),
   ]);
   return json({ ok: true, s: sess, t: c.token });
 }
@@ -416,15 +527,13 @@ async function me(req, env) {
   const now = Date.now();
   let row = await env.CRM.prepare('SELECT * FROM contacts WHERE id = ?').bind(ss.contact_id).first();
   if (!row) return bad('Signed out.', 401);
+  await settings(env); // the drip clock, for "Coming up"
   if (req.method === 'POST') {
     const b = await req.json().catch(() => ({}));
     if (b.action === 'logout') { await env.CRM.prepare('DELETE FROM sessions WHERE token = ?').bind(tok).run(); return json({ ok: true }); }
     if (b.action === 'logout-all') { await env.CRM.prepare('DELETE FROM sessions WHERE contact_id = ?').bind(row.id).run(); return json({ ok: true }); }
     if (b.action === 'delete') {
-      const id = row.id;
-      await env.CRM.batch([env.CRM.prepare('DELETE FROM clicks WHERE send_id IN (SELECT id FROM sends WHERE contact_id = ?)').bind(id), env.CRM.prepare('DELETE FROM sends WHERE contact_id = ?').bind(id),
-        env.CRM.prepare('DELETE FROM msgs WHERE contact_id = ?').bind(id), env.CRM.prepare('DELETE FROM sessions WHERE contact_id = ?').bind(id), env.CRM.prepare('DELETE FROM logins WHERE contact_id = ?').bind(id),
-        env.CRM.prepare('DELETE FROM contacts WHERE id = ?').bind(id)]);
+      await env.CRM.batch(forget(env, row.id));
       return json({ ok: true, deleted: true });
     }
     if (b.action === 'pref') {
@@ -432,6 +541,7 @@ async function me(req, env) {
       if (v === 'all' || v === 'jobs') await env.CRM.prepare("UPDATE contacts SET pref = ?, pref_at = ?, status = 'active', unsub_at = NULL, updated = ? WHERE id = ?").bind(v, now, now, row.id).run();
       else if (v === 'unsub') await env.CRM.prepare("UPDATE contacts SET status = 'unsubscribed', unsub_at = ?, unsub_reason = 'account page', updated = ? WHERE id = ?").bind(now, now, row.id).run();
       else return bad('Bad choice.');
+      await logAct(env, row.id, v === 'unsub' ? 'unsub' : 'pref', v === 'unsub' ? 'account page' : v).run();
     }
     if (b.action === 'save' && b.fields && typeof b.fields === 'object') {
       let answers = {}; try { answers = JSON.parse(row.answers || '{}'); } catch { /* */ }
@@ -452,6 +562,7 @@ async function me(req, env) {
       const plan = buildPlan(answers, { sqft: sqft || 0 });
       await env.CRM.prepare('UPDATE contacts SET name = ?, zip = ?, answers = ?, level = ?, sqft = ?, measured = ?, grass = ?, updated = ? WHERE id = ?')
         .bind(clean(f.name, 40).replace(/[<>]/g, ''), zip, JSON.stringify(answers), plan.level, sqft || null, sqft ? 1 : 0, answers.grass || plan.grassKey, now, row.id).run();
+      await logAct(env, row.id, 'profile', 'edited on the account page').run();
     }
     row = await env.CRM.prepare('SELECT * FROM contacts WHERE id = ?').bind(row.id).first();
   }
@@ -486,7 +597,8 @@ export async function crmInbound(message, env, ctx) {
     // "unsubscribe" replies (and the List-Unsubscribe mailto) are honored right away.
     if (/^\s*(unsubscribe|stop|remove me)\b/i.test(subject) || /^\s*(unsubscribe|stop|remove me)\s*$/i.test(String(mail.text || '').split('\n')[0] || '')) {
       await env.CRM.prepare("UPDATE contacts SET status = 'unsubscribed', unsub_at = ?, unsub_reason = 'replied unsubscribe', updated = ? WHERE id = ?").bind(now, now, c.id).run();
-    } else await env.CRM.prepare('UPDATE contacts SET replied_at = ? WHERE id = ?').bind(now, c.id).run();
+      await logAct(env, c.id, 'unsub', 'replied unsubscribe').run();
+    } else await env.CRM.batch([env.CRM.prepare('UPDATE contacts SET replied_at = ? WHERE id = ?').bind(now, c.id), logAct(env, c.id, 'reply', subject)]);
   }
   const s = await settings(env);
   if (s.forward_to) { try { await message.forward(s.forward_to); } catch (e) { console.log('forward', e?.message); } }
@@ -555,11 +667,65 @@ async function testStats(env, rows, minArm = 200) {
   });
 }
 
+/* ------------------------------------------------------------------ engagement (stages + score) */
+// One SQL view of every contact with its stage, score and track. ?1 = 14 days ago, ?2 = 30, ?3 = 60.
+// Stages: New (first 14 days) · Engaged (clicked, replied, visited the site, signed in or answered something
+// in the last 30 days) · Cooling (that in 30–60 days, or only opens lately) · Dormant (quiet 60+ days) · Gone.
+// Opens count for little: Apple Mail opens every email on its own.
+// Score (0–100): clicks ×8 (max 40) + replied 15 + profile answers ×4 (max 28) + site visits in 30 days ×3 (max 15) + opens (max 10).
+const STAGED = `WITH x AS (
+    SELECT c.*,
+      (SELECT MAX(last_at) FROM contact_devices d WHERE d.contact_id = c.id) seen_at,
+      (SELECT COUNT(*) FROM activity a WHERE a.contact_id = c.id AND a.type = 'visit' AND a.at > ?2) visits30,
+      (SELECT MAX(at) FROM activity a WHERE a.contact_id = c.id AND a.type IN ('profile', 'quiz', 'login', 'visit')) act_at,
+      ((c.measured = 1) + (json_extract(c.answers, '$.sun') IS NOT NULL) + (json_extract(c.answers, '$.uses') IS NOT NULL) + (json_extract(c.answers, '$.water') IS NOT NULL)
+        + (json_extract(c.answers, '$.grass') IS NOT NULL) + (json_extract(c.answers, '$.ph') IS NOT NULL) + (json_extract(c.answers, '$.spreader') IS NOT NULL)) fields,
+      CASE json_extract(c.answers, '$.mower') WHEN 'crew' THEN 'crew' WHEN 'robot' THEN 'robot' ELSE 'diy' END track
+    FROM contacts c),
+  y AS (SELECT *, MAX(COALESCE(last_click, 0), COALESCE(replied_at, 0), COALESCE(seen_at, 0), COALESCE(act_at, 0)) eng_at FROM x)
+  SELECT *,
+    CASE WHEN status != 'active' THEN 'gone' WHEN created > ?1 THEN 'new' WHEN eng_at > ?2 THEN 'engaged'
+      WHEN eng_at > ?3 OR COALESCE(last_open, 0) > ?2 THEN 'cooling' ELSE 'dormant' END stage,
+    MIN(100, MIN(clicks * 8, 40) + (replied_at IS NOT NULL) * 15 + MIN(fields * 4, 28) + MIN(visits30 * 3, 15) + MIN(opens, 10)) score
+  FROM y`;
+const stageArgs = (now) => [now - 14 * DAY, now - 30 * DAY, now - 60 * DAY];
+const PROFILE_FIELDS = 7;
+
+// What someone did on the site, from the event log (separate database, joined by device id).
+async function siteEvents(env, devices, { before = 0, limit = 300 } = {}) {
+  if (!env.EV || !devices.length) return [];
+  try {
+    const { results } = await env.EV.prepare(`SELECT at, name, path, title, params, source, medium, landing, session FROM ev_raw
+      WHERE device IN (SELECT value FROM json_each(?)) ${before ? 'AND at < ?' : ''} AND name != 'page_leave' ORDER BY at DESC LIMIT ${Number(limit) || 300}`)
+      .bind(JSON.stringify(devices), ...(before ? [before] : [])).all();
+    return results;
+  } catch (e) { console.log('ev', e?.message); return []; }
+}
+async function devicesOf(env, id, row) {
+  const { results } = await env.CRM.prepare('SELECT device FROM contact_devices WHERE contact_id = ?').bind(id).all();
+  const set = new Set(results.map((r) => r.device));
+  if (row?.device && DEVICE_RE.test(row.device)) set.add(row.device);
+  return [...set];
+}
+// Before they signed up: first visit, how they found the site, sessions and pages.
+async function journeyBefore(env, row, devices) {
+  if (!env.EV || !devices.length) return null;
+  try {
+    const [agg, first] = await env.EV.batch([
+      env.EV.prepare(`SELECT MIN(at) first_at, COUNT(DISTINCT session) sessions, SUM(name = 'page_view') pages FROM ev_raw WHERE device IN (SELECT value FROM json_each(?)) AND at < ?`).bind(JSON.stringify(devices), row.created + 60000),
+      env.EV.prepare(`SELECT landing, source, medium, campaign FROM ev_raw WHERE device IN (SELECT value FROM json_each(?)) ORDER BY at LIMIT 1`).bind(JSON.stringify(devices)),
+    ]);
+    const a = agg.results[0] || {};
+    return a.first_at ? { firstAt: a.first_at, sessions: a.sessions, pages: a.pages, ...(first.results[0] || {}) } : null;
+  } catch (e) { console.log('ev', e?.message); return null; }
+}
+
 export async function crmAdmin(env, req, url, ctx) {
   if (!(await crmInit(env))) return bad('Add the CRM database binding first.', 503);
   const p = url.pathname.replace('/api/admin/crm/', ''), q = url.searchParams, now = Date.now();
   const body = req.method === 'POST' ? await req.json().catch(() => ({})) : {};
   const libItems = await lib(env);
+  await settings(env); // loads the drip clock (clockOf) for everything below
 
   if (p === 'settings') {
     if (req.method === 'POST') {
@@ -568,6 +734,8 @@ export async function crmAdmin(env, req, url, ctx) {
         if (k === 'mode' && !['off', 'test', 'live'].includes(v)) return bad('Mode is off, test or live.');
         if (['test_to', 'from_addr', 'forward_to'].includes(k) && v && !EMAIL_RE.test(v)) return bad(`${k} isn’t an email.`);
         await setKv(env, k, v);
+        // First time going Live starts everyone's drip clock (see clockOf). Never moves after that.
+        if (k === 'mode' && v === 'live' && !(await settings(env)).live_since) await setKv(env, 'live_since', Date.now());
       }
     }
     const s = await settings(env);
@@ -575,6 +743,78 @@ export async function crmAdmin(env, req, url, ctx) {
     const ev = await env.CRM.prepare('SELECT COUNT(*) n, MAX(at) last FROM crm_events').first();
     const inb = await env.CRM.prepare("SELECT MAX(at) last FROM msgs WHERE dir = 'in'").first();
     return json({ settings: s, binding: !!env.EMAIL, events: ev, lastInbound: inb?.last || null, lastError: err ? JSON.parse(err.v) : null, libCount: libItems.length });
+  }
+
+  // New sign-ups: the box at the top of HQ → This Week. "New" = since Mike last hit "Mark all seen".
+  if (p === 'signups') {
+    if (req.method === 'POST' && body.action === 'seen') { await setKv(env, 'signups_seen_at', now); return json({ ok: true, seenAt: now }); }
+    const seenAt = Number((await env.CRM.prepare("SELECT v FROM crm_kv WHERE k = 'signups_seen_at'").first())?.v) || 0;
+    const days = Math.max(1, Math.min(90, Number(q.get('days')) || 7));
+    const from = Math.min(seenAt || now, now - days * DAY);
+    const [cnt, list] = await env.CRM.batch([
+      env.CRM.prepare(`SELECT SUM(created > ?) unseen, SUM(created > ?) today, SUM(created > ?) week, COUNT(*) total FROM contacts WHERE is_test = 0`)
+        .bind(seenAt, etToday(now).getTime() - 12 * 3600000 + 5 * 3600000, now - 7 * DAY),
+      env.CRM.prepare(`SELECT id, email, name, zip, source, utm, created, level, sqft, measured, status, is_test, device, answers FROM contacts WHERE created > ? ORDER BY created DESC LIMIT 50`).bind(from),
+    ]);
+    const people = await Promise.all(list.results.map(async (r) => {
+      let a = {}, utm = {}; try { a = JSON.parse(r.answers || '{}'); utm = JSON.parse(r.utm || '{}'); } catch { /* */ }
+      const before = await journeyBefore(env, r, await devicesOf(env, r.id, r));
+      return { id: r.id, email: r.email, name: r.name, zip: r.zip, source: r.source, created: r.created, level: LEVEL_NAMES[r.level] || '', track: a.mower === 'crew' ? 'Landscaper' : a.mower === 'robot' ? 'Robot' : 'DIY',
+        tookQuiz: a.effort !== undefined, sqft: r.measured ? r.sqft : 0, status: r.status, test: !!r.is_test, isNew: r.created > seenAt,
+        from: utm.src || before?.source || '(direct)', medium: utm.med || before?.medium || '', landed: utm.land || before?.landing || '', before };
+    }));
+    const c = cnt.results[0] || {};
+    return json({ seenAt, unseen: c.unseen || 0, today: c.today || 0, week: c.week || 0, total: c.total || 0, people });
+  }
+
+  // Funnel + cohorts (HQ → Email → Funnel).
+  if (p === 'funnel') {
+    const days = Math.max(0, Math.min(3650, Number(q.get('days')) || 28)), since = days ? now - days * DAY : 0;
+    let site = null;
+    if (env.EV) {
+      try {
+        site = await env.EV.prepare(`SELECT COUNT(DISTINCT device) visitors,
+          COUNT(DISTINCT CASE WHEN name = 'quiz_start' THEN device END) quiz_start, COUNT(DISTINCT CASE WHEN name = 'quiz_complete' THEN device END) quiz_done,
+          COUNT(DISTINCT CASE WHEN name = 'page_view' AND path = '/measure/' THEN device END) measure_view, COUNT(DISTINCT CASE WHEN name = 'yard_measured' THEN device END) measure_done
+          FROM ev_raw WHERE date >= ?`).bind(since ? ymd(etToday(since)) : '0000').first();
+      } catch (e) { console.log('ev funnel', e?.message); }
+    }
+    const PEOPLE = `SELECT c.id, c.source, c.status, c.created, c.unsub_at, c.measured, c.answers,
+      (SELECT opened_at FROM sends s WHERE s.contact_id = c.id AND s.key = 'w0-plan' AND s.mode = 'live' LIMIT 1) w0_open,
+      (SELECT COUNT(*) FROM sends s WHERE s.contact_id = c.id AND s.mode = 'live' AND s.status NOT IN ('failed', 'queued', 'skipped')) sent,
+      (SELECT MIN(k.at) FROM clicks k JOIN sends s ON s.id = k.send_id WHERE s.contact_id = c.id AND k.bot = 0) first_click,
+      (SELECT COUNT(*) FROM activity a WHERE a.contact_id = c.id AND a.type = 'login') logins,
+      (SELECT COUNT(*) FROM activity a WHERE a.contact_id = c.id AND a.type = 'visit') visits
+      FROM contacts c WHERE c.is_test = 0 AND c.created > ?`;
+    const fieldsOf = (r) => { let a = {}; try { a = JSON.parse(r.answers || '{}'); } catch { /* */ } return (r.measured ? 1 : 0) + ['sun', 'uses', 'water', 'grass', 'ph', 'spreader'].filter((k) => a[k] != null).length; };
+    const { results: ppl } = await env.CRM.prepare(PEOPLE).bind(since).all();
+    const steps = (rows) => {
+      const old = rows.filter((r) => now - r.created > 90 * DAY);
+      return {
+        signups: rows.length, emailed: rows.filter((r) => r.sent > 0).length, opened: rows.filter((r) => r.w0_open).length, clicked: rows.filter((r) => r.first_click).length,
+        profile: rows.filter((r) => fieldsOf(r) >= 4).length, returned: rows.filter((r) => r.visits > 0).length, signedIn: rows.filter((r) => r.logins > 0).length,
+        unsub: rows.filter((r) => r.status !== 'active').length, old90: old.length, active90: old.filter((r) => r.status === 'active').length,
+      };
+    };
+    const bySource = {};
+    for (const r of ppl) (bySource[r.source || 'quiz'] = bySource[r.source || 'quiz'] || []).push(r);
+    // Cohorts: last 12 sign-up weeks (weeks start Monday). Share still subscribed / ever clicked at the end of each week since sign-up.
+    const { results: co } = await env.CRM.prepare(PEOPLE).bind(now - 12 * 7 * DAY - 7 * DAY).all();
+    const wk = (t) => { const d = new Date(t - 5 * 3600000); d.setUTCHours(0, 0, 0, 0); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); return d.toISOString().slice(0, 10); };
+    const groups = {};
+    for (const r of co) (groups[wk(r.created)] = groups[wk(r.created)] || []).push(r);
+    const cohorts = Object.entries(groups).sort((a, b) => (a[0] < b[0] ? 1 : -1)).slice(0, 12).map(([week, rows]) => ({
+      week, n: rows.length,
+      cells: Array.from({ length: 12 }, (_, k) => {
+        const done = rows.filter((r) => r.created + (k + 1) * 7 * DAY <= now);
+        if (!done.length) return null;
+        const end = (r) => r.created + (k + 1) * 7 * DAY;
+        return { n: done.length, kept: done.filter((r) => !r.unsub_at || r.unsub_at > end(r)).length, clicked: done.filter((r) => r.first_click && r.first_click <= end(r)).length };
+      }),
+    }));
+    const { results: stages } = await env.CRM.prepare(`SELECT stage, COUNT(*) n, ROUND(AVG(score)) avg FROM (${STAGED}) WHERE is_test = 0 GROUP BY stage`).bind(...stageArgs(now)).all();
+    const s = await settings(env);
+    return json({ days, mode: s.mode, site, all: steps(ppl), sources: Object.entries(bySource).map(([k, v]) => ({ source: k, ...steps(v) })).sort((a, b) => b.signups - a.signups), cohorts, stages });
   }
 
   if (p === 'overview') {
@@ -598,6 +838,7 @@ export async function crmAdmin(env, req, url, ctx) {
       S.prepare("SELECT pref, COUNT(*) n FROM contacts WHERE status = 'active' GROUP BY pref"),
     ]);
     const unread = await S.prepare("SELECT COUNT(*) n FROM msgs WHERE dir = 'in' AND read = 0 AND auto = 0").first();
+    const stg = await S.prepare(`SELECT stage, COUNT(*) n FROM (${STAGED}) WHERE is_test = 0 GROUP BY stage`).bind(...stageArgs(now)).all();
     const prof = await S.prepare(`SELECT COUNT(*) n, SUM(measured = 1) sqft, SUM(json_extract(answers, '$.sun') IS NOT NULL) sun, SUM(json_extract(answers, '$.uses') IS NOT NULL) uses,
       SUM(json_extract(answers, '$.water') IS NOT NULL) water, SUM(json_extract(answers, '$.grass') IS NOT NULL) grass, SUM(json_extract(answers, '$.ph') IS NOT NULL) ph,
       SUM(json_extract(answers, '$.seeded') IS NOT NULL) seeded FROM contacts WHERE status = 'active'`).first();
@@ -605,14 +846,17 @@ export async function crmAdmin(env, req, url, ctx) {
       days, status: st.results, newN: nw.results[0].n, newPrev: nwP.results[0].n, unsubN: un.results[0].n, unsubPrev: unP.results[0].n,
       sends: sd.results[0], sendsPrev: sdP.results[0], replies: rp.results[0].n, unread: unread.n, sources: src.results,
       levels: lv.results.map((r) => ({ ...r, name: LEVEL_NAMES[r.level] || '?' })), prefs: pref.results,
-      daily: { signups: dayS.results, unsubs: dayU.results, sends: dayE.results }, profile: prof,
+      daily: { signups: dayS.results, unsubs: dayU.results, sends: dayE.results }, profile: prof, stages: stg.results,
     });
   }
 
   if (p === 'emails') {
     const days = Math.max(0, Number(q.get('days')) || 0), since = days ? now - days * DAY : 0;
+    // Optional ?track=diy|crew|robot: how each email does with one kind of subscriber.
+    const tr = ['diy', 'crew', 'robot'].includes(q.get('track')) ? q.get('track') : '';
+    const trackSql = tr ? `AND contact_id IN (SELECT id FROM contacts WHERE ${tr === 'diy' ? "COALESCE(json_extract(answers, '$.mower'), 'me') NOT IN ('crew', 'robot')" : `json_extract(answers, '$.mower') = '${tr}'`})` : '';
     const { results } = await env.CRM.prepare(`SELECT key, variant, COUNT(*) n, SUM(opened_at IS NOT NULL) o, SUM(clicked_at IS NOT NULL) k, SUM(unsub_at IS NOT NULL) u,
-      SUM(status IN ('bounced','complained')) b, MAX(sent_at) last FROM sends WHERE mode = 'live' AND status NOT IN ('failed','queued','skipped') AND sent_at > ? GROUP BY key, variant`).bind(since).all();
+      SUM(status IN ('bounced','complained')) b, MAX(sent_at) last FROM sends WHERE mode = 'live' AND status NOT IN ('failed','queued','skipped') AND sent_at > ? ${trackSql} GROUP BY key, variant`).bind(since).all();
     const by = {};
     for (const r of results) {
       const k = baseKey(r.key);
@@ -638,16 +882,23 @@ export async function crmAdmin(env, req, url, ctx) {
   }
 
   if (p === 'contacts') {
-    const term = clean(q.get('q'), 80).toLowerCase(), status = clean(q.get('status'), 20), off = Math.max(0, Number(q.get('offset')) || 0);
-    const where = [], args = [];
-    if (term) { where.push('(email LIKE ? OR name LIKE ? OR zip LIKE ?)'); args.push(`%${term}%`, `%${term}%`, `${term}%`); }
-    if (status) { where.push('status = ?'); args.push(status); }
+    const term = clean(q.get('q'), 80).toLowerCase(), off = Math.max(0, Number(q.get('offset')) || 0);
+    const where = [], args = stageArgs(now);
+    const add = (sql, ...v) => { let out = sql; for (const x of v) { args.push(x); out = out.replace('?', `?${args.length}`); } where.push(out); };
+    if (term) add('(email LIKE ? OR name LIKE ? OR zip LIKE ?)', `%${term}%`, `%${term}%`, `${term}%`);
+    for (const k of ['status', 'stage', 'track', 'source']) { const v = clean(q.get(k), 20); if (v) add(`${k} = ?`, v); }
+    if (q.get('level') !== null && q.get('level') !== '') add('level = ?', Number(q.get('level')));
+    if (q.get('profile') === 'thin') where.push('fields < 2'); else if (q.get('profile') === 'half') where.push('fields >= 4');
+    if (q.get('test') === '0') where.push('is_test = 0');
     const W = where.length ? `WHERE ${where.join(' AND ')}` : '';
+    const order = { score: 'score DESC, created DESC', active: 'eng_at DESC', old: 'created ASC' }[q.get('sort')] || 'created DESC';
+    args.push(off);
     const [rows, cnt] = await env.CRM.batch([
-      env.CRM.prepare(`SELECT id, email, name, zip, level, sqft, status, pref, is_test, source, created, sent_n, opens, clicks, last_open, last_click, replied_at FROM contacts ${W} ORDER BY created DESC LIMIT 50 OFFSET ?`).bind(...args, off),
-      env.CRM.prepare(`SELECT COUNT(*) n FROM contacts ${W}`).bind(...args),
+      env.CRM.prepare(`SELECT id, email, name, zip, level, sqft, status, pref, is_test, source, created, sent_n, opens, clicks, last_open, last_click, replied_at, stage, score, track, fields, eng_at, seen_at
+        FROM (${STAGED}) ${W} ORDER BY ${order} LIMIT 50 OFFSET ?${args.length}`).bind(...args),
+      env.CRM.prepare(`SELECT COUNT(*) n FROM (${STAGED}) ${W}`).bind(...args.slice(0, -1)),
     ]);
-    return json({ contacts: rows.results, total: cnt.results[0].n });
+    return json({ contacts: rows.results, total: cnt.results[0].n, fieldsMax: PROFILE_FIELDS });
   }
   if (p === 'contacts.csv') {
     const { results } = await env.CRM.prepare('SELECT id, email, name, zip, level, sqft, status, pref, source, utm, created, sent_n, opens, clicks, last_open, last_click, unsub_at, unsub_reason FROM contacts ORDER BY created').all();
@@ -668,8 +919,7 @@ export async function crmAdmin(env, req, url, ctx) {
       else if (a === 'test-on' || a === 'test-off') await env.CRM.prepare('UPDATE contacts SET is_test = ? WHERE id = ?').bind(a === 'test-on' ? 1 : 0, id).run();
       else if (a === 'note') await env.CRM.prepare('UPDATE contacts SET note = ? WHERE id = ?').bind(clean(body.note, 1000), id).run();
       else if (a === 'delete') {
-        await env.CRM.batch([env.CRM.prepare('DELETE FROM clicks WHERE send_id IN (SELECT id FROM sends WHERE contact_id = ?)').bind(id), env.CRM.prepare('DELETE FROM sends WHERE contact_id = ?').bind(id),
-          env.CRM.prepare('DELETE FROM msgs WHERE contact_id = ?').bind(id), env.CRM.prepare('DELETE FROM sessions WHERE contact_id = ?').bind(id), env.CRM.prepare('DELETE FROM logins WHERE contact_id = ?').bind(id), env.CRM.prepare('DELETE FROM contacts WHERE id = ?').bind(id)]);
+        await env.CRM.batch(forget(env, id));
         return json({ ok: true, deleted: true });
       } else if (a === 'send-next') {
         const c = contactOf(row);
@@ -677,6 +927,7 @@ export async function crmAdmin(env, req, url, ctx) {
         if (!nx) return bad('Nothing is due for this person today.');
         try { const r = await sendOne(env, c, nx.key, { libItems }); if (!r.ok) return bad(r.error || 'Didn’t send.'); } catch (e) { return bad(`Sending stopped: ${e.message}`); }
       } else return bad('Unknown action.');
+      if (!['note', 'delete'].includes(a)) await logAct(env, id, 'hq', a).run();
     }
     const fresh = await env.CRM.prepare('SELECT * FROM contacts WHERE id = ?').bind(id).first();
     const [sends, msgs] = await env.CRM.batch([
@@ -685,7 +936,29 @@ export async function crmAdmin(env, req, url, ctx) {
     ]);
     const c = contactOf(fresh);
     const coming = fresh.status === 'active' ? simulate(c, await sentMap(env, id), 60, libItems).slice(0, 8).map((x) => ({ ...x, name: nameOf(x.key, libItems) })) : [];
-    return json({ contact: { ...fresh, answers: c.answers, levelName: LEVEL_NAMES[fresh.level] }, sends: sends.results.map((s) => ({ ...s, name: nameOf(s.key, libItems) })), msgs: msgs.results, coming });
+    // Engagement + one timeline: site visits and tool use (event log, by device), emails, clicks, profile answers, sign-ins, replies.
+    const eng = await env.CRM.prepare(`SELECT stage, score, fields, visits30, eng_at, seen_at, track FROM (${STAGED}) WHERE id = ?4`).bind(...stageArgs(now), id).first();
+    const devices = await devicesOf(env, id, fresh);
+    const [acts, clk, devRows] = await env.CRM.batch([
+      env.CRM.prepare('SELECT type, detail, at FROM activity WHERE contact_id = ? ORDER BY at DESC LIMIT 300').bind(id),
+      env.CRM.prepare('SELECT k.at, k.url, s.subject FROM clicks k JOIN sends s ON s.id = k.send_id WHERE s.contact_id = ? AND k.bot = 0 ORDER BY k.at DESC LIMIT 200').bind(id),
+      env.CRM.prepare('SELECT device, first_at, last_at, visits FROM contact_devices WHERE contact_id = ? ORDER BY last_at DESC').bind(id),
+    ]);
+    const site = await siteEvents(env, devices, { limit: 400 });
+    const before = await journeyBefore(env, fresh, devices);
+    const ACT = { signup: 'Signed up', resignup: 'Signed up again', resub: 'Resubscribed', unsub: 'Unsubscribed', pref: 'Email setting', profile: 'Profile', quiz: 'Took the quiz', login: 'Signed in', visit: 'Came back to the site', reply: 'Replied', hq: 'You (HQ)' };
+    const timeline = [
+      ...site.map((e) => ({ at: e.at, kind: 'site', text: e.name === 'page_view' ? `Viewed ${e.title || e.path}` : `${e.name.replace(/_/g, ' ')}`, path: e.path, session: e.session })),
+      ...sends.results.flatMap((x) => [
+        x.sent_at ? { at: x.sent_at, kind: 'email', text: `Emailed: ${x.subject || x.name || x.key}`, status: x.status } : null,
+        x.opened_at ? { at: x.opened_at, kind: 'open', text: `Opened: ${x.subject || x.key}` } : null,
+      ]).filter(Boolean),
+      ...clk.results.map((k) => ({ at: k.at, kind: 'click', text: `Clicked ${k.url.replace(/^https:\/\/mowittall\.com/, '').replace(/\?.*$/, '') || '/'} in “${k.subject || ''}”` })),
+      ...acts.results.filter((x) => x.type !== 'visit').map((x) => ({ at: x.at, kind: x.type === 'signup' ? 'signup' : 'act', text: `${ACT[x.type] || x.type}${x.detail ? `: ${x.detail}` : ''}` })),
+      ...msgs.results.filter((m) => m.dir === 'out').map((m) => ({ at: m.at, kind: 'act', text: `You replied: ${m.subject || ''}` })),
+    ].sort((a, b) => b.at - a.at).slice(0, 500);
+    return json({ contact: { ...fresh, answers: c.answers, levelName: LEVEL_NAMES[fresh.level] }, sends: sends.results.map((s) => ({ ...s, name: nameOf(s.key, libItems) })), msgs: msgs.results, coming,
+      eng, devices: devRows.results, before, timeline, fieldsMax: PROFILE_FIELDS, hasEvents: !!env.EV });
   }
 
   if (p === 'inbox') {

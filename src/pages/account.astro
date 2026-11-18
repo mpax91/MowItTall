@@ -17,7 +17,8 @@ import Base from '../layouts/Base.astro';
         <button type="submit" class="btn">Email Me a Sign-In Link</button>
         <p class="gp-msg" data-login-msg role="status"></p>
       </form>
-      <p class="acct-fine">Not on the list yet? <a href="/plan/">Take the 1-minute quiz</a> and sign up at the end.</p>
+      <p class="acct-fine">Not on the list yet? <a href="/plan/">Take the 1-minute quiz</a> or <a href="/measure/">measure your lawn</a> and save it at the end.</p>
+      <p class="acct-fine">Signed up on another phone or computer? Same thing: type that email above. The link signs in this device too.</p>
     </section>
 
     <p class="acct-msg" data-wait>Loading…</p>
@@ -107,6 +108,21 @@ import Base from '../layouts/Base.astro';
     const day = (s: string | number) => new Date(typeof s === 'string' ? `${s}T12:00:00` : s).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
     const ls = { get: (k: string) => { try { return localStorage.getItem(k) || ''; } catch { return ''; } }, set: (k: string, v: string) => { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch {} } };
     let sess = ls.get('mit-session');
+    // Keep this device's quiz and the profile in step. Signed in on a new device: their plan shows on /plan/ here
+    // too. Took the quiz on this device after their last quiz: those newer answers go up to the profile.
+    async function syncQuiz(d: any, justIn: boolean) {
+      let local: any = {}; try { local = JSON.parse(ls.get('mit-quiz') || '{}'); } catch {}
+      const a = d.answers || {};
+      if (justIn && local.done && (local.at || 0) > (a.quiz_at || 0)) {
+        const { done, at, ...answers } = local;
+        await fetch('/api/crm/update', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ s: sess, answers }) }).catch(() => {});
+        return true;
+      }
+      if (!local.done && a.effort !== undefined) {
+        ls.set('mit-quiz', JSON.stringify({ zip: a.zip || d.zip, look: a.look, effort: a.effort, know: a.know, problems: a.problems || [], height: a.height, mower: a.mower, done: true, at: a.quiz_at || Date.now() }));
+      }
+      return false;
+    }
 
     async function api(method = 'GET', body?: object) {
       const r = await fetch('/api/crm/me', { method, headers: { 'x-crm-session': sess, 'content-type': 'application/json' }, body: body ? JSON.stringify(body) : undefined });
@@ -142,17 +158,18 @@ import Base from '../layouts/Base.astro';
     // Arriving from a sign-in link?
     (async () => {
       const q = new URLSearchParams(location.search), code = q.get('login');
+      let justIn = false;
       if (code) {
         history.replaceState(null, '', '/account/');
         try {
           const r = await fetch('/api/crm/session', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ code, device: ls.get('mit-device') }) });
           const j = await r.json();
-          if (r.ok) { sess = j.s; ls.set('mit-session', sess); ls.set('mit-crm', j.t); track('login', { method: 'magic_link' }); }
+          if (r.ok) { sess = j.s; ls.set('mit-session', sess); ls.set('mit-crm', j.t); ls.set('mit-email', '1'); justIn = true; track('login', { method: 'magic_link' }); }
           else if (!sess) { signedOut(j.error); return; } // an old link while already signed in: just stay signed in
         } catch { signedOut('Couldn’t sign you in. Try again.'); return; }
       }
       if (!sess) { signedOut(); return; }
-      try { show(await api()); } catch { /* signedOut already ran */ }
+      try { const d = await api(); if (await syncQuiz(d, justIn)) show(await api()); else show(d); } catch { /* signedOut already ran */ }
     })();
 
     $('[data-login]').addEventListener('submit', async (e) => {

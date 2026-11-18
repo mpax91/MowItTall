@@ -54,6 +54,16 @@ const TABS = [
 
       <!-- ===== This week ===== -->
       <section class="dash-panel" data-panel="week" hidden>
+        <!-- New sign-ups: the daily check. "New" = since you last hit Mark All Seen (works on any device). -->
+        <section class="window ns-box" data-ns aria-labelledby="ns-h">
+          <div class="ns-head">
+            <h2 id="ns-h">New Sign-Ups <span class="ns-count" data-ns-count>–</span></h2>
+            <button type="button" class="btn btn-small btn-quiet" data-ns-seen hidden>Mark All Seen</button>
+          </div>
+          <p class="ns-sum" data-ns-sum>Loading…</p>
+          <ul class="ns-list" data-ns-list></ul>
+          <p class="ns-foot"><button type="button" class="linkish" data-ns-all>Everyone on the list →</button> <button type="button" class="linkish" data-ns-funnel>Funnel →</button></p>
+        </section>
         <div class="dash-tiles">
           <div><b data-stat="pending">–</b><span>Photos waiting</span></div>
           <div><b data-stat="live">–</b><span>Photos live</span></div>
@@ -471,6 +481,36 @@ const TABS = [
       }
       $('[data-check]').addEventListener('click', (e) => { const b = (e.target as HTMLElement).closest<HTMLElement>('[data-go]'); if (b) show(b.dataset.go!); });
 
+      /* ---------- new sign-ups (This Week) */
+      const SRC: Record<string, string> = { quiz: 'Quiz', measure: 'Measure', nudge: 'Reminder', account: 'Account' };
+      const since = (t: number) => { const m = Math.round((Date.now() - t) / 60000); return m < 60 ? `${Math.max(1, m)}m ago` : m < 1440 ? `${Math.round(m / 60)}h ago` : `${Math.round(m / 1440)}d ago`; };
+      async function loadSignups() {
+        let r: any; try { r = await api('/api/admin/crm/signups?days=7'); } catch (e: any) { $('[data-ns-sum]').textContent = e.status === 503 ? 'The email database isn’t connected yet.' : `Couldn’t load: ${e.message}`; return; }
+        const n = r.unseen || 0;
+        $('[data-ns-count]').textContent = String(n);
+        $('[data-ns-count]').classList.toggle('is-hot', n > 0);
+        $('[data-ns]').classList.toggle('is-hot', n > 0);
+        $('[data-badge="week"]').textContent = n ? `(${n} new)` : '';
+        $('[data-badge="members"]').textContent = n ? `(${n} new)` : '';
+        document.title = n ? `(${n}) HQ | Mow It Tall` : 'HQ | Mow It Tall';
+        $<HTMLButtonElement>('[data-ns-seen]').hidden = !n;
+        $('[data-ns-sum]').innerHTML = `${n ? `<b>${n} new</b> since you last checked${r.seenAt ? ` (${since(r.seenAt)})` : ''}. ` : 'Nobody new since you last checked. '}${r.today} today · ${r.week} this week · ${r.total} all time.`;
+        $('[data-ns-list]').innerHTML = r.people.length ? r.people.map((p: any) => {
+          const chips = [SRC[p.source] || p.source, p.track, p.tookQuiz ? p.level : 'No quiz yet', p.sqft ? `${Number(p.sqft).toLocaleString()} sq ft` : '', p.zip, p.test ? 'test' : '', p.status !== 'active' ? p.status : '']
+            .filter(Boolean).map((c) => `<span class="dash-pill">${esc(c)}</span>`).join('');
+          const b = p.before;
+          const found = `${esc(p.from)}${p.medium && !['(none)', 'referral'].includes(p.medium) ? ` / ${esc(p.medium)}` : ''}${p.landed ? `, landed on ${esc(p.landed)}` : ''}`;
+          const hist = b ? ` · ${b.sessions} visit${b.sessions === 1 ? '' : 's'}, ${b.pages} page${b.pages === 1 ? '' : 's'} before signing up${b.firstAt && p.created - b.firstAt > 86400000 ? ` (first seen ${since(b.firstAt)})` : ''}` : '';
+          return `<li class="${p.isNew ? 'is-new' : ''}"><button type="button" class="ns-p" data-ns-p="${p.id}">
+            <span class="ns-who"><b>${esc(p.name || p.email)}</b>${p.name ? ` <small>${esc(p.email)}</small>` : ''}</span><span class="ns-when">${p.isNew ? '<em>New</em> ' : ''}${since(p.created)}</span>
+            <span class="ns-chips">${chips}</span><span class="ns-from">Found you via ${found}${hist}</span></button></li>`;
+        }).join('') : '<li class="ns-empty">No sign-ups in the last 7 days yet.</li>';
+      }
+      $('[data-ns-list]').addEventListener('click', (e) => { const b = (e.target as HTMLElement).closest<HTMLElement>('[data-ns-p]'); if (b) mail?.openPerson(b.dataset.nsP); });
+      $('[data-ns-seen]').addEventListener('click', async () => { try { await api('/api/admin/crm/signups', { method: 'POST', body: JSON.stringify({ action: 'seen' }) }); } catch {} loadSignups(); });
+      $('[data-ns-all]').addEventListener('click', () => { show('members'); mail?.openPeople({}); });
+      $('[data-ns-funnel]').addEventListener('click', () => { show('members'); mail?.load(); (root!.querySelector('[data-ml-sub="funnel"]') as HTMLElement | null)?.click(); });
+
       /* ---------- log in */
       async function start() {
         try {
@@ -478,7 +518,7 @@ const TABS = [
           try { localStorage.setItem('mit-admin', key); } catch {}
           $('[data-msg]').textContent = ''; $('[data-key-form]').hidden = true; $('[data-app]').hidden = false;
           mail = initMail({ root, api });
-          renderSocial(); await loadOverview(); show(tab);
+          renderSocial(); loadSignups(); await loadOverview(); show(tab);
           initHQ({ root, api, show });
           if (deep) mail.openPreview(deep.get('mail') || '', { track: deep.get('track') || undefined, level: deep.has('level') ? Number(deep.get('level')) : 1 });
         } catch (err: any) { $('[data-msg]').textContent = err.message; }

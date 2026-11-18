@@ -237,6 +237,7 @@ const ld = { '@context': 'https://schema.org', '@graph': graph };
       <div class="top-bar">
         <a class="wordmark" href="/" aria-label="Mow It Tall home">Mow It <span class="wordmark-tall" aria-label="TALL"><span class="g g-t" aria-hidden="true">T</span><span class="g g-a" aria-hidden="true">A</span><span class="g g-l" aria-hidden="true">L</span><span class="g g-l" aria-hidden="true">L</span></span></a>
         <div class="top-right">
+          <a class="top-search top-acct" href="/account/" aria-label="Your lawn profile (sign in)" title="Your lawn profile" aria-current={path === '/account/' ? 'page' : undefined}><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.5" r="4" /><path d="M4.5 21c.8-4.2 3.8-6.5 7.5-6.5s6.7 2.3 7.5 6.5" /></svg></a>
           <a class="top-search" href="/search/" aria-label="Search the site" aria-current={path === '/search/' ? 'page' : undefined}><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="M15.5 15.5 21 21" /></svg></a>
           <a class="top-cta" href="/plan/" aria-current={path === '/plan/' ? 'page' : undefined}>Get Plan</a>
         </div>
@@ -256,6 +257,12 @@ const ld = { '@context': 'https://schema.org', '@graph': graph };
         </ol>
       </nav>
     )}
+    <!-- Took the quiz but didn't give an email: one quiet reminder (dismiss = gone for 2 weeks). -->
+    <aside class="plan-nudge" data-plan-nudge hidden data-pagefind-ignore>
+      <p><b>Your lawn plan is saved on this device.</b> Want it by email, with a heads-up before every job?</p>
+      <a class="btn btn-small" href="/plan/#mail" data-track="nudge_click">Email Me My Plan</a>
+      <button type="button" class="plan-nudge-x" aria-label="No thanks" data-plan-nudge-x>✕</button>
+    </aside>
     <slot />
 
     {(SOCIALS_MAIN.length > 0 || beer) && (
@@ -284,7 +291,7 @@ const ld = { '@context': 'https://schema.org', '@graph': graph };
         ))}
       </nav>
       <div class="foot-bottom">
-        <p class="foot-copy">© {new Date().getFullYear()} Mow It Tall <span aria-hidden="true">·</span> <a href="/privacy/">Privacy</a> <span aria-hidden="true">·</span> <a href="/contact/">Contact</a></p>
+        <p class="foot-copy">© {new Date().getFullYear()} Mow It Tall <span aria-hidden="true">·</span> <a href="/privacy/">Privacy</a> <span aria-hidden="true">·</span> <a href="/contact/">Contact</a> <span aria-hidden="true">·</span> <a href="/account/">Your Lawn Profile</a></p>
         <p class="red-vest-credit"><RedVest size={38} /><span>A Red Vest Creation</span></p>
       <button type="button" class="footer-lock" aria-label="Owner login" title="Owner login" data-lock>
         <svg viewBox="0 0 10 12" width="15" height="18" aria-hidden="true" shape-rendering="crispEdges">
@@ -399,6 +406,31 @@ const ld = { '@context': 'https://schema.org', '@graph': graph };
         window.addEventListener('mit:place', function (e) { var z = e.detail && (e.detail.zip || ''); T('location_set', { zip3: String(z).slice(0, 3), method: e.detail && e.detail.source || 'zip' }); });
         window.addEventListener('appinstalled', function () { T('app_installed', {}); });
         window.addEventListener('mit:yard', function (e) { var t = e.detail && e.detail.total || 0; T('yard_measured', { yard_size: t < 2500 ? 'under_2500' : t < 5000 ? '2500_5000' : t < 10000 ? '5000_10000' : t < 21780 ? '10000_half_acre' : 'half_acre_plus' }); });
+      })();
+    </script>
+    <script is:inline>
+      // Subscribers coming back (any device that has signed up or signed in, or came from an email link): once per
+      // visit, tell the CRM, so HQ shows who returns to the site and on which devices. Not Mike, not HQ, not GPC.
+      (function () {
+        try {
+          var ls = localStorage, t = ls.getItem('mit-crm') || '', s = ls.getItem('mit-session') || '';
+          var p = location.pathname;
+          // The "email me my plan" reminder for quiz-takers who skipped the email box.
+          var q = {}; try { q = JSON.parse(ls.getItem('mit-quiz') || '{}'); } catch (e) {}
+          var nudge = document.querySelector('[data-plan-nudge]');
+          if (nudge && q.done && !ls.getItem('mit-email') && !/^\/(plan|account|admin)\//.test(p) && Date.now() - Number(ls.getItem('mit-nudge-x') || 0) > 14 * 864e5 && !ls.getItem('mit-admin')) {
+            nudge.hidden = false;
+            nudge.querySelector('[data-plan-nudge-x]').addEventListener('click', function () { ls.setItem('mit-nudge-x', String(Date.now())); nudge.hidden = true; });
+          }
+          if ((!t && !s) || /^\/admin\//.test(p) || ls.getItem('mit-admin') || navigator.globalPrivacyControl || navigator.webdriver) return;
+          var S = {}; try { S = JSON.parse(ls.getItem('mit-sess') || '{}'); } catch (e) {}
+          var key = S.id || new Date().toDateString();
+          if (ls.getItem('mit-hello') === key) return;
+          ls.setItem('mit-hello', key);
+          var b = JSON.stringify({ t: t, s: s, d: ls.getItem('mit-device') || '', p: p });
+          if (navigator.sendBeacon) navigator.sendBeacon('/api/crm/hello', new Blob([b], { type: 'application/json' }));
+          else fetch('/api/crm/hello', { method: 'POST', body: b, keepalive: true, headers: { 'content-type': 'application/json' } });
+        } catch (e) {}
       })();
     </script>
   </body>

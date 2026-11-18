@@ -1087,3 +1087,62 @@ main > section.tg-sec { padding-top: 26px; padding-bottom: 6px; scroll-margin-to
 .lb-more-card:hover { border-color: var(--sun); }
 .overlay .lb-initials { border-color: rgba(238, 245, 230, 0.55); }
 .overlay .lb-save { align-items: flex-start; }
+
+/* ---------- Header: lawn profile (sign in) + the "email me my plan" reminder (Nov 17) ---------- */
+.top-acct svg { stroke-width: 2.4; }
+.plan-nudge {
+  display: flex; align-items: center; flex-wrap: wrap; gap: 8px 12px; position: relative;
+  max-width: calc(var(--max, 1100px)); margin: 8px auto 0; padding: 8px 40px 8px 12px; box-sizing: border-box;
+  width: calc(100% - 2 * var(--gutter, 16px));
+  background: var(--paper); color: var(--ink); border: 2px solid var(--win-edge); border-radius: 12px; box-shadow: 0 3px 0 var(--win-edge);
+}
+.plan-nudge[hidden] { display: none; }
+.plan-nudge p { margin: 0; flex: 1 1 220px; font-size: 0.9rem; line-height: 1.35; }
+.plan-nudge .btn { flex: none; padding: 7px 14px; font-size: 0.92rem; min-height: 0; }
+.plan-nudge-x { position: absolute; top: 6px; right: 6px; width: 32px; height: 32px; border: 0; background: none; font: 700 1rem/1 inherit; color: var(--ink); cursor: pointer; }
+
+/* ---------- HQ: New Sign-Ups (This Week) + engagement (Nov 17) ---------- */
+.ns-box { padding: 16px; margin: 0 0 16px; border-width: 3px; }
+.ns-box.is-hot { border-color: #9fd36a; box-shadow: 0 0 0 3px rgba(159, 211, 106, 0.25), 0 3px 0 var(--win-edge); }
+.ns-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+.ns-head h2 { margin: 0; font-size: 1.4rem; display: flex; align-items: center; gap: 10px; }
+.ns-count { display: inline-grid; place-items: center; min-width: 2em; height: 2em; padding: 0 8px; border-radius: 99px; background: rgba(0, 0, 0, 0.3); font-size: 1rem; }
+.ns-count.is-hot { background: #9fd36a; color: #12301d; }
+.ns-sum { margin: 8px 0 10px; color: #e3efdc; }
+.ns-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.ns-list li.is-new .ns-p { border-left: 5px solid #9fd36a; }
+.ns-p { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; width: 100%; text-align: left; padding: 10px 12px; border-radius: 10px; border: 0; background: var(--paper); color: var(--ink); font: inherit; cursor: pointer; }
+.ns-p:hover { background: #fff; }
+.ns-who small { opacity: 0.7; }
+.ns-when { font-size: 0.85rem; opacity: 0.75; white-space: nowrap; }
+.ns-when em { font-style: normal; font-weight: 800; color: #2f7d34; }
+.ns-chips, .ns-from { grid-column: 1 / -1; }
+.ns-chips { display: flex; flex-wrap: wrap; gap: 4px; }
+.ns-chips .dash-pill { background: #e3eed9; color: var(--ink); }
+.ns-from { font-size: 0.85rem; opacity: 0.8; }
+.ns-empty { color: #e3efdc; }
+.ns-foot { margin: 10px 0 0; display: flex; gap: 18px; }
+.ns-foot .linkish { color: var(--paper); font-weight: 700; }
+.ml-stage { display: inline-block; white-space: nowrap; padding: 2px 8px; border-radius: 99px; font-size: 0.78rem; font-weight: 800; background: #ddd; color: #12301d; }
+.ml-st-new { background: #bfe3ff; } .ml-st-engaged { background: #9fd36a; } .ml-st-cooling { background: #f3d36b; } .ml-st-dormant { background: #d9c7b0; } .ml-st-gone { background: #e3a59f; }
+.ml-stages { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.ml-stg { border: 0; border-radius: 10px; padding: 10px 6px; font: inherit; color: #12301d; cursor: pointer; display: grid; gap: 2px; text-align: center; }
+.ml-stg b { font-size: 1.5rem; }
+@media (max-width: 520px) { .ml-stages { grid-template-columns: repeat(3, 1fr); } }
+.ml-filters .hall-field { flex: 1 1 140px; }
+.ml-eng { margin: 8px 0; }
+.ml-eng b .ml-stage { font-size: 0.95rem; }
+.ml-tl { list-style: none; margin: 6px 0 12px; padding: 0; max-height: 420px; overflow-y: auto; font-size: 0.9rem; }
+.ml-tl-day { margin: 10px 0 4px; font-weight: 800; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.05em; opacity: 0.8; }
+.ml-tl-i { display: grid; grid-template-columns: 4.6em 1.6em 1fr; gap: 4px; padding: 3px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+.ml-tl-t { opacity: 0.7; font-variant-numeric: tabular-nums; }
+.ml-tl-click, .ml-tl-signup { font-weight: 700; }
+.ml-tl-mark { margin: 10px 0; padding: 4px 8px; border-radius: 6px; background: rgba(159, 211, 106, 0.2); font-size: 0.8rem; font-weight: 700; text-align: center; }
+.ml-funnel { list-style: none; margin: 8px 0; padding: 0; display: grid; gap: 6px; }
+.ml-fn { display: grid; grid-template-columns: minmax(9em, 14em) 1fr 4em; align-items: center; gap: 8px; font-size: 0.92rem; }
+.ml-fn small { grid-column: 2 / -1; margin-top: -4px; opacity: 0.75; font-size: 0.78rem; }
+.ml-fn-b { height: 16px; border-radius: 4px; background: rgba(0, 0, 0, 0.25); overflow: hidden; }
+.ml-fn-b i { display: block; height: 100%; background: #9fd36a; }
+.ml-fn b { text-align: right; font-variant-numeric: tabular-nums; }
+.ml-cohort td, .ml-cohort th { text-align: center; white-space: nowrap; }
+.ml-co { background: rgba(159, 211, 106, var(--a, 0)); }
