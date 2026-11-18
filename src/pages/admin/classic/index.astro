@@ -1,0 +1,528 @@
+---
+// Classic HQ (backup since Nov 18, 2026; the main dashboard is /admin/, the old Analytics shell with these panels inside).
+// Mow It Tall HQ: Mike's private dashboard. The page is static; everything private comes from /api/admin/*
+// and /api/hall/admin with the ADMIN_KEY secret. Tabs: This week, Social, Photos, SEO & traffic, Tips & payments, Members & email.
+import Base from '../../../layouts/Base.astro';
+import { allPosts } from '../../../data/posts.js';
+import { SOCIAL, BASE_TAGS, TOPIC_TAGS } from '../../../data/social.js';
+import { allPins, pinUrl, PIN_BOARDS, PIN_BOARD_DEFAULT } from '../../../data/pins.js';
+const PINS: any = allPins();
+const pinOf = (path: string) => { const p = PINS[path]; return p ? { img: pinUrl(p), title: p.pinterestTitle, desc: p.description, board: p.board, alt: p.alt } : null; };
+
+const posts = allPosts(import.meta.glob('../../blog/[a-z]*.md', { eager: true }));
+const items = [
+  ...posts.map((p: any) => {
+    const slug = p.url.replace(/\/$/, '').split('/').pop();
+    const s: any = (SOCIAL as any)[slug] || {};
+    return {
+      id: slug, kind: 'post', title: p.title, path: `/blog/${slug}/`, date: p.date, topics: p.topics || [],
+      hook: s.hook || p.title, take: s.take || p.description, photo: s.photo || '', months: s.months || [],
+      nd: s.nd === null ? null : s.nd || '', needsCopy: !s.hook, pin: pinOf(`/blog/${slug}/`),
+    };
+  }),
+  // guides only go in the Pinterest queue (they're search answers, not social posts)
+  ...allPosts(import.meta.glob('../../guides/[a-z]*.md', { eager: true })).map((g: any) => {
+    const slug = g.url.replace(/\/$/, '').split('/').pop();
+    return { id: `guide-${slug}`, kind: 'guide', title: g.title, path: `/guides/${slug}/`, date: g.date, topics: g.topics || [], hook: g.title, take: g.description, photo: '', months: [], nd: null, needsCopy: false, pin: pinOf(`/guides/${slug}/`) };
+  }),
+  ...Object.entries(SOCIAL).filter(([k]) => k.startsWith('tool-')).map(([id, s]: any) => ({
+    id, kind: 'tool', title: s.title, path: s.path, date: null, topics: [], hook: s.hook, take: s.take,
+    photo: s.photo || '', months: s.months || [], nd: s.nd === null ? null : s.nd || '', needsCopy: false,
+  })),
+];
+const data = JSON.stringify({ items, baseTags: BASE_TAGS, topicTags: TOPIC_TAGS, boards: [...new Set([PIN_BOARD_DEFAULT, ...Object.values(PIN_BOARDS)])] });
+const TABS = [
+  ['week', 'This Week'], ['todo', 'To-Do'], ['seo', 'SEO & AEO'], ['analytics', 'Analytics'], ['social', 'Social'], ['photos', 'Photos'], ['links', 'Short Links'], ['build', 'Build Plan'], ['money', 'Tips & Payments'], ['members', 'Email'],
+];
+---
+<Base title="HQ | Mow It Tall" description="Mow It Tall dashboard" path="/admin/classic/" noindex>
+  <main id="main" class="page dash" data-dash data-items={data}>
+    <header class="page-head">
+      <h1>Mow It Tall HQ (Classic)</h1>
+      <p><a class="btn btn-small" href="/admin/">← New Dashboard</a></p>
+      <p class="lede">The old HQ, kept as a backup while the new dashboard settles in. Everything here also lives in the new dashboard.</p>
+    </header>
+
+    <form class="window tool ha-key" data-key-form>
+      <label class="hall-field"><span>Admin key</span><input type="password" autocomplete="current-password" data-key /></label>
+      <button type="submit" class="btn btn-small">Log In</button>
+      <p class="hall-status" data-msg role="status"></p>
+    </form>
+
+    <div data-app hidden>
+      <nav class="dash-tabs" aria-label="Dashboard sections">
+        {TABS.map(([id, t]) => <button type="button" class="cp-chip" data-tab={id} aria-pressed="false">{t} <span data-badge={id}></span></button>)}
+      </nav>
+
+      <!-- ===== This week ===== -->
+      <section class="dash-panel" data-panel="week" hidden>
+        <!-- New sign-ups: the daily check. "New" = since you last hit Mark All Seen (works on any device). -->
+        <section class="window ns-box" data-ns aria-labelledby="ns-h">
+          <div class="ns-head">
+            <h2 id="ns-h">New Sign-Ups <span class="ns-count" data-ns-count>–</span></h2>
+            <button type="button" class="btn btn-small btn-quiet" data-ns-seen hidden>Mark All Seen</button>
+          </div>
+          <p class="ns-sum" data-ns-sum>Loading…</p>
+          <ul class="ns-list" data-ns-list></ul>
+          <p class="ns-foot"><button type="button" class="linkish" data-ns-all>Everyone on the list →</button> <button type="button" class="linkish" data-ns-funnel>Funnel →</button></p>
+        </section>
+        <div class="dash-tiles">
+          <div><b data-stat="pending">–</b><span>Photos waiting</span></div>
+          <div><b data-stat="live">–</b><span>Photos live</span></div>
+          <div><b data-stat="votes">–</b><span>Votes cast</span></div>
+          <div><b data-stat="posted">–</b><span>Posts this week</span></div>
+        </div>
+        <h2 class="dash-h">This Week’s Checklist</h2>
+        <ol class="dash-check" data-check></ol>
+        <p class="dash-fine">Tip: do this every Monday morning. Approve photos, copy this week’s posts into your scheduler, mark them posted.</p>
+      </section>
+
+      <!-- ===== To-Do ===== -->
+      <section class="dash-panel" data-panel="todo" hidden>
+        <p class="dash-note" data-todo-sum>Loading…</p>
+        <div class="hall-sort" role="group" aria-label="Show" data-todo-filter>
+          <button type="button" class="cp-chip" data-f="open" aria-pressed="true">Open</button>
+          <button type="button" class="cp-chip" data-f="now" aria-pressed="false">Do First</button>
+          <button type="button" class="cp-chip" data-f="claude" aria-pressed="false">For Claude</button>
+          <button type="button" class="cp-chip" data-f="done" aria-pressed="false">Done</button>
+          <button type="button" class="cp-chip" data-f="all" aria-pressed="false">All</button>
+        </div>
+        <div data-todo-list></div>
+        <form class="td-add" data-todo-add>
+          <label class="hall-field"><span>Add your own to-do</span><input type="text" maxlength="200" placeholder="e.g. Film the overseeding video" data-todo-new /></label>
+          <select data-todo-grp aria-label="Group"><option value="mine">My own</option><option value="content">Articles</option><option value="social">Social</option><option value="site">Site</option><option value="seo">SEO</option></select>
+          <button type="submit" class="btn btn-small">Add</button>
+        </form>
+        <p class="dash-fine">“For Claude” = things I build when you say the word. Just tell me which ones in our chat.</p>
+      </section>
+
+      <!-- ===== Social ===== -->
+      <section class="dash-panel" data-panel="social" hidden>
+        <details class="dash-more pb">
+          <summary>Setup Plan: Names, Bios, Links and What to Post</summary>
+          <div data-pb="socialSetup"></div>
+          <h4>Your Profile Links</h4>
+          <form data-profiles-form><div class="pb-grid" data-profiles></div><button type="submit" class="btn btn-small">Save and Copy for Claude</button><p class="dash-fine" data-prof-msg></p></form>
+          <div data-mini="social"></div>
+        </details>
+        <div class="dash-plat" role="group" aria-label="Platform">
+          <button type="button" class="hall-tab" data-plat="instagram" aria-selected="true">Instagram</button>
+          <button type="button" class="hall-tab" data-plat="facebook" aria-selected="false">Facebook</button>
+          <button type="button" class="hall-tab" data-plat="nextdoor" aria-selected="false">Nextdoor</button>
+          <button type="button" class="hall-tab" data-plat="pinterest" aria-selected="false">Pinterest</button>
+          <button type="button" class="hall-tab" data-plat="x" aria-selected="false">X / Threads</button>
+        </div>
+        <p class="dash-note" data-plat-note></p>
+        <h2 class="dash-h">This Week’s Queue</h2>
+        <ol class="dash-queue" data-queue></ol>
+        <details class="dash-more">
+          <summary>All content <span data-all-count></span></summary>
+          <input type="search" class="dash-search" placeholder="Search posts and tools" data-search />
+          <ol class="dash-queue" data-all></ol>
+        </details>
+        <details class="dash-more">
+          <summary>Recently posted</summary>
+          <ol class="dash-log" data-log></ol>
+        </details>
+        <details class="dash-more">
+          <summary>Link settings</summary>
+          <label class="hall-field"><span>Site address used in links</span><input type="url" data-base /></label>
+          <p class="dash-fine">Uses the preview address until launch. Switch it to https://mowittall.com when the domain is live. Links include tags (utm) so Google Analytics can tell which platform sent the visit.</p>
+        </details>
+      </section>
+
+      <!-- ===== Photos ===== -->
+      <section class="dash-panel" data-panel="photos" hidden>
+        <div class="hall-sort" role="group" aria-label="Show">
+          <button type="button" class="cp-chip" data-status="pending" aria-pressed="true">Waiting <span data-n="pending"></span></button>
+          <button type="button" class="cp-chip" data-status="approved" aria-pressed="false">Live <span data-n="approved"></span></button>
+          <button type="button" class="cp-chip" data-status="rejected" aria-pressed="false">Rejected <span data-n="rejected"></span></button>
+        </div>
+        <ol class="hall-feed" data-photos></ol>
+        <p class="dash-fine"><a href="/hall/">See the public Hall</a></p>
+      </section>
+
+      <!-- ===== SEO & AEO ===== -->
+      <section class="dash-panel" data-panel="seo" hidden>
+        <h2 class="dash-h">SEO Autopilot</h2>
+        <p class="dash-note">Runs by itself, no clicking: Search Console and Bing numbers every day, every page’s Google indexing checked daily, and the SEO checks on every deploy.</p>
+        <div class="cp-chips ev-range" data-seo-range>
+          <button type="button" class="cp-chip" data-days="7" aria-pressed="true">7 Days</button>
+          <button type="button" class="cp-chip" data-days="28" aria-pressed="false">28 Days</button>
+          <button type="button" class="cp-chip" data-days="90" aria-pressed="false">90 Days</button>
+        </div>
+        <div data-seo-auto><p class="dash-fine">Loading…</p></div>
+        <details class="dash-more pb"><summary>Quick Links</summary><div data-pb="seoLinks"></div></details>
+        <details class="dash-more pb"><summary>What’s Still Manual (Optional)</summary><div data-pb="seoRoutine"></div></details>
+        <h2 class="dash-h">SEO Checks</h2>
+        <div class="pb" data-pb="agents"></div>
+        <div class="ag-grid" data-agents>
+          <article class="dash-card"><h3>Page Check</h3><div data-agent-out="page"></div><button type="button" class="linkish" data-run="page">Re-run in this browser</button></article>
+          <article class="dash-card"><h3>Link Check</h3><div data-agent-out="links"></div><button type="button" class="linkish" data-run="links">Re-run in this browser</button></article>
+          <article class="dash-card"><h3>Sitemap Watch</h3><div data-agent-out="sitemap"></div><button type="button" class="linkish" data-run="sitemap">Re-run in this browser</button></article>
+          <article class="dash-card"><h3>Share Card Check</h3><div data-agent-out="share"></div><button type="button" class="linkish" data-run="share">Re-run in this browser</button></article>
+          <article class="dash-card"><h3>AEO Readiness</h3><div data-agent-out="aeo"></div><button type="button" class="linkish" data-run="aeo">Re-run in this browser</button></article>
+        </div>
+        <h2 class="dash-h">Rank Tracker</h2>
+        <div data-rank-out></div>
+        <details class="dash-more pb"><summary>Upload an Export by Hand (Optional)</summary>
+          <div data-pb="rankHow"></div>
+          <label class="btn btn-small rk-up-btn">Upload Search Console or Bing export<input type="file" accept=".zip,.csv" data-rank-file hidden /></label>
+          <p class="dash-fine" data-rank-msg></p>
+        </details>
+        <h2 class="dash-h">AEO: Getting Quoted by AI</h2>
+        <div class="pb" data-pb="aeo"></div>
+        <h2 class="dash-h">When to Give a Section Its Own Page</h2>
+        <div class="pb" data-pb="movePages"></div>
+        <h2 class="dash-h">SEO To-Dos</h2>
+        <div data-mini="seo,pages,content"></div>
+      </section>
+
+      <!-- ===== Analytics ===== -->
+      <section class="dash-panel" data-panel="analytics" hidden>
+        <p class="dash-note"><b>New: the full analytics suite.</b> Traffic, conversions, SEO, email, social, Clarity and GA4 in one place, sliceable every which way. <a class="btn btn-small" href="/admin/">Open the New Dashboard →</a></p>
+        <h2 class="dash-h">Our Own Event Log</h2>
+        <p class="dash-fine">Every visit and event, saved in the site’s own Cloudflare database. Free, kept forever, and nobody else’s retention rules. Starts counting from the day it went live.</p>
+        <div class="cp-chips ev-range" data-ev-range>
+          <button type="button" class="cp-chip" data-days="1" aria-pressed="false">Today</button>
+          <button type="button" class="cp-chip" data-days="7" aria-pressed="false">7 Days</button>
+          <button type="button" class="cp-chip" data-days="28" aria-pressed="true">28 Days</button>
+          <button type="button" class="cp-chip" data-days="90" aria-pressed="false">90 Days</button>
+          <button type="button" class="cp-chip" data-days="all" aria-pressed="false">All Time</button>
+        </div>
+        <label class="ev-me"><input type="checkbox" data-ev-me checked /> <span><b>Don’t count my visits</b> on this phone or computer. Automatic anywhere you’re logged into HQ. Untick to count this device again.</span></label>
+        <div data-ev><p class="dash-fine">Loading…</p></div>
+        <details class="dash-more pb" open><summary>Events the Site Sends</summary><div data-pb="ga4Events"></div></details>
+        <details class="dash-more pb"><summary>GA4 + GTM Setup, Step by Step</summary><div data-pb="ga4Steps"></div></details>
+        <details class="dash-more pb"><summary>GTM Import File (Sets Up the Tag for You)</summary>
+          <p>Builds a Tag Manager file with one GA4 event tag, one trigger for every site event, and a variable for each parameter. Import it with <b>Merge</b>.</p>
+          <form class="td-add" data-gtm-form><label class="hall-field"><span>Your GA4 Measurement ID</span><input type="text" required pattern="G-[A-Z0-9]+" placeholder="G-XXXXXXXXXX" data-gtm-id autocapitalize="characters" /></label><button type="submit" class="btn btn-small">Download File</button></form>
+        </details>
+        <details class="dash-more pb"><summary>UTM Tags: How to Label Every Link</summary><div data-pb="utm"></div></details>
+        <details class="dash-more pb"><summary>Looker Studio Report</summary><div data-pb="looker"></div></details>
+        <h2 class="dash-h">Your Looker Studio Report</h2>
+        <form class="td-add" data-looker-form><label class="hall-field"><span>Embed URL</span><input type="url" data-looker-url placeholder="https://lookerstudio.google.com/embed/reporting/…" /></label><button type="submit" class="btn btn-small">Save</button></form>
+        <div class="looker-box" data-looker></div>
+        <h2 class="dash-h">Analytics To-Dos</h2>
+        <div data-mini="launch,analytics"></div>
+      </section>
+
+      <!-- ===== Short links ===== -->
+      <section class="dash-panel" data-panel="links" hidden>
+        <p class="dash-note">Easy addresses that send people anywhere: mowittall.com/water → the rain meter. Use them on social, print, QR codes and merch tags. Changes go live within a minute.</p>
+        <form class="window tool sl-form" data-sl-form>
+          <input type="hidden" data-sl-old />
+          <label class="hall-field"><span>Short link</span><span class="sl-pre">mowittall.com/<input type="text" required maxlength="40" pattern="[a-z0-9][a-z0-9\-]*" autocapitalize="none" autocomplete="off" spellcheck="false" placeholder="water" data-sl-slug /></span></label>
+          <label class="hall-field"><span>Goes to</span><input type="text" required placeholder="/resources/#water-h or https://…" data-sl-target /></label>
+          <label class="hall-field"><span>Note (just for you)</span><input type="text" maxlength="200" placeholder="Instagram reel, door notes…" data-sl-note /></label>
+          <label class="sl-check"><input type="checkbox" data-sl-perm /> Permanent (301). Leave off if you might change where it points.</label>
+          <p class="sl-actions"><button type="submit" class="btn btn-small" data-sl-save>Save Short Link</button> <button type="button" class="btn btn-small btn-quiet" data-sl-cancel hidden>Cancel Edit</button></p>
+          <p class="hall-status" data-sl-msg role="status"></p>
+        </form>
+        <p class="dash-fine">Tips: add utm tags to the destination so GA4 credits the source (e.g. <code>/plan/?utm_source=door_note&amp;utm_medium=qr</code>). Short links override a page with the same name typed without a slash. <button type="button" class="linkish" data-sl-starter>Add my starter set</button></p>
+        <ol class="sl-list" data-sl-list></ol>
+      </section>
+
+      <!-- ===== Build plan ===== -->
+      <section class="dash-panel" data-panel="build" hidden>
+        <p class="dash-note">The bigger projects: the app, the ebook and the course. The email and accounts plan lives on Members &amp; Email.</p>
+        <details class="dash-more pb" open><summary>The App: PWA, Then Play Store, Then App Store</summary><div data-pb="app"></div><div data-mini="app"></div></details>
+        <details class="dash-more pb"><summary>Ebook and Course</summary><div data-pb="products"></div><div data-mini="products"></div></details>
+      </section>
+
+      <!-- ===== Tips & payments ===== -->
+      <section class="dash-panel" data-panel="money" hidden>
+        <p class="dash-note">“Buy me a beer” tips now, merch later. I recommend Stripe: no monthly fee, you pay a small cut per payment, and tips work without any code.</p>
+        <div class="dash-cards">
+          <article class="dash-card">
+            <h3>Stripe <span class="dash-pill" data-conn="stripe">Not connected</span></h3>
+            <p><b>Will show:</b> tips and payments this week and all-time, each payment with the note people leave, refunds, and payouts to your bank.</p>
+            <ol><li>Create a Stripe account (as yourself or a business).</li><li>Make a Payment Link for tips (“Buy Mike a beer”, customer chooses the amount) and send me the link. I put it in every “Buy me a beer” box on the site.</li><li>Create a restricted, read-only API key and save it in Cloudflare as <code>STRIPE_KEY</code>. The dashboard can see payments; it can’t move money.</li></ol>
+          </article>
+          <article class="dash-card">
+            <h3>Later: Merch and Paid Stuff</h3>
+            <p>Merch, a paid course or a premium plan can all run through the same Stripe account, and show up here.</p>
+          </article>
+        </div>
+      </section>
+
+      <!-- ===== Members & email ===== -->
+      <section class="dash-panel" data-panel="members" hidden>
+        <div data-mail-root></div>
+        <details class="dash-more pb"><summary>Email To-Dos</summary><div data-mini="crm"></div></details>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    import { initHQ } from '../../../scripts/hq.js';
+    import { initMail } from '../../../scripts/hqMail.js';
+    const root = document.querySelector<HTMLElement>('[data-dash]');
+    if (root) {
+      const $ = <T extends Element = HTMLElement>(s: string) => root.querySelector<T>(s)!;
+      const D = JSON.parse(root.dataset.items!);
+      const esc = (s: string) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+      let key = ''; try { key = localStorage.getItem('mit-admin') || ''; } catch {}
+      const api = async (path: string, opts: RequestInit = {}) => {
+        const r = await fetch(path, { ...opts, headers: { 'x-admin-key': key, 'content-type': 'application/json', ...(opts.headers || {}) } });
+        const j = await r.json().catch(() => ({ error: 'Something broke.' }));
+        if (!r.ok) throw Object.assign(new Error(j.error), { status: r.status });
+        return j;
+      };
+      const DAY = 86400000, WEEK = 7 * DAY;
+      const ago = (t: number) => { const d = Math.floor((Date.now() - t) / DAY); return d < 1 ? 'today' : d === 1 ? 'yesterday' : d < 14 ? `${d} days ago` : `${Math.round(d / 7)} weeks ago`; };
+
+      /* ---------- tabs */
+      let mail: any = null;
+      // Deep link to one email preview: #mail=<key>&track=diy|crew|robot&level=0-3 (used by the review sheet)
+      const deep = location.hash.startsWith('#mail=') ? new URLSearchParams(location.hash.slice(1)) : null;
+      let tab = deep ? 'members' : (location.hash.slice(1) || 'week');
+      function show(t: string) {
+        tab = root!.querySelector(`[data-panel="${t}"]`) ? t : 'week';
+        root!.querySelectorAll<HTMLElement>('[data-panel]').forEach((p) => (p.hidden = p.dataset.panel !== tab));
+        root!.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tab === tab)));
+        history.replaceState(null, '', `#${tab}`);
+        if (tab === 'photos') loadPhotos();
+        if (tab === 'social') renderSocial();
+        if (tab === 'members') mail?.load();
+      }
+      root.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((b) => b.addEventListener('click', () => show(b.dataset.tab!)));
+
+      /* ---------- social */
+      let plat = 'instagram', log: any[] = [];
+      let base = ''; try { base = localStorage.getItem('mit-dash-base') || ''; } catch {}
+      if (!base) base = location.origin;
+      $<HTMLInputElement>('[data-base]').value = base;
+      $<HTMLInputElement>('[data-base]').addEventListener('change', (e) => { base = (e.target as HTMLInputElement).value.replace(/\/$/, '') || location.origin; try { localStorage.setItem('mit-dash-base', base); } catch {} renderSocial(); });
+      const NOTES: Record<string, string> = {
+        instagram: 'Post a photo or short video with the caption. Links don’t work in captions, so put the link in your bio.',
+        facebook: 'Page post with the link. Facebook pulls in the preview card automatically.',
+        nextdoor: 'Keep it neighborly: a tip first, the link second. Nextdoor frowns on ads in the main feed.',
+        x: 'Short version for X and Threads. Same text works on both.',
+        pinterest: 'Save the pin image, then in Pinterest: Create Pin → upload it → paste the title, description and link → pick the board. Pins keep getting found for months, so 3 a week beats 20 in one day.',
+      };
+      // link with utm tags so Google Analytics can tell which platform sent the visit
+      const link = (it: any, src: string) => {
+        const [path, hash] = it.path.split('#');
+        return `${base}${path}${path.includes('?') ? '&' : '?'}utm_source=${src}&utm_medium=social&utm_campaign=weekly${hash ? `#${hash}` : ''}`;
+      };
+      function copyFor(it: any, p: string) {
+        if (p === 'instagram') {
+          const tags = [...new Set([...D.baseTags, ...it.topics.flatMap((t: string) => D.topicTags[t] || [])])].slice(0, 8).join(' ');
+          return `${it.hook}\n\n${it.take}\n\nLink in bio.\n\n${tags}`;
+        }
+        if (p === 'facebook') return `${it.hook}\n\n${it.take}\n\n${link(it, 'facebook')}`;
+        if (p === 'nextdoor') return `Hi neighbors! ${it.nd || `${it.hook} ${it.take}`}\n\nI wrote it all up here, free, no sign-up: ${link(it, 'nextdoor')}`;
+        const short = `${it.hook} ${link(it, 'x')}`;
+        return short;
+      }
+      const lastFor = (id: string, p: string) => log.find((l) => l.item === id && l.platform === p);
+      function rankItems(p: string) {
+        const m = new Date().getMonth() + 1, now = Date.now();
+        return D.items
+          .filter((it: any) => (p === 'pinterest' ? !!it.pin : it.kind !== 'guide') && !(p === 'nextdoor' && it.nd === null))
+          .map((it: any) => {
+            const last = lastFor(it.id, p);
+            const fresh = it.date && now - new Date(it.date).getTime() < 14 * DAY;
+            const inSeason = it.months.includes(m);
+            let score = last ? Math.min(52, (now - last.at) / WEEK) * 10 : 1000;
+            if (last && now - last.at < 8 * WEEK) score -= 2000;          // posted in the last 8 weeks: rest it
+            if (inSeason) score += 300;
+            if (fresh) score += 200;
+            if (it.months.length && !inSeason) score -= 150;                 // seasonal, but not now
+            return { it, last, score, inSeason, fresh };
+          })
+          .sort((a: any, b: any) => b.score - a.score);
+      }
+      function pinCard(r: any) {
+        const it = r.it, pin = it.pin;
+        const chips = [r.fresh && 'New', r.inSeason && 'In season', it.kind === 'guide' && 'Guide'].filter(Boolean).map((c) => `<span class="dash-pill">${c}</span>`).join('');
+        const field = (label: string, key: string, val: string, rows = 1, max = 0) => `<div class="dash-pin-field"><span>${label}${max ? ` <small data-count-of="${key}">${val.length}/${max}</small>` : ''}</span>
+          ${rows > 1 ? `<textarea rows="${rows}" data-pin-text="${key}"${max ? ` maxlength="${max}"` : ''}>${esc(val)}</textarea>` : `<input type="text" value="${esc(val)}" data-pin-text="${key}"${max ? ` maxlength="${max}"` : ''} />`}
+          <button type="button" class="btn btn-small btn-quiet" data-copy-pin="${key}">Copy</button></div>`;
+        return `<li class="dash-item dash-pin" data-item="${it.id}">
+          <div class="dash-item-head"><a href="${it.path}" target="_blank" rel="noopener">${esc(it.title)}</a>${chips}</div>
+          <p class="dash-last">${r.last ? `Last pinned ${ago(r.last.at)}` : 'Never pinned'} · <b>Board:</b> ${esc(pin.board)}</p>
+          <div class="dash-pin-body">
+            <a class="dash-pin-img" href="${pin.img}" target="_blank" rel="noopener" title="Open full size"><img src="${pin.img}" alt="" width="120" height="180" loading="lazy" /></a>
+            <div class="dash-pin-fields">
+              ${field('Title', 'title', pin.title, 1, 100)}
+              ${field('Description', 'desc', pin.desc, 5, 500)}
+              ${field('Link', 'link', link(it, 'pinterest'))}
+              ${field('Alt text', 'alt', pin.alt, 1, 500)}
+            </div>
+          </div>
+          <p class="dash-item-actions">
+            <a class="btn btn-small" href="${pin.img}" download="${it.path.replace(/^\/|\/$/g, '').replace(/\//g, '-')}-pin.jpg">Save Pin Image</a>
+            <button type="button" class="btn btn-small btn-quiet" data-posted>Mark Pinned</button>
+          </p>
+        </li>`;
+      }
+      function card(r: any) {
+        if (plat === 'pinterest') return pinCard(r);
+        const it = r.it, text = copyFor(it, plat);
+        const chips = [r.fresh && 'New', r.inSeason && 'In season', it.needsCopy && 'Needs copy'].filter(Boolean).map((c) => `<span class="dash-pill">${c}</span>`).join('');
+        return `<li class="dash-item" data-item="${it.id}">
+          <div class="dash-item-head"><a href="${it.path}" target="_blank" rel="noopener">${esc(it.title)}</a>${chips}</div>
+          <p class="dash-last">${r.last ? `Last posted here ${ago(r.last.at)}` : 'Never posted here'}${it.photo && plat !== 'x' ? ` · <b>Photo:</b> ${esc(it.photo)}` : ''}</p>
+          <textarea rows="${plat === 'x' ? 3 : 7}" data-text>${esc(text)}</textarea>
+          <p class="dash-item-actions">
+            <button type="button" class="btn btn-small" data-copy>Copy</button>
+            <button type="button" class="btn btn-small btn-quiet" data-posted>Mark Posted</button>
+            <span class="dash-count" data-count>${plat === 'x' ? `${text.replace(/https?:\/\/\S+/g, 'x'.repeat(23)).length}/280` : ''}</span>
+          </p>
+        </li>`;
+      }
+      function renderSocial() {
+        root!.querySelectorAll<HTMLButtonElement>('[data-plat]').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.plat === plat)));
+        $('[data-plat-note]').textContent = NOTES[plat];
+        const ranked = rankItems(plat);
+        const due = ranked.filter((r: any) => r.score > 0).slice(0, 3);
+        $('[data-queue]').innerHTML = due.length ? due.map(card).join('') : '<li class="hall-msg">You’re caught up on this platform. Nice.</li>';
+        const q = ($<HTMLInputElement>('[data-search]').value || '').toLowerCase();
+        const all = ranked.filter((r: any) => !q || `${r.it.title} ${r.it.hook}`.toLowerCase().includes(q));
+        $('[data-all-count]').textContent = `(${ranked.length})`;
+        $('[data-all]').innerHTML = all.map(card).join('');
+        $('[data-log]').innerHTML = log.slice(0, 25).map((l) => {
+          const it = D.items.find((x: any) => x.id === l.item);
+          return `<li><span>${esc(it ? it.title : l.item)}</span> <small>${l.platform} · ${ago(l.at)}</small> <button type="button" class="linkish" data-undo="${l.id}">Undo</button></li>`;
+        }).join('') || '<li class="hall-msg">Nothing posted yet.</li>';
+        const left = ['instagram', 'facebook', 'nextdoor', 'x', 'pinterest'].reduce((n, p) => n + rankItems(p).filter((r: any) => r.score > 0).slice(0, 3).length, 0);
+        $('[data-badge="social"]').textContent = left ? `(${left})` : '';
+      }
+      root.querySelectorAll<HTMLButtonElement>('[data-plat]').forEach((b) => b.addEventListener('click', () => { plat = b.dataset.plat!; renderSocial(); }));
+      $('[data-search]').addEventListener('input', renderSocial);
+      root.addEventListener('click', async (e) => {
+        const t = e.target as HTMLElement;
+        const li = t.closest<HTMLElement>('[data-item]');
+        if (t.matches('[data-copy-pin]') && li) {
+          const el = li.querySelector<HTMLInputElement>(`[data-pin-text="${t.dataset.copyPin}"]`)!;
+          try { await navigator.clipboard.writeText(el.value); } catch { el.select(); document.execCommand('copy'); }
+          t.textContent = 'Copied!'; setTimeout(() => (t.textContent = 'Copy'), 1500);
+        }
+        if (t.matches('[data-copy]') && li) {
+          const text = li.querySelector<HTMLTextAreaElement>('[data-text]')!.value;
+          try { await navigator.clipboard.writeText(text); } catch { li.querySelector<HTMLTextAreaElement>('[data-text]')!.select(); document.execCommand('copy'); }
+          t.textContent = 'Copied!'; setTimeout(() => (t.textContent = 'Copy'), 1500);
+        }
+        if (t.matches('[data-posted]') && li) {
+          (t as HTMLButtonElement).disabled = true;
+          try { const r = await api('/api/admin/social', { method: 'POST', body: JSON.stringify({ item: li.dataset.item, platform: plat, action: 'posted' }) }); log.unshift({ id: r.id, item: li.dataset.item, platform: plat, at: r.at }); renderSocial(); loadOverview(); }
+          catch { (t as HTMLButtonElement).disabled = false; }
+        }
+        if (t.matches('[data-undo]')) {
+          await api('/api/admin/social', { method: 'POST', body: JSON.stringify({ action: 'undo', id: t.dataset.undo }) });
+          log = log.filter((l) => String(l.id) !== t.dataset.undo); renderSocial(); loadOverview();
+        }
+      });
+      root.addEventListener('input', (e) => {
+        const ta = e.target as HTMLTextAreaElement;
+        if (ta.matches('[data-pin-text]')) { const c = ta.closest('[data-item]')!.querySelector(`[data-count-of="${ta.dataset.pinText}"]`); if (c) c.textContent = c.textContent!.replace(/^\d+/, String(ta.value.length)); }
+        if (ta.matches('[data-text]') && plat === 'x') ta.closest('[data-item]')!.querySelector('[data-count]')!.textContent = `${ta.value.replace(/https?:\/\/\S+/g, 'x'.repeat(23)).length}/280`;
+      });
+
+      /* ---------- photos (same queue as before) */
+      let pstatus = 'pending';
+      async function loadPhotos() {
+        try {
+          const r = await fetch(`/api/hall/admin?key=${encodeURIComponent(key)}&status=${pstatus}`); const j = await r.json();
+          root!.querySelectorAll<HTMLButtonElement>('[data-status]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.status === pstatus)));
+          for (const k of ['pending', 'approved', 'rejected']) $(`[data-n="${k}"]`).textContent = j.counts?.[k] ? `(${j.counts[k]})` : '';
+          $('[data-photos]').innerHTML = j.posts.length ? j.posts.map((p: any) => `
+            <li class="hall-card" data-id="${p.id}" data-board="${p.board}">
+              <img src="${p.img.startsWith('/api/') ? `${p.img}?key=${encodeURIComponent(key)}` : p.img}" alt="" width="${p.w}" height="${p.h}" loading="lazy" />
+              <div class="hall-text ha-text">
+                <p class="hall-caption"><b>${p.board === 'shame' ? 'Hall of Shame' : 'Hall of Fame'}</b>${p.caption ? ` · ${esc(p.caption)}` : ''}</p>
+                <p class="hall-meta">${[p.name, p.town].filter(Boolean).map(esc).join(' · ') || 'No name'} · ${new Date(p.created).toLocaleString()} · score ${p.score}</p>
+                <p class="ha-actions">
+                  ${p.status !== 'approved' ? '<button type="button" class="btn btn-small" data-act="approve">Approve</button>' : ''}
+                  ${p.status !== 'rejected' ? '<button type="button" class="btn btn-small btn-quiet" data-act="reject">Reject</button>' : ''}
+                  <button type="button" class="btn btn-small btn-quiet" data-act="move">Move to ${p.board === 'shame' ? 'Fame' : 'Shame'}</button>
+                  <button type="button" class="btn btn-small btn-quiet" data-act="delete">Delete</button>
+                </p>
+              </div>
+            </li>`).join('') : '<li class="hall-msg">Nothing here.</li>';
+        } catch { $('[data-photos]').innerHTML = '<li class="hall-msg">Couldn’t load photos.</li>'; }
+      }
+      root.querySelectorAll<HTMLButtonElement>('[data-status]').forEach((b) => b.addEventListener('click', () => { pstatus = b.dataset.status!; loadPhotos(); }));
+      $('[data-photos]').addEventListener('click', async (e) => {
+        const b = (e.target as HTMLElement).closest<HTMLButtonElement>('[data-act]'); if (!b) return;
+        const li = b.closest<HTMLElement>('[data-id]')!;
+        if (b.dataset.act === 'delete' && !confirm('Delete this photo for good?')) return;
+        b.disabled = true;
+        await fetch('/api/hall/admin', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ key, id: li.dataset.id, action: b.dataset.act, board: li.dataset.board === 'shame' ? 'fame' : 'shame' }) });
+        loadPhotos(); loadOverview();
+      });
+
+      /* ---------- overview */
+      async function loadOverview() {
+        const o = await api('/api/admin/overview');
+        const n = (status: string) => o.photos.filter((r: any) => r.status === status).reduce((a: number, r: any) => a + r.n, 0);
+        $('[data-stat="pending"]').textContent = String(n('pending'));
+        $('[data-stat="live"]').textContent = String(n('approved'));
+        $('[data-stat="votes"]').textContent = String(o.votes.n);
+        $('[data-stat="posted"]').textContent = String(o.postedThisWeek);
+        $('[data-badge="photos"]').textContent = n('pending') ? `(${n('pending')})` : '';
+        for (const [k, v] of Object.entries(o.connected)) {
+          const el = root!.querySelector(`[data-conn="${k}"]`);
+          if (el) { el.textContent = v ? 'Connected' : 'Not connected'; el.classList.toggle('is-on', !!v); }
+        }
+        const socialLeft = Number(($('[data-badge="social"]').textContent || '0').replace(/\D/g, '')) || 0;
+        const check = [
+          [n('pending') > 0, `Review ${n('pending')} photo${n('pending') === 1 ? '' : 's'} waiting for the Hall`, 'photos'],
+          [socialLeft > 0, `Copy this week’s social posts (${socialLeft} in the queue) and mark them posted`, 'social'],
+          [!o.connected.stripe, 'When ready: set up Stripe for tips', 'money'],
+        ].filter((c) => c[0]);
+        $('[data-check]').innerHTML = check.length
+          ? check.map((c) => `<li><button type="button" class="linkish" data-go="${c[2]}">${c[1]}</button></li>`).join('')
+          : '<li>All done. Go mow something.</li>';
+      }
+      $('[data-check]').addEventListener('click', (e) => { const b = (e.target as HTMLElement).closest<HTMLElement>('[data-go]'); if (b) show(b.dataset.go!); });
+
+      /* ---------- new sign-ups (This Week) */
+      const SRC: Record<string, string> = { quiz: 'Quiz', measure: 'Measure', nudge: 'Reminder', account: 'Account' };
+      const since = (t: number) => { const m = Math.round((Date.now() - t) / 60000); return m < 60 ? `${Math.max(1, m)}m ago` : m < 1440 ? `${Math.round(m / 60)}h ago` : `${Math.round(m / 1440)}d ago`; };
+      async function loadSignups() {
+        let r: any; try { r = await api('/api/admin/crm/signups?days=7'); } catch (e: any) { $('[data-ns-sum]').textContent = e.status === 503 ? 'The email database isn’t connected yet.' : `Couldn’t load: ${e.message}`; return; }
+        const n = r.unseen || 0;
+        $('[data-ns-count]').textContent = String(n);
+        $('[data-ns-count]').classList.toggle('is-hot', n > 0);
+        $('[data-ns]').classList.toggle('is-hot', n > 0);
+        $('[data-badge="week"]').textContent = n ? `(${n} new)` : '';
+        $('[data-badge="members"]').textContent = n ? `(${n} new)` : '';
+        document.title = n ? `(${n}) HQ | Mow It Tall` : 'HQ | Mow It Tall';
+        $<HTMLButtonElement>('[data-ns-seen]').hidden = !n;
+        $('[data-ns-sum]').innerHTML = `${n ? `<b>${n} new</b> since you last checked${r.seenAt ? ` (${since(r.seenAt)})` : ''}. ` : 'Nobody new since you last checked. '}${r.today} today · ${r.week} this week · ${r.total} all time.`;
+        $('[data-ns-list]').innerHTML = r.people.length ? r.people.map((p: any) => {
+          const chips = [SRC[p.source] || p.source, p.track, p.tookQuiz ? p.level : 'No quiz yet', p.sqft ? `${Number(p.sqft).toLocaleString()} sq ft` : '', p.zip, p.test ? 'test' : '', p.status !== 'active' ? p.status : '']
+            .filter(Boolean).map((c) => `<span class="dash-pill">${esc(c)}</span>`).join('');
+          const b = p.before;
+          const found = `${esc(p.from)}${p.medium && !['(none)', 'referral'].includes(p.medium) ? ` / ${esc(p.medium)}` : ''}${p.landed ? `, landed on ${esc(p.landed)}` : ''}`;
+          const hist = b ? ` · ${b.sessions} visit${b.sessions === 1 ? '' : 's'}, ${b.pages} page${b.pages === 1 ? '' : 's'} before signing up${b.firstAt && p.created - b.firstAt > 86400000 ? ` (first seen ${since(b.firstAt)})` : ''}` : '';
+          return `<li class="${p.isNew ? 'is-new' : ''}"><button type="button" class="ns-p" data-ns-p="${p.id}">
+            <span class="ns-who"><b>${esc(p.name || p.email)}</b>${p.name ? ` <small>${esc(p.email)}</small>` : ''}</span><span class="ns-when">${p.isNew ? '<em>New</em> ' : ''}${since(p.created)}</span>
+            <span class="ns-chips">${chips}</span><span class="ns-from">Found you via ${found}${hist}</span></button></li>`;
+        }).join('') : '<li class="ns-empty">No sign-ups in the last 7 days yet.</li>';
+      }
+      $('[data-ns-list]').addEventListener('click', (e) => { const b = (e.target as HTMLElement).closest<HTMLElement>('[data-ns-p]'); if (b) mail?.openPerson(b.dataset.nsP); });
+      $('[data-ns-seen]').addEventListener('click', async () => { try { await api('/api/admin/crm/signups', { method: 'POST', body: JSON.stringify({ action: 'seen' }) }); } catch {} loadSignups(); });
+      $('[data-ns-all]').addEventListener('click', () => { show('members'); mail?.openPeople({}); });
+      $('[data-ns-funnel]').addEventListener('click', () => { show('members'); mail?.load(); (root!.querySelector('[data-ml-sub="funnel"]') as HTMLElement | null)?.click(); });
+
+      /* ---------- log in */
+      async function start() {
+        try {
+          const s = await api('/api/admin/social'); log = s.log;
+          try { localStorage.setItem('mit-admin', key); } catch {}
+          $('[data-msg]').textContent = ''; $('[data-key-form]').hidden = true; $('[data-app]').hidden = false;
+          mail = initMail({ root, api });
+          renderSocial(); loadSignups(); await loadOverview(); show(tab);
+          initHQ({ root, api, show });
+          if (deep) mail.openPreview(deep.get('mail') || '', { track: deep.get('track') || undefined, level: deep.has('level') ? Number(deep.get('level')) : 1 });
+        } catch (err: any) { $('[data-msg]').textContent = err.message; }
+      }
+      $('[data-key-form]').addEventListener('submit', (e) => { e.preventDefault(); key = $<HTMLInputElement>('[data-key]').value.trim(); start(); });
+      if (key) start();
+    }
+  </script>
+</Base>

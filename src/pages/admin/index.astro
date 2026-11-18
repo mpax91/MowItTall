@@ -1,60 +1,107 @@
 ---
-// Mow It Tall HQ: Mike's private dashboard. The page is static; everything private comes from /api/admin/*
-// and /api/hall/admin with the ADMIN_KEY secret. Tabs: This week, Social, Photos, SEO & traffic, Tips & payments, Members & email.
-import Base from '../../layouts/Base.astro';
-import { allPosts } from '../../data/posts.js';
-import { SOCIAL, BASE_TAGS, TOPIC_TAGS } from '../../data/social.js';
-import { allPins, pinUrl, PIN_BOARDS, PIN_BOARD_DEFAULT } from '../../data/pins.js';
-const PINS: any = allPins();
-const pinOf = (path: string) => { const p = PINS[path]; return p ? { img: pinUrl(p), title: p.pinterestTitle, desc: p.description, board: p.board, alt: p.alt } : null; };
-
-const posts = allPosts(import.meta.glob('../blog/[a-z]*.md', { eager: true }));
-const items = [
-  ...posts.map((p: any) => {
-    const slug = p.url.replace(/\/$/, '').split('/').pop();
-    const s: any = (SOCIAL as any)[slug] || {};
-    return {
-      id: slug, kind: 'post', title: p.title, path: `/blog/${slug}/`, date: p.date, topics: p.topics || [],
-      hook: s.hook || p.title, take: s.take || p.description, photo: s.photo || '', months: s.months || [],
-      nd: s.nd === null ? null : s.nd || '', needsCopy: !s.hook, pin: pinOf(`/blog/${slug}/`),
-    };
-  }),
-  // guides only go in the Pinterest queue (they're search answers, not social posts)
-  ...allPosts(import.meta.glob('../guides/[a-z]*.md', { eager: true })).map((g: any) => {
-    const slug = g.url.replace(/\/$/, '').split('/').pop();
-    return { id: `guide-${slug}`, kind: 'guide', title: g.title, path: `/guides/${slug}/`, date: g.date, topics: g.topics || [], hook: g.title, take: g.description, photo: '', months: [], nd: null, needsCopy: false, pin: pinOf(`/guides/${slug}/`) };
-  }),
-  ...Object.entries(SOCIAL).filter(([k]) => k.startsWith('tool-')).map(([id, s]: any) => ({
-    id, kind: 'tool', title: s.title, path: s.path, date: null, topics: [], hook: s.hook, take: s.take,
-    photo: s.photo || '', months: s.months || [], nd: s.nd === null ? null : s.nd || '', needsCopy: false,
-  })),
-];
-const data = JSON.stringify({ items, baseTags: BASE_TAGS, topicTags: TOPIC_TAGS, boards: [...new Set([PIN_BOARD_DEFAULT, ...Object.values(PIN_BOARDS)])] });
+// Mow It Tall HQ: the one dashboard (Nov 18, 2026). The Analytics shell (Nov 17) with everything from the old HQ rolled in:
+// Inbox, To-Do, the analytics dashboards, SEO (performance + autopilot, checks, rank tracker, guides), Email (stats +
+// the CRM), Social (stats + the copy-paste Post Queue), Content Calendar, Reddit Radar, Build Plan, Hall photos, Short
+// Links, Tips, and the tools. Desktop-first, still works on a phone. The old HQ stays at /admin/classic/ as a backup.
+// A standalone page (not the site layout): no site header/footer, no tracking. Everything private comes from /api/admin/*
+// (worker/ax.js, worker/index.js) with the ADMIN_KEY (remembered in localStorage as mit-admin, shared with the lock icon).
+// The old panels keep their own code (src/scripts/hq.js, hqMail.js and the script at the bottom) inside .ax-hq,
+// restyled by src/styles/ax-hq.css; the shell shows one of them at a time.
+import '@fontsource-variable/bricolage-grotesque';
+import '@fontsource/atkinson-hyperlegible-next/400.css';
+import '@fontsource/atkinson-hyperlegible-next/700.css';
+import '../../styles/ax.css';
+import '../../styles/ax-hq.css';
+// Old tab ids (kept so the panel code's badges and hooks still find their elements; never shown).
 const TABS = [
   ['week', 'This Week'], ['todo', 'To-Do'], ['seo', 'SEO & AEO'], ['analytics', 'Analytics'], ['social', 'Social'], ['photos', 'Photos'], ['links', 'Short Links'], ['build', 'Build Plan'], ['money', 'Tips & Payments'], ['members', 'Email'],
 ];
+const NAV = [
+  ['inbox', 'Inbox', 'M3 13h5l2 3h4l2-3h5M5 5h14l2 8v6H3v-6z'],
+  ['todo', 'To-Do', 'M9 6h11M9 12h11M9 18h11M4 6l1 1 2-2M4 12l1 1 2-2M4 18l1 1 2-2'],
+  ['', 'Dashboards'],
+  ['overview', 'Overview', 'M3 13h4v8H3zM10 3h4v18h-4zM17 8h4v13h-4z'],
+  ['acquisition', 'Traffic Sources', 'M4 12h10M10 6l6 6-6 6M20 4v16'],
+  ['content', 'Content & Engagement', 'M5 4h14v16H5zM8 8h8M8 12h8M8 16h5'],
+  ['conversions', 'Conversions', 'M3 4h18l-7 8v6l-4 2v-8z'],
+  ['audience', 'Audience', 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0'],
+  ['', 'Channels'],
+  ['seo', 'SEO', 'M10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM15 15l6 6'],
+  ['email', 'Email', 'M3 5h18v14H3zM3 6l9 7 9-7'],
+  ['social', 'Social', 'M18 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 22a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM8.6 13.5l6.8 4M15.4 6.5l-6.8 4'],
+  ['', 'Plan'],
+  ['calendar', 'Content Calendar', 'M4 5h16v15H4zM4 9h16M9 3v4M15 3v4'],
+  ['radar', 'Reddit Radar', 'M12 12m-8 0a8 8 0 1 0 16 0a8 8 0 1 0 -16 0M12 12l5-5M12 12m-3 0a3 3 0 1 0 6 0'],
+  ['build', 'Build Plan', 'M4 20h16M6 20V9l6-5 6 5v11M10 20v-6h4v6'],
+  ['', 'Site'],
+  ['photos', 'Hall Photos', 'M4 6h16v13H4zM8 10.5a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM20 16l-5-5-8 8'],
+  ['links', 'Short Links', 'M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1'],
+  ['money', 'Tips & Payments', 'M12 3v18M16 7H10a2.5 2.5 0 0 0 0 5h4a2.5 2.5 0 0 1 0 5H7'],
+  ['', 'Tools'],
+  ['ux', 'UX (Clarity)', 'M4 4l7 17 2-7 7-2z'],
+  ['ga4', 'GA4 Cross-Check', 'M6 20V10M12 20V4M18 20v-6'],
+  ['explore', 'Explore', 'M4 6h16M7 12h10M10 18h4'],
+  ['sources', 'Sources & Export', 'M12 3v12M7 10l5 5 5-5M4 21h16'],
+];
 ---
-<Base title="HQ | Mow It Tall" description="Mow It Tall dashboard" path="/admin/" noindex>
-  <main id="main" class="page dash" data-dash data-items={data}>
-    <header class="page-head">
-      <h1>Mow It Tall HQ</h1>
-      <p><a class="btn btn-small" href="/admin/analytics/">Analytics →</a></p>
-      <p class="lede">Your weekly stop: approve photos, grab this week’s posts, and check how the site’s doing.</p>
-    </header>
-
-    <form class="window tool ha-key" data-key-form>
-      <label class="hall-field"><span>Admin key</span><input type="password" autocomplete="current-password" data-key /></label>
-      <button type="submit" class="btn btn-small">Log In</button>
-      <p class="hall-status" data-msg role="status"></p>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Mow It Tall HQ</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <script is:inline>try { var t = localStorage.getItem('mit-ax-theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body class="ax">
+  <div class="ax-login" data-login hidden>
+    <form class="ax-card" data-login-form>
+      <h1>Mow It Tall HQ</h1><p>Same password as the lock icon on the site.</p>
+      <label>Admin key<input type="password" autocomplete="current-password" data-login-key required /></label>
+      <button class="ax-btn">Log In</button><p class="ax-fine" data-login-msg role="status"></p>
     </form>
+  </div>
 
-    <div data-app hidden>
-      <nav class="dash-tabs" aria-label="Dashboard sections">
-        {TABS.map(([id, t]) => <button type="button" class="cp-chip" data-tab={id} aria-pressed="false">{t} <span data-badge={id}></span></button>)}
+  <div class="ax-app" data-app hidden>
+    <nav class="ax-side" aria-label="HQ sections">
+      <a class="ax-brand" href="#inbox" data-nav-home><span class="ax-logo" aria-hidden="true">🌱</span><span><b>Mow It Tall</b><small>HQ</small></span></a>
+      <ul>
+        {NAV.map(([id, label, d]) => id
+          ? <li><a href={`#${id}`} data-nav={id}><svg viewBox="0 0 24 24" aria-hidden="true"><path d={d} /></svg><span>{label}</span>{id === 'inbox' && <b class="ax-badge" data-inbox-badge hidden>0</b>}{id === 'todo' && <b class="ax-badge is-soft" data-todo-badge hidden>0</b>}{id === 'photos' && <b class="ax-badge" data-photo-badge hidden>0</b>}</a></li>
+          : <li class="ax-side-h">{label}</li>)}
+      </ul>
+      <div class="ax-side-f">
+        <a href="/" target="_blank" rel="noopener">View the Site ↗</a>
+        <a href="/admin/classic/">Old HQ (backup)</a>
+        <button type="button" data-theme-btn>Dark Mode</button>
+      </div>
+    </nav>
+
+    <div class="ax-main">
+      <header class="ax-top">
+        <div class="ax-top-row">
+          <h1 data-title>Overview</h1>
+          <div class="ax-top-ctl">
+            <label class="ax-ctl"><span>Date Range</span><select data-range></select></label>
+            <span class="ax-custom" data-custom hidden><input type="date" data-from aria-label="From" /> – <input type="date" data-to aria-label="To" /></span>
+            <label class="ax-ctl"><span>Compare</span><select data-cmp><option value="prev">Previous Period</option><option value="year">Last Year</option><option value="none">No Comparison</option></select></label>
+            <label class="ax-ctl"><span>By</span><select data-grain><option value="auto">Auto</option><option value="date">Day</option><option value="week">Week</option><option value="month">Month</option></select></label>
+            <button type="button" class="ax-icon-btn" data-refresh title="Refresh data" aria-label="Refresh data">⟳</button>
+          </div>
+        </div>
+        <div class="ax-top-row is-sub"><p class="ax-period" data-period></p><div class="ax-filters" data-filters></div></div>
+        <div class="ax-tabbar" data-tabs role="tablist" hidden></div>
+      </header>
+      <main class="ax-content">
+        <div data-view></div>
+        <div class="ax-hq" data-dash hidden>
+      <nav hidden aria-hidden="true">
+        {TABS.map(([id, t]) => <button type="button" tabindex="-1" data-tab={id}>{t} <span data-badge={id}></span></button>)}
       </nav>
 
       <!-- ===== This week ===== -->
-      <section class="dash-panel" data-panel="week" hidden>
+      <section class="dash-panel" data-panel="week" data-part="week" hidden>
         <!-- New sign-ups: the daily check. "New" = since you last hit Mark All Seen (works on any device). -->
         <section class="window ns-box" data-ns aria-labelledby="ns-h">
           <div class="ns-head">
@@ -77,7 +124,7 @@ const TABS = [
       </section>
 
       <!-- ===== To-Do ===== -->
-      <section class="dash-panel" data-panel="todo" hidden>
+      <section class="dash-panel" data-panel="todo" data-part="todo" hidden>
         <p class="dash-note" data-todo-sum>Loading…</p>
         <div class="hall-sort" role="group" aria-label="Show" data-todo-filter>
           <button type="button" class="cp-chip" data-f="open" aria-pressed="true">Open</button>
@@ -92,11 +139,11 @@ const TABS = [
           <select data-todo-grp aria-label="Group"><option value="mine">My own</option><option value="content">Articles</option><option value="social">Social</option><option value="site">Site</option><option value="seo">SEO</option></select>
           <button type="submit" class="btn btn-small">Add</button>
         </form>
-        <p class="dash-fine">“For Claude” = things I build when you say the word. Just tell me which ones in our chat.</p>
+        <p class="dash-fine">“For Claude” = things Claude builds when you say the word. Just say which ones in chat.</p>
       </section>
 
       <!-- ===== Social ===== -->
-      <section class="dash-panel" data-panel="social" hidden>
+      <section class="dash-panel" data-panel="social" data-part="social" hidden>
         <details class="dash-more pb">
           <summary>Setup Plan: Names, Bios, Links and What to Post</summary>
           <div data-pb="socialSetup"></div>
@@ -131,7 +178,7 @@ const TABS = [
       </section>
 
       <!-- ===== Photos ===== -->
-      <section class="dash-panel" data-panel="photos" hidden>
+      <section class="dash-panel" data-panel="photos" data-part="photos" hidden>
         <div class="hall-sort" role="group" aria-label="Show">
           <button type="button" class="cp-chip" data-status="pending" aria-pressed="true">Waiting <span data-n="pending"></span></button>
           <button type="button" class="cp-chip" data-status="approved" aria-pressed="false">Live <span data-n="approved"></span></button>
@@ -143,8 +190,8 @@ const TABS = [
 
       <!-- ===== SEO & AEO ===== -->
       <section class="dash-panel" data-panel="seo" hidden>
-        <h2 class="dash-h">SEO Autopilot</h2>
-        <p class="dash-note">Runs by itself, no clicking: Search Console and Bing numbers every day, every page’s Google indexing checked daily, and the SEO checks on every deploy.</p>
+        <div data-part="seo-auto" hidden>
+                <p class="dash-note">Runs by itself, no clicking: Search Console and Bing numbers every day, every page’s Google indexing checked daily, and the SEO checks on every deploy.</p>
         <div class="cp-chips ev-range" data-seo-range>
           <button type="button" class="cp-chip" data-days="7" aria-pressed="true">7 Days</button>
           <button type="button" class="cp-chip" data-days="28" aria-pressed="false">28 Days</button>
@@ -153,7 +200,8 @@ const TABS = [
         <div data-seo-auto><p class="dash-fine">Loading…</p></div>
         <details class="dash-more pb"><summary>Quick Links</summary><div data-pb="seoLinks"></div></details>
         <details class="dash-more pb"><summary>What’s Still Manual (Optional)</summary><div data-pb="seoRoutine"></div></details>
-        <h2 class="dash-h">SEO Checks</h2>
+        </div>
+        <div data-part="seo-checks" hidden>
         <div class="pb" data-pb="agents"></div>
         <div class="ag-grid" data-agents>
           <article class="dash-card"><h3>Page Check</h3><div data-agent-out="page"></div><button type="button" class="linkish" data-run="page">Re-run in this browser</button></article>
@@ -162,25 +210,27 @@ const TABS = [
           <article class="dash-card"><h3>Share Card Check</h3><div data-agent-out="share"></div><button type="button" class="linkish" data-run="share">Re-run in this browser</button></article>
           <article class="dash-card"><h3>AEO Readiness</h3><div data-agent-out="aeo"></div><button type="button" class="linkish" data-run="aeo">Re-run in this browser</button></article>
         </div>
-        <h2 class="dash-h">Rank Tracker</h2>
+        </div>
+        <div data-part="seo-rank" hidden>
         <div data-rank-out></div>
         <details class="dash-more pb"><summary>Upload an Export by Hand (Optional)</summary>
           <div data-pb="rankHow"></div>
           <label class="btn btn-small rk-up-btn">Upload Search Console or Bing export<input type="file" accept=".zip,.csv" data-rank-file hidden /></label>
           <p class="dash-fine" data-rank-msg></p>
         </details>
-        <h2 class="dash-h">AEO: Getting Quoted by AI</h2>
+        </div>
+        <div data-part="seo-guides" hidden><h2 class="dash-h">AEO: Getting Quoted by AI</h2>
         <div class="pb" data-pb="aeo"></div>
         <h2 class="dash-h">When to Give a Section Its Own Page</h2>
         <div class="pb" data-pb="movePages"></div>
         <h2 class="dash-h">SEO To-Dos</h2>
         <div data-mini="seo,pages,content"></div>
+      </div>
       </section>
 
       <!-- ===== Analytics ===== -->
-      <section class="dash-panel" data-panel="analytics" hidden>
-        <p class="dash-note"><b>New: the full analytics suite.</b> Traffic, conversions, SEO, email, social, Clarity and GA4 in one place, sliceable every which way. <a class="btn btn-small" href="/admin/analytics/">Open HQ Analytics →</a></p>
-        <h2 class="dash-h">Our Own Event Log</h2>
+      <section class="dash-panel" data-panel="analytics" data-part="analytics" hidden>
+                <h2 class="dash-h">Our Own Event Log</h2>
         <p class="dash-fine">Every visit and event, saved in the site’s own Cloudflare database. Free, kept forever, and nobody else’s retention rules. Starts counting from the day it went live.</p>
         <div class="cp-chips ev-range" data-ev-range>
           <button type="button" class="cp-chip" data-days="1" aria-pressed="false">Today</button>
@@ -207,7 +257,7 @@ const TABS = [
       </section>
 
       <!-- ===== Short links ===== -->
-      <section class="dash-panel" data-panel="links" hidden>
+      <section class="dash-panel" data-panel="links" data-part="links" hidden>
         <p class="dash-note">Easy addresses that send people anywhere: mowittall.com/water → the rain meter. Use them on social, print, QR codes and merch tags. Changes go live within a minute.</p>
         <form class="window tool sl-form" data-sl-form>
           <input type="hidden" data-sl-old />
@@ -223,14 +273,14 @@ const TABS = [
       </section>
 
       <!-- ===== Build plan ===== -->
-      <section class="dash-panel" data-panel="build" hidden>
-        <p class="dash-note">The bigger projects: the app, the ebook and the course. The email and accounts plan lives on Members &amp; Email.</p>
+      <section class="dash-panel" data-panel="build" data-part="build" hidden>
+        <p class="dash-note">The bigger projects: the app, the ebook and the course. The email plan lives under Email → People &amp; Emails.</p>
         <details class="dash-more pb" open><summary>The App: PWA, Then Play Store, Then App Store</summary><div data-pb="app"></div><div data-mini="app"></div></details>
         <details class="dash-more pb"><summary>Ebook and Course</summary><div data-pb="products"></div><div data-mini="products"></div></details>
       </section>
 
       <!-- ===== Tips & payments ===== -->
-      <section class="dash-panel" data-panel="money" hidden>
+      <section class="dash-panel" data-panel="money" data-part="money" hidden>
         <p class="dash-note">“Buy me a beer” tips now, merch later. I recommend Stripe: no monthly fee, you pay a small cut per payment, and tips work without any code.</p>
         <div class="dash-cards">
           <article class="dash-card">
@@ -246,20 +296,149 @@ const TABS = [
       </section>
 
       <!-- ===== Members & email ===== -->
-      <section class="dash-panel" data-panel="members" hidden>
+      <section class="dash-panel" data-panel="members" data-part="members" hidden>
         <div data-mail-root></div>
         <details class="dash-more pb"><summary>Email To-Dos</summary><div data-mini="crm"></div></details>
       </section>
+    
+        </div>
+      </main>
     </div>
-  </main>
+  </div>
+  <div class="ax-drawer" data-drawer hidden></div>
 
   <script>
+    import { S, RANGES, readHash, writeHash, api, setKey, hasKey, clearCache, period, renderFilters, onRerender, onGo, dlabel, daysBetween } from '../../scripts/ax/core.js';
+    import * as V from '../../scripts/ax/views.js';
+    import { calendar, radar } from '../../scripts/ax/plan.js';
+    import { inbox, setBadge } from '../../scripts/ax/inbox.js';
+
+    const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector<T>(s)!;
+    const VIEWS: Record<string, [string, (root: HTMLElement, refresh?: () => Promise<void>) => Promise<void>]> = {
+      overview: ['Overview', V.overview], acquisition: ['Traffic Sources', V.acquisition], content: ['Content & Engagement', V.content], conversions: ['Conversions', V.conversions],
+      audience: ['Audience', V.audience], seo: ['SEO', V.seo], email: ['Email', V.email], social: ['Social', V.social], ux: ['UX (Clarity)', V.ux], ga4: ['GA4 Cross-Check', V.ga4],
+      explore: ['Explore', V.explore], sources: ['Sources & Export', V.sources], calendar: ['Content Calendar', calendar], radar: ['Reddit Radar', radar], inbox: ['Inbox', inbox],
+      todo: ['To-Do', 'todo'], build: ['Build Plan', 'build'], photos: ['Hall Photos', 'photos'], links: ['Short Links', 'links'], money: ['Tips & Payments', 'money'],
+    };
+    // Sections with tabs: [id, label, a dashboard view or the name of an old-HQ part].
+    type View = (root: HTMLElement, refresh?: () => Promise<void>) => Promise<void>;
+    const TABS: Record<string, [string, string, View | string][]> = {
+      seo: [['perf', 'Performance', V.seo], ['index', 'Indexing & Speed', 'seo-auto'], ['checks', 'Site Checks', 'seo-checks'], ['rank', 'Rank Tracker', 'seo-rank'], ['guides', 'Guides & To-Dos', 'seo-guides']],
+      email: [['stats', 'Performance', V.email], ['crm', 'People & Emails', 'members']],
+      social: [['stats', 'Performance', V.social], ['queue', 'Post Queue', 'social']],
+      sources: [['export', 'Sources & Export', V.sources], ['events', 'Event Log & Setup', 'analytics']],
+    };
+    let token = 0;
+    async function loadStatus() { S.status = await api('/api/admin/ax/status'); setBadge(S.status.inbox?.unread || 0); }
+    async function render() {
+      const my = ++token;
+      if (!VIEWS[S.section]) S.section = 'overview';
+      const [title, base] = VIEWS[S.section];
+      const tabs = TABS[S.section];
+      const tab = tabs ? tabs.find((t) => t[0] === S.sub.tab) || tabs[0] : null;
+      const fn = (tab ? tab[2] : base) as View | string;
+      const bar = $('[data-tabs]');
+      bar.hidden = !tabs;
+      bar.innerHTML = tabs ? tabs.map(([id, label]) => `<button type="button" role="tab" data-tab-id="${id}" aria-selected="${id === tab![0]}">${label}</button>`).join('') : '';
+      $('[data-title]').textContent = title; document.title = `${title} | Mow It Tall HQ`; setBadge(S.status?.inbox?.unread || 0);
+      document.querySelectorAll<HTMLElement>('[data-nav]').forEach((a) => a.setAttribute('aria-current', String(a.dataset.nav === S.section)));
+      const p = period();
+      $('[data-period]').innerHTML = `${dlabel(p.from, 'date', true)} – ${dlabel(p.to, 'date', true)} · ${p.len} day${p.len === 1 ? '' : 's'}${p.prev ? ` <span>vs ${dlabel(p.prev.from, 'date', true)} – ${dlabel(p.prev.to, 'date', true)}</span>` : ''}`;
+      const view = $('[data-view]');
+      view.innerHTML = '';
+      view.dataset.section = S.section;
+      renderFilters();
+      const hostPart = typeof fn === 'string' ? fn : '';
+      $('[data-dash]').hidden = !hostPart;
+      view.hidden = !!hostPart;
+      (window as any).__hqPart = hostPart; // read by the panel script if it loads after this render
+      if (hostPart) dispatchEvent(new CustomEvent('hq:show', { detail: { part: hostPart } }));
+      const planning = !!hostPart || S.section === 'calendar' || S.section === 'radar' || S.section === 'inbox';
+      document.querySelector<HTMLElement>('.ax-top-ctl')!.style.display = planning ? 'none' : '';
+      document.querySelector<HTMLElement>('.ax-top-row.is-sub')!.hidden = planning;
+      if (hostPart) return;
+      try { await (fn as View)(view, async () => { await loadStatus(); render(); }); }
+      catch (e: any) { if (my === token) view.insertAdjacentHTML('beforeend', `<p class="ax-empty is-err">${e.message}</p>`); }
+    }
+    function syncControls() {
+      $<HTMLSelectElement>('[data-range]').value = S.range;
+      $<HTMLSelectElement>('[data-cmp]').value = S.cmp;
+      $<HTMLSelectElement>('[data-grain]').value = S.grain;
+      $('[data-custom]').hidden = S.range !== 'custom';
+      const p = period();
+      $<HTMLInputElement>('[data-from]').value = p.from; $<HTMLInputElement>('[data-to]').value = p.to;
+    }
+    function boot() {
+      $<HTMLSelectElement>('[data-range]').innerHTML = RANGES.map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
+      const mailDeep = location.hash.startsWith('#mail=');
+      readOldHash();
+      if (!mailDeep) writeHash();
+      syncControls();
+      $('[data-tabs]').addEventListener('click', (e) => { const b = (e.target as HTMLElement).closest<HTMLElement>('[data-tab-id]'); if (!b) return; S.sub = { tab: b.dataset.tabId! }; writeHash(); render(); });
+      addEventListener('ax:go', (e: any) => { goTo(e.detail.section, e.detail.tab); });
+      $('[data-nav-home]').addEventListener('click', (e) => { e.preventDefault(); goTo('inbox'); });
+      $('[data-range]').addEventListener('change', (e) => {
+        const v = (e.target as HTMLSelectElement).value;
+        if (v === 'custom') { const p = period(); S.from = p.from; S.to = p.to; }
+        S.range = v; writeHash(); syncControls(); render();
+      });
+      const custom = () => { S.from = $<HTMLInputElement>('[data-from]').value; S.to = $<HTMLInputElement>('[data-to]').value; if (S.from && S.to) { writeHash(); render(); } };
+      $('[data-from]').addEventListener('change', custom); $('[data-to]').addEventListener('change', custom);
+      $('[data-cmp]').addEventListener('change', (e) => { S.cmp = (e.target as HTMLSelectElement).value; writeHash(); render(); });
+      $('[data-grain]').addEventListener('change', (e) => { S.grain = (e.target as HTMLSelectElement).value; writeHash(); render(); });
+      $('[data-refresh]').addEventListener('click', async () => { clearCache(); await loadStatus(); render(); });
+      document.querySelectorAll<HTMLAnchorElement>('[data-nav]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); goTo(a.dataset.nav!); }));
+      onRerender(render);
+      // keep the Inbox badge fresh while the page sits open
+      setInterval(async () => { try { const r = await api('/api/admin/ax/inbox'); setBadge(r.unread); } catch { /* offline */ } }, 10 * 60000);
+      onGo(goTo);
+      addEventListener('hashchange', () => { const before = S.section + '/' + (S.sub.tab || ''); readOldHash(); syncControls(); if (before !== S.section + '/' + (S.sub.tab || '')) render(); });
+      addEventListener('keydown', (e) => { if (e.key === 'Escape') { const d = $('[data-drawer]'); if (!d.hidden) { d.hidden = true; d.innerHTML = ''; document.body.classList.remove('has-drawer'); } } });
+      render();
+    }
+    // sec can carry a tab: 'seo/index' (Inbox items use that form).
+    // readHash, plus old links: #mail=… (email previews from the review sheet) and the old HQ's tab names.
+    function readOldHash() {
+      const mailDeep = location.hash.startsWith('#mail=');
+      readHash();
+      const OLD: Record<string, [string, string?]> = { week: ['inbox'], analytics: ['sources', 'events'], members: ['email', 'crm'] };
+      if (mailDeep) { S.section = 'email'; S.sub = { tab: 'crm' }; }
+      else if (OLD[S.section]) { const [sec, t] = OLD[S.section]; S.section = sec; S.sub = t ? { tab: t } : {}; writeHash(); }
+    }
+    function goTo(sec: string, tab?: string) { if (sec.includes('/')) [sec, tab] = sec.split('/'); S.section = sec; S.sub = tab ? { tab } : {}; writeHash(); render(); scrollTo({ top: 0 }); }
+
+    // theme
+    const themeBtn = $('[data-theme-btn]');
+    const isDark = () => document.documentElement.dataset.theme === 'dark' || (!document.documentElement.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+    const label = () => (themeBtn.textContent = isDark() ? 'Light Mode' : 'Dark Mode');
+    themeBtn.addEventListener('click', () => { const t = isDark() ? 'light' : 'dark'; document.documentElement.dataset.theme = t; try { localStorage.setItem('mit-ax-theme', t); } catch {} label(); render(); });
+    label();
+
+    async function start() {
+      try {
+        await loadStatus(); $('[data-login]').hidden = true; $('[data-app]').hidden = false; boot();
+        (window as any).__hqReady = true; dispatchEvent(new Event('hq:ready')); // the old-HQ panels start now
+      }
+      catch (e: any) {
+        $('[data-app]').hidden = true; $('[data-login]').hidden = false;
+        if (hasKey()) $('[data-login-msg]').textContent = e.status === 401 ? 'That key didn’t work.' : e.message;
+      }
+    }
+    $('[data-login-form]').addEventListener('submit', async (e) => { e.preventDefault(); setKey($<HTMLInputElement>('[data-login-key]').value.trim()); start(); });
+    start();
+    void daysBetween;
+  </script>
+  <script>
+    // The old HQ panels, hosted inside the dashboard (Nov 18, 2026). Same logic as /admin/classic/; the shell above
+    // decides which panel is visible ("hq:show") and this code asks the shell to navigate ("ax:go").
     import { initHQ } from '../../scripts/hq.js';
     import { initMail } from '../../scripts/hqMail.js';
     const root = document.querySelector<HTMLElement>('[data-dash]');
     if (root) {
       const $ = <T extends Element = HTMLElement>(s: string) => root.querySelector<T>(s)!;
-      const D = JSON.parse(root.dataset.items!);
+      // Post / guide / tool list for the Post Queue: /admin/items.json (built with the site; kept out of this page so the
+      // blog posts' layout CSS doesn't get bundled in).
+      let D: any = { items: [], baseTags: [], topicTags: {}, boards: [] };
       const esc = (s: string) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
       let key = ''; try { key = localStorage.getItem('mit-admin') || ''; } catch {}
       const api = async (path: string, opts: RequestInit = {}) => {
@@ -275,17 +454,28 @@ const TABS = [
       let mail: any = null;
       // Deep link to one email preview: #mail=<key>&track=diy|crew|robot&level=0-3 (used by the review sheet)
       const deep = location.hash.startsWith('#mail=') ? new URLSearchParams(location.hash.slice(1)) : null;
-      let tab = deep ? 'members' : (location.hash.slice(1) || 'week');
-      function show(t: string) {
-        tab = root!.querySelector(`[data-panel="${t}"]`) ? t : 'week';
-        root!.querySelectorAll<HTMLElement>('[data-panel]').forEach((p) => (p.hidden = p.dataset.panel !== tab));
-        root!.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tab === tab)));
-        history.replaceState(null, '', `#${tab}`);
-        if (tab === 'photos') loadPhotos();
-        if (tab === 'social') renderSocial();
-        if (tab === 'members') mail?.load();
+      // Old tab names → where they live in the dashboard now.
+      const WHERE: Record<string, [string, string?]> = { week: ['inbox'], todo: ['todo'], seo: ['seo', 'index'], analytics: ['sources', 'events'], social: ['social', 'queue'],
+        photos: ['photos'], links: ['links'], build: ['build'], money: ['money'], members: ['email', 'crm'] };
+      const show = (t: string) => { const [section, tab] = WHERE[t] || ['inbox']; dispatchEvent(new CustomEvent('ax:go', { detail: { section, tab } })); };
+      let ready = false, evStarted = false;
+      // The shell shows one part (a whole old panel, or one slice of the SEO panel).
+      function showPart(part: string) {
+        const el = root!.querySelector<HTMLElement>(`[data-part="${part}"]`);
+        if (!el) return;
+        const panel = el.closest<HTMLElement>('[data-panel]')!;
+        root!.querySelectorAll<HTMLElement>('[data-panel]').forEach((p) => (p.hidden = p !== panel));
+        panel.querySelectorAll<HTMLElement>(':scope > [data-part]').forEach((p) => (p.hidden = p !== el));
+        if (!ready) return;
+        const t = panel.dataset.panel;
+        if (t === 'photos') loadPhotos();
+        if (t === 'social') renderSocial();
+        if (t === 'members') mail?.load();
+        if (t === 'analytics' && !evStarted) { evStarted = true; root!.querySelector<HTMLElement>('[data-tab="analytics"]')!.click(); } // hq.js loads the event log on this click
       }
-      root.querySelectorAll<HTMLButtonElement>('[data-tab]').forEach((b) => b.addEventListener('click', () => show(b.dataset.tab!)));
+      let wanted = (window as any).__hqPart || '';
+      if (wanted) showPart(wanted);
+      addEventListener('hq:show', (e: any) => { wanted = e.detail.part; showPart(wanted); });
 
       /* ---------- social */
       let plat = 'instagram', log: any[] = [];
@@ -489,7 +679,6 @@ const TABS = [
         $('[data-ns]').classList.toggle('is-hot', n > 0);
         $('[data-badge="week"]').textContent = n ? `(${n} new)` : '';
         $('[data-badge="members"]').textContent = n ? `(${n} new)` : '';
-        document.title = n ? `(${n}) HQ | Mow It Tall` : 'HQ | Mow It Tall';
         $<HTMLButtonElement>('[data-ns-seen]').hidden = !n;
         $('[data-ns-sum]').innerHTML = `${n ? `<b>${n} new</b> since you last checked${r.seenAt ? ` (${since(r.seenAt)})` : ''}. ` : 'Nobody new since you last checked. '}${r.today} today · ${r.week} this week · ${r.total} all time.`;
         $('[data-ns-list]').innerHTML = r.people.length ? r.people.map((p: any) => {
@@ -509,19 +698,32 @@ const TABS = [
       $('[data-ns-funnel]').addEventListener('click', () => { show('members'); mail?.load(); (root!.querySelector('[data-ml-sub="funnel"]') as HTMLElement | null)?.click(); });
 
       /* ---------- log in */
+      // Starts once the shell has logged in (same ADMIN_KEY, remembered as mit-admin).
       async function start() {
+        if (ready) return;
+        try { key = localStorage.getItem('mit-admin') || key; } catch {}
         try {
-          const s = await api('/api/admin/social'); log = s.log;
-          try { localStorage.setItem('mit-admin', key); } catch {}
-          $('[data-msg]').textContent = ''; $('[data-key-form]').hidden = true; $('[data-app]').hidden = false;
+          const [s, items] = await Promise.all([api('/api/admin/social'), fetch('/admin/items.json').then((r) => r.json())]);
+          log = s.log; D = items;
           mail = initMail({ root, api });
-          renderSocial(); loadSignups(); await loadOverview(); show(tab);
+          renderSocial(); loadSignups(); await loadOverview();
           initHQ({ root, api, show });
+          ready = true;
+          // Mirror the old tab badges ("(3)") onto the sidebar: To-Do "Do first" count, photos waiting.
+          const mirror = (from: string, to: string) => {
+            const src = root!.querySelector(`[data-badge="${from}"]`), dst = document.querySelector<HTMLElement>(to);
+            if (!src || !dst) return;
+            const sync = () => { const n = Number((src.textContent || '').replace(/\D/g, '')) || 0; dst.textContent = String(n); dst.hidden = !n; };
+            new MutationObserver(sync).observe(src, { childList: true, characterData: true, subtree: true }); sync();
+          };
+          mirror('todo', '[data-todo-badge]'); mirror('photos', '[data-photo-badge]');
+          if (wanted) showPart(wanted);
           if (deep) mail.openPreview(deep.get('mail') || '', { track: deep.get('track') || undefined, level: deep.has('level') ? Number(deep.get('level')) : 1 });
-        } catch (err: any) { $('[data-msg]').textContent = err.message; }
+        } catch (err: any) { root!.insertAdjacentHTML('afterbegin', `<p class="ax-empty is-err">Couldn’t load this part of HQ: ${esc(err.message)}</p>`); }
       }
-      $('[data-key-form]').addEventListener('submit', (e) => { e.preventDefault(); key = $<HTMLInputElement>('[data-key]').value.trim(); start(); });
-      if (key) start();
+      addEventListener('hq:ready', start);
+      if ((window as any).__hqReady) start();
     }
   </script>
-</Base>
+</body>
+</html>

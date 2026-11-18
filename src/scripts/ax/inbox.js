@@ -7,7 +7,7 @@ const KINDS = [
   ['search', 'Search'], ['milestone', 'Milestones'], ['idea', 'Ideas & Recaps'], ['radar', 'Reddit'], ['problem', 'Problems'], ['dismissed', 'Dismissed'],
 ];
 const ICON = { signup: '✉️', social: '👥', traffic: '📈', search: '🔎', milestone: '🎉', idea: '💡', radar: '💬', problem: '⚠️' };
-const GO_LABEL = { email: 'Email', social: 'Social', overview: 'Overview', acquisition: 'Traffic Sources', content: 'Content', conversions: 'Conversions', seo: 'SEO', radar: 'Reddit Radar', calendar: 'Calendar', sources: 'Sources' };
+const GO_LABEL = { email: 'Email', social: 'Social', overview: 'Overview', acquisition: 'Traffic Sources', content: 'Content', conversions: 'Conversions', seo: 'SEO', radar: 'Reddit Radar', calendar: 'Calendar', sources: 'Sources', photos: 'Hall Photos', todo: 'To-Do', links: 'Short Links', money: 'Tips', build: 'Build Plan' };
 const ET = 'America/New_York';
 const dayOf = (ms) => new Intl.DateTimeFormat('en-CA', { timeZone: ET }).format(new Date(ms));
 const timeOf = (ms) => new Intl.DateTimeFormat('en-US', { timeZone: ET, hour: 'numeric', minute: '2-digit' }).format(new Date(ms));
@@ -61,9 +61,9 @@ export async function inbox(root) {
       <article class="ib-item is-${esc(it.tone || 'info')}${it.read_at ? '' : ' is-unread'}" data-id="${esc(it.id)}" tabindex="0">
         <span class="ib-ico" aria-hidden="true">${ICON[it.kind] || '•'}</span>
         <div class="ib-txt"><h4>${it.read_at ? '' : '<i class="ib-dot" aria-label="Unread"></i>'}${esc(it.title)}</h4>${it.detail ? `<p>${esc(it.detail)}</p>` : ''}${checklist(it)}
-          <small>${timeOf(it.at)}${it.go && GO_LABEL[it.go] ? ` · ${esc(GO_LABEL[it.go])}` : ''}</small></div>
+          <small>${timeOf(it.at)}${it.go && GO_LABEL[it.go.split('/')[0]] ? ` · ${esc(GO_LABEL[it.go.split('/')[0]])}` : ''}</small></div>
         <div class="ib-btns">
-          ${it.go && GO_LABEL[it.go] ? `<button type="button" class="ax-btn is-ghost" data-open>Open →</button>` : ''}
+          ${it.go && GO_LABEL[it.go.split('/')[0]] ? `<button type="button" class="ax-btn is-ghost" data-open>Open →</button>` : ''}
           ${it.link ? `<a class="ax-btn is-ghost" href="${esc(it.link)}" target="_blank" rel="noopener" data-ext>View ↗</a>` : ''}
           ${f === 'dismissed' ? '<button type="button" class="ax-icon-btn" data-restore title="Put back" aria-label="Put back">↩</button>'
             : `<button type="button" class="ax-icon-btn" data-toggle title="${it.read_at ? 'Mark unread' : 'Mark read'}" aria-label="${it.read_at ? 'Mark unread' : 'Mark read'}">${it.read_at ? '●' : '✓'}</button>

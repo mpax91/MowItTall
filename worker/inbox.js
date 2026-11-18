@@ -69,17 +69,17 @@ async function crmRules({ env, now, st }) {
       WHERE is_test = 0 AND created > ? ORDER BY created LIMIT 50`).bind(since).all();
     for (const c of subs) {
       const bits = [c.source && `from ${c.source}`, c.level != null && `quiz level ${c.level}`, c.measured ? `measured their yard${c.sqft ? ` (${fmtN(c.sqft)} sq ft)` : ''}` : null, c.zip && `ZIP ${c.zip}`].filter(Boolean);
-      out.push({ id: `signup:${c.id}`, kind: 'signup', tone: 'good', title: `New sign-up: ${c.name ? `${c.name} (${c.email})` : c.email}`, detail: bits.join(' · '), go: 'email', at: c.created, day: etDate(c.created) });
+      out.push({ id: `signup:${c.id}`, kind: 'signup', tone: 'good', title: `New sign-up: ${c.name ? `${c.name} (${c.email})` : c.email}`, detail: bits.join(' · '), go: 'email/crm', at: c.created, day: etDate(c.created) });
     }
     ok = true;
   } catch { /* contacts not set up yet */ }
   try {
     const { results: msgs } = await env.CRM.prepare(`SELECT id, from_addr, from_name, subject, text, at FROM msgs WHERE dir = 'in' AND auto = 0 AND at > ? ORDER BY at LIMIT 30`).bind(since).all();
-    for (const m of msgs) out.push({ id: `reply:${m.id}`, kind: 'signup', tone: 'good', title: `Reply from ${m.from_name || m.from_addr}${m.subject ? `: ${m.subject}` : ''}`, detail: short(m.text, 220), go: 'email', at: m.at, day: etDate(m.at) });
+    for (const m of msgs) out.push({ id: `reply:${m.id}`, kind: 'signup', tone: 'good', title: `Reply from ${m.from_name || m.from_addr}${m.subject ? `: ${m.subject}` : ''}`, detail: short(m.text, 220), go: 'email/crm', at: m.at, day: etDate(m.at) });
   } catch { /* no inbox yet */ }
   try {
     const { results: un } = await env.CRM.prepare(`SELECT id, email, unsub_reason, unsub_at FROM contacts WHERE is_test = 0 AND unsub_at > ? ORDER BY unsub_at LIMIT 30`).bind(since).all();
-    for (const c of un) out.push({ id: `unsub:${c.id}:${c.unsub_at}`, kind: 'signup', tone: 'bad', title: `Unsubscribed: ${c.email}`, detail: c.unsub_reason ? `Reason: ${c.unsub_reason}` : '', go: 'email', at: c.unsub_at, day: etDate(c.unsub_at) });
+    for (const c of un) out.push({ id: `unsub:${c.id}:${c.unsub_at}`, kind: 'signup', tone: 'bad', title: `Unsubscribed: ${c.email}`, detail: c.unsub_reason ? `Reason: ${c.unsub_reason}` : '', go: 'email/crm', at: c.unsub_at, day: etDate(c.unsub_at) });
   } catch { /* */ }
   // Sign-up milestones
   try {
@@ -208,7 +208,7 @@ async function searchRules({ db, now, st }) {
     const dropped = results.filter((r) => r.field === 'verdict' && r.before === 'PASS' && r.after !== 'PASS');
     const day = etDate();
     if (added.length && st.indexSince) out.push({ id: `index:new:${day}`, kind: 'search', tone: 'good', title: `Google indexed ${added.length} more page${added.length === 1 ? '' : 's'}`, detail: added.slice(0, 8).map((r) => r.path).join(', '), go: 'seo', update: true });
-    if (dropped.length) out.push({ id: `index:drop:${day}`, kind: 'problem', tone: 'bad', title: `${dropped.length} page${dropped.length === 1 ? '' : 's'} dropped out of Google`, detail: dropped.slice(0, 8).map((r) => r.path).join(', '), go: 'seo', update: true });
+    if (dropped.length) out.push({ id: `index:drop:${day}`, kind: 'problem', tone: 'bad', title: `${dropped.length} page${dropped.length === 1 ? '' : 's'} dropped out of Google`, detail: dropped.slice(0, 8).map((r) => r.path).join(', '), go: 'seo/index', update: true });
     st.indexSince = now;
   } catch { /* */ }
   try {
@@ -216,7 +216,7 @@ async function searchRules({ db, now, st }) {
     const { results } = await db.prepare('SELECT path, score, checked_at FROM seo_speed WHERE score IS NOT NULL AND checked_at > ?').bind(st.speedSince || 0).all();
     const slow = results.filter((r) => r.score < 90);
     if (slow.length) out.push({ id: `speed:${etDate()}`, kind: 'problem', tone: 'bad', title: `PageSpeed under 90 on mobile: ${slow.map((r) => r.path).join(', ')}`,
-      detail: slow.map((r) => `${r.path} scored ${r.score}`).join(' · ') + '. Tell Claude and it’ll speed it up.', go: 'seo', update: true });
+      detail: slow.map((r) => `${r.path} scored ${r.score}`).join(' · ') + '. Tell Claude and it’ll speed it up.', go: 'seo/index', update: true });
     st.speedSince = now;
   } catch { /* table not created yet */ }
   return out;
@@ -249,7 +249,7 @@ async function indexTodoRules({ env, db, now, today }) {
   return [{ id, kind: 'search', tone: 'info', title: `Ask Google to index ${pick.length === 1 ? 'this page' : `these ${pick.length} pages`}`,
     detail: `${cand.length} page${cand.length === 1 ? ' isn’t' : 's aren’t'} in Google yet. Tap each one, wait for the check, then hit “Request Indexing.” Search Console allows about 10 a day.`
       + (resting > 0 ? ` ${resting} more ${resting === 1 ? 'comes' : 'come'} up on later days.` : ''),
-    go: 'seo', list: pick.map((r) => ({ t: r.path, s: ASKABLE[r.rank][1], href: `https://search.google.com/search-console/inspect?resource_id=${encodeURIComponent(site)}&id=${encodeURIComponent(origin + r.path)}`, done: null })) }];
+    go: 'seo/index', list: pick.map((r) => ({ t: r.path, s: ASKABLE[r.rank][1], href: `https://search.google.com/search-console/inspect?resource_id=${encodeURIComponent(site)}&id=${encodeURIComponent(origin + r.path)}`, done: null })) }];
 }
 
 // Weekly ideas + recap (Monday or later in the week, once per week).
@@ -305,6 +305,15 @@ async function radarRules({ env, today }) {
   } catch { return []; }
 }
 
+// Hall photos waiting for approval (one item a day while any are waiting; it closes itself once the queue is empty).
+async function photoRules({ env, db, now, today }) {
+  if (!env.DB) return [];
+  let n = 0;
+  try { n = (await env.DB.prepare("SELECT COUNT(*) n FROM posts WHERE status = 'pending'").first())?.n || 0; } catch { return []; }
+  if (!n) { await db.prepare("UPDATE ax_inbox SET done_at = ?, read_at = COALESCE(read_at, ?) WHERE id LIKE 'photos:pending:%' AND done_at IS NULL").bind(now, now).run(); return []; }
+  return [{ id: `photos:pending:${today}`, kind: 'signup', tone: 'info', title: `${n} photo${n === 1 ? '' : 's'} waiting for the Hall`, detail: 'Approve, reject or move them between Fame and Shame.', go: 'photos', update: true }];
+}
+
 // Problems: pulls that keep failing, scheduled posts that failed.
 const KNOWN = { 'social:youtube': [/playlist/i, 'Normal until the channel’s first upload; it clears on its own.'], 'social:reddit': [/403|blocked/i, 'Reddit blocks Cloudflare and no longer gives out API keys. Safe to ignore.'] };
 async function problemRules({ env, db, now }) {
@@ -318,12 +327,12 @@ async function problemRules({ env, db, now }) {
       // Google's free keyless PageSpeed quota is shared by everyone on Cloudflare, so it runs dry. A free key of our own fixes it.
       out.push({ id: 'problem:seo:speed:nokey', kind: 'problem', tone: 'bad', title: 'PageSpeed checks need a free Google key (2 minutes)',
         detail: 'Google’s shared keyless quota keeps running out, so phone speed scores aren’t updating. In Google Cloud (project mow-it-tall-analytics): turn on the PageSpeed Insights API, then Credentials → Create credentials → API key. Paste it into Cloudflare → the mowittall worker → Settings → Variables and Secrets as a secret named PSI_API_KEY. Free; it then checks itself within the hour.',
-        go: 'seo', link: 'https://console.cloud.google.com/apis/library/pagespeedonline.googleapis.com?project=mow-it-tall-analytics' });
+        go: 'seo/index', link: 'https://console.cloud.google.com/apis/library/pagespeedonline.googleapis.com?project=mow-it-tall-analytics' });
       continue;
     }
     const bing = /bing/i.test(e.task) || /ThrottleIP/i.test(e.msg);
     out.push({ id: `problem:seo:${e.task}:${hash(String(e.msg).replace(/\d+/g, '#').slice(0, 80))}`, kind: 'problem', tone: bing && /Throttle/i.test(e.msg) ? 'info' : 'bad',
-      title: `Search autopilot: ${e.task} keeps failing`, detail: `${bing && /Throttle/i.test(e.msg) ? 'Bing limits Cloudflare’s shared servers; it retries every hour. ' : ''}Error: ${short(e.msg, 220)}`, go: 'seo' });
+      title: `Search autopilot: ${e.task} keeps failing`, detail: `${bing && /Throttle/i.test(e.msg) ? 'Bing limits Cloudflare’s shared servers; it retries every hour. ' : ''}Error: ${short(e.msg, 220)}`, go: 'seo/index' });
   }
   const all = Object.entries(runs);
   const LABEL = { ga4: 'Google Analytics', clarity: 'Clarity', 'social:meta': 'Facebook + Instagram', 'social:threads': 'Threads', 'social:youtube': 'YouTube', 'social:bluesky': 'Bluesky', 'social:pinterest': 'Pinterest', 'social:reddit': 'Reddit', 'social:x': 'X' };
@@ -355,7 +364,7 @@ export async function inboxScan(env, { force = false } = {}) {
   const st = (await getState(db, 'inbox:state')) || {};
   const first = !st.started;
   const ctx = { env, db, now, today, st, first };
-  const rules = [['crm', crmRules], ['followers', followerRules], ['posts', postRules], ['search', searchRules], ['indexTodo', indexTodoRules], ['radar', radarRules], ['problems', problemRules], ['weekly', weeklyRules]];
+  const rules = [['crm', crmRules], ['followers', followerRules], ['posts', postRules], ['search', searchRules], ['indexTodo', indexTodoRules], ['photos', photoRules], ['radar', radarRules], ['problems', problemRules], ['weekly', weeklyRules]];
   // Traffic once a day, after ~1am Eastern (yesterday is complete).
   if (force || (st.trafficDay !== today && new Date().getUTCHours() >= 6)) {
     rules.push(['traffic', async (c) => {
