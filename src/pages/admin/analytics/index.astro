@@ -18,6 +18,9 @@ const NAV = [
   ['seo', 'SEO', 'M10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM15 15l6 6'],
   ['email', 'Email', 'M3 5h18v14H3zM3 6l9 7 9-7'],
   ['social', 'Social', 'M18 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 22a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM8.6 13.5l6.8 4M15.4 6.5l-6.8 4'],
+  ['', 'Plan'],
+  ['calendar', 'Content Calendar', 'M4 5h16v15H4zM4 9h16M9 3v4M15 3v4'],
+  ['radar', 'Reddit Radar', 'M12 12m-8 0a8 8 0 1 0 16 0a8 8 0 1 0 -16 0M12 12l5-5M12 12m-3 0a3 3 0 1 0 6 0'],
   ['', 'Tools'],
   ['ux', 'UX (Clarity)', 'M4 4l7 17 2-7 7-2z'],
   ['ga4', 'GA4 Cross-Check', 'M6 20V10M12 20V4M18 20v-6'],
@@ -80,12 +83,13 @@ const NAV = [
   <script>
     import { S, RANGES, readHash, writeHash, api, setKey, hasKey, clearCache, period, renderFilters, onRerender, onGo, dlabel, daysBetween } from '../../../scripts/ax/core.js';
     import * as V from '../../../scripts/ax/views.js';
+    import { calendar, radar } from '../../../scripts/ax/plan.js';
 
     const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector<T>(s)!;
     const VIEWS: Record<string, [string, (root: HTMLElement, refresh?: () => Promise<void>) => Promise<void>]> = {
       overview: ['Overview', V.overview], acquisition: ['Traffic Sources', V.acquisition], content: ['Content & Engagement', V.content], conversions: ['Conversions', V.conversions],
       audience: ['Audience', V.audience], seo: ['SEO', V.seo], email: ['Email', V.email], social: ['Social', V.social], ux: ['UX (Clarity)', V.ux], ga4: ['GA4 Cross-Check', V.ga4],
-      explore: ['Explore', V.explore], sources: ['Sources & Export', V.sources],
+      explore: ['Explore', V.explore], sources: ['Sources & Export', V.sources], calendar: ['Content Calendar', calendar], radar: ['Reddit Radar', radar],
     };
     let token = 0;
     async function loadStatus() { S.status = await api('/api/admin/ax/status'); }
@@ -101,6 +105,9 @@ const NAV = [
       view.innerHTML = '';
       view.dataset.section = S.section;
       renderFilters();
+      const planning = S.section === 'calendar' || S.section === 'radar';
+      document.querySelector<HTMLElement>('.ax-top-ctl')!.style.visibility = planning ? 'hidden' : '';
+      document.querySelector<HTMLElement>('.ax-top-row.is-sub')!.hidden = planning;
       try { await fn(view, async () => { await loadStatus(); render(); }); }
       catch (e: any) { if (my === token) view.insertAdjacentHTML('beforeend', `<p class="ax-empty is-err">${e.message}</p>`); }
     }

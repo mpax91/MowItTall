@@ -9,7 +9,7 @@
     "binding": "ASSETS",
     "not_found_handling": "404-page",
     // The worker runs first for pages too (short links live there); static files skip it.
-    "run_worker_first": ["/*", "!/_astro/*", "!/og/*", "!/pin/*", "!/img/*", "!/icons/*", "!/pagefind/*", "!/data/*", "!/favicon.svg"]
+    "run_worker_first": ["/*", "!/_astro/*", "!/og/*", "!/pin/*", "!/social/*", "!/img/*", "!/icons/*", "!/pagefind/*", "!/data/*", "!/favicon.svg"]
   },
   // Created automatically on the first deploy (no database_id needed). Admin key: the ADMIN_KEY secret,
   // set in the Cloudflare dashboard (Workers & Pages → mowittall → Settings → Variables and Secrets).
@@ -26,6 +26,6 @@
   // subscription exist, add:  "queues": { "consumers": [{ "queue": "mowittall-mail-events" }] },
   // Hourly at :17. The SEO autopilot (worker/seo.js) runs every hour and decides what's due; the event
   // log's nightly rebuild runs on the 7:17 UTC run (~2:17am Eastern).
-  "triggers": { "crons": ["17 * * * *"] },
+  "triggers": { "crons": ["17 * * * *", "0 * * * *"] }, // :00 = the social publisher only (worker/plan.js)
   "workers_dev": true
 }

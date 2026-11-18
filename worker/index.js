@@ -3,6 +3,7 @@ import { PLAYBOOK } from './playbook.js';
 import { ingest, summary, exportRows, nightly, rollup, evInit, etDate } from './events.js';
 import { seoTick, seoReport } from './seo.js';
 import { axAdmin, axTick } from './ax.js';
+import { planAdmin, planTick, radarTick } from './plan.js';
 import { scoresList, scoresSave, scoresAdmin, SCORES_TABLE, SCORES_INDEX } from './scores.js';
 // Mow It Tall API (Cloudflare Worker). Everything that isn't /api/* is served straight from ./dist.
 // Lawn Hall of Fame / Hall of Shame: anyone can upload, Mike approves before anything shows,
@@ -240,6 +241,7 @@ async function dash(env, req, url) {
   const p = url.pathname;
   if (p.startsWith('/api/admin/crm/')) return await crmAdmin(env, req, url);
   if (p.startsWith('/api/admin/ax/')) return await axAdmin(env, req, url);
+  if (p === '/api/admin/plan' || p.startsWith('/api/admin/plan/')) return await planAdmin(env, req, url);
   if (p === '/api/admin/scores') return await scoresAdmin(env, req);
   if (p === '/api/admin/overview') {
     const week = Date.now() - 7 * 86400000;
@@ -417,10 +419,14 @@ export default {
   // Hourly (see "triggers" in wrangler.jsonc). One cron, two jobs: the SEO autopilot every hour (it decides
   // what's due), and the event log's nightly rebuild at 7:17 UTC (~2:17am Eastern).
   async scheduled(event, env, ctx) {
+    // ":00" cron: only the social publisher (so 10:00 posts go out at 10:00, not 10:17).
+    if (event.cron === '0 * * * *') { ctx.waitUntil((async () => { try { await init(env.DB); await planTick(env); } catch (e) { console.log('plan tick failed', e?.message); } })()); return; }
     ctx.waitUntil((async () => {
       try { await init(env.DB); await seoTick(env); } catch (e) { console.log('seo tick failed', e?.message); }
       try { await dripTick(env, event.scheduledTime || Date.now()); } catch (e) { console.log('drip tick failed', e?.message); }
       try { await axTick(env); } catch (e) { console.log('analytics tick failed', e?.message); }
+      try { await planTick(env); } catch (e) { console.log('plan tick failed', e?.message); }
+      try { await radarTick(env); } catch (e) { console.log('reddit radar failed', e?.message); }
       if (new Date(event.scheduledTime || Date.now()).getUTCHours() === 7) await nightly(env);
     })());
   },
