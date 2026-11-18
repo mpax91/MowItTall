@@ -339,8 +339,8 @@ export async function speedPages(db) {
 async function speedOne(env, path) {
   const q = new URLSearchParams({ url: origin(env) + path, strategy: 'mobile', category: 'performance' });
   if (env.PSI_API_KEY) q.set('key', env.PSI_API_KEY);
-  // Only the few numbers we keep (the full Lighthouse report is megabytes).
-  q.set('fields', 'loadingExperience/overall_category,lighthouseResult(categories/performance/score,audits(largest-contentful-paint/numericValue,cumulative-layout-shift/numericValue,total-blocking-time/numericValue,first-contentful-paint/numericValue))');
+  // No `fields` filter: Google rejected the old one ("Request contains an invalid argument"). The full report is a few MB,
+  // read once and thrown away; only the numbers below are kept.
   const base = env.SEO_API_BASE || 'https://www.googleapis.com';
   const r = await fetch(`${base}/pagespeedonline/v5/runPagespeed?${q}`);
   const j = await r.json().catch(() => ({}));
@@ -426,7 +426,9 @@ export async function seoTick(env, { force = false } = {}) {
     else if (!did.speed?.error) delete runs['speed:wait'];
   }
   // Once the GitHub job is delivering Bing data, the worker only steps in if that job has missed a day.
-  if (env.BING_API_KEY && due('bing', runs['bing:via'] === 'github' ? 30 : 20)) await step('bing', async () => { const r = await pullBing(env); runs['bing:via'] = 'worker'; return r; });
+  // "Check now" doesn't force it while GitHub is delivering: Cloudflare's route is blocked by Bing anyway.
+  const bingFresh = runs['bing:via'] === 'github' && Date.now() - (runs.bing || 0) < 30 * 3600000;
+  if (env.BING_API_KEY && !(force && bingFresh) && due('bing', runs['bing:via'] === 'github' ? 30 : 20)) await step('bing', async () => { const r = await pullBing(env); runs['bing:via'] = 'worker'; return r; });
   await setState(db, 'runs', runs);
   return did;
 }
