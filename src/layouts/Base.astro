@@ -53,8 +53,17 @@ const pinSrc = pin ? site + pinUrl(pin) : '';
 const imageAlt = altProp || (card ? `${card.title} | Mow It Tall` : 'Mike’s striped backyard lawn in Bedford, NY');
 const imageType = image.endsWith('.png') ? 'image/png' : image.endsWith('.jpg') ? 'image/jpeg' : 'image/webp';
 const imageSize = card ? [1200, 630] : image.includes('-1400') ? [1400, 1050] : null;
+const NAV = [
+  { href: '/calendar/', label: 'Calendar', match: (p) => p.startsWith('/calendar') },
+  { href: '/weeds/', label: 'Weeds', match: (p) => p.startsWith('/weeds') },
+  { href: '/measure/', label: 'Measure', match: (p) => p.startsWith('/measure') },
+  { href: '/blog/', label: 'Blog', match: (p) => p.startsWith('/blog') },
+];
 // Breadcrumbs: pages pass crumbs={[[name, href], ...]} (last = this page). Posts draw their own (crumbs={false} from Post.astro).
-const crumbs = crumbsProp === false || path === '/' ? [] : crumbsProp || [];
+// Top-nav pages (Calendar, Weeds, Measure, Blog) get no trail at all, visible or schema: the highlighted nav item already says where you are.
+// Decided by the page, not by how you got there; everything under them keeps its crumbs.
+const isNavPage = NAV.some((n) => n.href === path);
+const crumbs = crumbsProp === false || path === '/' || isNavPage ? [] : crumbsProp || [];
 // GA4 content grouping, pushed to the dataLayer before GTM loads (see the Analytics tab in HQ).
 const pageType = path === '/' ? 'home' : path.startsWith('/blog/topic/') ? 'topic' : /^\/(blog|guides)\/$/.test(path) ? 'hub' : path.startsWith('/blog/') ? 'post' : path.startsWith('/guides/') ? 'guide'
   : ['/plan/', '/measure/', '/calendar/', '/weeds/', '/resources/'].includes(path) || path.startsWith('/resources/') ? 'tool' : ['/games/', '/hall/'].includes(path) ? 'fun'
@@ -73,12 +82,6 @@ const seen = new Set();
 const graph = [...pageItems.map(({ '@context': _c, ...rest }) => rest), ...crumbLd, ...siteGraph].filter((n) => !n['@id'] || (seen.has(n['@id']) ? false : (seen.add(n['@id']), true)));
 const ld = { '@context': 'https://schema.org', '@graph': graph };
 // Main nav (Nov 17 simplify): four jobs, not four content types.
-const NAV = [
-  { href: '/calendar/', label: 'Calendar', match: (p) => p.startsWith('/calendar') },
-  { href: '/weeds/', label: 'Weeds', match: (p) => p.startsWith('/weeds') },
-  { href: '/measure/', label: 'Measure', match: (p) => p.startsWith('/measure') },
-  { href: '/blog/', label: 'Blog', match: (p) => p.startsWith('/blog') },
-];
 ---
 <!doctype html>
 <html lang="en">

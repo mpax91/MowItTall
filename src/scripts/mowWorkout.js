@@ -68,11 +68,15 @@ export function initMowWorkout(root) {
     const t = fromYard();
     if (t) {
       sqftIn.value = Math.round(t);
-      src.textContent = 'From your map. Nice.';
+      root.dataset.mwFrom = 'map';
+      src.innerHTML = '<b>Your real lawn size</b>, from your map. Change it if you like.';
     } else {
+      // No map yet: 5,000 sq ft is a stand-in for a typical lawn. Say so.
+      if (root.dataset.mwFrom === 'map') sqftIn.value = 5000;
+      root.dataset.mwFrom = 'avg';
       src.innerHTML = root.dataset.measureHref
-        ? `Don’t know it? <a href="${root.dataset.measureHref}">Measure your yard</a> in two minutes.`
-        : 'Don’t know it? Measure your yard on the map above.';
+        ? `5,000 sq ft is a typical lawn, not yours. Type your size, or <a href="${root.dataset.measureHref}">measure your yard</a> in two minutes.`
+        : '5,000 sq ft is a typical lawn, not yours. Type your size, or measure your yard on the map above and it fills in here.';
     }
   }
 
@@ -112,6 +116,7 @@ export function initMowWorkout(root) {
     }),
   );
   sqftIn.addEventListener('input', () => {
+    root.dataset.mwFrom = 'typed';
     src.textContent = '';
     render();
   });

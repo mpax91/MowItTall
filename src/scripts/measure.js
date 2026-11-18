@@ -711,7 +711,8 @@ export function initMeasure(root) {
   function renderSummary() {
     const has = areas.length > 0;
     summaryEl.hidden = !has;
-    $('[data-mz-empty]').hidden = has;
+    // Page sections that only make sense once there's a number (e.g. "Got Your Number? Now What." on /measure/).
+    document.querySelectorAll('[data-mz-after]').forEach((el) => { el.hidden = !has; });
     if (!has) return;
     const t = total();
     $('[data-mz-list]').innerHTML = areas.map((a) =>

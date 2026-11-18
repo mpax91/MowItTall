@@ -33,7 +33,7 @@ const card = (w) => ({
 });
 const groups = WEED_GROUPS.map((g) => ({ ...g, items: WEEDS.filter((w) => w.group === g.id).map(card) }));
 ---
-<Base title={title} description={description} path="/weeds/" crumbs={[["Lawn 101", "/lawn-101/"], ["Lawn Weeds", "/weeds/"]]} jsonLd={jsonLd}>
+<Base title={title} description={description} path="/weeds/" jsonLd={jsonLd}>
   <main id="main" class="page">
     <header class="page-head">
       <h1>The Weed Board</h1>

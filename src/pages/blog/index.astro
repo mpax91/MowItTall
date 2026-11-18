@@ -10,7 +10,6 @@ const jsonLd = {
   '@graph': [
     { '@type': 'Blog', '@id': 'https://mowittall.com/blog/#blog', name: 'The Mow It Tall blog', url: 'https://mowittall.com/blog/', publisher: { '@id': 'https://mowittall.com/#mike' },
       blogPost: posts.slice(0, 30).map((p) => ({ '@type': 'BlogPosting', headline: p.title, url: `https://mowittall.com${p.url}`, datePublished: String(p.date instanceof Date ? p.date.toISOString() : p.date).slice(0, 10) })) },
-    { '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Home', item: 'https://mowittall.com/' }, { '@type': 'ListItem', position: 2, name: 'Blog', item: 'https://mowittall.com/blog/' }] },
   ],
 };
 const title = 'Lawn Care Blog: Short, Funny, Actually Useful | Mow It Tall';
