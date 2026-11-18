@@ -173,7 +173,7 @@ export function barList(el, rows, { kind = 'num', onPick = null, color = 'var(--
 /* ---------------------------------------------------------------- heatmap (rows × cols) */
 export function heatmap(el, { rows, cols, value, kind = 'num', rowLabel = (r) => r, colLabel = (c) => c }) {
   let max = 0; for (const r of rows) for (const c of cols) max = Math.max(max, value(r, c) || 0);
-  el.innerHTML = `<div class="ax-heat" style="grid-template-columns:52px repeat(${cols.length}, 1fr)">
+  el.innerHTML = `<div class="ax-heat" style="grid-template-columns:44px repeat(${cols.length}, minmax(0, 1fr))">
     <span></span>${cols.map((c, i) => `<span class="ax-heat-c">${i % 3 === 0 ? esc(colLabel(c)) : ''}</span>`).join('')}
     ${rows.map((r) => `<span class="ax-heat-r">${esc(rowLabel(r))}</span>${cols.map((c) => { const v = value(r, c) || 0; const t = max ? v / max : 0;
       return `<span class="ax-heat-cell" data-tip="${esc(`${rowLabel(r)} ${colLabel(c)}: ${fmt(v, kind)}`)}" style="background:${v ? `color-mix(in oklab, var(--seq-hi) ${Math.round(12 + t * 88)}%, var(--seq-lo))` : 'var(--bg-2)'}"></span>`; }).join('')}`).join('')}

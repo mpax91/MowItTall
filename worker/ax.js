@@ -27,6 +27,7 @@
 
 import { evInit, etDate, rollup } from './events.js';
 import { seoInit, googleToken, serviceAccount } from './seo.js';
+import { socialInit, socialTick, socialStatus, SOCIAL_SOURCES } from './social.js';
 
 const DAY = 86400000;
 const addDays = (date, n) => { const d = new Date(date + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
@@ -160,6 +161,14 @@ const SOCIAL = {
   metrics: { followers: 'MAX(followers)', posts: 'MAX(posts)', views: 'MAX(views)' },
 };
 
+const ENG = '(COALESCE(likes, 0) + COALESCE(comments, 0) + COALESCE(shares, 0) + COALESCE(saves, 0))';
+const POST_M = {
+  posts: 'COUNT(*)', impressions: 'SUM(impressions)', reach: 'SUM(reach)', views: 'SUM(views)', likes: 'SUM(likes)', comments: 'SUM(comments)', shares: 'SUM(shares)',
+  saves: 'SUM(saves)', clicks: 'SUM(clicks)', engagements: `SUM(${ENG})`, avg_engagements: `AVG(${ENG})`,
+  eng_rate: `SUM(CASE WHEN COALESCE(reach, views, impressions) > 0 THEN ${ENG} END) * 1.0 / NULLIF(SUM(CASE WHEN COALESCE(reach, views, impressions) > 0 THEN COALESCE(reach, views, impressions) END), 0)`,
+  avg_seen: 'AVG(COALESCE(reach, views, impressions))',
+};
+
 /* ================================================================ query builder */
 const OPS = {
   eq: (x) => [`${x} = ?`, 1], neq: (x) => [`(${x} IS NULL OR ${x} != ?)`, 1],
@@ -205,6 +214,14 @@ async function runOne(env, q) {
     if (!ms.length) return { error: 'Pick a Clarity metric.' };
     const mx = Object.fromEntries(ms.map((m) => { const [a, b] = m.split('.'); return [m, `${b.endsWith('Percentage') || /average|avg/i.test(b) ? 'AVG' : 'SUM'}(CASE WHEN metric = '${a}' AND field = '${b}' THEN v END)`]; }));
     src = { from: 'clarity_m', date: 'date', where: 'dim = ?', whereBind: [bd], dims: { ...grains('date'), value: 'value' }, metrics: mx };
+    db = env.EV;
+  } else if (srcName === 'social_day') {
+    const ms = metrics.filter((m) => /^[a-z_]{2,40}$/.test(m));
+    if (!ms.length) return { error: 'Pick a metric.' };
+    src = { from: 'social_day', date: 'date', dims: { ...grains('date'), platform: 'platform' }, metrics: Object.fromEntries(ms.map((m) => [m, `SUM(CASE WHEN metric = '${m}' THEN v END)`])) };
+    db = env.EV;
+  } else if (srcName === 'social_posts') {
+    src = { from: 'social_posts', date: 'date', dims: { ...grains('date'), platform: 'platform', type: "COALESCE(type, '(none)')", dow: "CASE dow WHEN 0 THEN '7 Sun' WHEN 1 THEN '1 Mon' WHEN 2 THEN '2 Tue' WHEN 3 THEN '3 Wed' WHEN 4 THEN '4 Thu' WHEN 5 THEN '5 Fri' ELSE '6 Sat' END", hour: "printf('%02d', hour)" }, metrics: POST_M };
     db = env.EV;
   } else return { error: `Unknown source ${srcName}` };
 
@@ -331,50 +348,10 @@ async function pullClarity(env, date) {
   return out.join(', ');
 }
 
-async function pullSocial(env, date) {
-  const db = env.EV, got = [];
-  const save = (platform, followers, posts, views) => db.prepare(`INSERT INTO social_snap (date, platform, followers, posts, views, auto, at) VALUES (?, ?, ?, ?, ?, 1, ?)
-    ON CONFLICT (date, platform) DO UPDATE SET followers = excluded.followers, posts = excluded.posts, views = excluded.views, auto = 1, at = excluded.at`).bind(date, platform, followers, posts, views, Date.now());
-  const errs = [];
-  try {
-    const h = env.BLUESKY_HANDLE || 'mowittall.com';
-    const r = await fetch(`${env.SEO_API_BASE ? env.SEO_API_BASE + '/bsky' : 'https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile'}?actor=${encodeURIComponent(h)}`);
-    const j = await r.json();
-    if (!r.ok) throw new Error(j.message || r.status);
-    await save('bluesky', j.followersCount ?? null, j.postsCount ?? null, null).run(); got.push(`Bluesky ${j.followersCount}`);
-  } catch (e) { errs.push(`Bluesky: ${e.message}`); }
-  if (env.YT_API_KEY) {
-    try {
-      const h = env.YT_HANDLE || '@MowItTALL';
-      const r = await fetch(`${env.SEO_API_BASE ? env.SEO_API_BASE + '/yt' : 'https://www.googleapis.com/youtube/v3/channels'}?part=statistics&forHandle=${encodeURIComponent(h)}&key=${encodeURIComponent(env.YT_API_KEY)}`);
-      const j = await r.json();
-      const st = j.items?.[0]?.statistics;
-      if (!st) throw new Error(j.error?.message || 'channel not found');
-      await save('youtube', st.hiddenSubscriberCount ? null : Number(st.subscriberCount), Number(st.videoCount), Number(st.viewCount)).run(); got.push(`YouTube ${st.subscriberCount}`);
-    } catch (e) { errs.push(`YouTube: ${e.message}`); }
-  }
-  // Facebook + Instagram: Meta Graph API with a never-expiring Page access token from Mike's own Meta app
-  // (an app's admins can read their own Page / Instagram professional account without app review).
-  if (env.META_PAGE_TOKEN) {
-    try {
-      const base = env.SEO_API_BASE ? `${env.SEO_API_BASE}/meta` : 'https://graph.facebook.com';
-      const r = await fetch(`${base}/me?fields=id,name,followers_count,fan_count,instagram_business_account{username,followers_count,media_count}&access_token=${encodeURIComponent(env.META_PAGE_TOKEN)}`);
-      const j = await r.json();
-      if (!r.ok || j.error) throw new Error(j.error?.message || r.status);
-      await save('facebook', j.followers_count ?? j.fan_count ?? null, null, null).run(); got.push(`Facebook ${j.followers_count ?? j.fan_count}`);
-      const ig = j.instagram_business_account;
-      if (ig) { await save('instagram', ig.followers_count ?? null, ig.media_count ?? null, null).run(); got.push(`Instagram ${ig.followers_count}`); }
-      else errs.push('Instagram: no professional Instagram account is linked to the Facebook Page');
-    } catch (e) { errs.push(`Facebook/Instagram: ${e.message}`); }
-  }
-  if (errs.length && !got.length) throw new Error(errs.join(' · '));
-  return [...got, ...errs].join(' · ');
-}
-
 // Hourly from the cron. Each pull decides whether it's due.
 export async function axTick(env, { force = false } = {}) {
   if (!env.EV) return {};
-  await evInit(env.EV); await seoInit(env.EV); await axInit(env.EV);
+  await evInit(env.EV); await seoInit(env.EV); await axInit(env.EV); await socialInit(env.EV);
   const runs = (await getState(env.EV, 'runs')) || {};
   const hour = new Date().getUTCHours();
   const due = (task, everyHours, atHour = null) => force || !runs[task]?.lastOk || (Date.now() - runs[task].lastOk > everyHours * 3600000 && (atHour == null || hour >= atHour))
@@ -392,7 +369,7 @@ export async function axTick(env, { force = false } = {}) {
   // Clarity: once a day, early morning UTC (≈ "the last 24 hours" = yesterday). Max 5 of Clarity's 10 daily calls.
   if (env.CLARITY_TOKEN && (force || !runs.clarity?.lastOk || etDate(runs.clarity.lastOk) !== today) && (force || hour >= 6) && (!runs.clarity || runs.clarity.ok || Date.now() - runs.clarity.at > 6 * 3600000))
     await step('clarity', () => pullClarity(env, addDays(today, -1)));
-  if (due('social', 20)) await step('social', () => pullSocial(env, today));
+  await socialTick(env, step, due);
   return did;
 }
 
@@ -400,7 +377,7 @@ export async function axTick(env, { force = false } = {}) {
 export async function axAdmin(env, req, url) {
   const p = url.pathname;
   if (!env.EV) return json({ error: 'The events database isn’t set up yet.' }, 503);
-  await evInit(env.EV); await seoInit(env.EV); await axInit(env.EV);
+  await evInit(env.EV); await seoInit(env.EV); await axInit(env.EV); await socialInit(env.EV);
 
   if (p === '/api/admin/ax/q' && req.method === 'POST') {
     const b = await req.json().catch(() => ({}));
@@ -420,6 +397,8 @@ export async function axAdmin(env, req, url) {
       db.prepare(`SELECT name, SUM(count) n FROM ev_events WHERE param = '' GROUP BY name ORDER BY n DESC`).all().then((r) => r.results).catch(() => []),
       db.prepare(`SELECT name, param, COUNT(DISTINCT value) vals, SUM(count) n FROM ev_events WHERE param != '' GROUP BY name, param ORDER BY name, n DESC`).all().then((r) => r.results).catch(() => []),
     ]);
+    const socialMetrics = await db.prepare('SELECT platform, metric, COUNT(*) n FROM social_day GROUP BY platform, metric ORDER BY platform, metric').all().then((r) => r.results).catch(() => []);
+    const socialPosts = await db.prepare('SELECT platform, COUNT(*) n, MAX(updated) at FROM social_posts GROUP BY platform').all().then((r) => r.results).catch(() => []);
     const clarityFields = await db.prepare(`SELECT metric, field, COUNT(*) n FROM clarity_m WHERE dim = '(all)' GROUP BY metric, field ORDER BY metric, field`).all().then((r) => r.results).catch(() => []);
     let crm = null;
     if (env.CRM) { try { crm = await env.CRM.prepare("SELECT COUNT(*) contacts, SUM(status = 'active') active, (SELECT COUNT(*) FROM sends WHERE sent_at IS NOT NULL) sends, (SELECT v FROM crm_kv WHERE k = 'live_since') live FROM contacts WHERE is_test = 0").first(); } catch { /* not set up */ } }
@@ -434,7 +413,8 @@ export async function axAdmin(env, req, url) {
         ga4: { on: !!(env.GA4_PROPERTY_ID && sa), property: env.GA4_PROPERTY_ID || null, account: sa?.client_email || null, span: ga4, run: runs.ga4 || null },
         clarity: { on: !!env.CLARITY_TOKEN, span: cl, run: runs.clarity || null, fields: clarityFields },
         email: { on: !!env.CRM, crm },
-        social: { on: true, youtube: !!env.YT_API_KEY, meta: !!env.META_PAGE_TOKEN, span: so, run: runs.social || null },
+        social: { on: true, youtube: !!env.YT_API_KEY, meta: !!env.META_PAGE_TOKEN, span: so, platforms: socialStatus(env), metrics: socialMetrics, posts: socialPosts,
+          runs: Object.fromEntries(SOCIAL_SOURCES.map(([id, label]) => [id, { label, ...(runs[`social:${id}`] || {}) }])) },
       },
       events: evs, params,
     });
@@ -460,6 +440,16 @@ export async function axAdmin(env, req, url) {
       ON CONFLICT (date, platform) DO UPDATE SET followers = excluded.followers, posts = COALESCE(excluded.posts, posts), views = COALESCE(excluded.views, views), auto = 0, note = excluded.note, at = excluded.at`)
       .bind(date, platform, n(b.followers), n(b.posts), n(b.views), String(b.note || '').slice(0, 200) || null, Date.now()).run();
     return json({ ok: true });
+  }
+
+  // Every post (any platform) in a date range, for the Social page's post table.
+  if (p === '/api/admin/ax/posts' && req.method === 'GET') {
+    const from = DATE_RE.test(url.searchParams.get('from') || '') ? url.searchParams.get('from') : '2000-01-01';
+    const to = DATE_RE.test(url.searchParams.get('to') || '') ? url.searchParams.get('to') : '2999-12-31';
+    const plat = url.searchParams.get('platform');
+    const { results } = await env.EV.prepare(`SELECT platform, id, created, date, hour, dow, text, url, type, impressions, reach, views, likes, comments, shares, saves, clicks, extra, updated
+      FROM social_posts WHERE date BETWEEN ? AND ? ${plat && /^[a-z]{1,20}$/.test(plat) ? 'AND platform = ?' : ''} ORDER BY created DESC LIMIT 1000`).bind(from, to, ...(plat && /^[a-z]{1,20}$/.test(plat) ? [plat] : [])).all();
+    return json({ posts: results });
   }
 
   // Saved views (Explore): small JSON list in ax_state.

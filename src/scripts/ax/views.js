@@ -30,9 +30,24 @@ export function setupHTML(src) {
       <li>Save it as the secret <code>CLARITY_TOKEN</code>.</li><li>HQ pulls once a day (about 6am UTC): the overall numbers plus breakdowns by page, device, channel and source. Clarity only allows 10 calls a day and only hands out the last 1–3 days, so history builds up from the day you connect it and is kept forever here.</li></ol>`,
     meta: `<ol><li>Instagram must be a <b>professional</b> account (Business or Creator) linked to the Mow It Tall Facebook Page (Instagram → Settings → Account type and tools, then link the Page).</li>
       <li>Go to <a href="https://developers.facebook.com/apps" target="_blank" rel="noopener">developers.facebook.com/apps</a> → <b>Create App</b> (type Business, or “Other”). Use your own account as admin; no app review is needed for your own Page.</li>
-      <li>Open <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noopener">Graph API Explorer</a> → pick the app → <b>Get User Access Token</b> with <code>pages_show_list</code>, <code>pages_read_engagement</code>, <code>instagram_basic</code>, <code>business_management</code>.</li>
+      <li>Open <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noopener">Graph API Explorer</a> → pick the app → <b>Get User Access Token</b> with <code>pages_show_list</code>, <code>pages_read_engagement</code>, <code>read_insights</code>, <code>instagram_basic</code>, <code>instagram_manage_insights</code>, <code>business_management</code>. (Add the Facebook Login for Business and Instagram products to the app if Explorer doesn’t offer them.)</li>
       <li>Make it long-lived: Access Token Debugger → <b>Extend Access Token</b>. Paste the long-lived token back into Explorer and run <code>me/accounts</code>. The <code>access_token</code> next to the Mow It Tall Page <b>never expires</b>.</li>
-      <li>Save that Page token as the secret <code>META_PAGE_TOKEN</code>. Facebook and Instagram followers then update daily, and you can stop typing them in.</li></ol>`,
+      <li>Save that Page token as the secret <code>META_PAGE_TOKEN</code>. Every day HQ pulls followers, daily reach/views/engagement and each post’s stats for both.</li></ol>`,
+    threads: `<ol><li>At <a href="https://developers.facebook.com/apps" target="_blank" rel="noopener">developers.facebook.com/apps</a> create an app with the <b>Access the Threads API</b> use case (it can be the same Meta app). Add your Threads account as a <b>Threads Tester</b> (App roles), then accept it in Threads → Settings → Account → Website permissions.</li>
+      <li>Use the app’s Threads token generator (Use cases → Threads API → Settings, or Graph API Explorer on graph.threads.net) with <code>threads_basic</code> and <code>threads_manage_insights</code>, then exchange it for a <b>long-lived</b> token (60 days).</li>
+      <li>Save it as the secret <code>THREADS_TOKEN</code>. HQ refreshes it every week on its own, so it never runs out as long as the pulls keep running.</li></ol>`,
+    bluesky: `<p>Nothing to set up: Bluesky’s API is public. Followers and every post’s likes, reposts and replies come in daily. (Bluesky doesn’t count views.) Using a different handle than mowittall.com? Set <code>BLUESKY_HANDLE</code>.</p>`,
+    pinterest: `<ol><li>Pinterest must be a <b>business account</b> (free switch in settings).</li>
+      <li>At <a href="https://developers.pinterest.com/apps/" target="_blank" rel="noopener">developers.pinterest.com/apps</a> → Connect app. New apps get <b>Trial access</b> right away, which is enough for your own account.</li>
+      <li>On the app page, generate an access token with <code>user_accounts:read</code> and <code>pins:read</code> (and <code>boards:read</code>). Save it as <code>PINTEREST_TOKEN</code>.</li>
+      <li>So it never expires: also save the refresh token as <code>PINTEREST_REFRESH</code>, and the app’s ID and secret as <code>PINTEREST_APP_ID</code> and <code>PINTEREST_APP_SECRET</code>. HQ then renews it itself.</li>
+      <li>You get daily impressions, saves, pin clicks and outbound clicks, plus 90-day stats for every pin.</li></ol>`,
+    reddit: `<ol><li>HQ first tries Reddit’s public data (karma, profile followers, every post’s score and comments). Reddit often blocks that from Cloudflare.</li>
+      <li>If it fails: <a href="https://www.reddit.com/prefs/apps" target="_blank" rel="noopener">reddit.com/prefs/apps</a> → <b>create another app</b> → type <b>script</b> (redirect URI can be http://localhost). Reddit may ask you to request API access first.</li>
+      <li>Save <code>REDDIT_CLIENT_ID</code> (under the app name), <code>REDDIT_CLIENT_SECRET</code>, <code>REDDIT_USERNAME</code> (MowItTALL) and <code>REDDIT_PASSWORD</code>. Free for personal use.</li></ol>`,
+    x: `<ol><li>X charges for most API reads now, and the free tier (if your account still has one) allows very few. HQ only reads once a week: your follower count and your last 20 posts with impressions, likes, replies, reposts and bookmarks.</li>
+      <li>At <a href="https://developer.x.com/en/portal/dashboard" target="_blank" rel="noopener">developer.x.com</a> → your project → app → Keys and tokens → <b>Bearer Token</b>. Save it as <code>X_BEARER_TOKEN</code>.</li>
+      <li>If X says your plan doesn’t allow it, keep typing the follower count in on the Social page instead.</li></ol>`,
     youtube: `<ol><li>Google Cloud (same project as the service account) → APIs &amp; Services → Library → enable <b>YouTube Data API v3</b>.</li><li>Credentials → Create credentials → API key. Restrict it to the YouTube Data API.</li><li>Save it as the secret <code>YT_API_KEY</code>. Subscribers, views and video count get logged daily.</li></ol>`,
   };
   return `<div class="ax-setup"><h4>How to Connect It (Free, About 5 Minutes)</h4>${steps[src] || ''}</div>`;
@@ -84,7 +99,8 @@ function health(el) {
     ['Google Analytics 4', st.ga4.on, span(st.ga4.span), st.ga4.run ? `${st.ga4.run.ok ? 'Pulled' : 'Failed'} ${ago(st.ga4.run.at)}` : '—', 'A second opinion on traffic (GA4 filters your home IP).'],
     ['Microsoft Clarity', st.clarity.on, span(st.clarity.span), st.clarity.run ? `${st.clarity.run.ok ? 'Pulled' : 'Failed'} ${ago(st.clarity.run.at)}` : '—', 'Rage clicks, dead clicks, scroll depth, quick backs.'],
     ['Email (CRM)', st.email.on, st.email.crm ? `${fmt(st.email.crm.contacts)} real sign-ups · ${fmt(st.email.crm.sends)} emails sent` : '—', st.email.crm?.live ? 'Sending is live' : 'Sending is off', 'Opens, clicks, unsubscribes, A/B tests.'],
-    ['Social', true, span(st.social.span), st.social.run ? `Pulled ${ago(st.social.run.at)}` : '—', `Bluesky automatic${st.social.meta ? ', Facebook + Instagram automatic' : ''}${st.social.youtube ? ', YouTube automatic' : ''}; the rest typed in on Social.`],
+    ['Social', true, span(st.social.span), (() => { const r = Object.values(st.social.runs || {}).filter((x) => x.at).sort((a, b) => b.at - a.at)[0]; return r ? `Pulled ${ago(r.at)}` : '—'; })(),
+      `Automatic: ${Object.entries(st.social.runs || {}).filter(([k]) => (st.social.platforms || {})[k]).map(([, v]) => v.label).join(', ')}. The rest typed in on Social.`],
   ];
   el.innerHTML = `<div class="ax-health">${rows.map(([n, on, sp, fresh, what]) => `<div class="ax-hrow ${on ? '' : 'is-off'}">
     <span class="ax-dot ${on ? 'is-on' : ''}" aria-hidden="true"></span><b>${n}</b><span>${on ? 'Connected' : 'Not connected'}</span><span>${esc(sp)}</span><span>${esc(fresh)}</span><small>${what}</small></div>`).join('')}</div>
@@ -311,84 +327,203 @@ export async function email(root) {
 
 /* ================================================================ SOCIAL */
 export async function social(root) {
-  root.innerHTML = grid(`
-    ${card('cards', 'Followers', { span: 12, sub: 'Bluesky updates daily on its own, and so do Facebook + Instagram (with a Meta token) and YouTube (with a key). For the rest, type the number in when you check: weekly is plenty.' })}
-    ${card('fol', 'Follower Growth', { span: 7 })}
-    ${card('add', 'Log Follower Counts', { span: 5 })}
-    <div class="ax-span" style="--span:12" data-k></div>
+  const st = S.status.sources.social;
+  const auto = st.platforms || {};
+  let plat = S.sub.plat || 'all';
+  const pf = plat === 'all' ? [] : [{ d: 'platform', op: 'eq', v: plat }];
+  const p = period();
+  let data, postsAll;
+  root.innerHTML = '<div class="ax-skel tall"></div>';
+  try { [data, postsAll] = await Promise.all([api('/api/admin/ax/social'), api(`/api/admin/ax/posts?from=${p.from}&to=${p.to}`).then((r) => r.posts)]); }
+  catch (e) { root.innerHTML = errBox(e.message); return; }
+  const have = new Set([...data.snaps.map((s) => s.platform), ...postsAll.map((x) => x.platform), ...(st.metrics || []).map((m) => m.platform)]);
+  const plats = PLATFORMS.filter(([k]) => have.has(k) || ['facebook', 'instagram', 'threads', 'youtube', 'x', 'pinterest'].includes(k));
+  const autoOn = (k) => (k === 'facebook' || k === 'instagram' ? auto.meta : auto[k]);
+  root.innerHTML = `<div class="ax-sub">${chips('plat', [['all', 'All Platforms'], ...plats.map(([k, n]) => [k, n])], plat)}
+    <span class="ax-hint">${plats.filter(([k]) => autoOn(k)).map(([, n]) => n).join(', ') || 'Bluesky'} update daily on their own. Connect the rest on Sources &amp; Export.</span></div>` + grid(`
+    <div class="ax-span" style="--span:12" data-sk></div>
+    ${plat === 'all' ? card('board', 'Platform Scoreboard', { span: 12, sub: 'Every platform side by side for this date range. “Seen” = reach (Facebook, Instagram), views (Threads, YouTube) or impressions (Pinterest, X). Click a row to focus on it.' }) : ''}
+    ${card('fol', 'Follower Growth', { span: 6 })}
+    ${card('seen', plat === 'all' ? 'Reach & Views by Platform' : 'Account Stats Over Time', { span: 6 })}
+    ${card('posts', 'Every Post', { span: 12, sub: 'Stats refresh daily for 60 days after posting. Click a post to open it.' })}
+    ${card('when', 'Best Time to Post', { span: 7, sub: 'Average engagements per post by the day and hour you posted (Eastern)' })}
+    ${card('type', 'What Kind of Post Works', { span: 5, sub: 'Average engagements per post by format' })}
     ${card('traf', 'Visits from Social', { span: 8 })}
-    ${card('plat', 'By Platform', { span: 4 })}
-    ${card('tbl', 'Social Traffic Quality', { span: 12, sub: 'Which platform sends people who actually stick around and sign up. Uses the utm tags HQ → Social adds to every link.' })}
-    ${card('posts', 'What You Posted (from HQ → Social)', { span: 12, sub: 'Each post you marked “Posted”, with visits from that platform in the 3 days after.' })}`);
-  const sf = [{ d: 'channel', op: 'eq', v: 'Organic Social' }];
-  let data;
-  try { data = await api('/api/admin/ax/social'); } catch (e) { body(root, 'cards').innerHTML = errBox(e.message); return; }
-  drawSocial(root, data);
+    ${card('plats', 'Site Visits by Platform', { span: 4 })}
+    ${card('tbl', 'Social Traffic Quality', { span: 12, sub: 'Which platform sends people who stick around and sign up (from the utm tags HQ → Social adds to every link).' })}
+    ${card('hq', 'What You Posted (from HQ → Social)', { span: 7, sub: 'Posts you marked “Posted”, with visits from that platform in the 3 days after.' })}
+    ${card('add', 'Log Follower Counts', { span: 5, sub: 'For platforms with no free API (Nextdoor) or not connected yet.' })}`);
+  onSeg(root, 'plat', (v) => { setSub('plat', v); social(root); });
+  const posts = plat === 'all' ? postsAll : postsAll.filter((x) => x.platform === plat);
+  const webf = plat === 'all' ? [{ d: 'channel', op: 'eq', v: 'Organic Social' }] : [{ d: 'source', op: 'eq', v: WEBSRC[plat] || [plat] }];
+  socialKpis(root.querySelector('[data-sk]'), data, posts, plat, plats);
+  if (plat === 'all') board(body(root, 'board'), data, postsAll, plats, (k) => { setSub('plat', k); social(root); });
+  drawSocial(root, data, plat, plats);
+  seenChart(root, plat, plats);
+  postTable(body(root, 'posts'), posts);
+  postHeat(body(root, 'when'), posts);
+  barList(body(root, 'type'), Object.entries(posts.reduce((a, x) => { const k = `${PNAME[x.platform] || x.platform} · ${prettyType(x.type)}`; (a[k] ||= []).push(eng(x)); return a; }, {}))
+    .map(([k, v]) => ({ label: k, value: v.reduce((s, y) => s + y, 0) / v.length, sub: `${v.length} post${v.length === 1 ? '' : 's'}` })).sort((a, b) => b.value - a.value).slice(0, 10), { kind: 'num', empty: 'No posts in this date range yet.' });
   addForm(root, data);
   await run(
-    kpis(root.querySelector('[data-k]'), [{ src: 'web', metric: 'sessions', label: 'Social Sessions', filters: sf }, { src: 'web', metric: 'users', label: 'Social Users', filters: sf }, { src: 'web', metric: 'engaged_rate', label: 'Social Engaged Rate', filters: sf }, { src: 'web', metric: 'leads', label: 'Leads from Social', filters: sf }]),
-    trend(root, 'traf', { src: 'web', metrics: ['sessions', 'engaged', 'leads'], filters: sf }),
-    bars(root, 'plat', { src: 'web', dim: 'source', metric: 'sessions', filters: sf }),
-    table(root, 'tbl', { src: 'web', tabs: [['source', 'Platform'], ['landing', 'Landing Page'], ['campaign', 'Campaign']], metrics: ['sessions', 'users', 'engaged_rate', 'avg_eng_sec', 'quiz_done', 'leads', 'conv_rate'], filters: sf, limit: 12 }),
-    postsTable(root, data.posts),
+    trend(root, 'traf', { src: 'web', metrics: ['sessions', 'engaged', 'leads'], filters: webf }),
+    bars(root, 'plats', { src: 'web', dim: 'source', metric: 'sessions', filters: webf }),
+    table(root, 'tbl', { src: 'web', tabs: [['source', 'Platform'], ['landing', 'Landing Page'], ['campaign', 'Campaign']], metrics: ['sessions', 'users', 'engaged_rate', 'avg_eng_sec', 'quiz_done', 'leads', 'conv_rate'], filters: webf, limit: 12 }),
+    hqPosts(root, data.posts.filter((x) => plat === 'all' || x.platform === plat)),
   );
 }
-function drawSocial(root, data) {
+// utm/referrer names each platform shows up as in the site's own log
+const WEBSRC = { facebook: ['facebook', 'fb', 'm.facebook.com', 'l.facebook.com', 'lm.facebook.com'], instagram: ['instagram', 'ig', 'l.instagram.com'], threads: ['threads', 'threads.net', 'threads.com', 'l.threads.com'],
+  x: ['x', 't.co', 'twitter', 'x.com'], youtube: ['youtube', 'youtube.com', 'm.youtube.com'], pinterest: ['pinterest', 'pin.it', 'pinterest.com'], reddit: ['reddit', 'reddit.com', 'out.reddit.com'],
+  bluesky: ['bluesky', 'bsky.app', 'bsky'], nextdoor: ['nextdoor', 'nextdoor.com'], tiktok: ['tiktok', 'tiktok.com'] };
+const prettyType = (t) => String(t || 'post').replace(/_/g, ' ').replace(/^(added|shared) /, '').replace(/ post$/, '').replace(/\b\w/g, (c) => c.toUpperCase());
+const SEEN = { facebook: 'reach', instagram: 'reach', threads: 'views', youtube: 'views', pinterest: 'impressions', x: 'impressions' };
+const eng = (x) => (x.likes || 0) + (x.comments || 0) + (x.shares || 0) + (x.saves || 0);
+const seenOf = (x) => x.reach ?? x.views ?? x.impressions ?? null;
+function follow(data, k, p) {
+  const list = data.snaps.filter((s) => s.platform === k && s.followers != null);
+  const last = [...list].reverse().find((s) => s.date <= p.to);
+  const before = [...list].reverse().find((s) => s.date < p.from) || list.find((s) => s.date >= p.from);
+  return { last: last?.followers ?? null, before: before && before !== last ? before.followers : null, date: last?.date };
+}
+async function socialKpis(el, data, posts, plat, plats) {
   const p = period();
+  const keys = plat === 'all' ? plats.map(([k]) => k) : [plat];
+  let fNow = 0, fBefore = 0, anyF = false;
+  for (const k of keys) { const f = follow(data, k, p); if (f.last != null) { anyF = true; fNow += f.last; fBefore += f.before ?? f.last; } }
+  const seenPosts = posts.filter((x) => seenOf(x) != null);
+  const rate = seenPosts.reduce((a, x) => a + (seenOf(x) || 0), 0) ? seenPosts.reduce((a, x) => a + eng(x), 0) / seenPosts.reduce((a, x) => a + (seenOf(x) || 0), 0) : null;
+  const [sd, w] = await Q([{ src: 'social_day', dims: ['platform'], metrics: ['reach', 'views', 'impressions'], filters: plat === 'all' ? [] : [{ d: 'platform', op: 'eq', v: plat }] },
+    { src: 'web', metrics: ['sessions', 'leads'], filters: plat === 'all' ? [{ d: 'channel', op: 'eq', v: 'Organic Social' }] : [{ d: 'source', op: 'eq', v: WEBSRC[plat] || [plat] }] }]);
+  let seen = null;
+  if (sd && !sd.error) for (const r of sd.rows) { const m = SEEN[r[0]] || 'views'; const v = r[sd.cols.indexOf(m)]; if (v != null) seen = (seen || 0) + v; }
+  const tile = (l, v, kind, extra = '') => `<div class="ax-kpi"><span class="ax-kpi-l">${l}</span><b>${fmt(v, kind)}</b><div class="ax-kpi-f">${extra}</div></div>`;
+  el.innerHTML = `<div class="ax-kpis">
+    ${tile('Followers', anyF ? fNow : null, 'num', anyF && fBefore !== fNow ? delta(fNow, fBefore) : '<small>across platforms</small>')}
+    ${tile('New Followers', anyF ? fNow - fBefore : null, 'num', '<small>in this date range</small>')}
+    ${tile('Times Seen', seen, 'num', '<small>reach / views / impressions</small>')}
+    ${tile('Posts', posts.length, 'num', '')}
+    ${tile('Engagements', posts.reduce((a, x) => a + eng(x), 0), 'num', '<small>likes, comments, shares, saves</small>')}
+    ${tile('Engagement Rate', rate, 'pct', '<small>engagements ÷ seen</small>')}
+    ${tile('Site Visits', w ? one(w, 'sessions') : null, 'num', '<small>from social</small>')}
+    ${tile('Email Leads', w ? one(w, 'leads') : null, 'num', '<small>from social</small>')}</div>`;
+}
+async function board(el, data, posts, plats, pick) {
+  const p = period();
+  const [sd, w] = await Q([{ src: 'social_day', dims: ['platform'], metrics: ['reach', 'views', 'impressions'] }, { src: 'web', dims: ['source'], metrics: ['sessions', 'leads'], filters: [{ d: 'channel', op: 'eq', v: 'Organic Social' }], limit: 200 }]);
+  const seen = {}; if (sd && !sd.error) for (const r of sd.rows) seen[r[0]] = r[sd.cols.indexOf(SEEN[r[0]] || 'views')];
+  const web = {}; if (w && !w.error) for (const r of w.rows) { const k = Object.keys(WEBSRC).find((x) => WEBSRC[x].includes(String(r[0]).toLowerCase())) || null; if (k) { web[k] ||= [0, 0]; web[k][0] += r[1]; web[k][1] += r[2] || 0; } }
+  const rows = plats.map(([k, n]) => {
+    const f = follow(data, k, p); const ps = posts.filter((x) => x.platform === k); const e = ps.reduce((a, x) => a + eng(x), 0);
+    const sp = ps.filter((x) => seenOf(x) != null), sv = sp.reduce((a, x) => a + seenOf(x), 0);
+    const s = seen[k] ?? (ps.length ? ps.reduce((a, x) => a + (seenOf(x) || 0), 0) || null : null);
+    return { k, n, f: f.last, d: f.last != null && f.before != null ? f.last - f.before : null, posts: ps.length, seen: s, e, rate: sv ? sp.reduce((a, x) => a + eng(x), 0) / sv : null, visits: web[k]?.[0] || 0, leads: web[k]?.[1] || 0,
+      auto: k === 'facebook' || k === 'instagram' ? S.status.sources.social.platforms?.meta : S.status.sources.social.platforms?.[k] };
+  });
+  el.innerHTML = `<div class="ax-table-wrap"><table class="ax-table"><thead><tr><th class="is-dim">Platform</th><th>Followers</th><th>Change</th><th>Posts</th><th>Seen</th><th>Engagements</th><th>Eng. Rate</th><th>Site Visits</th><th>Leads</th></tr></thead><tbody>
+    ${rows.map((r) => `<tr tabindex="0" data-row="${r.k}"><td class="is-dim">${esc(r.n)}${r.auto ? ' <i class="ax-tag">auto</i>' : ''}</td><td>${fmt(r.f)}</td><td>${r.d == null ? '' : `<span class="ax-delta ${r.d > 0 ? 'is-up' : r.d < 0 ? 'is-down' : ''}">${r.d > 0 ? '+' : ''}${fmt(r.d)}</span>`}</td>
+      <td>${fmt(r.posts)}</td><td>${fmt(r.seen)}</td><td>${fmt(r.e)}</td><td>${fmt(r.rate, 'pct')}</td><td>${fmt(r.visits)}</td><td>${fmt(r.leads)}</td></tr>`).join('')}</tbody></table></div>`;
+  el.querySelectorAll('[data-row]').forEach((tr) => tr.addEventListener('click', () => pick(tr.dataset.row)));
+}
+async function seenChart(root, plat, plats) {
+  const el = body(root, 'seen');
+  const p = period(); const keys = timeline(p.from, p.to, p.grain);
+  const mets = [...new Set((S.status.sources.social.metrics || []).filter((m) => plat === 'all' || m.platform === plat).map((m) => m.metric))];
+  if (!mets.length) { el.innerHTML = '<p class="ax-empty">Daily reach and views show up here once Facebook, Instagram, Threads, YouTube or Pinterest is connected.</p>'; return; }
+  if (plat === 'all') {
+    const [r] = await Q([{ src: 'social_day', dims: [p.grain, 'platform'], metrics: ['reach', 'views', 'impressions'], limit: 5000 }]);
+    if (r?.error) { el.innerHTML = errBox(r.error); return; }
+    const ps = [...new Set(r.rows.map((x) => x[1]))].slice(0, 6);
+    const series = ps.map((k) => { const m = SEEN[k] || 'views'; return { name: `${PNAME[k] || k} ${m}`, values: seriesOf(r, m, keys, { filterIdx: 1, filterVal: k, gaps: true }) }; });
+    el.innerHTML = `<div class="ax-legend">${series.map((s, i) => `<span><i style="background:${col(i)}"></i>${esc(s.name)}</span>`).join('')}</div><div data-plot></div>`;
+    lineChart(el.querySelector('[data-plot]'), { x: keys, grain: p.grain, series, height: 230 });
+    return;
+  }
+  let m = S.sub.sm && mets.includes(S.sub.sm) ? S.sub.sm : (mets.includes(SEEN[plat]) ? SEEN[plat] : mets[0]);
+  el.innerHTML = `${chips('sm', mets.map((x) => [x, x.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase())]), m)}<div data-plot class="ax-mt"></div>`;
+  const draw = async () => {
+    const [r] = await Q([{ src: 'social_day', dims: [p.grain], metrics: [m], filters: [{ d: 'platform', op: 'eq', v: plat }], limit: 5000 }]);
+    lineChart(el.querySelector('[data-plot]'), { x: keys, grain: p.grain, series: [{ name: m, values: seriesOf(r, m, keys, { gaps: true }) }], height: 210, area: true });
+  };
+  onSeg(el, 'sm', (v) => { m = v; setSub('sm', v); draw(); });
+  draw();
+}
+function postTable(el, posts) {
+  if (!posts.length) { el.innerHTML = '<p class="ax-empty">No posts in this date range yet (or no platforms connected).</p>'; return; }
+  const COLS = [['date', 'Posted', 'd'], ['platform', 'Platform', 't'], ['text', 'Post', 't'], ['type', 'Type', 't'], ['seen', 'Seen', 'n'], ['likes', 'Likes', 'n'], ['comments', 'Comments', 'n'], ['shares', 'Shares', 'n'], ['saves', 'Saves', 'n'], ['clicks', 'Clicks', 'n'], ['eng', 'Engagements', 'n'], ['rate', 'Eng. Rate', 'p']];
+  const rows = posts.map((x) => ({ ...x, seen: seenOf(x), eng: eng(x), rate: seenOf(x) ? eng(x) / seenOf(x) : null }));
+  let sortK = 'date', desc = true, q = '', show = 15;
+  const draw = () => {
+    let rs = rows.filter((r) => !q || `${r.text} ${r.platform} ${r.type}`.toLowerCase().includes(q));
+    rs = [...rs].sort((a, b) => { const x = sortK === 'date' ? a.created : a[sortK], y = sortK === 'date' ? b.created : b[sortK]; const c = typeof x === 'string' || typeof y === 'string' ? String(x ?? '').localeCompare(String(y ?? '')) : (x ?? -Infinity) - (y ?? -Infinity); return desc ? -c : c; });
+    el.innerHTML = `<div class="ax-table-tools"><input class="ax-search" type="search" placeholder="Search posts…" value="${esc(q)}" data-pq></div>
+      <div class="ax-table-wrap"><table class="ax-table"><thead><tr>${COLS.map(([k, l, t]) => `<th data-ps="${k}" class="${t === 't' || t === 'd' ? 'is-dim' : ''} ${k === sortK ? (desc ? 'is-desc' : 'is-asc') : ''}">${l}</th>`).join('')}</tr></thead><tbody>
+      ${rs.slice(0, show).map((r) => `<tr data-url="${esc(r.url || '')}" tabindex="0"><td class="is-dim">${dlabel(r.date, 'date', true)}</td><td class="is-dim">${esc(PNAME[r.platform] || r.platform)}</td>
+        <td class="is-dim"><span class="ax-cell-l ax-post-t" title="${esc(r.text)}">${esc(r.text || '(no text)')}</span></td><td class="is-dim">${esc(prettyType(r.type))}</td>
+        ${['seen', 'likes', 'comments', 'shares', 'saves', 'clicks', 'eng'].map((k) => `<td>${fmt(r[k])}</td>`).join('')}<td>${fmt(r.rate, 'pct')}</td></tr>`).join('')}</tbody></table></div>
+      <div class="ax-table-f"><span>${Math.min(show, rs.length)} of ${rs.length}</span>${rs.length > show ? '<button type="button" class="ax-link" data-pm>Show more</button>' : ''}</div>`;
+    el.querySelectorAll('[data-ps]').forEach((th) => th.addEventListener('click', () => { const k = th.dataset.ps; if (k === sortK) desc = !desc; else { sortK = k; desc = true; } draw(); }));
+    el.querySelector('[data-pm]')?.addEventListener('click', () => { show += 50; draw(); });
+    const inp = el.querySelector('[data-pq]'); inp.addEventListener('input', () => { q = inp.value.toLowerCase(); const pos = inp.selectionStart; draw(); const n = el.querySelector('[data-pq]'); n.focus(); n.setSelectionRange(pos, pos); });
+    el.querySelectorAll('[data-url]').forEach((tr) => tr.addEventListener('click', () => tr.dataset.url && window.open(tr.dataset.url, '_blank', 'noopener')));
+  };
+  draw();
+}
+function postHeat(el, posts) {
+  if (posts.length < 3) { el.innerHTML = '<p class="ax-empty">Needs a few more posts in this date range to spot a pattern.</p>'; return; }
+  const m = new Map();
+  for (const x of posts) { const k = `${x.dow}|${String(x.hour).padStart(2, '0')}`; const a = m.get(k) || [0, 0]; a[0] += eng(x); a[1]++; m.set(k, a); }
+  const days = [1, 2, 3, 4, 5, 6, 0]; const DN = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  heatmap(el, { rows: days, cols: Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0')), kind: 'dec',
+    value: (d, h) => { const a = m.get(`${d}|${h}`); return a ? a[0] / a[1] : 0; }, rowLabel: (d) => DN[d], colLabel: (h) => { const n = +h; return n === 0 ? '12a' : n < 12 ? `${n}a` : n === 12 ? '12p' : `${n - 12}p`; } });
+}
+function drawSocial(root, data, plat, plats) {
+  const p = period();
+  const el = body(root, 'fol');
   const by = {};
   for (const s of data.snaps) (by[s.platform] ||= []).push(s);
-  const plats = PLATFORMS.filter(([k]) => by[k]?.length || ['facebook', 'instagram', 'youtube', 'threads', 'x'].includes(k));
-  body(root, 'cards').innerHTML = `<div class="ax-soc">${plats.map(([k, n]) => {
-    const list = by[k] || [];
-    const last = [...list].reverse().find((s) => s.followers != null);
-    const before = [...list].reverse().find((s) => s.followers != null && s.date < p.from);
-    const auto = list.some((s) => s.auto);
-    return `<div class="ax-soc-c"><span class="ax-kpi-l">${n}${auto ? ' <i class="ax-tag">auto</i>' : ''}</span><b>${last ? fmt(last.followers) : '—'}</b>
-      <div class="ax-kpi-f">${last && before ? delta(last.followers, before.followers) : ''}<small>${last ? `as of ${dlabel(last.date)}` : 'Not logged yet'}</small></div></div>`;
-  }).join('')}</div>`;
-  const el = body(root, 'fol');
-  const withData = plats.filter(([k]) => (by[k] || []).filter((s) => s.followers != null).length >= 1).slice(0, 8);
-  if (!withData.length) { el.innerHTML = '<p class="ax-empty">Log a few follower counts and the growth lines show up here.</p>'; return; }
+  const withData = (plat === 'all' ? plats : plats.filter(([k]) => k === plat)).filter(([k]) => (by[k] || []).some((s) => s.followers != null)).slice(0, 8);
+  if (!withData.length) { el.innerHTML = '<p class="ax-empty">Follower counts show up here once a platform is connected or you log a number.</p>'; return; }
   const keys = timeline(p.from, p.to, 'date');
-  // carry the last known value forward so lines don't drop to zero between check-ins
   const series = withData.map(([k, n]) => {
     const pts = (by[k] || []).filter((s) => s.followers != null);
     let lastV = null; let j = 0;
     while (j < pts.length && pts[j].date < keys[0]) lastV = pts[j++].followers;
     return { name: n, values: keys.map((d) => { while (j < pts.length && pts[j].date <= d) lastV = pts[j++].followers; return lastV; }) };
   });
-  el.innerHTML = `<div class="ax-legend">${series.map((s, i) => `<span><i style="background:${col(i)}"></i>${esc(s.name)}</span>`).join('')}</div><div data-plot></div>`;
+  el.innerHTML = `${series.length > 1 ? `<div class="ax-legend">${series.map((s, i) => `<span><i style="background:${col(i)}"></i>${esc(s.name)}</span>`).join('')}</div>` : ''}<div data-plot></div>`;
   lineChart(el.querySelector('[data-plot]'), { x: keys, grain: 'date', series, height: 230, label: 'Followers by platform' });
 }
 function addForm(root, data) {
   const el = body(root, 'add');
   const today = new Date().toISOString().slice(0, 10);
+  const st = S.status.sources.social.platforms || {};
+  const manual = PLATFORMS.filter(([k]) => !(k === 'facebook' || k === 'instagram' ? st.meta : st[k]));
   const last = Object.fromEntries(PLATFORMS.map(([k]) => [k, [...data.snaps].reverse().find((s) => s.platform === k && s.followers != null)?.followers ?? '']));
   el.innerHTML = `<form class="ax-form" data-soc-form><label>Date<input type="date" name="date" value="${today}"></label>
-    <div class="ax-form-grid">${PLATFORMS.filter(([k]) => k !== 'bluesky').map(([k, n]) => `<label>${n}<input type="number" min="0" inputmode="numeric" name="${k}" placeholder="${last[k] === '' ? 'followers' : `last: ${last[k]}`}"></label>`).join('')}</div>
+    <div class="ax-form-grid">${manual.map(([k, n]) => `<label>${n}<input type="number" min="0" inputmode="numeric" name="${k}" placeholder="${last[k] === '' ? 'followers' : `last: ${last[k]}`}"></label>`).join('')}</div>
     <button class="ax-btn">Save Counts</button><span class="ax-fine" data-soc-msg></span></form>`;
   el.querySelector('form').addEventListener('submit', async (e) => {
     e.preventDefault();
     const f = new FormData(e.target); const date = f.get('date');
-    const todo = PLATFORMS.filter(([k]) => f.get(k) !== '' && f.get(k) != null);
+    const todo = manual.filter(([k]) => f.get(k) !== '' && f.get(k) != null);
     if (!todo.length) { el.querySelector('[data-soc-msg]').textContent = 'Type at least one number.'; return; }
     try {
       for (const [k] of todo) await api('/api/admin/ax/social', { method: 'POST', body: JSON.stringify({ platform: k, date, followers: f.get(k) }) });
       el.querySelector('[data-soc-msg]').textContent = `Saved ${todo.length}.`;
-      social(root);
+      social(root.closest('[data-view]') || root);
     } catch (err) { el.querySelector('[data-soc-msg]').textContent = err.message; }
   });
 }
-async function postsTable(root, posts) {
-  const el = body(root, 'posts');
+async function hqPosts(root, posts) {
+  const el = body(root, 'hq');
   const p = period();
   const inRange = posts.filter((x) => { const d = new Date(x.at).toISOString().slice(0, 10); return d >= p.from && d <= p.to; });
   if (!inRange.length) { el.innerHTML = '<p class="ax-empty">No posts marked “Posted” in HQ → Social in this date range.</p>'; return; }
-  const [r] = await Q([{ src: 'web', dims: ['date', 'source'], metrics: ['sessions'], filters: [{ d: 'channel', op: 'eq', v: 'Organic Social' }], from: p.from, to: p.to, limit: 5000 }]);
+  const [r] = await Q([{ src: 'web', dims: ['date', 'source'], metrics: ['sessions'], filters: [{ d: 'channel', op: 'eq', v: 'Organic Social' }], limit: 5000 }]);
   const m = new Map((r?.rows || []).map((x) => [`${x[0]}|${String(x[1]).toLowerCase()}`, x[2]]));
-  const SRC = { x: ['x', 't.co', 'twitter'], facebook: ['facebook', 'fb', 'm.facebook.com', 'l.facebook.com'], instagram: ['instagram', 'ig', 'l.instagram.com'], nextdoor: ['nextdoor'], pinterest: ['pinterest'] };
   el.innerHTML = `<div class="ax-table-wrap"><table class="ax-table"><thead><tr><th class="is-dim">Posted</th><th class="is-dim">Item</th><th class="is-dim">Platform</th><th>Visits (3 days)</th></tr></thead><tbody>
-    ${inRange.map((x) => { const d0 = new Date(x.at).toISOString().slice(0, 10); let v = 0; for (let i = 0; i < 3; i++) { const d = new Date(Date.parse(d0) + i * 86400000).toISOString().slice(0, 10); for (const s of SRC[x.platform] || [x.platform]) v += m.get(`${d}|${s}`) || 0; }
+    ${inRange.map((x) => { const d0 = new Date(x.at).toISOString().slice(0, 10); let v = 0; for (let i = 0; i < 3; i++) { const d = new Date(Date.parse(d0) + i * 86400000).toISOString().slice(0, 10); for (const s of WEBSRC[x.platform] || [x.platform]) v += m.get(`${d}|${s}`) || 0; }
       return `<tr><td class="is-dim">${dlabel(d0, 'date', true)}</td><td class="is-dim">${esc(x.item)}</td><td class="is-dim">${esc(PNAME[x.platform] || x.platform)}</td><td>${fmt(v)}</td></tr>`; }).join('')}</tbody></table></div>`;
 }
 
@@ -605,8 +740,7 @@ export async function sources(root, refresh) {
     ['search', 'Google Search Console + Bing', st.search.on, `${st.search.google ? 'Google ✓' : 'Google ✗'} · ${st.search.bing ? 'Bing ✓' : 'Bing ✗'}`],
     ['ga4', 'Google Analytics 4', st.ga4.on, st.ga4.run ? `${st.ga4.run.ok ? 'Last pull OK' : 'Last pull failed'}: ${st.ga4.run.info}` : st.ga4.on ? 'Waiting for the first pull' : ''],
     ['clarity', 'Microsoft Clarity', st.clarity.on, st.clarity.run ? `${st.clarity.run.ok ? 'Last pull OK' : 'Last pull failed'}: ${st.clarity.run.info}` : st.clarity.on ? 'Waiting for the first daily pull' : ''],
-    ['meta', 'Facebook + Instagram Followers', st.social.meta, st.social.run ? st.social.run.info : ''],
-    ['youtube', 'YouTube Subscribers', st.social.youtube, st.social.run ? st.social.run.info : ''],
+    ...Object.entries(st.social.runs || {}).map(([k, r]) => [k, r.label, !!(st.social.platforms || {})[k], r.at ? `${r.ok ? 'Last pull OK' : 'Last pull failed'}: ${r.info}` : (st.social.platforms || {})[k] ? 'Waiting for the first pull' : '']),
   ];
   root.innerHTML = grid(`
     ${card('pull', 'Refresh', { span: 12, sub: 'Everything refreshes on its own every hour. This forces a pull now (GA4, Clarity, social). Clarity only allows 10 calls a day, so don’t mash it.' })}
@@ -619,7 +753,7 @@ export async function sources(root, refresh) {
     catch (err) { root.querySelector('[data-pmsg]').textContent = err.message; }
     e.target.disabled = false;
   });
-  for (const [id, , on, info] of blocks) body(root, id).innerHTML = `<p><span class="ax-dot ${on ? 'is-on' : ''}"></span> <b>${on ? 'Connected' : 'Not connected'}</b>${info ? ` · <span class="ax-fine">${esc(info)}</span>` : ''}</p>${on ? '' : setupHTML(id)}`;
+  for (const [id, , on, info] of blocks) body(root, id).innerHTML = `<p><span class="ax-dot ${on ? 'is-on' : ''}"></span> <b>${on ? 'Connected' : 'Not connected'}</b>${info ? ` · <span class="ax-fine">${esc(info)}</span>` : ''}</p>${on && !String(info || '').startsWith('Last pull failed') ? '' : setupHTML(id)}`;
   const p = period();
   body(root, 'exp').innerHTML = `<p class="ax-fine">For ${dlabel(p.from, 'date', true)} → ${dlabel(p.to, 'date', true)} (change the date range up top):</p><div class="ax-exp">${['ev_days', 'ev_sess', 'ev_pages', 'ev_landing', 'ev_events', 'ev_geo', 'ev_raw']
     .map((t) => `<button type="button" class="ax-btn is-ghost" data-exp="${t}">${t}.csv</button>`).join('')}</div>`;
