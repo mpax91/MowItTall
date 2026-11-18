@@ -22,6 +22,8 @@
 //   YT_API_KEY       Google Cloud → APIs & Services → Credentials → API key (YouTube Data API v3 enabled)
 //   BLUESKY_HANDLE   default mowittall.com (public API, no key)
 //   YT_HANDLE        default @MowItTALL
+//   META_PAGE_TOKEN  a Facebook Page access token (never expires) from Mike's own Meta app: Facebook Page
+//                    followers + the linked Instagram professional account's followers and post count
 
 import { evInit, etDate, rollup } from './events.js';
 import { seoInit, googleToken, serviceAccount } from './seo.js';
@@ -351,6 +353,20 @@ async function pullSocial(env, date) {
       await save('youtube', st.hiddenSubscriberCount ? null : Number(st.subscriberCount), Number(st.videoCount), Number(st.viewCount)).run(); got.push(`YouTube ${st.subscriberCount}`);
     } catch (e) { errs.push(`YouTube: ${e.message}`); }
   }
+  // Facebook + Instagram: Meta Graph API with a never-expiring Page access token from Mike's own Meta app
+  // (an app's admins can read their own Page / Instagram professional account without app review).
+  if (env.META_PAGE_TOKEN) {
+    try {
+      const base = env.SEO_API_BASE ? `${env.SEO_API_BASE}/meta` : 'https://graph.facebook.com';
+      const r = await fetch(`${base}/me?fields=id,name,followers_count,fan_count,instagram_business_account{username,followers_count,media_count}&access_token=${encodeURIComponent(env.META_PAGE_TOKEN)}`);
+      const j = await r.json();
+      if (!r.ok || j.error) throw new Error(j.error?.message || r.status);
+      await save('facebook', j.followers_count ?? j.fan_count ?? null, null, null).run(); got.push(`Facebook ${j.followers_count ?? j.fan_count}`);
+      const ig = j.instagram_business_account;
+      if (ig) { await save('instagram', ig.followers_count ?? null, ig.media_count ?? null, null).run(); got.push(`Instagram ${ig.followers_count}`); }
+      else errs.push('Instagram: no professional Instagram account is linked to the Facebook Page');
+    } catch (e) { errs.push(`Facebook/Instagram: ${e.message}`); }
+  }
   if (errs.length && !got.length) throw new Error(errs.join(' · '));
   return [...got, ...errs].join(' · ');
 }
@@ -418,7 +434,7 @@ export async function axAdmin(env, req, url) {
         ga4: { on: !!(env.GA4_PROPERTY_ID && sa), property: env.GA4_PROPERTY_ID || null, account: sa?.client_email || null, span: ga4, run: runs.ga4 || null },
         clarity: { on: !!env.CLARITY_TOKEN, span: cl, run: runs.clarity || null, fields: clarityFields },
         email: { on: !!env.CRM, crm },
-        social: { on: true, youtube: !!env.YT_API_KEY, span: so, run: runs.social || null },
+        social: { on: true, youtube: !!env.YT_API_KEY, meta: !!env.META_PAGE_TOKEN, span: so, run: runs.social || null },
       },
       events: evs, params,
     });

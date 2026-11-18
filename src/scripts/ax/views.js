@@ -28,6 +28,11 @@ export function setupHTML(src) {
       <li>Within an hour HQ pulls the last 90 days, then refreshes daily. Free: the GA4 Data API has no charge.</li></ol>`,
     clarity: `<ol><li>Clarity → your project → <b>Settings → Data Export → Generate new API token</b> (you need to be the project admin).</li>
       <li>Save it as the secret <code>CLARITY_TOKEN</code>.</li><li>HQ pulls once a day (about 6am UTC): the overall numbers plus breakdowns by page, device, channel and source. Clarity only allows 10 calls a day and only hands out the last 1–3 days, so history builds up from the day you connect it and is kept forever here.</li></ol>`,
+    meta: `<ol><li>Instagram must be a <b>professional</b> account (Business or Creator) linked to the Mow It Tall Facebook Page (Instagram → Settings → Account type and tools, then link the Page).</li>
+      <li>Go to <a href="https://developers.facebook.com/apps" target="_blank" rel="noopener">developers.facebook.com/apps</a> → <b>Create App</b> (type Business, or “Other”). Use your own account as admin; no app review is needed for your own Page.</li>
+      <li>Open <a href="https://developers.facebook.com/tools/explorer/" target="_blank" rel="noopener">Graph API Explorer</a> → pick the app → <b>Get User Access Token</b> with <code>pages_show_list</code>, <code>pages_read_engagement</code>, <code>instagram_basic</code>, <code>business_management</code>.</li>
+      <li>Make it long-lived: Access Token Debugger → <b>Extend Access Token</b>. Paste the long-lived token back into Explorer and run <code>me/accounts</code>. The <code>access_token</code> next to the Mow It Tall Page <b>never expires</b>.</li>
+      <li>Save that Page token as the secret <code>META_PAGE_TOKEN</code>. Facebook and Instagram followers then update daily, and you can stop typing them in.</li></ol>`,
     youtube: `<ol><li>Google Cloud (same project as the service account) → APIs &amp; Services → Library → enable <b>YouTube Data API v3</b>.</li><li>Credentials → Create credentials → API key. Restrict it to the YouTube Data API.</li><li>Save it as the secret <code>YT_API_KEY</code>. Subscribers, views and video count get logged daily.</li></ol>`,
   };
   return `<div class="ax-setup"><h4>How to Connect It (Free, About 5 Minutes)</h4>${steps[src] || ''}</div>`;
@@ -79,7 +84,7 @@ function health(el) {
     ['Google Analytics 4', st.ga4.on, span(st.ga4.span), st.ga4.run ? `${st.ga4.run.ok ? 'Pulled' : 'Failed'} ${ago(st.ga4.run.at)}` : '—', 'A second opinion on traffic (GA4 filters your home IP).'],
     ['Microsoft Clarity', st.clarity.on, span(st.clarity.span), st.clarity.run ? `${st.clarity.run.ok ? 'Pulled' : 'Failed'} ${ago(st.clarity.run.at)}` : '—', 'Rage clicks, dead clicks, scroll depth, quick backs.'],
     ['Email (CRM)', st.email.on, st.email.crm ? `${fmt(st.email.crm.contacts)} real sign-ups · ${fmt(st.email.crm.sends)} emails sent` : '—', st.email.crm?.live ? 'Sending is live' : 'Sending is off', 'Opens, clicks, unsubscribes, A/B tests.'],
-    ['Social', true, span(st.social.span), st.social.run ? `Pulled ${ago(st.social.run.at)}` : '—', `Bluesky automatic${st.social.youtube ? ', YouTube automatic' : ''}; the rest typed in on Social.`],
+    ['Social', true, span(st.social.span), st.social.run ? `Pulled ${ago(st.social.run.at)}` : '—', `Bluesky automatic${st.social.meta ? ', Facebook + Instagram automatic' : ''}${st.social.youtube ? ', YouTube automatic' : ''}; the rest typed in on Social.`],
   ];
   el.innerHTML = `<div class="ax-health">${rows.map(([n, on, sp, fresh, what]) => `<div class="ax-hrow ${on ? '' : 'is-off'}">
     <span class="ax-dot ${on ? 'is-on' : ''}" aria-hidden="true"></span><b>${n}</b><span>${on ? 'Connected' : 'Not connected'}</span><span>${esc(sp)}</span><span>${esc(fresh)}</span><small>${what}</small></div>`).join('')}</div>
@@ -307,7 +312,7 @@ export async function email(root) {
 /* ================================================================ SOCIAL */
 export async function social(root) {
   root.innerHTML = grid(`
-    ${card('cards', 'Followers', { span: 12, sub: 'Bluesky (and YouTube with a key) update daily on their own. For the rest, type the number in when you check: weekly is plenty.' })}
+    ${card('cards', 'Followers', { span: 12, sub: 'Bluesky updates daily on its own, and so do Facebook + Instagram (with a Meta token) and YouTube (with a key). For the rest, type the number in when you check: weekly is plenty.' })}
     ${card('fol', 'Follower Growth', { span: 7 })}
     ${card('add', 'Log Follower Counts', { span: 5 })}
     <div class="ax-span" style="--span:12" data-k></div>
@@ -600,6 +605,7 @@ export async function sources(root, refresh) {
     ['search', 'Google Search Console + Bing', st.search.on, `${st.search.google ? 'Google ✓' : 'Google ✗'} · ${st.search.bing ? 'Bing ✓' : 'Bing ✗'}`],
     ['ga4', 'Google Analytics 4', st.ga4.on, st.ga4.run ? `${st.ga4.run.ok ? 'Last pull OK' : 'Last pull failed'}: ${st.ga4.run.info}` : st.ga4.on ? 'Waiting for the first pull' : ''],
     ['clarity', 'Microsoft Clarity', st.clarity.on, st.clarity.run ? `${st.clarity.run.ok ? 'Last pull OK' : 'Last pull failed'}: ${st.clarity.run.info}` : st.clarity.on ? 'Waiting for the first daily pull' : ''],
+    ['meta', 'Facebook + Instagram Followers', st.social.meta, st.social.run ? st.social.run.info : ''],
     ['youtube', 'YouTube Subscribers', st.social.youtube, st.social.run ? st.social.run.info : ''],
   ];
   root.innerHTML = grid(`
