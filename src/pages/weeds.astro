@@ -70,7 +70,7 @@ const groups = WEED_GROUPS.map((g) => ({ ...g, items: WEEDS.filter((w) => w.grou
             <strong>{w.name}:</strong>{' '}
             {w.photos.map((p, j) => (
               <span>
-                {j > 0 && '; '}{p.caption.toLowerCase()} by <a href={p.source} rel="noopener">{p.by}</a>,{' '}
+                {j > 0 && '; '}{p.caption.toLowerCase()} by {p.source ? <a href={p.source} rel="noopener">{p.by}</a> : p.by},{' '}
                 {p.licenseUrl ? <a href={p.licenseUrl} rel="noopener license">{p.license}</a> : p.license}
               </span>
             ))}

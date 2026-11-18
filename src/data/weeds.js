@@ -660,18 +660,18 @@ export const WEEDS = [
   },
   {
     "name": "Weed (the other kind)",
-    "looks": "Jagged leaves with five to seven skinny fingers. You know the one. It’s on half the T-shirts at the county fair.",
-    "when": "Summer, usually right under the bird feeder",
-    "easy": "Pull it, roots and all. Birdseed can have hemp seed in it, and every so often one sprouts. Your bird feeder is not running a side business.",
-    "mike": "Mow it at 3.5 inches like everything else. Nothing survives the stripes.",
-    "chill": "It’s legal for adults in New York, but the front lawn is a bold place for it. Your neighbors will have questions.",
+    "looks": "Jagged leaves with seven skinny fingers, like it’s waving at you very slowly. Smells like a dorm hallway. You know the one.",
+    "when": "Around 4:20, mostly in summer. Shows up right after someone in the house discovers a 25-minute live version of anything.",
+    "easy": "Stop playing that Phish playlist. Then check the bird feeder: cheap birdseed sometimes has hemp seed in it, and the birds are not running a side business.",
+    "mike": "Mention to the high schoolers next door that you’ve got a “weed problem.” It’ll be gone by Friday, roots and all, and they’ll offer to come back and check every week.",
+    "chill": "It’s legal for adults in New York, so technically you could. But your nephew will suddenly start “stopping by to help with the lawn,” and every pizza place in the county will know your address by heart.",
     "id": "cannabis",
     "group": "joke",
     "photos": [
       {
         "n": 1,
-        "caption": "The famous leaf",
-        "alt": "Weed (the other kind): the famous leaf",
+        "caption": "The suspect",
+        "alt": "Weed (the other kind): a cannabis leaf up close",
         "by": "iNaturalist user (iNaturalist)",
         "license": "CC0",
         "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
@@ -679,12 +679,10 @@ export const WEEDS = [
       },
       {
         "n": 2,
-        "caption": "From above",
-        "alt": "Weed (the other kind): from above",
-        "by": "Liam Gerry (iNaturalist)",
-        "license": "CC BY 4.0",
-        "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
-        "source": "https://www.inaturalist.org/photos/201028916"
+        "caption": "Lawn care, the other kind",
+        "alt": "Pixel art of a very relaxed guy in a tie-dye shirt, beanie and sunglasses smoking in an Adirondack chair on a perfectly striped lawn, with the mower abandoned, music playing, and chips and a pizza box nearby",
+        "by": "Mow It Tall",
+        "license": "original art"
       }
     ]
   }
@@ -694,5 +692,5 @@ export const WEED_GROUPS = [
   { id: 'flowers', title: 'Leafy weeds and flowers' },
   { id: 'grassy', title: 'Grassy weeds', note: 'They look like grass, but they’re not your grass.' },
   { id: 'moss', title: 'Moss' },
-  { id: 'joke', title: 'Not that kind of weed' },
+  { id: 'joke', title: 'Not that kind of weed', note: 'You will not find this growing in your yard. We checked. Twice. Then we got snacks.' },
 ];

@@ -120,7 +120,7 @@ const jsonLd = { '@graph': [
     <p class="page-note wd-credits" data-pagefind-ignore>
       Photos:{' '}
       {w.photos.map((ph, j) => (
-        <span>{j > 0 && '; '}{ph.caption.toLowerCase()} by <a href={ph.source} rel="noopener">{ph.by}</a>, {ph.licenseUrl ? <a href={ph.licenseUrl} rel="noopener license">{ph.license}</a> : ph.license}</span>
+        <span>{j > 0 && '; '}{ph.caption.toLowerCase()} by {ph.source ? <a href={ph.source} rel="noopener">{ph.by}</a> : ph.by}, {ph.licenseUrl ? <a href={ph.licenseUrl} rel="noopener license">{ph.license}</a> : ph.license}</span>
       ))}. Cropped and resized.
     </p>
   </main>
