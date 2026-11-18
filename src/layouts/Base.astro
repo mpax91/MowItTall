@@ -74,7 +74,7 @@ const crumbLd = crumbs.length ? [{ '@type': 'BreadcrumbList', '@id': `${url}#bre
 // Site-wide entities on every page, merged with the page's own structured data (deduped by @id).
 const siteGraph = [
   { '@type': 'WebSite', '@id': `${site}/#website`, url: `${site}/`, name: 'Mow It Tall', alternateName: 'mowittall.com', description: 'The easy guide to a better lawn: free lawn plans, tools and short, funny lawn care advice for the Northeast.', inLanguage: 'en-US', publisher: { '@id': `${site}/#mike` } },
-  { '@type': 'Person', '@id': `${site}/#mike`, name: 'Mike', url: `${site}/`, description: 'Bedford, NY homeowner known locally as the lawn guy for his striped lawn.', homeLocation: { '@type': 'Place', name: 'Bedford, New York' }, knowsAbout: ['Lawn care', 'Cool-season grass', 'Lawn mowing', 'Lawn fertilizer', 'Overseeding', 'Lawn striping'], worksFor: { '@id': `${site}/#org` }, ...(MIKE_PROFILES.length ? { sameAs: MIKE_PROFILES } : {}) },
+  { '@type': 'Person', '@id': `${site}/#mike`, name: 'Mike', url: `${site}/about/`, description: 'Bedford, NY homeowner and dad who has been figuring out his own lawn since 2017; known locally as the lawn guy for his striped lawn. Not a lawn professional; sells no lawn products.', homeLocation: { '@type': 'Place', name: 'Bedford, New York' }, knowsAbout: ['Lawn care', 'Cool-season grass', 'Lawn mowing', 'Lawn fertilizer', 'Overseeding', 'Lawn striping'], worksFor: { '@id': `${site}/#org` }, ...(MIKE_PROFILES.length ? { sameAs: MIKE_PROFILES } : {}) },
   { '@type': 'Organization', '@id': `${site}/#org`, name: 'Mow It Tall', alternateName: ['Mow It TALL', 'MowItTall', '@mowittall'], url: `${site}/`, slogan: 'You don’t need to be a know-it-all. Just mow it tall.', logo: { '@type': 'ImageObject', url: `${site}/icons/icon-512.png`, width: 512, height: 512 }, founder: { '@id': `${site}/#mike` }, areaServed: ['Northeastern United States'], email: CONTACT_EMAIL, contactPoint: { '@type': 'ContactPoint', contactType: 'customer support', email: CONTACT_EMAIL, url: `${site}/contact/` }, ...(SAME_AS.length ? { sameAs: SAME_AS } : {}) },
 ];
 const pageItems = !jsonLd ? [] : Array.isArray(jsonLd) ? jsonLd.flatMap((j) => j['@graph'] || [j]) : jsonLd['@graph'] || [jsonLd];
@@ -223,7 +223,7 @@ const ld = { '@context': 'https://schema.org', '@graph': graph };
     </script>
     <script type="application/ld+json" set:html={JSON.stringify(ld)} />
   </head>
-  <body class={path === "/" ? "is-home" : path === "/404/" ? "is-404" : undefined} data-pt={pageType}>
+  <body class={path === "/" ? "is-home" : path === "/404/" ? "is-404" : undefined} data-pt={pageType} data-path={path}>
     <!-- Google Tag Manager (noscript) -->
     {!isAdminPage && <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-PTSGH8QX" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>}
     <!-- End Google Tag Manager (noscript) -->
@@ -291,7 +291,7 @@ const ld = { '@context': 'https://schema.org', '@graph': graph };
         ))}
       </nav>
       <div class="foot-bottom">
-        <p class="foot-copy">© {new Date().getFullYear()} Mow It Tall <span aria-hidden="true">·</span> <a href="/privacy/">Privacy</a> <span aria-hidden="true">·</span> <a href="/contact/">Contact</a> <span aria-hidden="true">·</span> <a href="/account/">Your Lawn Profile</a></p>
+        <p class="foot-copy">© {new Date().getFullYear()} Mow It Tall <span aria-hidden="true">·</span> <a href="/about/">About Mike</a> <span aria-hidden="true">·</span> <a href="/privacy/">Privacy</a> <span aria-hidden="true">·</span> <a href="/contact/">Contact</a> <span aria-hidden="true">·</span> <a href="/account/">Your Lawn Profile</a></p>
         <p class="red-vest-credit"><RedVest size={38} /><span>A Red Vest Creation</span></p>
       <button type="button" class="footer-lock" aria-label="Owner login" title="Owner login" data-lock>
         <svg viewBox="0 0 10 12" width="15" height="18" aria-hidden="true" shape-rendering="crispEdges">

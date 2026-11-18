@@ -2,6 +2,7 @@
 // A live, horizontally scrolling lawn calendar. The server renders every task (good for
 // search engines); the browser stamps today's date and marks what's done, now and next.
 import { TASKS, MONTHS_LONG, windowText } from '../data/tasks.js';
+import { TASK_LINKS } from '../data/gamePlan.js';
 
 interface Props { compact?: boolean }
 // compact (homepage): no heading/summary, task names only, at most SHOW (2) per month with "+N more"
@@ -118,6 +119,7 @@ const months = MONTHS_LONG.map((name, i) => ({
             <p class="cal-window">{windowText(t)}</p>
             <h4>{tc(t.title)}</h4>
             <p>{t.short}</p>
+            {TASK_LINKS[t.id] && <a class="cal-link" href={TASK_LINKS[t.id][0]}>{TASK_LINKS[t.id][1]} <span aria-hidden="true">→</span></a>}
             <p class="cal-status" data-status></p>
           </article>
         ))}
@@ -157,7 +159,7 @@ const months = MONTHS_LONG.map((name, i) => ({
     const orig = [...track.children];
     const copy = () => orig.map((n) => {
       const c = n.cloneNode(true);
-      c.classList.add('is-clone'); c.setAttribute('aria-hidden', 'true');
+      c.classList.add('is-clone'); c.setAttribute('aria-hidden', 'true'); c.inert = true;
       c.querySelectorAll('[tabindex]').forEach((e) => e.setAttribute('tabindex', '-1'));
       return c;
     });

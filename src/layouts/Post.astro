@@ -75,7 +75,7 @@ const posting = {
   keywords: topics.map((t) => topicBySlug[t].name).join(', '),
   image: [`https://mowittall.com/og/${ogSlug(path)}.png`, 'https://mowittall.com/img/backyard-stripes-1400.webp'],
   isPartOf: { '@type': 'Blog', '@id': 'https://mowittall.com/blog/#blog', name: 'The Mow It Tall blog', url: 'https://mowittall.com/blog/' },
-  author: { '@type': 'Person', name: 'Mike', '@id': 'https://mowittall.com/#mike' },
+  author: { '@type': 'Person', name: 'Mike', url: 'https://mowittall.com/about/', '@id': 'https://mowittall.com/#mike' },
   publisher: { '@id': 'https://mowittall.com/#website' },
   mainEntityOfPage: `https://mowittall.com${path}`,
 };

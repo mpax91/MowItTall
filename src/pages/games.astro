@@ -12,10 +12,13 @@ const description = 'Two quick lawn games: mow perfectly straight stripes, then 
       <p class="lede">Rounds are short, every one ends with a real tip, and your best goes on the <a href="/leaderboard/">leaderboard</a> if you want. It counts as lawn care. Probably.</p>
     </header>
     <h2 class="game-title" id="stripe-it-straight">Stripe It Straight</h2>
+    <a class="skip-game" href="#whack-a-weed">Skip the Stripe Game</a>
   </main>
   <StripeGame />
   <div class="page">
-    <h2 class="game-title" id="whack-a-weed">Whack-a-Weed</h2>
+    <h2 class="game-title" id="whack-a-weed" tabindex="-1">Whack-a-Weed</h2>
+    <a class="skip-game" href="#games-end">Skip Whack-a-Weed</a>
   </div>
   <div class="game-wrap"><WhackAWeed /></div>
+  <div class="page"><p id="games-end" tabindex="-1" class="games-end">That’s all the games. Want the real thing? <a href="/plan/">Get your free lawn plan</a>.</p></div>
 </Base>

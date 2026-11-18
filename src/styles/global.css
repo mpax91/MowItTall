@@ -2721,3 +2721,47 @@ main[data-gate] ~ .pre-foot, main[data-gate] ~ .footer, body:has(main[data-gate]
 /* Tools built for the dark page (parts sit outside their window): give them their own dark panel on the paper card */
 .prose-card :is([data-widget="dad-jokes"], [data-widget="playlist"]) { margin-inline: -8px; padding: 12px 10px 4px; background: #1b452c; border-radius: 12px; }
 .pop > .pop-card { max-width: none; }
+
+/* Task → guide/tool links (calendar cards, month pages, Your Lawn This Week). Nov 18 */
+.cal-link { display: inline-block; margin-top: 6px; font-size: 0.9rem; font-weight: 800; color: #1f6a3a; text-decoration: underline; text-underline-offset: 3px; }
+.mo-link { font-weight: 700; white-space: nowrap; }
+
+/* Nov 18: slimmer header on small phones (iPhone SE and friends). Was ~121px tall at 375×667; now ~94px.
+   Smaller touch targets stay at 40px+; nav links keep 40px+ tap height. */
+@media (max-width: 400px), (max-height: 700px) and (max-width: 520px) {
+  .top { padding-top: 8px; }
+  .top-cta { padding: 8px 12px 9px; font-size: 0.95rem; }
+  .top-search svg { width: 20px; height: 20px; }
+  .top-nav { margin-top: 4px; }
+  .top-nav a { padding: 9px 2px 13px; text-underline-offset: 5px; }
+  .top-nav a[aria-current='page']::after { height: 10px; bottom: 1px; }
+}
+
+/* Nov 18: wider desktop layouts (≥1024px) on the pages where width helps: the map, the tool grid, the weed board,
+   the blog and guide lists, the Hall and the games. Posts, guides and text pages keep the 680px reading column.
+   Phones are 90%+ of traffic, so nothing here touches anything under 1024px. */
+@media (min-width: 1024px) {
+  body:is([data-path='/measure/'], [data-path='/blog/'], [data-path='/guides/'], [data-path='/hall/'], [data-path='/games/'], [data-path='/weeds/']) .page { max-width: calc(960px + 2 * var(--gutter)); }
+  body:is([data-path='/measure/'], [data-path='/blog/'], [data-path='/guides/'], [data-path='/hall/'], [data-path='/games/'], [data-path='/weeds/']) .page > section { padding-inline: 0; }
+  body:is([data-path='/measure/'], [data-path='/blog/'], [data-path='/guides/'], [data-path='/hall/'], [data-path='/games/'], [data-path='/weeds/']) .page > section > * { max-width: none; }
+  body[data-path] .page :is(.lede, .prose > p) { max-width: 680px; }
+  /* weed board: two cards side by side */
+  body[data-path='/weeds/'] .weed-sec .flips { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; align-items: start; }
+  /* tool grid: 960px, four across */
+  body[data-path='/resources/'] { --col: var(--wide); }
+  body[data-path='/resources/'] main > section > * { max-width: 960px; }
+  body[data-path='/resources/'] .tg-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  /* measure: the map gets the full 960px */
+  body[data-path='/measure/'] { --col: var(--wide); }
+  body[data-path='/measure/'] main > section > * { max-width: 960px; }
+  body[data-path='/measure/'] main > section :is(.lede, details, .faq) { max-width: 680px; }
+}
+
+/* Nov 18 accessibility pass: the yellow focus ring disappears on light paper cards, so it goes dark there. */
+:is(.prose-card, .panel, .cal-task, .nf-list, .contact-reasons, .tg-grid, .pop-card, .plan-card.is-paper) :focus-visible,
+:is(.nf-list, .contact-reasons, .tg-grid) a:focus-visible { outline-color: var(--ink); }
+.mow-x:focus-visible { outline: 3px solid var(--ink); outline-offset: 2px; }
+/* Skip links around games: hidden until a keyboard or screen reader user reaches them. */
+.skip-game { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.skip-game:focus { position: static; width: auto; height: auto; clip-path: none; display: inline-block; margin: 6px 0 10px; padding: 8px 14px; background: var(--sun); color: var(--ink); font-weight: 800; border-radius: 8px; text-decoration: none; }
+.games-end { margin: 24px 0 0; color: var(--paper-dim); }

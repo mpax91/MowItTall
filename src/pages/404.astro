@@ -1,18 +1,81 @@
 ---
+// 404. Search box (pre-filled from the broken address), "Did you mean" matches from Pagefind, and the four
+// pages people want most. The page_not_found event (path + referrer) is sent by Base.astro (body.is-404) and
+// lands in GA4 and the site's own event log, so HQ can show which broken links people hit.
 import Base from '../layouts/Base.astro';
+const POPULAR = [
+  ['/plan/', 'Get Your Free Lawn Plan', 'A few questions, then what to do and when.'],
+  ['/measure/', 'Measure Your Yard', 'Draw your lawn on a satellite map.'],
+  ['/weeds/', 'What’s That Weed?', 'Photos of the usual suspects, and how to win.'],
+  ['/calendar/', 'The Lawn Calendar', 'What to do this month (and what to skip).'],
+];
 ---
-<Base title="Page not found | Mow It Tall" description="That page got mowed. Try the blog, free resources or a free lawn plan." path="/404/" noindex>
-  <main id="main" class="page">
+<Base title="Page Not Found | Mow It Tall" description="That page got mowed. Search the site or try the free lawn plan, yard measuring tool, weed guide or lawn calendar." path="/404/" noindex beer={false}>
+  <main id="main" class="page nf">
     <header class="page-head">
       <h1>This Page Got Scalped.</h1>
-      <p class="lede">Whatever was here is gone. Cut too short, probably. Try one of these instead:</p>
+      <p class="lede">Whatever was here is gone. Cut too short, probably. Let’s find what you were after.</p>
     </header>
-    <div class="bf-chips">
-      <a class="bf-chip" href="/plan/">Free lawn plan</a>
-      <a class="bf-chip" href="/blog/">Blog</a>
-      <a class="bf-chip" href="/resources/">Resources</a>
-      <a class="bf-chip" href="/weeds/">Weed guide</a>
-      <a class="bf-chip" href="/search/">Search</a>
-    </div>
+
+    <form class="bf-search srch-form" role="search" action="/search/" data-nf-form>
+      <label class="sr-only" for="nf-q">Search the site</label>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5" /><path d="M15.5 15.5 21 21" /></svg>
+      <input id="nf-q" name="q" type="search" placeholder="Search posts, tools and weeds…" autocomplete="off" enterkeyhint="search" data-nf-q />
+    </form>
+
+    <section class="nf-guess" aria-labelledby="nf-guess-h" hidden data-nf-guess>
+      <h2 id="nf-guess-h">Did You Mean</h2>
+      <ul class="nf-list" data-nf-list></ul>
+    </section>
+
+    <section aria-labelledby="nf-pop-h">
+      <h2 id="nf-pop-h">Most Popular</h2>
+      <ul class="nf-list">
+        {POPULAR.map(([href, t, s]) => <li><a href={href} data-track="nf_click" data-track-link_url={href}><strong>{t}</strong><span>{s}</span></a></li>)}
+      </ul>
+    </section>
+
+    <p class="nf-fine">Got here from a link on this site? <a href="/contact/">Tell me</a> and I’ll fix it.</p>
   </main>
 </Base>
+
+<script>
+  // Turn the broken address into search words: /blog/when-to-seed-grass/ → "when to seed grass".
+  const words = decodeURIComponent(location.pathname)
+    .split('/').filter(Boolean).pop()?.replace(/\.(html?|php|aspx?)$/i, '')
+    .replace(/[-_+]+/g, ' ').replace(/\b(index|page|amp)\b/gi, '').trim() || '';
+  const input = document.querySelector<HTMLInputElement>('[data-nf-q]')!;
+  if (words && words.length <= 60 && /[a-z]/i.test(words)) input.value = words;
+
+  // Best guesses from the site's search index (Pagefind, same as /search/).
+  (async () => {
+    if (!input.value) return;
+    try {
+      const path = '/pagefind/pagefind.js';
+      const pf: any = await import(/* @vite-ignore */ path);
+      const r = await pf.search(input.value);
+      const data = await Promise.all((r?.results || []).slice(0, 3).map((x: any) => x.data()));
+      if (!data.length) return;
+      const esc = (s: string) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]!));
+      document.querySelector('[data-nf-list]')!.innerHTML = data.map((d: any) => {
+        const url = String(d.url || '').replace(/\.html$/, '/');
+        const title = esc(String(d.meta?.title || url).replace(/\s*\|\s*Mow It Tall$/, ''));
+        return `<li><a href="${esc(url)}" data-track="nf_guess_click" data-track-link_url="${esc(url)}"><strong>${title}</strong><span>${esc(url)}</span></a></li>`;
+      }).join('');
+      (document.querySelector('[data-nf-guess]') as HTMLElement).hidden = false;
+    } catch {}
+  })();
+</script>
+
+<style>
+  .nf > section { padding: 0; }
+  .nf > section > * { max-width: none; }
+  .nf { display: grid; gap: 22px; }
+  .nf .page-head { margin-bottom: -8px; }
+  .nf h2 { font-size: 1.15rem; margin: 0 0 10px; }
+  .nf-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .nf-list a { display: grid; gap: 2px; padding: 12px 14px; border-radius: 10px; background: var(--paper); color: var(--ink); border: 3px solid #0a2414; box-shadow: 0 4px 0 #0a2414; text-decoration: none; }
+  .nf-list a:hover, .nf-list a:focus-visible { transform: translateY(-1px); box-shadow: 0 5px 0 #0a2414; }
+  .nf-list span { font-size: 0.92rem; color: #3f6b46; overflow-wrap: anywhere; }
+  .nf-fine { margin: 0; color: var(--paper-dim); font-size: 0.95rem; }
+</style>

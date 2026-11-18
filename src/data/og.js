@@ -21,6 +21,7 @@ export const OG_PAGES = {
   '/guides/': { title: 'Straight Answers to Lawn Questions', kicker: 'Lawn Guides' },
   '/neighbor/': { title: 'Send a Neighbor a Free Lawn Plan', kicker: 'Anonymous Option' },
   '/privacy/': { title: 'Privacy: What Mow It Tall Collects (Not Much)', kicker: 'Privacy' },
+  '/about/': { title: 'Suburban Dad. Striped Lawn. No Products to Sell.', kicker: 'About Mike' },
   '/contact/': { title: 'Got a Lawn Question? Email Mike.', kicker: 'Contact' },
   '/merch/': { title: 'Merch for People Who Mow Tall', kicker: 'Coming Soon' },
   '/lawn-care/': { title: 'Lawn Care by Town: Same Grass, Different Clocks', kicker: 'Local' },

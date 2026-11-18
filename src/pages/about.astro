@@ -1,0 +1,125 @@
+---
+// About Mike (/about/). The trust page: who writes this site, why, and what he isn't.
+// Story is Mike's (Nov 18 2026). Keep facts to what he's said: started 2017, went deeper during COVID WFH,
+// learned from articles + YouTube, bought the "magic potions," not a pro, not selling products or a course.
+import Base from '../layouts/Base.astro';
+import { PHOTOS } from '../data/photos.js';
+import { CONTACT_EMAIL } from '../data/site.js';
+
+const title = 'About Mike: The Suburban Dad Behind Mow It Tall';
+const description = 'Mow It Tall is written by Mike, a Bedford, NY dad who’s been figuring out his own lawn since 2017. Not a pro, not selling products or courses. Just what worked.';
+const site = 'https://mowittall.com';
+const jsonLd = {
+  '@type': 'AboutPage', '@id': `${site}/about/#page`, url: `${site}/about/`, name: 'About Mike',
+  description, isPartOf: { '@id': `${site}/#website` }, about: { '@id': `${site}/#mike` }, mainEntity: { '@id': `${site}/#mike` },
+  primaryImageOfPage: { '@type': 'ImageObject', url: `${site}/img/front-yard-may-1400.webp`, width: 1400, height: 1050 },
+};
+const photo = (src) => PHOTOS.find((p) => p.src === src);
+const SHOTS = {
+  hero: photo('front-yard-may'),
+  covid: photo('spiral-pattern'),
+  potions: photo('backyard-stripes'),
+  late: photo('frosty-stripes-november'),
+};
+---
+<Base title={title} description={description} path="/about/" crumbs={[["About Mike", "/about/"]]} jsonLd={jsonLd}>
+  <main id="main" class="page about">
+    <header class="page-head">
+      <h1>Hi, I’m Mike. I Mow It Tall.</h1>
+      <p class="lede">Suburban dad. Bedford, NY. Regular mower, no lawn company, zero professional credentials. That’s the whole résumé.</p>
+    </header>
+
+    <figure class="photo about-photo">
+      <img src={`/img/${SHOTS.hero.src}-800.webp`} srcset={`/img/${SHOTS.hero.src}-800.webp 800w, /img/${SHOTS.hero.src}-1400.webp 1400w`}
+        sizes="(min-width: 760px) 680px, 100vw" width={SHOTS.hero.w} height={SHOTS.hero.h} loading="eager" fetchpriority="high" decoding="async" alt={SHOTS.hero.alt} />
+      <figcaption>Exhibit A. My front yard in May.</figcaption>
+    </figure>
+
+    <div class="prose prose-card about-story">
+      <h2>How This Happened</h2>
+      <p>Like most suburban dads, I hit a certain age and woke up wanting one thing. Not a boat. Not a sports car. Grass. Green, thick, slow-down-when-you-drive-by grass.</p>
+      <p>So in 2017 I did what any reasonable man does. I read some articles. I watched some YouTube videos. Then I watched a lot more YouTube videos, at 1.5x speed, late at night, while my family quietly wondered what was happening to me.</p>
+      <p>Then I started experimenting. My yard became the lab. The grass became the test subjects. The grass did not consent.</p>
+
+      <h2>Then 2020 Happened</h2>
+      <p>Like everybody else, I was suddenly working from home. My commute went from a car to a hallway, and the lawn was right there out the window. All day. Judging me.</p>
+      <p>You know how some people learned to bake sourdough during COVID? I learned what a soil test is and started using “nitrogen” in casual conversation. Things escalated.</p>
+    </div>
+
+    <figure class="photo about-photo">
+      <img src={`/img/${SHOTS.covid.src}-800.webp`} srcset={`/img/${SHOTS.covid.src}-800.webp 800w, /img/${SHOTS.covid.src}-1400.webp 1400w`}
+        sizes="(min-width: 760px) 680px, 100vw" width={SHOTS.covid.w} height={SHOTS.covid.h} loading="lazy" decoding="async" alt={SHOTS.covid.alt} />
+      <figcaption>What a man with a lot of time at home looks like, expressed as a lawn.</figcaption>
+    </figure>
+
+    <div class="prose prose-card about-story">
+      <h2>The Expensive Part</h2>
+      <p>Here’s the thing nobody tells you: there is a <em>ton</em> of lawn information out there. Some of it’s good. Some of it’s bad. And a lot of it is a sales pitch wearing a lab coat. The video ends, and somehow the answer is always a jug of something with a link in the description.</p>
+      <p>I bought the magic potions. All of them, it felt like. I did every step of every program, every weekend. My lawn got better. My wallet did not.</p>
+      <p>And here’s what I eventually figured out: most of it didn’t matter. A handful of things did.</p>
+
+      <h2>What I Learned</h2>
+      <p>You don’t have to moonlight as a landscaper. A few simple things, done at the right time, make a huge difference. None of them require a second mortgage or quitting your job.</p>
+      <p>That’s the whole site. Small changes, big results, and no homework you didn’t sign up for.</p>
+    </div>
+
+    <figure class="photo about-photo">
+      <img src={`/img/${SHOTS.potions.src}-800.webp`} srcset={`/img/${SHOTS.potions.src}-800.webp 800w, /img/${SHOTS.potions.src}-1400.webp 1400w`}
+        sizes="(min-width: 760px) 680px, 100vw" width={SHOTS.potions.w} height={SHOTS.potions.h} loading="lazy" decoding="async" alt={SHOTS.potions.alt} />
+      <figcaption>The backyard. No crew, no secret sauce. Just a regular mower set high and a few things done on time.</figcaption>
+    </figure>
+
+    <section class="window about-not" aria-labelledby="not-h">
+      <h2 id="not-h">What I’m Not</h2>
+      <ul>
+        <li><strong>Not a pro.</strong> I’m a homeowner. No license, no truck, no crew. I can’t come look at your yard.</li>
+        <li><strong>Not a lawn company.</strong> I don’t sell services, and nobody pays me to recommend anything.</li>
+        <li><strong>Not selling lawn products.</strong> No magic potions, no “use my code.” I bought enough of those for all of us.</li>
+        <li><strong>Not selling an online course.</strong> Everything here is free. If it helps, there’s a beer button. That’s it.</li>
+      </ul>
+    </section>
+
+    <div class="prose prose-card about-story">
+      <h2>Why This Site Exists</h2>
+      <p>People ask me about my lawn a lot. Neighbors, friends, people on social. And I’m always happy to help.</p>
+      <p>But explaining overseeding one text message at a time, with my thumbs, while standing in line somewhere, is not the best format. Neither is a 40-minute phone call or a comment thread.</p>
+      <p>So I put it all here, in one place, for free. Practical stuff that’s actually worked for me, written for people who want a nicer lawn without making it their whole personality. (Too late for me. Save yourself.)</p>
+    </div>
+
+    <figure class="photo about-photo">
+      <img src={`/img/${SHOTS.late.src}-800.webp`} srcset={`/img/${SHOTS.late.src}-800.webp 800w, /img/${SHOTS.late.src}-1400.webp 1400w`}
+        sizes="(min-width: 760px) 680px, 100vw" width={SHOTS.late.w} height={SHOTS.late.h} loading="lazy" decoding="async" alt={SHOTS.late.alt} />
+      <figcaption>November. Still going. Send help.</figcaption>
+    </figure>
+
+    <section class="window about-start" aria-labelledby="start-h">
+      <h2 id="start-h">Where to Start</h2>
+      <ul class="about-links">
+        <li><a href="/plan/"><strong>Get Your Free Lawn Plan</strong><span>A few questions, then exactly what to do and when.</span></a></li>
+        <li><a href="/measure/"><strong>Measure Your Yard</strong><span>Draw it on a satellite map. Know how much seed and fertilizer to buy.</span></a></li>
+        <li><a href="/calendar/"><strong>The Lawn Calendar</strong><span>What to do this month, and what to skip.</span></a></li>
+        <li><a href="/yards/"><strong>More Yard Photos</strong><span>Stripes, a spiral and the Hall of Fame.</span></a></li>
+      </ul>
+    </section>
+
+    <section class="about-hi" aria-labelledby="hi-h">
+      <h2 id="hi-h">Say Hi</h2>
+      <p>Got a question, a weird weed or a correction? Email me at <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a> or use the <a href="/contact/">contact page</a>. I read everything.</p>
+    </section>
+  </main>
+</Base>
+
+<style>
+  .about > section:not(.window) { padding: 0; }
+  .about > section > * { max-width: none; }
+  .about { display: grid; gap: 26px; }
+  .about .page-head { margin-bottom: -6px; }
+  .about-photo figcaption { font-style: italic; }
+  .about-story h2:not(:first-child) { margin-top: 1.4em; }
+  .about-not ul { margin: 0; padding-left: 1.1em; display: grid; gap: 10px; }
+  .about-links { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+  .about-links a { display: grid; gap: 2px; padding: 12px 14px; border-radius: 10px; background: rgba(255, 255, 255, 0.06); border: 2px solid var(--win-line); text-decoration: none; color: inherit; }
+  .about-links a:hover, .about-links a:focus-visible { border-color: var(--sun, #f5c542); }
+  .about-links span { font-size: 0.95rem; color: var(--paper-dim); }
+  .about-hi p { margin-top: 0; }
+</style>

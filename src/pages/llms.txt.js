@@ -57,6 +57,7 @@ ${posts.map(line).join('\n')}
 
 ## Official profiles
 ${SOCIALS.map(([, n, u, h]) => `- ${n}: ${u}`).join('\n')}
+- About Mike (who writes this site): ${SITE}/about/
 - Contact: ${SITE}/contact/ (${CONTACT_EMAIL})
 
 ## Optional

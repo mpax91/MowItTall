@@ -106,36 +106,43 @@ const changes = [
     title: 'Raise your mower',
     body: 'Set it to 3.5 to 4 inches. Tall grass shades out weeds and needs less water.',
     effort: '10 seconds, once',
+    more: ['/guides/how-high-to-mow-grass/', 'How High to Mow'],
   },
   {
     icon: icons.clippings,
     title: 'Leave the clippings',
     body: 'Skip the bag. Clippings break down in a few days and feed your lawn for free.',
     effort: 'Less work than before',
+    more: ['/blog/mulching-vs-bagging/', 'Mulch or Bag? Settle It'],
   },
   {
     icon: icons.holiday,
     title: 'Feed on the holidays',
     body: 'Memorial Day, Labor Day and Columbus Day. That’s it. Labor Day matters most. Buy a bag with a 0 in the middle.',
     effort: '3 days a year',
+    more: ['/blog/holiday-lawn-fertilizer-schedule/', 'Your Holiday Feeding Schedule'],
   },
   {
     icon: icons.blade,
     title: 'Sharpen the blade',
     body: 'A dull blade tears the grass and leaves brown tips. Do it once a year, before spring.',
     effort: '20 minutes a year',
+    more: ['/blog/sharpen-your-mower-blade/', 'Is My Blade Dull?'],
   },
   {
     icon: icons.leaves,
     title: 'Mow over your leaves',
-    body: 'No blower needed. Chopped-up leaves sink into the lawn and turn into free fertilizer.',
+    body: 'When it’s a light layer, chop them up with the mower. They sink in and feed the lawn. When it’s a leaf blizzard in late fall, rake or blow. No shame.',
     effort: 'You were mowing anyway',
+    more: ['/blog/mulch-rake-or-blow-leaves/', 'Mulch, Rake or Blow?'],
   },
   {
     icon: icons.seed,
     title: 'Seed in fall, not spring',
     body: 'September is when new grass does best around here.',
     effort: 'One weekend',
+    more: ['/resources/what-grass-seed-should-i-buy/', 'Pick Your Grass Seed'],
+    more2: ['/guides/how-to-overseed-lawn/', 'How to Overseed'],
   },
 ];
 
@@ -144,5 +151,7 @@ export const changeCards = changes.map((c) => ({
   title: c.title,
   sub: `Effort: ${c.effort}`,
   back: [{ text: c.body }],
+  more: c.more && { href: c.more[0], text: c.more[1] },
+  more2: c.more2 && { href: c.more2[0], text: c.more2[1] },
 }));
 

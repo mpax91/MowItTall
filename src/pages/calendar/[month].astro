@@ -5,6 +5,7 @@ import Base from '../../layouts/Base.astro';
 import MonthSoil from '../../components/MonthSoil.astro';
 import AutoLink from '../../components/AutoLink.astro';
 import { TASKS, MONTHS_LONG, windowText } from '../../data/tasks.js';
+import { TASK_LINKS } from '../../data/gamePlan.js';
 import { MONTH_PAGES } from '../../data/monthPages.js';
 import { NE_SOIL } from '../../data/soilNormals.js';
 import { placeOf } from '../../scripts/agenda.js';
@@ -55,7 +56,7 @@ const [lead, ...rest] = m.answer.split('. ');
             {core.length > 0 && <h3>For Everyone</h3>}
             <ul class="mo-jobs">
               {core.map((t) => (
-                <li><strong>{t.title.replace(/\s*\(Lawn Psycho only\)/, "")}</strong> <span class="mo-when">{windowText(t)}</span><br />{t.short} {t.why}{t.tip && <> <em>{t.tip}</em></>}</li>
+                <li><strong>{t.title.replace(/\s*\(Lawn Psycho only\)/, "")}</strong> <span class="mo-when">{windowText(t)}</span><br />{t.short} {t.why}{t.tip && <> <em>{t.tip}</em></>}{TASK_LINKS[t.id] && <> <a class="mo-link" href={TASK_LINKS[t.id][0]}>{TASK_LINKS[t.id][1]} →</a></>}</li>
               ))}
             </ul>
             {extra.length > 0 && (
@@ -63,7 +64,7 @@ const [lead, ...rest] = m.answer.split('. ');
                 <h3>Extra Credit</h3>
                 <ul class="mo-jobs">
                   {extra.map((t) => (
-                    <li><strong>{t.title.replace(/\s*\(Lawn Psycho only\)/, "")}</strong> <span class="mo-when">{windowText(t)}</span><br />{t.short} {t.why}{t.tip && <> <em>{t.tip}</em></>}</li>
+                    <li><strong>{t.title.replace(/\s*\(Lawn Psycho only\)/, "")}</strong> <span class="mo-when">{windowText(t)}</span><br />{t.short} {t.why}{t.tip && <> <em>{t.tip}</em></>}{TASK_LINKS[t.id] && <> <a class="mo-link" href={TASK_LINKS[t.id][0]}>{TASK_LINKS[t.id][1]} →</a></>}</li>
                   ))}
                 </ul>
               </>
