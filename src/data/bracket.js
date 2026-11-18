@@ -29,7 +29,7 @@ export const ENTRANTS = [
   { id: 'chickweed', name: 'Chickweed', seed: 3, region: 'ground', line: 'Grows in the cold when nothing else does. Basically a winter sport.' },
 
   { id: 'stiltgrass', name: 'Japanese stiltgrass', seed: 1, region: 'wild', line: 'Invasive, fast and coming out of the woods line straight for your shady corner.' },
-  { id: 'cannabis', name: 'Weed (the other kind)', seed: 4, region: 'wild', line: 'Here on a technicality. Came in through the bird feeder. Nothing survives the stripes.' },
+  { id: 'cannabis', name: 'Sticky Ickygrass', seed: 4, region: 'wild', line: 'Here on a technicality. Came in through the bird feeder. Nothing survives the stripes.' },
   { id: 'nimblewill', name: 'Nimblewill', seed: 2, region: 'wild', line: 'Wiry, gray-green, and wakes up late in spring so you think it’s dead. It isn’t.' },
   { id: 'moss', name: 'Moss', seed: 3, region: 'wild', line: 'Doesn’t kill your grass. Just waits for it to give up. Very patient villain.' },
 ];

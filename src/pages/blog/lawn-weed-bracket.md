@@ -34,7 +34,7 @@ Tap the **worse** weed in each matchup. Your picks move on to the next round. Af
 
 **The Ground Crew Region.** Low, flat and scrappy. Plantain lies flat so the mower rolls right over it. Oxalis shoots seeds like a tiny cannon. Chickweed plays all winter when everyone else is asleep.
 
-**The Wild Card Region.** Japanese stiltgrass is invasive and coming out of the woods. Moss is the most patient villain in the tournament. And yes, the 4 seed is “Weed (the other kind).” It’s here on a technicality. It came in through the bird feeder. Nothing survives the stripes.
+**The Wild Card Region.** Japanese stiltgrass is invasive and coming out of the woods. Moss is the most patient villain in the tournament. And yes, the 4 seed is “Sticky Ickygrass.” It’s here on a technicality. It came in through the bird feeder. Nothing survives the stripes.
 
 ## My Bracket (For the Record)
 

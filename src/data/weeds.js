@@ -659,7 +659,7 @@ export const WEEDS = [
     ]
   },
   {
-    "name": "Weed (the other kind)",
+    "name": "Sticky Ickygrass",
     "looks": "Jagged leaves with seven skinny fingers, like it’s waving at you very slowly. Smells like a dorm hallway. You know the one.",
     "when": "Around 4:20, mostly in summer. Shows up right after someone in the house discovers a 25-minute live version of anything.",
     "easy": "Stop playing that Phish playlist. Then check the bird feeder: cheap birdseed sometimes has hemp seed in it, and the birds are not running a side business.",
@@ -671,7 +671,7 @@ export const WEEDS = [
       {
         "n": 1,
         "caption": "The suspect",
-        "alt": "Weed (the other kind): a cannabis leaf up close",
+        "alt": "Sticky Ickygrass: a cannabis leaf up close",
         "by": "iNaturalist user (iNaturalist)",
         "license": "CC0",
         "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
@@ -680,7 +680,7 @@ export const WEEDS = [
       {
         "n": 2,
         "caption": "Lawn care, the other kind",
-        "alt": "Pixel art of a very relaxed guy in a tie-dye shirt, beanie and sunglasses smoking in an Adirondack chair on a perfectly striped lawn, with the mower abandoned, music playing, and chips and a pizza box nearby",
+        "alt": "Pixel art of a stoned lawn dad in a Lawn Dad shirt, socks and sandals, smoking in a lawn chair while a cordless drill on his cooler reels in a rope tied to the mower, with chips, a soda can and a potted cannabis plant beside him on a striped lawn",
         "by": "Mow It Tall",
         "license": "original art"
       }
