@@ -239,6 +239,13 @@ const jsonLd = { '@context': 'https://schema.org', '@graph': [posting, crumbs, .
         })();
       </script>
     )}
+    {Array.isArray(faq) && faq.length > 0 && (
+      // Visible on the page too: FAQ structured data has to match what readers can see.
+      <section class="guide-faq post-faq" aria-labelledby="faq-h">
+        <h2 id="faq-h">Common Questions</h2>
+        {faq.map((f: { q: string; a: string }) => <details><summary>{f.q}</summary><p>{f.a}</p></details>)}
+      </section>
+    )}
     <ShareBox path={path} title={title} kind="post" end />
     {related.length > 0 && (
       <nav class="related" aria-labelledby="related-h" data-pagefind-ignore>

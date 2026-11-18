@@ -206,6 +206,14 @@ async function searchRules({ db, now, st }) {
     if (dropped.length) out.push({ id: `index:drop:${day}`, kind: 'problem', tone: 'bad', title: `${dropped.length} page${dropped.length === 1 ? '' : 's'} dropped out of Google`, detail: dropped.slice(0, 8).map((r) => r.path).join(', '), go: 'seo', update: true });
     st.indexSince = now;
   } catch { /* */ }
+  try {
+    // PageSpeed (worker/seo.js checks the top 5 pages weekly): flag a page the first time it's under 90 on mobile.
+    const { results } = await db.prepare('SELECT path, score, checked_at FROM seo_speed WHERE score IS NOT NULL AND checked_at > ?').bind(st.speedSince || 0).all();
+    const slow = results.filter((r) => r.score < 90);
+    if (slow.length) out.push({ id: `speed:${etDate()}`, kind: 'problem', tone: 'bad', title: `PageSpeed under 90 on mobile: ${slow.map((r) => r.path).join(', ')}`,
+      detail: slow.map((r) => `${r.path} scored ${r.score}`).join(' · ') + '. Tell Claude and it’ll speed it up.', go: 'seo', update: true });
+    st.speedSince = now;
+  } catch { /* table not created yet */ }
   return out;
 }
 

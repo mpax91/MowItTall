@@ -5,7 +5,7 @@ description: "What to get the lawn guy or lawn girl in your life: stocking stuff
 summary: "Gift ideas for the lawn person in your life, from stocking stuffers to big upgrades, plus the one gift that always wins and what to never buy. Tap a budget to shop."
 related: ["/blog/lawn-stuff-you-dont-need/", "/blog/sharpen-your-mower-blade/", "/blog/lawn-off-season-training/"]
 seoTitle: "Gifts for Lawn Lovers: The Lawn Care Gift Guide"
-seoDescription: "Gift ideas for people who love their lawn: soil thermometer, spare mower blade, soil test, spreader, battery trimmer, striping kit. And skip the leaf blower."
+seoDescription: "Gift ideas for people who love their lawn: soil thermometer, spare mower blade, soil test, spreader, battery trimmer, striping kit. And skip the gas leaf blower."
 date: 2026-11-16
 minutes: 3
 tag: Rankings
@@ -17,10 +17,10 @@ faq:
   - q: "What’s a good cheap gift for a lawn guy?"
     a: "Under $25: a soil thermometer, a rain gauge, a new spark plug and air filter for their mower, a blade balancer, or good work gloves."
   - q: "Is a leaf blower a good gift?"
-    a: "For most lawn people, no. Mulching leaves with the mower is better for the lawn and less work. If they really want one, go battery: quieter, no gas, and much friendlier to the neighbors."
+    a: "Only a battery one, and only if they have big trees. On light leaf days the mower handles it; the October and November peak is when a blower earns its keep. Skip gas: loud, and banned in some towns."
 ---
 
-**Every December, someone buys a lawn guy a leaf blower. And every December, I die a little.** Here’s what lawn people actually want: small upgrades they’ll use every week and are too stubborn to buy for themselves. Tap your budget below.
+**Every December, someone buys a lawn guy a gas leaf blower. And every December, I die a little.** Here’s what lawn people actually want: small upgrades they’ll use every week and are too stubborn to buy for themselves. Tap your budget below.
 
 <div data-widget-slot></div>
 
@@ -41,7 +41,7 @@ faq:
 
 ## What to Never Buy
 
-- **A gas leaf blower.** [They never needed one](/blog/you-never-needed-a-leaf-blower/).
+- **A gas leaf blower.** Loud, and banned in Bedford. If they’ve got big trees, a battery one is fine for the [October leaf avalanche](/blog/mulch-rake-or-blow-leaves/).
 - **Aerator shoes.** Spiked sandals that do nothing except make you look like you lost a bet.
 - **Lawn paint.** We have standards.
 - **Anything that says “miracle.”** Lawns don’t do miracles. They do Labor Day feedings.

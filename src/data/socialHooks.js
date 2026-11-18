@@ -54,7 +54,7 @@ export const ALT_HOOKS = {
   'blog/dog-pee-kids-bouncy-houses-lawn': ['Your lawn is for living on. Here’s how to fix it after.', 'Dog spots and bouncy house squares are fixable. Let them play.'],
   'blog/your-landscaper-is-scalping-your-lawn': ['Short grass is the number one lawn problem around here. Ask for 3.5 inches.', 'If your lawn looks yellow by August, check the mowing height.'],
   'blog/power-ranking-every-excuse-for-a-bad-lawn': ['Shade? Dogs? Kids? Most lawn excuses have an easy fix.', 'Every excuse for a bad lawn, ranked from legit to nope.'],
-  'blog/you-never-needed-a-leaf-blower': ['Light leaf days: mow them in. Leaf avalanche: blow or rake first.', 'Leaves are free lawn food, up to a point. Here’s where the point is.'],
+  'blog/mulch-rake-or-blow-leaves': ['Light leaf days: mow them in. Leaf avalanche: blow or rake first.', 'Leaves are free lawn food, up to a point. Here’s where the point is.'],
   'blog/stop-bagging-your-clippings': ['Clippings don’t cause thatch. Leave them on the lawn.', 'You’re throwing away free fertilizer every time you bag.'],
   // ---------------- tools
   'tool-seedwatch': ['Put in the day you seeded. See exactly what should be happening.', 'Is your new grass on schedule? Check it day by day.'],

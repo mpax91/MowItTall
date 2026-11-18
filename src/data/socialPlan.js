@@ -123,7 +123,7 @@ export const LAUNCH_POSTS = [
 ];
 // Wait until the account has an audience (LAUNCH.audienceDays).
 export const NEEDS_AUDIENCE = ['blog/lawn-compliments', 'engage-q-hall', 'engage-q-seed', 'engage-q-game', 'tool-hall'];
-// Never scheduled automatically (Mike can still pick them by hand). The leaf blower post is being rewritten (Nov 18).
-export const HOLD = ['blog/you-never-needed-a-leaf-blower'];
+// Never scheduled automatically (Mike can still pick them by hand).
+export const HOLD = [];
 // Bump when the planning rules change: planned rows you haven't edited get re-planned from tomorrow on.
 export const PLAN_V = 2;

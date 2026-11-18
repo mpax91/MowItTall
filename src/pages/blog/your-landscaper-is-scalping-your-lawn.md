@@ -6,10 +6,20 @@ summary: "Why mowing crews cut too short, what short grass does to your lawn in 
 related: ["/blog/what-to-tell-your-landscaper/", "/guides/how-high-to-mow-grass/", "/blog/one-third-rule-mowing/"]
 seoTitle: "Is Your Landscaper Mowing Too Short?"
 date: 2026-11-13
+updated: 2026-11-18
 minutes: 2
 tag: Hot take
 topics: [mowing, got-a-guy]
+faq:
+  - q: "What does scalping a lawn mean?"
+    a: "Mowing so low the mower takes off most of each grass blade, or shaves the dirt on bumps. It leaves the lawn brown, thin and open to weeds, especially in summer."
+  - q: "How high should my landscaper mow my lawn?"
+    a: "For Northeast lawns (tall fescue, bluegrass, ryegrass), 3.5 inches or higher. Most crews cut around 2 inches because it looks ‘done’ longer and nobody adjusts the deck between yards."
+  - q: "Will mowing taller make my lawn look messy?"
+    a: "No. Taller grass looks thicker and greener, shades out weeds and hides thin spots. Keep the blade sharp and mow often enough that you only take off a third at a time."
 ---
+
+**Most mowing crews cut lawns to about two inches. Your lawn wants three and a half or more, and one sentence to your crew fixes it.**
 
 Here’s a fun game. Next July, drive down any street in town and look at the lawns that are brown and crispy. Now look at how short they are.
 

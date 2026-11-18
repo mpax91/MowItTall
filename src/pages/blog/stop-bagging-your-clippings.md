@@ -6,10 +6,20 @@ summary: "Why clippings are free fertilizer, why they don’t cause thatch, and 
 related: ["/blog/mulching-vs-bagging/", "/blog/one-third-rule-mowing/", "/blog/holiday-lawn-fertilizer-schedule/"]
 seoTitle: "Should You Bag Grass Clippings? No."
 date: 2026-11-02
+updated: 2026-11-18
 minutes: 2
 tag: PSA
 topics: [mowing, feeding]
+faq:
+  - q: "Do grass clippings cause thatch?"
+    a: "No. Thatch is mostly tough stems, roots and runners. Clippings are mostly water and break down within days, so leaving them on the lawn doesn’t build thatch."
+  - q: "How long do grass clippings take to break down?"
+    a: "Usually a few days to a week or two in the growing season, as long as they’re scattered and not sitting in clumps."
+  - q: "When should you bag grass clippings?"
+    a: "When the grass got too long and the clippings sit in clumps, when the lawn is wet, or when you want them for compost or the garden. Otherwise, leave them."
 ---
+
+**Don’t bag your grass clippings. They break down in a few days, feed your lawn for free, and they don’t cause thatch.**
 
 Every Saturday, somebody on my street fills a bag with grass clippings, drags it to the curb, then drives to the store to buy fertilizer.
 

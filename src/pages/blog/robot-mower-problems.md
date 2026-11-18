@@ -46,7 +46,7 @@ faq:
 ## 5. Leaf Season Meltdown
 
 **Why:** heavy leaves clog the deck and smother the grass under it.
-**Fix:** pause the robot during big leaf drops. Mulch the leaves with a regular mower ([why you never needed a blower](/blog/you-never-needed-a-leaf-blower/)) or rake them off, then let it back out.
+**Fix:** pause the robot during big leaf drops. Mulch the leaves with a regular mower ([mulch, rake or blow?](/blog/mulch-rake-or-blow-leaves/)) or rake them off, then let it back out.
 
 ## 6. Boundary Wire Breaks (Wired Models)
 

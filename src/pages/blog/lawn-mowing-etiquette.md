@@ -3,7 +3,7 @@ layout: ../../layouts/Post.astro
 title: "How Early Is Too Early to Mow?"
 description: "8am on weekdays, 9 on Saturday, 10 on Sunday, and never during your neighbor’s party. Plus a machine that tells you if you can mow right now."
 summary: "My official rules for when you can mow: weekdays, weekends, holidays and your neighbor’s party. Check whether you can mow right now."
-related: ["/blog/lawn-compliments/", "/blog/robot-mower-judging-you/", "/blog/you-never-needed-a-leaf-blower/"]
+related: ["/blog/lawn-compliments/", "/blog/robot-mower-judging-you/", "/blog/mulch-rake-or-blow-leaves/"]
 seoTitle: "How Early Can You Mow? Mowing Etiquette Rules"
 date: 2026-11-15
 minutes: 3

@@ -27,9 +27,9 @@ export const GIFTS = [
     title: 'They own three spreaders. Get creative.',
     lede: 'When the garage is full, give them something that isn’t a thing.',
     sections: [{ h: 'Ideas', list: ['<b>Blade sharpening</b> at a local shop, prepaid. They’ll think of you every spring.', 'A <b>framed photo of their best stripes.</b> Yes, really. They’ll hang it.', '<b>Mow It Tall merch</b>. <a href="/merch/">The good stuff is here</a>.', 'A day of you doing the leaves without being asked. Priceless. Hard to wrap.'] }] },
-  { id: 'nope', label: 'A leaf blower?', word: 'ABSOLUTELY NOT', tone: 'never',
+  { id: 'nope', label: 'A gas leaf blower?', word: 'ABSOLUTELY NOT', tone: 'never',
     title: 'Put the gas leaf blower down.',
-    lede: 'It’s loud, it’s banned in Bedford, and <a href="/blog/you-never-needed-a-leaf-blower/">they never needed one</a>. If you must, go battery and small. Better yet, give them permission to mulch the leaves with the mower.',
+    lede: 'It’s loud and it’s banned in Bedford. Go battery. And on light leaf days, <a href="/blog/mulch-rake-or-blow-leaves/">they can just mow the leaves in</a>.',
     sections: [{ h: 'Also skip', list: ['<b>Aerator shoes.</b> Spiked sandals. They don’t do anything except make you look like you lost a bet.', '<b>Lawn paint.</b> We don’t do that here.', '<b>A mystery “soil activator.”</b> <a href="/blog/lawn-stuff-you-dont-need/">More stuff they don’t need</a>.'] }] },
 ];
 

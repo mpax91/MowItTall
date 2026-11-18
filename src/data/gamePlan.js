@@ -34,7 +34,7 @@ export const TASK_LINKS = {
   'fall-feed': ['/blog/holiday-lawn-fertilizer-schedule/', 'The holiday schedule'],
   'fall-weeds': ['/blog/fall-kill-weeds-or-plant-seed/', 'Weeds or seed? Pick one'],
   'columbus-feed': ['/blog/halloween-is-the-lawn-super-bowl/', 'Why it peaks for Halloween'],
-  leaves: ['/blog/you-never-needed-a-leaf-blower/', 'Just mow them'],
+  leaves: ['/blog/mulch-rake-or-blow-leaves/', 'Mulch, rake or blow?'],
   lime: ['/guides/does-my-lawn-need-lime/', 'Does my lawn need lime?'],
   'thanksgiving-feed': ['/blog/holiday-lawn-fertilizer-schedule/', 'The holiday schedule'],
   'last-mow': ['/guides/when-to-stop-mowing/', 'When to stop mowing'],

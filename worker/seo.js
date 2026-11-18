@@ -10,11 +10,16 @@
 //   4. Bing: search terms and pages from Bing Webmaster Tools, daily (if BING_API_KEY is set).
 //   5. The SEO checks ("agents"): run at build time by scripts/audit.mjs. This job picks up each new
 //      deploy's report, works out what's new or fixed, and saves it for HQ.
+//   6. PageSpeed (mobile) for the top 5 pages (home, /plan/, /weeds/, /measure/, the top blog post by Google
+//      clicks), each re-checked weekly, one page per hourly run. Uses Google's free PageSpeed Insights API;
+//      a free PSI_API_KEY secret is optional but avoids Google's shared keyless quota. Replaces the
+//      "Run PageSpeed on the top 5 pages" to-do; anything under 90 lands in the HQ inbox.
 //
 // Secrets (Cloudflare → Workers & Pages → mowittall → Settings → Variables and Secrets):
 //   GSC_SERVICE_ACCOUNT  the whole JSON key file of a Google Cloud service account that's a user on the
 //                        Search Console property (read-only scope is all we ask for)
 //   BING_API_KEY         Bing Webmaster Tools → Settings → API access → API key
+//   PSI_API_KEY          optional: a free Google API key with the PageSpeed Insights API turned on
 // Optional: GSC_SITE (default sc-domain:mowittall.com), SEO_API_BASE (local testing only: sends every
 // Google/Bing call to a mock server).
 //
@@ -48,6 +53,8 @@ export async function seoInit(db) {
       db.prepare(`CREATE TABLE IF NOT EXISTS seo_inspect (path TEXT PRIMARY KEY, verdict TEXT, coverage TEXT, indexing TEXT, robots TEXT, fetch TEXT,
         last_crawl TEXT, google_canonical TEXT, user_canonical TEXT, crawled_as TEXT, rich TEXT, rich_items TEXT, error TEXT, checked_at INTEGER, changed_at INTEGER)`),
       db.prepare(`CREATE TABLE IF NOT EXISTS seo_inspect_log (id INTEGER PRIMARY KEY AUTOINCREMENT, path TEXT, at INTEGER, field TEXT, before TEXT, after TEXT)`),
+      db.prepare(`CREATE TABLE IF NOT EXISTS seo_speed (path TEXT PRIMARY KEY, score INTEGER, lcp REAL, cls REAL, tbt REAL, fcp REAL, field TEXT, error TEXT, checked_at INTEGER)`),
+      db.prepare(`CREATE TABLE IF NOT EXISTS seo_speed_log (path TEXT NOT NULL, at INTEGER NOT NULL, score INTEGER, lcp REAL, cls REAL, tbt REAL, PRIMARY KEY (path, at))`),
     ]).catch((e) => { ready = null; throw e; });
   }
   return ready;
@@ -321,6 +328,55 @@ export async function syncAudit(env) {
   return { synced: rep.build, summary };
 }
 
+/* ---------------------------------------------------------------- 6. PageSpeed (mobile, top 5 pages) */
+const SPEED_FIXED = ['/', '/plan/', '/weeds/', '/measure/'];
+const SPEED_EVERY = 7 * DAY;
+export async function speedPages(db) {
+  const top = await db.prepare(`SELECT page FROM gsc_page WHERE page LIKE '/blog/%' AND page NOT LIKE '/blog/topic/%' AND page != '/blog/' AND date > ?
+    GROUP BY page ORDER BY SUM(clicks) DESC, SUM(impressions) DESC LIMIT 1`).bind(addDays(etDay(), -28)).first().catch(() => null);
+  return [...SPEED_FIXED, ...(top?.page ? [top.page.split('?')[0]] : [])];
+}
+async function speedOne(env, path) {
+  const q = new URLSearchParams({ url: origin(env) + path, strategy: 'mobile', category: 'performance' });
+  if (env.PSI_API_KEY) q.set('key', env.PSI_API_KEY);
+  // Only the few numbers we keep (the full Lighthouse report is megabytes).
+  q.set('fields', 'loadingExperience/overall_category,lighthouseResult(categories/performance/score,audits(largest-contentful-paint/numericValue,cumulative-layout-shift/numericValue,total-blocking-time/numericValue,first-contentful-paint/numericValue))');
+  const base = env.SEO_API_BASE || 'https://www.googleapis.com';
+  const r = await fetch(`${base}/pagespeedonline/v5/runPagespeed?${q}`);
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    const msg = j.error?.message || r.status;
+    if (r.status === 429 || /quota/i.test(String(msg))) throw new Error(`PageSpeed quota hit (${msg}). Add a free PSI_API_KEY secret to fix it.`);
+    throw new Error(`PageSpeed ${r.status}: ${msg}`);
+  }
+  const lh = j.lighthouseResult || {}, a = lh.audits || {}, v = (k) => a[k]?.numericValue ?? null;
+  return { score: lh.categories?.performance?.score != null ? Math.round(lh.categories.performance.score * 100) : null,
+    lcp: v('largest-contentful-paint'), cls: v('cumulative-layout-shift'), tbt: v('total-blocking-time'), fcp: v('first-contentful-paint'), field: j.loadingExperience?.overall_category || null };
+}
+async function speedTick(env) {
+  const db = env.EV;
+  const pages = await speedPages(db);
+  const { results } = await db.prepare('SELECT path, checked_at FROM seo_speed').all();
+  const at = Object.fromEntries(results.map((x) => [x.path, x.checked_at || 0]));
+  const next = pages.filter((p) => Date.now() - (at[p] || 0) > SPEED_EVERY).sort((x, y) => (at[x] || 0) - (at[y] || 0))[0];
+  if (!next) return { skipped: 'all fresh' };
+  const now = Date.now();
+  try {
+    const m = await speedOne(env, next);
+    await db.batch([
+      db.prepare(`INSERT INTO seo_speed (path, score, lcp, cls, tbt, fcp, field, error, checked_at) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?)
+        ON CONFLICT (path) DO UPDATE SET score = excluded.score, lcp = excluded.lcp, cls = excluded.cls, tbt = excluded.tbt, fcp = excluded.fcp, field = excluded.field, error = NULL, checked_at = excluded.checked_at`)
+        .bind(next, m.score, m.lcp, m.cls, m.tbt, m.fcp, m.field, now),
+      db.prepare('INSERT OR REPLACE INTO seo_speed_log (path, at, score, lcp, cls, tbt) VALUES (?, ?, ?, ?, ?, ?)').bind(next, now, m.score, m.lcp, m.cls, m.tbt),
+    ]);
+    return { path: next, ...m };
+  } catch (e) {
+    // Remember the failure on the page (so HQ shows it) but retry next hour: checked_at stays as it was.
+    await db.prepare(`INSERT INTO seo_speed (path, error, checked_at) VALUES (?, ?, ?) ON CONFLICT (path) DO UPDATE SET error = excluded.error`).bind(next, String(e.message || e).slice(0, 300), at[next] || 0).run();
+    throw e;
+  }
+}
+
 /* ---------------------------------------------------------------- the hourly job */
 export async function seoTick(env, { force = false } = {}) {
   if (!env.EV) return { skipped: 'no EV database' };
@@ -362,6 +418,7 @@ export async function seoTick(env, { force = false } = {}) {
     if (due('sitemaps', 20)) { await step('sitemaps', () => pullSitemaps(env)); budget -= 1; }
     await step('inspect', () => inspectBatch(env, Math.min(INSPECT_PER_RUN, Math.max(budget - 2, 0))));
   }
+  if (due('speed', 1)) await step('speed', () => speedTick(env));
   // Once the GitHub job is delivering Bing data, the worker only steps in if that job has missed a day.
   if (env.BING_API_KEY && due('bing', runs['bing:via'] === 'github' ? 30 : 20)) await step('bing', async () => { const r = await pullBing(env); runs['bing:via'] = 'worker'; return r; });
   await setState(db, 'runs', runs);
@@ -417,5 +474,9 @@ export async function seoReport(env, url) {
   const { results: log } = await db.prepare('SELECT * FROM seo_inspect_log WHERE at > ? ORDER BY at DESC LIMIT 200').bind(Date.now() - 30 * DAY).all();
   let total = 0; try { total = (await sitemapPaths(env)).length; } catch { /* ignore */ }
   out.index = { total, pages, log };
+  const speedList = await speedPages(db);
+  const { results: speedRows } = await db.prepare('SELECT * FROM seo_speed').all();
+  const { results: speedHist } = await db.prepare('SELECT path, at, score FROM seo_speed_log WHERE at > ? ORDER BY at').bind(Date.now() - 120 * DAY).all();
+  out.speed = { pages: speedList.map((p) => ({ path: p, ...(speedRows.find((x) => x.path === p) || {}), hist: speedHist.filter((h) => h.path === p).map((h) => h.score) })), keyed: !!env.PSI_API_KEY };
   return json(out);
 }

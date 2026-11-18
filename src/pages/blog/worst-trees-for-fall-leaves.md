@@ -3,7 +3,7 @@ layout: ../../layouts/Post.astro
 title: "The Worst Trees for Fall Leaves, Ranked"
 description: "Ranking the trees that do the most damage to your fall weekends, from honeylocust (a saint) to oak (the guest who won’t leave). Plus what to do with each one’s leaves."
 summary: "Trees ranked by how much they ruin your fall weekends, from honeylocust to oak, and what to do with each one’s leaves. Tap your tree for the game plan."
-related: ["/guides/should-i-mulch-leaves-into-lawn/", "/blog/you-never-needed-a-leaf-blower/", "/blog/halloween-is-the-lawn-super-bowl/"]
+related: ["/guides/should-i-mulch-leaves-into-lawn/", "/blog/mulch-rake-or-blow-leaves/", "/blog/halloween-is-the-lawn-super-bowl/"]
 seoTitle: "Worst Trees for Fall Leaves, Ranked"
 seoDescription: "Which trees drop the worst leaves? Oak, sweetgum, black walnut and sycamore top the list. Honeylocust and ginkgo are the easiest. What to do with each."
 date: 2026-11-16
@@ -46,7 +46,7 @@ faq:
 
 Same answer for almost every tree: **mulch the leaves with your mower.** Chop them until you can see grass through the bits. Do it once a week through the season. Oak leaves need two passes. Pick up nuts and gumballs first so they don’t become missiles. [The full mulching guide](/guides/should-i-mulch-leaves-into-lawn/).
 
-Too thick? Chop once, then move the extra into your garden beds. Free mulch. And for the love of everything, [you never needed a leaf blower](/blog/you-never-needed-a-leaf-blower/).
+Too thick? Chop once, then blow or rake the extra into your garden beds. Free mulch. ([When to mulch, rake or blow](/blog/mulch-rake-or-blow-leaves/).)
 
 ## The Bottom Line
 

@@ -6,10 +6,20 @@ summary: "Seven excuses for a bad lawn, from no time to the shade, ranked by how
 related: ["/blog/lawn-soil-test/", "/blog/grass-types-northeast/", "/blog/dog-pee-kids-bouncy-houses-lawn/"]
 seoTitle: "Every Excuse for a Bad Lawn, Ranked"
 date: 2026-11-10
+updated: 2026-11-18
 minutes: 3
 tag: Rankings
 topics: [fun]
+faq:
+  - q: "Why does my lawn look so bad?"
+    a: "Usually it’s mowing too short, bagging the clippings, watering a little every day instead of deeply once or twice a week, and never testing the soil. Shade and dog spots are the real exceptions."
+  - q: "Can grass grow in the shade?"
+    a: "Some can. A seed mix heavy on fine fescue handles shade best, but it still needs a few hours of sun. Under a dense tree, moss may win, and that’s fine."
+  - q: "How much does a soil test cost?"
+    a: "A basic mail-in test from a university extension lab usually costs less than $30. It tells you your pH and what nutrients the lawn is actually missing."
 ---
+
+**Only one excuse for a bad lawn really holds up: shade. The other six go away with free or cheap fixes like mowing taller, leaving the clippings and testing your soil.**
 
 Everybody has an excuse. I’ve heard them all at block parties. Here they are, ranked from least believable to most.
 

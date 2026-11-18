@@ -28,7 +28,7 @@ export const LINKS = [
   { re: 'sharp(?:en)? (?:the |your )?blade|dull blade|sharpen(?:ing)?', to: '/blog/sharpen-your-mower-blade/' },
   { re: 'leave the clippings|leaving the clippings', to: '/blog/stop-bagging-your-clippings/' },
   { re: 'mulch(?:ing)? (?:the |your )?leaves|mow (?:over )?the leaves', to: '/guides/should-i-mulch-leaves-into-lawn/' },
-  { re: 'leaf blowers?', to: '/blog/you-never-needed-a-leaf-blower/' },
+  { re: 'leaf blowers?', to: '/blog/mulch-rake-or-blow-leaves/' },
   { re: 'robot mowers?', to: '/blog/robot-mower-judging-you/' },
   { re: 'stripe patterns?|checkerboard', to: '/blog/lawn-stripe-patterns/' },
   { re: 'first mow(?: of (?:the year|spring))?', to: '/blog/opening-day-first-mow/' },

@@ -438,7 +438,7 @@ const TOPICS = [
   [/aerat/, ['guides/should-i-aerate-my-lawn']], [/fertili[sz]/, ['guides/when-to-fertilize-lawn', 'blog/how-to-read-a-fertilizer-bag', 'guides/types-of-lawn-fertilizer']],
   [/how (high|short|tall) .*mow|mowing height|cut height/, ['guides/how-high-to-mow-grass']], [/mushroom/, ['guides/mushrooms-in-lawn']],
   [/dormant|brown (lawn|grass)|is my (lawn|grass) dead/, ['guides/is-my-lawn-dead-or-dormant', 'blog/lawn-heat-wave-rules']], [/water(ing)? (the )?(lawn|grass)|sprinkler|irrigation/, ['guides/how-often-to-water-lawn', 'guides/how-long-to-run-sprinklers']],
-  [/leaves|leaf blower|mulch(ing)? leaves/, ['guides/should-i-mulch-leaves-into-lawn', 'blog/you-never-needed-a-leaf-blower']], [/salt|ice melt|plow/, ['guides/ice-melt-safe-for-lawn']],
+  [/leaves|leaf blower|mulch(ing)? leaves/, ['guides/should-i-mulch-leaves-into-lawn', 'blog/mulch-rake-or-blow-leaves']], [/salt|ice melt|plow/, ['guides/ice-melt-safe-for-lawn']],
   [/vole|snow mold/, ['guides/snow-mold-and-vole-damage']], [/shade/, ['guides/grass-for-shade']], [/robot mower|robotic mower/, ['blog/is-a-robot-mower-worth-it', 'blog/robot-mower-problems']],
   [/zero.?turn|riding mower|lawn tractor/, ['guides/zero-turn-vs-riding-mower']], [/self.?propelled/, ['guides/self-propelled-vs-push-mower']], [/spreader/, ['blog/how-to-use-a-spreader', 'blog/spreader-settings-half-rate-twice']],
   [/soil test/, ['blog/lawn-soil-test']], [/stripe|striping/, ['guides/how-to-stripe-your-lawn', 'blog/lawn-stripe-patterns']], [/clippings|bag(ging)? (the )?grass/, ['blog/stop-bagging-your-clippings', 'blog/mulching-vs-bagging']],

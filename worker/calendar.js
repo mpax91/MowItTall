@@ -82,7 +82,7 @@ export const CALENDAR = {
   10: {
     more: { all: ['guides/should-i-mulch-leaves-into-lawn', 'guides/when-to-stop-mowing', 'guides/mushrooms-in-lawn'], diy: ['blog/mulching-vs-bagging'], robot: ['guides/robot-mower-settings-by-season'] },
     2: 'blog/worst-trees-for-fall-leaves',
-    3: 'blog/you-never-needed-a-leaf-blower',
+    3: 'blog/mulch-rake-or-blow-leaves',
     4: 'blog/halloween-is-the-lawn-super-bowl',
     5: 'guides/when-to-stop-mowing',
   },

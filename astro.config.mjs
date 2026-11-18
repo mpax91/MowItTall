@@ -28,7 +28,8 @@ export default defineConfig({
     '/clippings': '/blog/',
     '/clippings/power-ranking-every-excuse-for-a-bad-lawn': '/blog/power-ranking-every-excuse-for-a-bad-lawn/',
     '/clippings/stop-bagging-your-clippings': '/blog/stop-bagging-your-clippings/',
-    '/clippings/you-never-needed-a-leaf-blower': '/blog/you-never-needed-a-leaf-blower/',
+    '/clippings/you-never-needed-a-leaf-blower': '/blog/mulch-rake-or-blow-leaves/',
+    '/blog/you-never-needed-a-leaf-blower': '/blog/mulch-rake-or-blow-leaves/', // retitled Nov 18, 2026
     '/clippings/your-landscaper-is-scalping-your-lawn': '/blog/your-landscaper-is-scalping-your-lawn/',
   },
 });

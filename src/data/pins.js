@@ -47,7 +47,7 @@ export const PIN_BOARD_DEFAULT = 'Lawn Care for Beginners';
 
 const BY_SLUG = {
   'backyard-stripes': ['lawn-stripe-patterns', 'how-to-stripe-your-lawn', 'lawn-mowing-playlist', 'lawn-care-dad-jokes', 'lawn-compliments', 'halloween-is-the-lawn-super-bowl', 'robot-mower-judging-you', 'mowing-the-lawn-is-a-workout'],
-  'frosty-stripes-november': ['lawn-off-season-training', 'lawn-new-years-resolutions', 'lawn-gift-guide', 'snow-mold-and-vole-damage', 'when-to-stop-mowing', 'should-i-mulch-leaves-into-lawn', 'you-never-needed-a-leaf-blower', 'worst-trees-for-fall-leaves'],
+  'frosty-stripes-november': ['lawn-off-season-training', 'lawn-new-years-resolutions', 'lawn-gift-guide', 'snow-mold-and-vole-damage', 'when-to-stop-mowing', 'should-i-mulch-leaves-into-lawn', 'mulch-rake-or-blow-leaves', 'worst-trees-for-fall-leaves'],
 };
 const BY_TOPIC = { feeding: 'front-yard-may', seeding: 'front-yard-may', soil: 'front-yard-may', 'got-a-guy': 'front-yard-may', fun: 'backyard-stripes', mowing: 'backyard-stripes', gear: 'backyard-stripes', weeds: 'backyard-stripes', 'dogs-kids': 'backyard-stripes' };
 

@@ -55,19 +55,25 @@ const description = 'Know a lawn that needs help? Send your neighbor a free lawn
   import { NOTES } from '../data/neighborNotes.js';
   const root = document.querySelector<HTMLElement>('[data-neighbor]')!;
   const $ = <T extends HTMLElement = HTMLElement>(s: string) => root.querySelector<T>(s)!;
-  const link = `${location.origin}/plan/?from=neighbor`;
+  // UTM tags on the QR only, so printed notes show up as their own source in GA4 (utm_content = which note).
+  // The texted link stays clean: UTMs would be visible in the message.
+  const base = `${location.origin}/plan/?from=neighbor`;
+  const qrLink = (id: string) => `${base}&utm_source=door_note&utm_medium=qr&utm_content=${id}`;
   const pretty = `${location.host.replace(/^www\./, '')}/plan`;
   let note = NOTES[0];
 
-  const qr = qrcode(0, 'M');
-  qr.addData(link);
-  qr.make();
-  $('[data-nb-qr]').innerHTML = qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+  function drawQr() {
+    const qr = qrcode(0, 'M');
+    qr.addData(qrLink(note.id));
+    qr.make();
+    $('[data-nb-qr]').innerHTML = qr.createSvgTag({ cellSize: 4, margin: 0, scalable: true });
+  }
   $('[data-nb-url]').textContent = pretty;
 
-  function text() { return note.text.replace('{link}', link); }
+  function text() { return note.text.replace('{link}', base); }
   function render() {
     $('[data-nb-msg]').textContent = note.note;
+    drawQr();
     $<HTMLAnchorElement>('[data-nb-sms]').href = `sms:?&body=${encodeURIComponent(text())}`;
     root.querySelectorAll<HTMLButtonElement>('[data-nb]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.nb === note.id)));
   }

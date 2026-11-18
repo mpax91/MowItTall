@@ -1,4 +1,4 @@
-// Mow It Tall HQ: To-Do, SEO & AEO (agents, rank tracker, AI answer log), Analytics, Social setup, Build Plan.
+// Mow It Tall HQ: To-Do, SEO & AEO (autopilot, agents, rank tracker), Analytics, Social setup, Build Plan.
 // Content comes from /api/admin/todos (worker/playbook.js), so none of it is in the public page.
 // SEO autopilot (Nov 16): Search Console / Bing / indexing data comes from worker/seo.js (hourly job), and the
 // SEO checks run at build time (scripts/audit.mjs). The browser versions of the checks stay as a fallback.
@@ -225,6 +225,17 @@ export function initHQ({ root, api, show }) {
   let seoData = null, seoDays = 7;
   const COVER = { 'Submitted and indexed': 'Indexed', 'Indexed, not submitted in sitemap': 'Indexed (not in sitemap)', 'URL is unknown to Google': 'Google hasn’t seen it yet', 'Discovered - currently not indexed': 'Found, not crawled yet', 'Crawled - currently not indexed': 'Crawled, not indexed' };
   const cover = (c) => COVER[c] || c || 'Not checked yet';
+  // What to do about each "not indexed" status (replaces the old "Fix anything in Search Console" to-do).
+  const FIX = [
+    [/Found, not crawled|hasn’t seen/i, 'Normal for new pages. Nothing to do; Google gets to it.'],
+    [/Crawled, not indexed/i, 'If it’s still here after a month: make the page more useful, and link to it from 2–3 related posts.'],
+    [/Duplicate|canonical/i, 'Tell Claude the URL; it needs a canonical fix.'],
+    [/404|Not found/i, 'Tell Claude the URL; it gets a redirect.'],
+    [/redirect/i, 'Usually fine (the old URL points somewhere new). Tell Claude if it’s a page that should exist.'],
+    [/noindex|Excluded by/i, 'Tell Claude if this page should be in Google.'],
+    [/robots/i, 'Tell Claude; robots.txt is blocking it.'],
+  ];
+  const fixFor = (k) => (FIX.find(([re]) => re.test(k)) || [, ''])[1];
   const n0 = (x) => Math.round(x || 0).toLocaleString();
   const dlt = (a, b, lowerBetter, f = (x) => n0(x)) => { if (!b) return ''; const d = a - b; if (Math.abs(d) < 0.05) return '<em>no change</em>'; const good = lowerBetter ? d < 0 : d > 0; return `<em class="${good ? 'ev-up' : 'ev-down'}">${d > 0 ? '▲' : '▼'} ${f(Math.abs(d))}</em>`; };
   async function loadSeo() {
@@ -264,8 +275,8 @@ export function initHQ({ root, api, show }) {
       const canon = checked.filter((x) => x.google_canonical && x.user_canonical && x.google_canonical !== x.user_canonical);
       html += `<h3 class="seo-h">Google Indexing</h3>
         <p class="ag-sum"><span class="ag-n ag-ok">${ok.length} indexed</span><span class="ag-n ag-warn">${bad.length} not indexed</span><span class="ag-n ag-info">${Math.max(0, (ix.total || pages.length) - checked.length)} not checked yet</span> <small>of ${ix.total || pages.length} pages in the sitemap · each checked once a day</small></p>`;
-      if (bad.length) html += Object.entries(groups).map(([k, list]) => `<details class="dash-more" ${list.length < 15 ? 'open' : ''}><summary>${esc(k)} (${list.length})</summary><ul class="ag-list">${list.map((x) => `<li class="ag-warn"><a href="${esc(x.path)}" target="_blank" rel="noopener">${esc(x.path)}</a><span>${x.last_crawl ? `Last crawled ${esc(x.last_crawl.slice(0, 10))}` : 'Never crawled'}${x.robots && !/ALLOWED|UNSPECIFIED/.test(x.robots) ? ` · robots.txt: ${esc(x.robots)}` : ''}${x.fetch && !/SUCCESSFUL|UNSPECIFIED/.test(x.fetch) ? ` · fetch: ${esc(x.fetch)}` : ''}</span></li>`).join('')}</ul></details>`).join('')
-        + `<p class="dash-fine">New pages usually take days to a few weeks. If one sits in “Crawled, not indexed” for a month, beef it up and link to it from 2–3 related posts.</p>`;
+      if (bad.length) html += Object.entries(groups).map(([k, list]) => `<details class="dash-more" ${list.length < 15 ? 'open' : ''}><summary>${esc(k)} (${list.length})</summary>${fixFor(k) ? `<p class="dash-fine"><b>What to do:</b> ${esc(fixFor(k))}</p>` : ''}<ul class="ag-list">${list.map((x) => `<li class="ag-warn"><a href="${esc(x.path)}" target="_blank" rel="noopener">${esc(x.path)}</a><span>${x.last_crawl ? `Last crawled ${esc(x.last_crawl.slice(0, 10))}` : 'Never crawled'}${x.robots && !/ALLOWED|UNSPECIFIED/.test(x.robots) ? ` · robots.txt: ${esc(x.robots)}` : ''}${x.fetch && !/SUCCESSFUL|UNSPECIFIED/.test(x.fetch) ? ` · fetch: ${esc(x.fetch)}` : ''}</span></li>`).join('')}</ul></details>`).join('')
+        + `<p class="dash-fine">New pages usually take days to a few weeks to get indexed.</p>`;
       if (canon.length) html += `<details class="dash-more" open><summary>Google picked a different canonical (${canon.length})</summary><ul class="ag-list">${canon.map((x) => `<li class="ag-error"><a href="${esc(x.path)}" target="_blank" rel="noopener">${esc(x.path)}</a><span>Google uses ${esc(x.google_canonical)}</span></li>`).join('')}</ul></details>`;
       const errs = pages.filter((x) => x.error);
       if (errs.length) html += `<details class="dash-more"><summary>Couldn’t check (${errs.length})</summary><ul class="dash-log">${errs.slice(0, 20).map((x) => `<li>${esc(x.path)}: ${esc(x.error)}</li>`).join('')}</ul></details>`;
@@ -274,6 +285,20 @@ export function initHQ({ root, api, show }) {
       if (changes.length) html += `<details class="dash-more" open><summary>Changes, last 30 days (${changes.length})</summary><ul class="dash-log">${changes.slice(0, 60).map((l) => `<li>${ago(l.at)} · <a href="${esc(l.path)}" target="_blank" rel="noopener">${esc(l.path)}</a>: ${LBL[l.field] || esc(l.field)} ${esc(l.field === 'coverage' ? cover(l.before) : l.before || '–')} → <b>${esc(l.field === 'coverage' ? cover(l.after) : l.after || '–')}</b></li>`).join('')}</ul></details>`;
       if (st.sitemaps?.length) html += `<p class="dash-fine">Sitemaps Google has: ${st.sitemaps.map((m) => `${esc(m.path.replace(/^https?:\/\/[^/]+/, ''))} (read ${m.lastDownloaded ? esc(m.lastDownloaded.slice(0, 10)) : 'not yet'}${m.errors ? `, <b class="rk-down">${m.errors} errors</b>` : ''}${m.warnings ? `, ${m.warnings} warnings` : ''})`).join(' · ')}</p>`;
       else if (st.google && runs['sitemaps:ok']) html += `<p class="dash-fine"><b class="rk-down">Google has no sitemap on file.</b> Search Console → Sitemaps → add <code>sitemap-index.xml</code>.</p>`;
+    }
+    // PageSpeed (worker/seo.js, weekly, automatic)
+    const sp = r.speed;
+    if (sp?.pages?.length) {
+      const sec = (ms) => (ms == null ? '–' : (ms / 1000).toFixed(1) + ' s');
+      const cls = (x) => (x.score == null ? '' : x.score >= 90 ? 'ag-ok' : x.score >= 50 ? 'ag-warn' : 'ag-error');
+      const low = sp.pages.filter((x) => x.score != null && x.score < 90);
+      html += `<h3 class="seo-h">PageSpeed on Phones <small>top 5 pages, checked weekly by itself</small></h3>
+        ${low.length ? `<p class="ag-sum"><span class="ag-n ag-warn">${low.length} under 90</span> <small>Tell Claude which ones and it’ll speed them up.</small></p>` : ''}
+        <div class="rk-scroll"><table class="pb-table"><thead><tr><th>Page</th><th>Score</th><th>Largest paint</th><th>Layout shift</th><th>Blocking</th><th>Checked</th></tr></thead><tbody>${sp.pages.map((x) => `<tr>
+          <td><a href="https://pagespeed.web.dev/analysis?url=${encodeURIComponent('https://mowittall.com' + x.path)}&form_factor=mobile" target="_blank" rel="noopener">${esc(x.path)}</a></td>
+          <td>${x.score != null ? `<span class="ag-n ${cls(x)}">${x.score}</span>${x.hist?.length > 1 ? ` <small>${x.hist.slice(-5).join(' → ')}</small>` : ''}` : (x.error ? `<small title="${esc(x.error)}">failed, retrying</small>` : '<small>soon</small>')}</td>
+          <td>${sec(x.lcp)}</td><td>${x.cls == null ? '–' : x.cls.toFixed(2)}</td><td>${x.tbt == null ? '–' : Math.round(x.tbt) + ' ms'}</td><td>${x.checked_at ? ago(x.checked_at) : '–'}</td></tr>`).join('')}</tbody></table></div>
+        <p class="dash-fine">Google’s Lighthouse test on a slow phone. Goals: score 90+, largest paint under 2.5 s, layout shift under 0.1. The fifth page is whichever blog post gets the most Google clicks.${sp.keyed ? '' : ' If checks fail with a quota error, add a free <code>PSI_API_KEY</code> secret.'}</p>`;
     }
     box.innerHTML = html;
   }
@@ -404,37 +429,6 @@ export function initHQ({ root, api, show }) {
     const d = e.target.closest('[data-snap-del]'); if (!d || !confirm('Delete this upload?')) return;
     await api('/api/admin/snaps', { method: 'POST', body: JSON.stringify({ action: 'delete', id: d.dataset.snapDel }) }); loadRank();
   });
-
-  /* ================================================================ AI ANSWER LOG */
-  const ENGINES = [
-    ['google', 'Google', (q) => `https://www.google.com/search?q=${encodeURIComponent(q)}`],
-    ['chatgpt', 'ChatGPT', (q) => `https://chatgpt.com/?q=${encodeURIComponent(q)}&hints=search`],
-    ['perplexity', 'Perplexity', (q) => `https://www.perplexity.ai/search?q=${encodeURIComponent(q)}`],
-    ['copilot', 'Copilot', (q) => `https://copilot.microsoft.com/?q=${encodeURIComponent(q)}`],
-    ['claude', 'Claude', (q) => `https://claude.ai/new?q=${encodeURIComponent(q)}`],
-  ];
-  const month = () => new Date().toISOString().slice(0, 7);
-  let aeoLog = {}, aeoQs = [], aeoPrev = null;
-  async function loadAeo() {
-    aeoQs = (await kvGet('aeo:questions')) || PB.guides.aeoQuestions;
-    aeoLog = (await kvGet(`aeo:${month()}`)) || {};
-    const d = new Date(); d.setMonth(d.getMonth() - 1); aeoPrev = await kvGet(`aeo:${d.toISOString().slice(0, 7)}`);
-    renderAeo();
-  }
-  function renderAeo() {
-    const cited = Object.values(aeoLog).flatMap((r) => Object.values(r)).filter((v) => v === 'yes').length;
-    const prevC = aeoPrev ? Object.values(aeoPrev).flatMap((r) => Object.values(r)).filter((v) => v === 'yes').length : null;
-    $('[data-aeo-sum]').innerHTML = `${month()}: cited <b>${cited}</b> times across ${aeoQs.length} questions × ${ENGINES.length} engines${prevC !== null ? ` (last month: ${prevC})` : ''}. Tap an engine to ask, then tap the mark: blank → ✓ cited → ✗ not cited.`;
-    $('[data-aeo]').innerHTML = aeoQs.map((q, i) => `<li data-q="${i}"><p class="aeo-q">${esc(q)} <button type="button" class="linkish" data-aeo-del aria-label="Remove question">×</button></p>
-      <p class="aeo-row">${ENGINES.map(([id, name, href]) => { const v = aeoLog[q]?.[id]; return `<span class="aeo-cell"><a href="${href(q)}" target="_blank" rel="noopener">${name}</a><button type="button" class="aeo-mark aeo-${v || 'none'}" data-aeo-mark="${id}" aria-label="${name}: ${v || 'not checked'}">${v === 'yes' ? '✓' : v === 'no' ? '✗' : '·'}</button></span>`; }).join('')}</p></li>`).join('');
-  }
-  $('[data-aeo]').addEventListener('click', async (e) => {
-    const li = e.target.closest('[data-q]'); if (!li) return; const q = aeoQs[+li.dataset.q];
-    const m = e.target.closest('[data-aeo-mark]');
-    if (m) { const id = m.dataset.aeoMark, cur = aeoLog[q]?.[id]; (aeoLog[q] ||= {})[id] = cur === 'yes' ? 'no' : cur === 'no' ? undefined : 'yes'; renderAeo(); await kvSet(`aeo:${month()}`, aeoLog); }
-    if (e.target.matches('[data-aeo-del]')) { aeoQs = aeoQs.filter((x) => x !== q); renderAeo(); await kvSet('aeo:questions', aeoQs); }
-  });
-  $('[data-aeo-add]').addEventListener('submit', async (e) => { e.preventDefault(); const i = $('[data-aeo-new]'); const v = i.value.trim(); if (!v) return; aeoQs.push(v); i.value = ''; renderAeo(); await kvSet('aeo:questions', aeoQs); });
 
   /* ================================================================ static guide sections */
   function renderGuides() {
@@ -664,7 +658,7 @@ export function initHQ({ root, api, show }) {
       PB = r.playbook; custom = r.custom; state = Object.fromEntries(r.state.map((s) => [s.id, s]));
       renderTodos(); renderGuides();
       for (const n of Object.keys(AGENT_NAMES)) kvGet(`agent:${n}`).then((v) => renderAgent(n, v)).catch(() => {});
-      loadSeo().catch(() => {}); loadLinks().catch(() => {}); loadAeo().catch(() => {}); loadSettings().catch(() => {});
+      loadSeo().catch(() => {}); loadLinks().catch(() => {}); loadSettings().catch(() => {});
     } catch (err) { $('[data-todo-list]').innerHTML = `<p class="hall-msg">Couldn’t load the playbook: ${esc(err.message)}</p>`; }
   })();
 }
