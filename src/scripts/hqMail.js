@@ -414,7 +414,7 @@ export function initMail({ root, api }) {
     body.innerHTML = `
       <article class="dash-card"><h3>Sending</h3>
         <div class="ml-row">${[['off', 'Off'], ['test', 'Test people only'], ['live', 'Live']].map(([k, t]) => `<button type="button" class="cp-chip" data-mode="${k}" aria-pressed="${s.mode === k}">${t}</button>`).join('')}</div>
-        <p class="dash-fine"><b>Off:</b> sign-ups are saved, nothing sends. <b>Test:</b> only people you mark “test” in People get the real drip (sign up yourself from the quiz, then mark yourself). <b>Live:</b> everyone. New sign-ups from the last 14 days get their welcome email when you switch to Live.</p></article>
+        <p class="dash-fine"><b>Off:</b> sign-ups are saved, nothing sends. <b>Test:</b> only people you mark “test” in People get the real drip (sign up yourself from the quiz, then mark yourself). <b>Live:</b> everyone. Everyone who signed up while sending was off gets the full welcome series, starting the day you first switch to Live.</p></article>
       <article class="dash-card"><h3>Addresses</h3>
         <label class="ml-field">Send from (name)<input class="hall-field" data-k="from_name" value="${esc(s.from_name)}"></label>
         <label class="ml-field">Send from (address on mowittall.com)<input class="hall-field" data-k="from_addr" value="${esc(s.from_addr)}"></label>
