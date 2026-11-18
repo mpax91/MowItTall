@@ -1,0 +1,156 @@
+---
+// HQ Analytics: Mike's full analytics suite (Nov 17, 2026). Desktop-first, still works on a phone.
+// A standalone page (not the site layout): no site header/footer, no tracking. Everything private comes from
+// /api/admin/ax/* (worker/ax.js) with the same ADMIN_KEY the rest of HQ uses (remembered in localStorage).
+import '@fontsource-variable/bricolage-grotesque';
+import '@fontsource/atkinson-hyperlegible-next/400.css';
+import '@fontsource/atkinson-hyperlegible-next/700.css';
+import '../../../styles/ax.css';
+
+const NAV = [
+  ['', 'Dashboards'],
+  ['overview', 'Overview', 'M3 13h4v8H3zM10 3h4v18h-4zM17 8h4v13h-4z'],
+  ['acquisition', 'Traffic Sources', 'M4 12h10M10 6l6 6-6 6M20 4v16'],
+  ['content', 'Content & Engagement', 'M5 4h14v16H5zM8 8h8M8 12h8M8 16h5'],
+  ['conversions', 'Conversions', 'M3 4h18l-7 8v6l-4 2v-8z'],
+  ['audience', 'Audience', 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0'],
+  ['', 'Channels'],
+  ['seo', 'SEO', 'M10 17a7 7 0 1 0 0-14 7 7 0 0 0 0 14zM15 15l6 6'],
+  ['email', 'Email', 'M3 5h18v14H3zM3 6l9 7 9-7'],
+  ['social', 'Social', 'M18 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM6 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM18 22a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM8.6 13.5l6.8 4M15.4 6.5l-6.8 4'],
+  ['', 'Tools'],
+  ['ux', 'UX (Clarity)', 'M4 4l7 17 2-7 7-2z'],
+  ['ga4', 'GA4 Cross-Check', 'M6 20V10M12 20V4M18 20v-6'],
+  ['explore', 'Explore', 'M4 6h16M7 12h10M10 18h4'],
+  ['sources', 'Sources & Export', 'M12 3v12M7 10l5 5 5-5M4 21h16'],
+];
+---
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>Analytics | Mow It Tall HQ</title>
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <script is:inline>try { var t = localStorage.getItem('mit-ax-theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+</head>
+<body class="ax">
+  <div class="ax-login" data-login hidden>
+    <form class="ax-card" data-login-form>
+      <h1>Mow It Tall HQ</h1><p>Analytics. Same password as the rest of HQ.</p>
+      <label>Admin key<input type="password" autocomplete="current-password" data-login-key required /></label>
+      <button class="ax-btn">Log In</button><p class="ax-fine" data-login-msg role="status"></p>
+    </form>
+  </div>
+
+  <div class="ax-app" data-app hidden>
+    <nav class="ax-side" aria-label="Analytics sections">
+      <a class="ax-brand" href="/admin/"><span class="ax-logo" aria-hidden="true">🌱</span><span><b>Mow It Tall</b><small>HQ Analytics</small></span></a>
+      <ul>
+        {NAV.map(([id, label, d]) => id
+          ? <li><a href={`#${id}`} data-nav={id}><svg viewBox="0 0 24 24" aria-hidden="true"><path d={d} /></svg><span>{label}</span></a></li>
+          : <li class="ax-side-h">{label}</li>)}
+      </ul>
+      <div class="ax-side-f">
+        <a href="/admin/">← Back to HQ</a>
+        <button type="button" data-theme-btn>Dark Mode</button>
+      </div>
+    </nav>
+
+    <div class="ax-main">
+      <header class="ax-top">
+        <div class="ax-top-row">
+          <h1 data-title>Overview</h1>
+          <div class="ax-top-ctl">
+            <label class="ax-ctl"><span>Date Range</span><select data-range></select></label>
+            <span class="ax-custom" data-custom hidden><input type="date" data-from aria-label="From" /> – <input type="date" data-to aria-label="To" /></span>
+            <label class="ax-ctl"><span>Compare</span><select data-cmp><option value="prev">Previous Period</option><option value="year">Last Year</option><option value="none">No Comparison</option></select></label>
+            <label class="ax-ctl"><span>By</span><select data-grain><option value="auto">Auto</option><option value="date">Day</option><option value="week">Week</option><option value="month">Month</option></select></label>
+            <button type="button" class="ax-icon-btn" data-refresh title="Refresh data" aria-label="Refresh data">⟳</button>
+          </div>
+        </div>
+        <div class="ax-top-row is-sub"><p class="ax-period" data-period></p><div class="ax-filters" data-filters></div></div>
+      </header>
+      <main class="ax-content" data-view></main>
+    </div>
+  </div>
+  <div class="ax-drawer" data-drawer hidden></div>
+
+  <script>
+    import { S, RANGES, readHash, writeHash, api, setKey, hasKey, clearCache, period, renderFilters, onRerender, onGo, dlabel, daysBetween } from '../../../scripts/ax/core.js';
+    import * as V from '../../../scripts/ax/views.js';
+
+    const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector<T>(s)!;
+    const VIEWS: Record<string, [string, (root: HTMLElement, refresh?: () => Promise<void>) => Promise<void>]> = {
+      overview: ['Overview', V.overview], acquisition: ['Traffic Sources', V.acquisition], content: ['Content & Engagement', V.content], conversions: ['Conversions', V.conversions],
+      audience: ['Audience', V.audience], seo: ['SEO', V.seo], email: ['Email', V.email], social: ['Social', V.social], ux: ['UX (Clarity)', V.ux], ga4: ['GA4 Cross-Check', V.ga4],
+      explore: ['Explore', V.explore], sources: ['Sources & Export', V.sources],
+    };
+    let token = 0;
+    async function loadStatus() { S.status = await api('/api/admin/ax/status'); }
+    async function render() {
+      const my = ++token;
+      if (!VIEWS[S.section]) S.section = 'overview';
+      const [title, fn] = VIEWS[S.section];
+      $('[data-title]').textContent = title; document.title = `${title} | HQ Analytics`;
+      document.querySelectorAll<HTMLElement>('[data-nav]').forEach((a) => a.setAttribute('aria-current', String(a.dataset.nav === S.section)));
+      const p = period();
+      $('[data-period]').innerHTML = `${dlabel(p.from, 'date', true)} – ${dlabel(p.to, 'date', true)} · ${p.len} day${p.len === 1 ? '' : 's'}${p.prev ? ` <span>vs ${dlabel(p.prev.from, 'date', true)} – ${dlabel(p.prev.to, 'date', true)}</span>` : ''}`;
+      const view = $('[data-view]');
+      view.innerHTML = '';
+      view.dataset.section = S.section;
+      renderFilters();
+      try { await fn(view, async () => { await loadStatus(); render(); }); }
+      catch (e: any) { if (my === token) view.insertAdjacentHTML('beforeend', `<p class="ax-empty is-err">${e.message}</p>`); }
+    }
+    function syncControls() {
+      $<HTMLSelectElement>('[data-range]').value = S.range;
+      $<HTMLSelectElement>('[data-cmp]').value = S.cmp;
+      $<HTMLSelectElement>('[data-grain]').value = S.grain;
+      $('[data-custom]').hidden = S.range !== 'custom';
+      const p = period();
+      $<HTMLInputElement>('[data-from]').value = p.from; $<HTMLInputElement>('[data-to]').value = p.to;
+    }
+    function boot() {
+      $<HTMLSelectElement>('[data-range]').innerHTML = RANGES.map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
+      readHash(); syncControls();
+      $('[data-range]').addEventListener('change', (e) => {
+        const v = (e.target as HTMLSelectElement).value;
+        if (v === 'custom') { const p = period(); S.from = p.from; S.to = p.to; }
+        S.range = v; writeHash(); syncControls(); render();
+      });
+      const custom = () => { S.from = $<HTMLInputElement>('[data-from]').value; S.to = $<HTMLInputElement>('[data-to]').value; if (S.from && S.to) { writeHash(); render(); } };
+      $('[data-from]').addEventListener('change', custom); $('[data-to]').addEventListener('change', custom);
+      $('[data-cmp]').addEventListener('change', (e) => { S.cmp = (e.target as HTMLSelectElement).value; writeHash(); render(); });
+      $('[data-grain]').addEventListener('change', (e) => { S.grain = (e.target as HTMLSelectElement).value; writeHash(); render(); });
+      $('[data-refresh]').addEventListener('click', async () => { clearCache(); await loadStatus(); render(); });
+      document.querySelectorAll<HTMLAnchorElement>('[data-nav]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); goTo(a.dataset.nav!); }));
+      onRerender(render);
+      onGo(goTo);
+      addEventListener('hashchange', () => { const before = S.section; readHash(); syncControls(); if (before !== S.section) render(); });
+      addEventListener('keydown', (e) => { if (e.key === 'Escape') { const d = $('[data-drawer]'); if (!d.hidden) { d.hidden = true; d.innerHTML = ''; document.body.classList.remove('has-drawer'); } } });
+      render();
+    }
+    function goTo(sec: string) { S.section = sec; S.sub = {}; writeHash(); render(); scrollTo({ top: 0 }); }
+
+    // theme
+    const themeBtn = $('[data-theme-btn]');
+    const isDark = () => document.documentElement.dataset.theme === 'dark' || (!document.documentElement.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+    const label = () => (themeBtn.textContent = isDark() ? 'Light Mode' : 'Dark Mode');
+    themeBtn.addEventListener('click', () => { const t = isDark() ? 'light' : 'dark'; document.documentElement.dataset.theme = t; try { localStorage.setItem('mit-ax-theme', t); } catch {} label(); render(); });
+    label();
+
+    async function start() {
+      try { await loadStatus(); $('[data-login]').hidden = true; $('[data-app]').hidden = false; boot(); }
+      catch (e: any) {
+        $('[data-app]').hidden = true; $('[data-login]').hidden = false;
+        if (hasKey()) $('[data-login-msg]').textContent = e.status === 401 ? 'That key didn’t work.' : e.message;
+      }
+    }
+    $('[data-login-form]').addEventListener('submit', async (e) => { e.preventDefault(); setKey($<HTMLInputElement>('[data-login-key]').value.trim()); start(); });
+    start();
+    void daysBetween;
+  </script>
+</body>
+</html>

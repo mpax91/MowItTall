@@ -30,7 +30,7 @@ const SKIP_PARAMS = new Set(['link_url', 'link_text', 'page_path', 'page_referre
 const MAX_EVENTS = 25;
 const TRIM_AT = 400_000_000;
 const BOT_RE = /bot|crawl|spider|slurp|headless|lighthouse|pagespeed|preview|facebookexternalhit|embedly|monitor|curl|wget|python|axios/i;
-const DAILY = ['ev_days', 'ev_landing', 'ev_pages', 'ev_geo', 'ev_dims', 'ev_clicks', 'ev_events'];
+const DAILY = ['ev_days', 'ev_landing', 'ev_pages', 'ev_geo', 'ev_dims', 'ev_clicks', 'ev_events', 'ev_sess'];
 
 let ready = null;
 export async function evInit(db) {
@@ -64,6 +64,11 @@ export async function evInit(db) {
       db.prepare(`CREATE TABLE IF NOT EXISTS ev_events (date TEXT NOT NULL, name TEXT NOT NULL, param TEXT NOT NULL, value TEXT NOT NULL,
         count INTEGER NOT NULL, users INTEGER NOT NULL, PRIMARY KEY (date, name, param, value))`),
       db.prepare('CREATE TABLE IF NOT EXISTS ev_meta (k TEXT PRIMARY KEY, v TEXT)'),
+      // One row per session per day (Nov 17): what HQ → Analytics slices by any mix of source, place, device…
+      db.prepare(`CREATE TABLE IF NOT EXISTS ev_sess (date TEXT NOT NULL, session TEXT NOT NULL, hour INTEGER, dow INTEGER, device TEXT, nv INTEGER,
+        landing TEXT, source TEXT, medium TEXT, campaign TEXT, channel TEXT, country TEXT, region TEXT, city TEXT, dev_type TEXT, os TEXT, browser TEXT,
+        views INTEGER, eng_ms INTEGER, events INTEGER, engaged INTEGER, key_events INTEGER, quiz_start INTEGER, quiz_done INTEGER, leads INTEGER,
+        PRIMARY KEY (date, session))`),
     ]).catch((e) => { ready = null; throw e; });
   }
   return ready;
@@ -177,6 +182,15 @@ export async function rollup(db, date) {
     db.prepare(`INSERT INTO ev_geo SELECT ?, COALESCE(city, '(not set)'), COALESCE(region, ''), MAX(country), COUNT(*) FROM (${FIRST}) GROUP BY 2, 3`).bind(date, date),
     ...['dev_type', 'os', 'browser', 'country', 'hour', 'channel'].map((c) =>
       db.prepare(`INSERT INTO ev_dims SELECT ?, ?, COALESCE(CAST(${c} AS TEXT), '(not set)'), COUNT(*) FROM (${FIRST}) GROUP BY 3`).bind(date, c === 'dev_type' ? 'device' : c, date)),
+    db.prepare(`INSERT INTO ev_sess SELECT ?, x.session, f.hour, CAST(strftime('%w', ?) AS INTEGER), x.device, x.nv,
+      COALESCE(f.landing, '(not set)'), COALESCE(f.source, '(direct)'), COALESCE(f.medium, '(none)'), COALESCE(NULLIF(f.campaign, ''), '(not set)'), COALESCE(f.channel, 'Direct'),
+      COALESCE(f.country, '(not set)'), COALESCE(f.region, '(not set)'), COALESCE(f.city, '(not set)'), COALESCE(f.dev_type, '(not set)'), COALESCE(f.os, '(not set)'), COALESCE(f.browser, '(not set)'),
+      x.views, x.eng, x.n, ${ENGAGED}, x.kc, x.qs, x.qd, x.leads
+      FROM (SELECT session, MIN(device) device, MAX(nv) nv, SUM(name = 'page_view') views, SUM(eng_ms) eng, COUNT(*) n,
+        SUM(name IN (${KEY_EVENTS.map(() => '?').join(',')})) kc, MAX(name IN (${KEY_EVENTS.map(() => '?').join(',')})) k,
+        MAX(name = 'quiz_start') qs, MAX(name = 'quiz_complete') qd, SUM(name = 'generate_lead') leads FROM ev_raw WHERE date = ? GROUP BY session) x
+      JOIN (SELECT * FROM (SELECT session, landing, source, medium, campaign, channel, city, region, country, dev_type, os, browser, hour,
+        ROW_NUMBER() OVER (PARTITION BY session ORDER BY id) rn FROM ev_raw WHERE date = ?) WHERE rn = 1) f ON f.session = x.session`).bind(date, date, ...KEY_EVENTS, ...KEY_EVENTS, date, date),
     db.prepare(`INSERT INTO ev_clicks SELECT ?, COALESCE(path, ''), json_extract(params, '$.link_domain'), COUNT(*) FROM ev_raw
       WHERE date = ? AND name = 'outbound_click' AND json_extract(params, '$.link_domain') IS NOT NULL GROUP BY 2, 3`).bind(date, date),
     db.prepare(`INSERT INTO ev_events SELECT ?, name, '', '', COUNT(*), COUNT(DISTINCT device) FROM ev_raw WHERE date = ? GROUP BY name`).bind(date, date),

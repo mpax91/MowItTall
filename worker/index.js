@@ -2,6 +2,7 @@ import { crmPublic, crmAdmin, crmInbound, crmEvents, dripTick } from './crm.js';
 import { PLAYBOOK } from './playbook.js';
 import { ingest, summary, exportRows, nightly, rollup, evInit, etDate } from './events.js';
 import { seoTick, seoReport } from './seo.js';
+import { axAdmin, axTick } from './ax.js';
 import { scoresList, scoresSave, scoresAdmin, SCORES_TABLE, SCORES_INDEX } from './scores.js';
 // Mow It Tall API (Cloudflare Worker). Everything that isn't /api/* is served straight from ./dist.
 // Lawn Hall of Fame / Hall of Shame: anyone can upload, Mike approves before anything shows,
@@ -238,6 +239,7 @@ async function dash(env, req, url) {
   if (!isAdmin(env, key)) return bad('Wrong key.', 401);
   const p = url.pathname;
   if (p.startsWith('/api/admin/crm/')) return await crmAdmin(env, req, url);
+  if (p.startsWith('/api/admin/ax/')) return await axAdmin(env, req, url);
   if (p === '/api/admin/scores') return await scoresAdmin(env, req);
   if (p === '/api/admin/overview') {
     const week = Date.now() - 7 * 86400000;
@@ -418,6 +420,7 @@ export default {
     ctx.waitUntil((async () => {
       try { await init(env.DB); await seoTick(env); } catch (e) { console.log('seo tick failed', e?.message); }
       try { await dripTick(env, event.scheduledTime || Date.now()); } catch (e) { console.log('drip tick failed', e?.message); }
+      try { await axTick(env); } catch (e) { console.log('analytics tick failed', e?.message); }
       if (new Date(event.scheduledTime || Date.now()).getUTCHours() === 7) await nightly(env);
     })());
   },

@@ -22,7 +22,8 @@
 // statement per table (json_each), tables live in the analytics database (EV).
 
 const TZ = 'America/New_York';
-const SCOPE = 'https://www.googleapis.com/auth/webmasters.readonly';
+// One token covers Search Console and the GA4 Data API (HQ → Analytics pulls GA4 with the same service account).
+const SCOPE = 'https://www.googleapis.com/auth/webmasters.readonly https://www.googleapis.com/auth/analytics.readonly';
 const INSPECT_PER_RUN = 20;
 const DAY = 86400000;
 const BACKFILL_DAYS = 480; // Google keeps ~16 months
@@ -73,7 +74,7 @@ export function serviceAccount(env) {
   try { const sa = JSON.parse(env.GSC_SERVICE_ACCOUNT); return sa.client_email && sa.private_key ? sa : null; } catch { return null; }
 }
 let tokenCache = null;
-async function googleToken(env) {
+export async function googleToken(env) {
   if (tokenCache && tokenCache.exp > Date.now() + 120000) return tokenCache.token;
   const sa = serviceAccount(env);
   if (!sa) throw new Error('GSC_SERVICE_ACCOUNT is missing or isn’t a valid key file.');
