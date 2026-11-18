@@ -346,7 +346,7 @@ async function speedOne(env, path) {
   const j = await r.json().catch(() => ({}));
   if (!r.ok) {
     const msg = j.error?.message || r.status;
-    if (r.status === 429 || /quota/i.test(String(msg))) throw new Error(`PageSpeed quota hit (${msg}). Add a free PSI_API_KEY secret to fix it.`);
+    if (r.status === 429 || /quota/i.test(String(msg))) throw Object.assign(new Error(env.PSI_API_KEY ? `PageSpeed daily quota used up for your key (${msg}).` : `PageSpeed quota hit (${msg}). Add a free PSI_API_KEY secret to fix it.`), { quota: true });
     throw new Error(`PageSpeed ${r.status}: ${msg}`);
   }
   const lh = j.lighthouseResult || {}, a = lh.audits || {}, v = (k) => a[k]?.numericValue ?? null;
@@ -418,7 +418,13 @@ export async function seoTick(env, { force = false } = {}) {
     if (due('sitemaps', 20)) { await step('sitemaps', () => pullSitemaps(env)); budget -= 1; }
     await step('inspect', () => inspectBatch(env, Math.min(INSPECT_PER_RUN, Math.max(budget - 2, 0))));
   }
-  if (due('speed', 1)) await step('speed', () => speedTick(env));
+  // Google's PageSpeed quota resets at midnight Pacific; after a quota error, wait for that instead of failing every hour.
+  if (due('speed', 1) && (force || !(runs['speed:wait'] > Date.now()))) {
+    let quota = false;
+    await step('speed', () => speedTick(env).catch((e) => { quota = !!e.quota; throw e; }));
+    if (quota) { const d = new Date(); d.setUTCHours(8, 30, 0, 0); if (d <= new Date()) d.setUTCDate(d.getUTCDate() + 1); runs['speed:wait'] = d.getTime(); }
+    else if (!did.speed?.error) delete runs['speed:wait'];
+  }
   // Once the GitHub job is delivering Bing data, the worker only steps in if that job has missed a day.
   if (env.BING_API_KEY && due('bing', runs['bing:via'] === 'github' ? 30 : 20)) await step('bing', async () => { const r = await pullBing(env); runs['bing:via'] = 'worker'; return r; });
   await setState(db, 'runs', runs);

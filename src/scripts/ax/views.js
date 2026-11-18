@@ -42,8 +42,8 @@ export function setupHTML(src) {
       <li>On the app page, generate an access token with <code>user_accounts:read</code> and <code>pins:read</code> (and <code>boards:read</code>). Save it as <code>PINTEREST_TOKEN</code>.</li>
       <li>So it never expires: also save the refresh token as <code>PINTEREST_REFRESH</code>, and the app’s ID and secret as <code>PINTEREST_APP_ID</code> and <code>PINTEREST_APP_SECRET</code>. HQ then renews it itself.</li>
       <li>You get daily impressions, saves, pin clicks and outbound clicks, plus 90-day stats for every pin.</li></ol>`,
-    reddit: `<ol><li>HQ first tries Reddit’s public data (karma, profile followers, every post’s score and comments). Reddit often blocks that from Cloudflare.</li>
-      <li>If it fails: <a href="https://www.reddit.com/prefs/apps" target="_blank" rel="noopener">reddit.com/prefs/apps</a> → <b>create another app</b> → type <b>script</b> (redirect URI can be http://localhost). Reddit may ask you to request API access first.</li>
+    reddit: `<ol><li>Off for now: Reddit blocks Cloudflare’s servers unless HQ signs in with a Reddit app, and Reddit has mostly stopped approving new ones. Nothing to do unless you get one.</li>
+      <li>If you do: <a href="https://www.reddit.com/prefs/apps" target="_blank" rel="noopener">reddit.com/prefs/apps</a> → <b>create another app</b> → type <b>script</b> (redirect URI can be http://localhost). Reddit may ask you to request API access first.</li>
       <li>Save <code>REDDIT_CLIENT_ID</code> (under the app name), <code>REDDIT_CLIENT_SECRET</code>, <code>REDDIT_USERNAME</code> (MowItTALL) and <code>REDDIT_PASSWORD</code>. Free for personal use.</li></ol>`,
     x: `<ol><li>X charges for most API reads now, and the free tier (if your account still has one) allows very few. HQ only reads once a week: your follower count and your last 20 posts with impressions, likes, replies, reposts and bookmarks.</li>
       <li>At <a href="https://developer.x.com/en/portal/dashboard" target="_blank" rel="noopener">developer.x.com</a> → your project → app → Keys and tokens → <b>Bearer Token</b>. Save it as <code>X_BEARER_TOKEN</code>.</li>

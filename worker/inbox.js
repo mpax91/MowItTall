@@ -7,7 +7,8 @@
 //   social    follower changes per platform, posts doing much better than usual
 //   traffic   big jumps or drops in visits / users / engaged visits / leads, new traffic sources, pages taking off,
 //             best day ever
-//   search    new Google searches you showed up for, first Google click on a page, pages newly indexed or dropped
+//   search    new Google searches you showed up for, first Google click on a page, pages newly indexed or dropped,
+//             and a daily checklist of up to 10 not-yet-indexed pages to request in Search Console (its daily limit)
 //   milestone follower and sign-up milestones (10, 25, 50, 100…)
 //   idea      weekly: "almost page 1" search terms, pages that show in Google but don't get clicked, the weekly recap
 //   radar     new Reddit questions worth answering (Reddit Radar)
@@ -17,6 +18,7 @@
 // making duplicates. State (what was already announced) lives in ax_state under "inbox:*".
 
 import { etDate, rollup } from './events.js';
+import { SOCIAL_SOURCES } from './social.js';
 
 const HOUR = 3600000, DAY = 24 * HOUR;
 const addDays = (date, n) => { const d = new Date(date + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
@@ -36,18 +38,21 @@ export async function inboxInit(db) {
       db.prepare(`CREATE TABLE IF NOT EXISTS ax_inbox (id TEXT PRIMARY KEY, kind TEXT NOT NULL, tone TEXT, title TEXT NOT NULL, detail TEXT,
         go TEXT, link TEXT, day TEXT, at INTEGER NOT NULL, read_at INTEGER, done_at INTEGER)`),
       db.prepare('CREATE INDEX IF NOT EXISTS ax_inbox_at ON ax_inbox (done_at, at)'),
-    ]).catch((e) => { ready = null; throw e; });
+    ]).then(() => db.prepare('ALTER TABLE ax_inbox ADD COLUMN list TEXT').run().catch(() => {})) // checklist items (JSON), added Nov 18
+      .catch((e) => { ready = null; throw e; });
   }
   return ready;
 }
 async function getState(db, k) { const r = await db.prepare('SELECT v FROM ax_state WHERE k = ?').bind(k).first(); return r ? JSON.parse(r.v) : null; }
 async function setState(db, k, v) { await db.prepare('INSERT INTO ax_state (k, v, at) VALUES (?, ?, ?) ON CONFLICT (k) DO UPDATE SET v = excluded.v, at = excluded.at').bind(k, JSON.stringify(v), Date.now()).run(); }
 
-// item: { id, kind, tone?, title, detail?, go?, link?, day?, at?, update? }  update = refresh the text while it's still unread
+// item: { id, kind, tone?, title, detail?, go?, link?, list?, day?, at?, update? }  update = refresh the text while it's still unread
+// list = a checklist: [{ t: label, s: note, href, done: ms|null }] (HQ ticks an entry when Mike opens its link).
 function put(db, it) {
-  const sql = `INSERT INTO ax_inbox (id, kind, tone, title, detail, go, link, day, at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  const sql = `INSERT INTO ax_inbox (id, kind, tone, title, detail, go, link, list, day, at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     ON CONFLICT (id) DO ${it.update ? 'UPDATE SET title = excluded.title, detail = excluded.detail, at = excluded.at WHERE read_at IS NULL AND done_at IS NULL' : 'NOTHING'}`;
-  return db.prepare(sql).bind(it.id, it.kind, it.tone || 'info', short(it.title, 200), it.detail ? short(it.detail, 600) : null, it.go || null, it.link || null, it.day || etDate(), it.at || Date.now());
+  return db.prepare(sql).bind(it.id, it.kind, it.tone || 'info', short(it.title, 200), it.detail ? short(it.detail, 600) : null, it.go || null, it.link || null,
+    it.list ? JSON.stringify(it.list) : null, it.day || etDate(), it.at || Date.now());
 }
 
 /* ================================================================ rules */
@@ -217,6 +222,36 @@ async function searchRules({ db, now, st }) {
   return out;
 }
 
+// Pages Google hasn't indexed yet → a daily checklist of up to 10 (Search Console's "Request Indexing" allows about 10 a day).
+// Only statuses where asking actually helps. A page Mike opened from a checklist rests 7 days before it can come back
+// (Google can take a while to act); pages he didn't get to carry over to the next day's list. One list a day, after ~7am Eastern.
+const ASKABLE = [[/unknown to google/i, 'Google hasn’t found it yet'], [/discovered/i, 'Found but not crawled yet'], [/crawled/i, 'Crawled but not indexed']];
+const INDEX_PER_DAY = 10, REST = 7 * DAY;
+async function indexTodoRules({ env, db, now, today }) {
+  const etHour = Number(new Intl.DateTimeFormat('en-US', { timeZone: 'America/New_York', hour: 'numeric', hourCycle: 'h23' }).format(new Date(now)));
+  const id = `index:todo:${today}`;
+  if (etHour < 7 || (await db.prepare('SELECT 1 FROM ax_inbox WHERE id = ?').bind(id).first())) return [];
+  let rows;
+  try { ({ results: rows } = await db.prepare("SELECT path, coverage FROM seo_inspect WHERE verdict IS NOT NULL AND verdict != 'PASS'").all()); } catch { return []; }
+  const cand = rows.map((r) => ({ ...r, rank: ASKABLE.findIndex(([re]) => re.test(r.coverage || '')) })).filter((r) => r.rank >= 0);
+  // Close out older lists (unticked pages simply come back today) and note what was asked for recently.
+  const { results: old } = await db.prepare("SELECT id, list, done_at FROM ax_inbox WHERE id LIKE 'index:todo:%' AND at > ?").bind(now - REST - DAY).all();
+  const asked = new Set();
+  for (const o of old) for (const e of JSON.parse(o.list || '[]')) if (e.done && now - e.done < REST) asked.add(e.t);
+  await db.prepare("UPDATE ax_inbox SET done_at = ?, read_at = COALESCE(read_at, ?) WHERE id LIKE 'index:todo:%' AND done_at IS NULL").bind(now, now).run();
+  // Hubs and tools before deep pages; "unknown" first since Google has never seen those at all.
+  const pick = cand.filter((r) => !asked.has(r.path))
+    .sort((a, b) => a.rank - b.rank || a.path.split('/').length - b.path.split('/').length || a.path.localeCompare(b.path)).slice(0, INDEX_PER_DAY);
+  if (!pick.length) return [];
+  const site = env.GSC_SITE || 'sc-domain:mowittall.com';
+  const origin = site.startsWith('sc-domain:') ? `https://${site.slice(10)}` : site.replace(/\/$/, '');
+  const resting = cand.length - pick.length;
+  return [{ id, kind: 'search', tone: 'info', title: `Ask Google to index ${pick.length === 1 ? 'this page' : `these ${pick.length} pages`}`,
+    detail: `${cand.length} page${cand.length === 1 ? ' isn’t' : 's aren’t'} in Google yet. Tap each one, wait for the check, then hit “Request Indexing.” Search Console allows about 10 a day.`
+      + (resting > 0 ? ` ${resting} more ${resting === 1 ? 'comes' : 'come'} up on later days.` : ''),
+    go: 'seo', list: pick.map((r) => ({ t: r.path, s: ASKABLE[r.rank][1], href: `https://search.google.com/search-console/inspect?resource_id=${encodeURIComponent(site)}&id=${encodeURIComponent(origin + r.path)}`, done: null })) }];
+}
+
 // Weekly ideas + recap (Monday or later in the week, once per week).
 async function weeklyRules({ db, env, today, st }) {
   const d = new Date(today + 'T12:00:00Z');
@@ -279,14 +314,22 @@ async function problemRules({ env, db, now }) {
   const seoErrs = await db.prepare("SELECT v FROM seo_state WHERE k = 'errors'").first().then((r) => (r ? JSON.parse(r.v) : [])).catch(() => []);
   for (const e of seoErrs) {
     if ((e.n || 1) < 3) continue;
+    if (e.task === 'speed' && /quota/i.test(e.msg) && !env.PSI_API_KEY) {
+      // Google's free keyless PageSpeed quota is shared by everyone on Cloudflare, so it runs dry. A free key of our own fixes it.
+      out.push({ id: 'problem:seo:speed:nokey', kind: 'problem', tone: 'bad', title: 'PageSpeed checks need a free Google key (2 minutes)',
+        detail: 'Google’s shared keyless quota keeps running out, so phone speed scores aren’t updating. In Google Cloud (project mow-it-tall-analytics): turn on the PageSpeed Insights API, then Credentials → Create credentials → API key. Paste it into Cloudflare → the mowittall worker → Settings → Variables and Secrets as a secret named PSI_API_KEY. Free; it then checks itself within the hour.',
+        go: 'seo', link: 'https://console.cloud.google.com/apis/library/pagespeedonline.googleapis.com?project=mow-it-tall-analytics' });
+      continue;
+    }
     const bing = /bing/i.test(e.task) || /ThrottleIP/i.test(e.msg);
     out.push({ id: `problem:seo:${e.task}:${hash(String(e.msg).replace(/\d+/g, '#').slice(0, 80))}`, kind: 'problem', tone: bing && /Throttle/i.test(e.msg) ? 'info' : 'bad',
       title: `Search autopilot: ${e.task} keeps failing`, detail: `${bing && /Throttle/i.test(e.msg) ? 'Bing limits Cloudflare’s shared servers; it retries every hour. ' : ''}Error: ${short(e.msg, 220)}`, go: 'seo' });
   }
   const all = Object.entries(runs);
   const LABEL = { ga4: 'Google Analytics', clarity: 'Clarity', 'social:meta': 'Facebook + Instagram', 'social:threads': 'Threads', 'social:youtube': 'YouTube', 'social:bluesky': 'Bluesky', 'social:pinterest': 'Pinterest', 'social:reddit': 'Reddit', 'social:x': 'X' };
+  const off = new Set(SOCIAL_SOURCES.filter(([, , on]) => !on(env)).map(([id]) => `social:${id}`));
   for (const [task, r] of all) {
-    if (!r || r.ok !== false) continue;
+    if (!r || r.ok !== false || off.has(task)) continue; // a switched-off source isn't broken
     const failingFor = now - (r.lastOk || r.at || now);
     if (r.lastOk && failingFor < 6 * HOUR) continue; // one blip isn't news
     const known = KNOWN[task] && KNOWN[task][0].test(r.info || '') ? KNOWN[task][1] : '';
@@ -312,7 +355,7 @@ export async function inboxScan(env, { force = false } = {}) {
   const st = (await getState(db, 'inbox:state')) || {};
   const first = !st.started;
   const ctx = { env, db, now, today, st, first };
-  const rules = [['crm', crmRules], ['followers', followerRules], ['posts', postRules], ['search', searchRules], ['radar', radarRules], ['problems', problemRules], ['weekly', weeklyRules]];
+  const rules = [['crm', crmRules], ['followers', followerRules], ['posts', postRules], ['search', searchRules], ['indexTodo', indexTodoRules], ['radar', radarRules], ['problems', problemRules], ['weekly', weeklyRules]];
   // Traffic once a day, after ~1am Eastern (yesterday is complete).
   if (force || (st.trafficDay !== today && new Date().getUTCHours() >= 6)) {
     rules.push(['traffic', async (c) => {
@@ -321,9 +364,14 @@ export async function inboxScan(env, { force = false } = {}) {
       const r = await trafficRules(c); st.trafficDay = today; return r; }]);
   }
   const items = [], errors = {};
+  let current = null; // ids of problems that are still happening right now
   for (const [name, fn] of rules) {
-    try { items.push(...(await fn(ctx))); } catch (e) { errors[name] = String(e.message || e).slice(0, 200); }
+    try { const got = await fn(ctx); items.push(...got); if (name === 'problems') current = got.map((it) => it.id); } catch (e) { errors[name] = String(e.message || e).slice(0, 200); }
   }
+  // Problems that fixed themselves (a pull that works again, a source switched off) leave the inbox on their own.
+  // Failed scheduled posts stay until Mike dismisses them.
+  if (current) await db.prepare(`UPDATE ax_inbox SET done_at = ?, read_at = COALESCE(read_at, ?) WHERE done_at IS NULL AND id LIKE 'problem:%' AND id NOT LIKE 'problem:post:%'
+    AND id NOT IN (SELECT value FROM json_each(?))`).bind(now, now, JSON.stringify(current)).run();
   // First scan: don't flood the inbox with old news; follower/milestone baselines were just recorded silently.
   let added = 0;
   if (items.length) {
@@ -352,7 +400,8 @@ export async function inboxAdmin(env, req, url) {
   if (p === '/api/admin/ax/inbox' && req.method === 'GET') {
     const show = url.searchParams.get('show') || 'open';
     const where = show === 'dismissed' ? 'done_at IS NOT NULL' : 'done_at IS NULL';
-    const { results } = await db.prepare(`SELECT id, kind, tone, title, detail, go, link, day, at, read_at, done_at FROM ax_inbox WHERE ${where} ORDER BY at DESC LIMIT 300`).all();
+    const { results } = await db.prepare(`SELECT id, kind, tone, title, detail, go, link, list, day, at, read_at, done_at FROM ax_inbox WHERE ${where} ORDER BY at DESC LIMIT 300`).all();
+    for (const r of results) r.list = r.list ? JSON.parse(r.list) : null;
     const st = (await getState(db, 'inbox:state')) || {};
     return json({ items: results, unread: await inboxUnread(db), lastScan: st.lastScan || null });
   }
@@ -361,6 +410,15 @@ export async function inboxAdmin(env, req, url) {
     const ids = (Array.isArray(b.ids) ? b.ids : []).slice(0, 300).map(String);
     const now = Date.now();
     const sets = { read: 'read_at = COALESCE(read_at, ?)', unread: 'read_at = NULL', dismiss: 'done_at = ?, read_at = COALESCE(read_at, ?)', restore: 'done_at = NULL' };
+    if (b.action === 'tick') {
+      // Tick one checklist entry (HQ does this when Mike opens its link). b.ids = [item id], b.i = entry index, b.done = false to untick.
+      const row = await db.prepare('SELECT list FROM ax_inbox WHERE id = ?').bind(ids[0] || '').first();
+      const list = row?.list ? JSON.parse(row.list) : null, i = Number(b.i);
+      if (!list || !list[i]) return json({ error: 'No such item.' }, 404);
+      list[i].done = b.done === false ? null : now;
+      await db.prepare('UPDATE ax_inbox SET list = ?, read_at = COALESCE(read_at, ?) WHERE id = ?').bind(JSON.stringify(list), now, ids[0]).run();
+      return json({ ok: true, list, unread: await inboxUnread(db) });
+    }
     if (b.action === 'readall') await db.prepare('UPDATE ax_inbox SET read_at = ? WHERE read_at IS NULL AND done_at IS NULL').bind(now).run();
     else if (sets[b.action] && ids.length) {
       const nBind = (sets[b.action].match(/\?/g) || []).length;

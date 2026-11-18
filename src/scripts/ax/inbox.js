@@ -28,6 +28,16 @@ export function setBadge(n) {
   if (S.status) S.status.inbox = { unread: n || 0 };
 }
 
+// Checklist items (e.g. "Ask Google to index these pages"): each link opens in a new tab and ticks itself off.
+function checklist(it) {
+  if (!Array.isArray(it.list) || !it.list.length) return '';
+  const n = it.list.filter((e) => e.done).length;
+  return `<ol class="ib-checks">${it.list.map((e, i) => `<li class="${e.done ? 'is-done' : ''}">
+      <a href="${esc(e.href)}" target="_blank" rel="noopener" data-tick="${i}"><span class="ib-box" aria-hidden="true">${e.done ? '✓' : ''}</span><b>${esc(e.t)}</b></a>
+      ${e.s ? `<span class="ib-note">${esc(e.s)}</span>` : ''}${e.done ? `<button type="button" class="ib-undo" data-untick="${i}" title="Not done yet">undo</button>` : ''}</li>`).join('')}</ol>
+    <p class="ib-progress">${n} of ${it.list.length} done</p>`;
+}
+
 export async function inbox(root) {
   const f = KINDS.some(([k]) => k === S.sub.ik) ? S.sub.ik : 'all';
   root.innerHTML = `<div class="ib-bar">${chips('ik', KINDS, f)}
@@ -50,7 +60,7 @@ export async function inbox(root) {
     list.innerHTML = [...groups].map(([d, its]) => `<section class="ib-day"><h3>${esc(dayLabel(d))}</h3>${its.map((it) => `
       <article class="ib-item is-${esc(it.tone || 'info')}${it.read_at ? '' : ' is-unread'}" data-id="${esc(it.id)}" tabindex="0">
         <span class="ib-ico" aria-hidden="true">${ICON[it.kind] || '•'}</span>
-        <div class="ib-txt"><h4>${it.read_at ? '' : '<i class="ib-dot" aria-label="Unread"></i>'}${esc(it.title)}</h4>${it.detail ? `<p>${esc(it.detail)}</p>` : ''}
+        <div class="ib-txt"><h4>${it.read_at ? '' : '<i class="ib-dot" aria-label="Unread"></i>'}${esc(it.title)}</h4>${it.detail ? `<p>${esc(it.detail)}</p>` : ''}${checklist(it)}
           <small>${timeOf(it.at)}${it.go && GO_LABEL[it.go] ? ` · ${esc(GO_LABEL[it.go])}` : ''}</small></div>
         <div class="ib-btns">
           ${it.go && GO_LABEL[it.go] ? `<button type="button" class="ax-btn is-ghost" data-open>Open →</button>` : ''}
@@ -71,6 +81,20 @@ export async function inbox(root) {
     el.querySelector('[data-toggle]')?.addEventListener('click', async () => { await act(it.read_at ? 'unread' : 'read', [id]); inbox(root); });
     el.querySelector('[data-dismiss]')?.addEventListener('click', async () => { el.classList.add('is-gone'); await act('dismiss', [id]); setTimeout(() => inbox(root), 180); });
     el.querySelector('[data-restore]')?.addEventListener('click', async () => { await act('restore', [id]); inbox(root); });
+    const tick = async (i, done) => {
+      const r = await api('/api/admin/ax/inbox', { method: 'POST', body: JSON.stringify({ action: 'tick', ids: [id], i, done }) });
+      setBadge(r.unread); it.list = r.list; it.read_at = it.read_at || Date.now();
+      const box = el.querySelector('.ib-checks'), prog = el.querySelector('.ib-progress');
+      const tmp = document.createElement('div'); tmp.innerHTML = checklist(it);
+      box.replaceWith(tmp.querySelector('.ib-checks')); prog.replaceWith(tmp.querySelector('.ib-progress'));
+      el.classList.remove('is-unread'); el.querySelector('.ib-dot')?.remove();
+    };
+    // Delegated, since ticking re-renders the list.
+    el.addEventListener('click', (e) => {
+      const a = e.target.closest('[data-tick]'), u = e.target.closest('[data-untick]');
+      if (a && f !== 'dismissed') tick(Number(a.dataset.tick), true).catch(() => {}); // the link still opens normally
+      if (u) { e.preventDefault(); tick(Number(u.dataset.untick), false).catch(() => {}); }
+    });
   });
   root.querySelector('[data-readall]').addEventListener('click', async () => { await act('readall', []); inbox(root); });
   root.querySelector('[data-scan]').addEventListener('click', async (e) => {

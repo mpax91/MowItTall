@@ -232,7 +232,9 @@ async function pullYouTube(env, db) {
   const up = c.contentDetails?.relatedPlaylists?.uploads;
   let n = 0;
   if (up) {
-    const pl = await getJSON(`${Y}/playlistItems?part=contentDetails&playlistId=${up}&maxResults=50&key=${key}`);
+    // A brand-new channel's uploads playlist doesn't exist until the first upload (YouTube answers 404): that's 0 videos, not an error.
+    const pl = await getJSON(`${Y}/playlistItems?part=contentDetails&playlistId=${up}&maxResults=50&key=${key}`)
+      .catch((e) => { if (e.status === 404 && Number(st.videoCount || 0) === 0) return { items: [] }; throw e; });
     const ids = (pl.items || []).map((i) => i.contentDetails.videoId).filter(Boolean);
     if (ids.length) {
       const v = await getJSON(`${Y}/videos?part=snippet,statistics,contentDetails&id=${ids.join(',')}&key=${key}`);
@@ -342,7 +344,8 @@ export const SOCIAL_SOURCES = [
   ['youtube', 'YouTube', (env) => !!env.YT_API_KEY, pullYouTube, 20],
   ['bluesky', 'Bluesky', () => true, pullBluesky, 20],
   ['pinterest', 'Pinterest', (env) => !!env.PINTEREST_TOKEN, pullPinterest, 20],
-  ['reddit', 'Reddit', () => true, pullReddit, 20],
+  // Reddit blocks Cloudflare's servers without an app login (and no longer hands out API keys), so only try with the REDDIT_* secrets.
+  ['reddit', 'Reddit', (env) => !!(env.REDDIT_CLIENT_ID && env.REDDIT_CLIENT_SECRET && env.REDDIT_PASSWORD), pullReddit, 20],
   ['x', 'X', (env) => !!env.X_BEARER_TOKEN, pullX, 24 * 7 - 1],
 ];
 // step(task, fn) and due(task, hours) come from ax.js so runs are logged in one place.
