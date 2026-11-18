@@ -1,0 +1,133 @@
+---
+// Game leaderboards: one board per game (worker/scores.js). Players land here after "Save Score" with
+// ?game=<id>&id=<row> so their row is highlighted. Noindex: it's just initials and numbers.
+import Base from '../layouts/Base.astro';
+
+const GAMES = [
+  { id: 'hero_stripe', name: 'Stripe This Lawn', play: '/#hero-h', unit: 'out of 100' },
+  { id: 'stripe_game', name: 'Stripe It Straight', play: '/games/#stripe-it-straight', unit: 'out of 1,000' },
+  { id: 'whack_a_weed', name: 'Whack-a-Weed', play: '/games/#whack-a-weed', unit: 'points' },
+];
+---
+<Base title="Game Leaderboards | Mow It Tall" description="Top scores for the Mow It Tall lawn games. Three letters of glory." path="/leaderboard/" noindex crumbs={[["Games", "/games/"], ["Leaderboards", "/leaderboard/"]]}>
+  <main id="main" class="page lb-page" data-lb-page>
+    <header class="page-head">
+      <h1>The Leaderboards</h1>
+      <p class="lede">Every game has its own board. Three letters of glory, no lawn required.</p>
+    </header>
+
+    <div class="lb-tabs" role="tablist" aria-label="Pick a game">
+      {GAMES.map((g, i) => (
+        <button type="button" role="tab" class="lb-tab" data-game={g.id} data-play={g.play} data-unit={g.unit} aria-selected={i === 0 ? 'true' : 'false'}>{g.name}</button>
+      ))}
+    </div>
+
+    <section class="window lb-you" data-you hidden aria-live="polite">
+      <p class="lb-you-k">Your Score</p>
+      <p class="lb-you-rank" data-you-rank></p>
+      <p class="lb-you-line" data-you-line></p>
+    </section>
+
+    <section class="window lb-board" aria-labelledby="lb-board-h">
+      <h2 id="lb-board-h" data-board-h>Stripe This Lawn</h2>
+      <p class="lb-board-sub" data-board-sub></p>
+      <ol class="lb-list" data-list aria-live="polite"><li class="lb-msg">Loading scores…</li></ol>
+    </section>
+
+    <div class="lb-actions">
+      <a class="btn" data-play-again href="/">Play Again</a>
+      <a class="btn btn-quiet" href="/">Back to Homepage</a>
+    </div>
+    <section class="lb-more" aria-labelledby="lb-more-h">
+      <h2 id="lb-more-h">Play Another Game</h2>
+      <ul class="lb-more-list" data-more>
+        {GAMES.map((g) => (
+          <li data-more-game={g.id}><a class="lb-more-card" href={g.play}><b>{g.name}</b><span>Play</span></a></li>
+        ))}
+      </ul>
+    </section>
+  </main>
+</Base>
+
+<script>
+  const root = document.querySelector('[data-lb-page]');
+  if (root) {
+    const LEVEL_NAMES: Record<string, string> = { starter: 'Starter Home', victorian: 'Victorian', backyard: 'Backyard', ballpark: 'Ballpark', club: 'Country Club', halloween: 'Halloween', thanksgiving: 'Thanksgiving', christmas: 'Christmas' };
+    const params = new URLSearchParams(location.search);
+    const tabs = [...root.querySelectorAll<HTMLButtonElement>('[data-game]')];
+    const list = root.querySelector('[data-list]') as HTMLOListElement;
+    const you = root.querySelector('[data-you]') as HTMLElement;
+    const myId = parseInt(params.get('id') || '', 10) || 0;
+    const myGame = params.get('game') || '';
+    let current = tabs.some((t) => t.dataset.game === myGame) ? myGame : 'hero_stripe';
+
+    const esc = (s: string) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c] as string));
+    const when = (t: number) => {
+      const d = (Date.now() - t) / 86400000;
+      if (d < 1) return 'Today';
+      if (d < 2) return 'Yesterday';
+      if (d < 7) return `${Math.floor(d)} days ago`;
+      return new Date(t).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+    };
+    const medal = (r: number) => (r === 1 ? ' lb-gold' : r === 2 ? ' lb-silver' : r === 3 ? ' lb-bronze' : '');
+    type Row = { id: number; initials: string; score: number; level: string | null; created: number; rank: number };
+    const row = (r: Row, me: boolean) => `
+      <li class="lb-row${medal(r.rank)}${me ? ' is-me' : ''}"${me ? ' data-me' : ''}>
+        <span class="lb-rank">${r.rank}</span>
+        <span class="lb-name">${esc(r.initials)}${me ? ' <small>You</small>' : ''}</span>
+        <span class="lb-meta">${r.level ? esc(LEVEL_NAMES[r.level] || r.level) + ' · ' : ''}${when(r.created)}</span>
+        <span class="lb-score">${r.score.toLocaleString()}</span>
+      </li>`;
+
+    async function load(game: string) {
+      current = game;
+      const tab = tabs.find((t) => t.dataset.game === game)!;
+      tabs.forEach((t) => t.setAttribute('aria-selected', String(t === tab)));
+      (root!.querySelector('[data-board-h]') as HTMLElement).textContent = tab.textContent || '';
+      (root!.querySelector('[data-play-again]') as HTMLAnchorElement).href = tab.dataset.play || '/';
+      (root!.querySelector('[data-play-again]') as HTMLAnchorElement).textContent = `Play ${tab.textContent}`;
+      root!.querySelectorAll<HTMLElement>('[data-more-game]').forEach((li) => { li.hidden = li.dataset.moreGame === game; });
+      const sub = root!.querySelector('[data-board-sub]') as HTMLElement;
+      sub.textContent = '';
+      list.innerHTML = '<li class="lb-msg">Loading scores…</li>';
+      const showMine = myId && game === myGame;
+      try {
+        const r = await fetch(`/api/scores?game=${game}${showMine ? `&id=${myId}` : ''}`);
+        const j = await r.json();
+        if (!r.ok) throw new Error(j.error);
+        if (current !== game) return;
+        const mine: Row | null = showMine ? j.mine : null;
+        sub.textContent = j.total ? `Top ${Math.min(j.total, j.rows.length)} of ${j.total.toLocaleString()} saved ${j.total === 1 ? 'score' : 'scores'}. Scores are ${tab.dataset.unit}.` : '';
+        if (!j.rows.length) {
+          list.innerHTML = `<li class="lb-msg">No scores yet. The top spot is wide open.</li>`;
+        } else {
+          let html = j.rows.map((x: Row) => row(x, !!mine && x.id === mine.id)).join('');
+          if (mine && !j.rows.some((x: Row) => x.id === mine.id)) html += `<li class="lb-gap" aria-hidden="true">⋯</li>` + row(mine, true);
+          list.innerHTML = html;
+        }
+        if (mine) {
+          you.hidden = false;
+          (root!.querySelector('[data-you-rank]') as HTMLElement).innerHTML = `<b>#${mine.rank}</b> <span>of ${j.total.toLocaleString()}</span>`;
+          const line = mine.rank === 1 ? `${esc(mine.initials)}, you’re on top. Screenshot it before someone ruins it.`
+            : mine.rank <= 3 ? `${esc(mine.initials)}, that’s a podium finish. ${mine.score.toLocaleString()} on ${esc(tab.textContent || '')}.`
+            : mine.rank <= 10 ? `${esc(mine.initials)}, top 10. ${mine.score.toLocaleString()} on ${esc(tab.textContent || '')}.`
+            : `${esc(mine.initials)}, ${mine.score.toLocaleString()} on ${esc(tab.textContent || '')}. Run it back?`;
+          (root!.querySelector('[data-you-line]') as HTMLElement).innerHTML = line;
+          requestAnimationFrame(() => root!.querySelector('[data-me]')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' }));
+        } else {
+          you.hidden = true;
+        }
+      } catch {
+        list.innerHTML = '<li class="lb-msg">Couldn’t load the scores. Try again in a minute.</li>';
+      }
+    }
+
+    tabs.forEach((t) => t.addEventListener('click', () => {
+      const u = new URL(location.href);
+      u.searchParams.set('game', t.dataset.game!);
+      history.replaceState(null, '', u.pathname + u.search);
+      load(t.dataset.game!);
+    }));
+    load(current);
+  }
+</script>

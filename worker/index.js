@@ -2,6 +2,7 @@ import { crmPublic, crmAdmin, crmInbound, crmEvents, dripTick } from './crm.js';
 import { PLAYBOOK } from './playbook.js';
 import { ingest, summary, exportRows, nightly, rollup, evInit, etDate } from './events.js';
 import { seoTick, seoReport } from './seo.js';
+import { scoresList, scoresSave, scoresAdmin, SCORES_TABLE, SCORES_INDEX } from './scores.js';
 // Mow It Tall API (Cloudflare Worker). Everything that isn't /api/* is served straight from ./dist.
 // Lawn Hall of Fame / Hall of Shame: anyone can upload, Mike approves before anything shows,
 // Reddit-style up/down votes, one vote per photo per phone (random device id, no spam check by Mike's call).
@@ -45,6 +46,9 @@ async function init(db) {
         // Lawn Weed Bracket (blog post widget): one pick per pairing per phone. pair = the two weed ids sorted
         // and joined with "~", or "champ" for the final winner.
         db.prepare(`CREATE TABLE IF NOT EXISTS bracket_votes (bracket TEXT NOT NULL, pair TEXT NOT NULL, device TEXT NOT NULL, pick TEXT NOT NULL, at INTEGER NOT NULL, PRIMARY KEY (bracket, pair, device))`),
+        // Game leaderboards (worker/scores.js)
+        db.prepare(SCORES_TABLE),
+        db.prepare(SCORES_INDEX),
         db.prepare(`CREATE TABLE IF NOT EXISTS seo_snap (id INTEGER PRIMARY KEY AUTOINCREMENT, source TEXT, label TEXT, kind TEXT, rows TEXT, at INTEGER)`),
       ]);
       const now = Date.now();
@@ -234,6 +238,7 @@ async function dash(env, req, url) {
   if (!isAdmin(env, key)) return bad('Wrong key.', 401);
   const p = url.pathname;
   if (p.startsWith('/api/admin/crm/')) return await crmAdmin(env, req, url);
+  if (p === '/api/admin/scores') return await scoresAdmin(env, req);
   if (p === '/api/admin/overview') {
     const week = Date.now() - 7 * 86400000;
     const [posts, votes, uploads, posted] = await env.DB.batch([
@@ -397,6 +402,8 @@ export default {
       if (p === '/api/hall/submit' && req.method === 'POST') return await submit(env, req);
       if (p.startsWith('/api/hall/img/') && req.method === 'GET') return await image(env, p.split('/').pop(), url);
       if (p === '/api/hall/admin') return await admin(env, req, url);
+      if (p === '/api/scores' && req.method === 'GET') return await scoresList(env, url);
+      if (p === '/api/scores' && req.method === 'POST') return await scoresSave(env, req);
       if (p === '/api/bracket' && req.method === 'GET') return await bracketList(env, url);
       if (p === '/api/bracket/vote' && req.method === 'POST') return await bracketVote(env, req);
       if (p.startsWith('/api/admin/')) return await dash(env, req, url);

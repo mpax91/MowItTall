@@ -1,6 +1,7 @@
 // Whack-a-Weed: tap the weeds, spare the bees, never touch the gas blower.
 import { toSvg } from '../data/pixels.js';
 import { WEEDS } from '../data/weeds.js';
+import { saveScore } from './leaderboard.js';
 
 const BEE = [
   '..ww..ww..',
@@ -95,6 +96,7 @@ export function initWhack(root) {
   holes.forEach((h) => h.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); hit(h); } }));
 
   function go() {
+    window.mitTrack && window.mitTrack('game_start', { game_name: 'whack_a_weed' });
     start.hidden = true; end.hidden = true;
     score = 0; t = ROUND; running = true;
     scoreEl.textContent = '0'; timeEl.textContent = `0:${ROUND}`;
@@ -115,6 +117,7 @@ export function initWhack(root) {
     window.mitTrack && window.mitTrack('game_complete', { game_name: 'whack_a_weed', score, new_best: score > prev ? 1 : 0 });
     if (score > prev) { try { localStorage.setItem('mit-whack', String(score)); } catch { /* private mode */ } }
     $('[data-w-total]').textContent = score;
+    saveScore($('[data-lb]'), { game: 'whack_a_weed', score });
     $('[data-w-grade]').textContent = GRADES.find(([min]) => score >= min)[1];
     $('[data-w-note]').textContent = score > prev ? (prev ? `New best. Old best: ${prev}.` : 'First score on the board.') : `Your best: ${prev}.`;
     end.hidden = false;

@@ -3,6 +3,7 @@
 // down passes lay dark ones. Score = cover everything with little overlap, beat par,
 // and don't mow into the neighbor's dog. The guide line fades after the first few passes.
 import { C as K, hash, smooth, MOWER, MOWER_COL, MOWER_ANCHOR } from './pixelkit.js';
+import { saveScore } from './leaderboard.js';
 
 const C = { ...K, lawnBg: [23, 61, 39] };
 const DECK = 12;          // mower cut width, in lawn pixels
@@ -136,6 +137,7 @@ export function initHeroMower(root) {
     if (e) e.preventDefault();
     if (done && result.hidden && growT <= 0) { again(); return; }   // after closing the score card, the button replays
     if (done || growT > 0) return;
+    if (!started) window.mitTrack && window.mitTrack('game_start', { game_name: 'hero_stripe' });
     driving = true; started = true; doneBtn.hidden = true;
     hold.classList.add('is-on'); holdLabel.textContent = 'Mowing…';
     dismissHint();
@@ -294,6 +296,7 @@ export function initHeroMower(root) {
     result.querySelector('[data-score]').textContent = String(score);
     result.querySelector('[data-title]').textContent = title + (isBest && best ? ' New best!' : '');
     result.querySelector('[data-tip]').textContent = tip;
+    saveScore(result.querySelector('[data-lb]'), { game: 'hero_stripe', score });
     const chips = [
       ['Passes', `${passes}/${LANES}`, passes <= LANES],
       ['Double-cut', overlapPct < 0.5 ? 'none' : Math.round(overlapPct) + '%', overlapPct < 0.5],

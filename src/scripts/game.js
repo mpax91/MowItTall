@@ -2,6 +2,7 @@
 // Pull-start the mower, then paint the stripes yourself: drag to drive, and every straight
 // pass you lay down gets scored. Eight yards, from a starter home to a snowy Christmas lawn.
 import { C, hash, smooth, dither, MOWER, MOWER_COL, MOWER_ANCHOR, BLOWER, BLOWER_COL } from './pixelkit.js';
+import { saveScore } from './leaderboard.js';
 
 /* ------------------------------------------------------------------ sprites */
 const S = {
@@ -716,6 +717,7 @@ export function initGame(root) {
     const what = level.layer === 'leaves' ? 'Mowed and mulched' : level.layer === 'snow' ? 'Cleared' : level.both ? 'Checkerboarded' : 'Mowed';
     ui.detail.textContent = `Straightness ${Math.round(straight)}. ${what} ${Math.round(coverage * 100)}%. ${total > prevBest ? (prevBest ? `New best! Old best: ${prevBest}.` : 'First score on this yard.') : `Your best: ${prevBest}.`}`;
     ui.tip.textContent = TIPS[level.id];
+    saveScore(ui.result.querySelector('[data-lb]'), { game: 'stripe_game', score: total, level: level.id });
     show(ui.result);
   }
 
@@ -749,6 +751,7 @@ export function initGame(root) {
     strokes = []; stroke = null; bumps = 0; particles = []; moved = false; target = null;
     coverage = 0; timeLeft = timeLimit;
     state = 'play';
+    window.mitTrack && window.mitTrack('game_start', { game_name: 'stripe_game', level_name: level.id });
     setTouch(true);
     ui.push?.classList.add('is-on');
     shake = reduceMotion ? 0 : 0.3;
