@@ -260,8 +260,9 @@ async function pullBing(env) {
 // POST /api/seo/bing-ingest  (from the GitHub Actions job). Auth: header x-bing-key = the BING_API_KEY secret,
 // so there's no extra secret to manage. Body: { queries: <GetQueryStats JSON>, pages: <GetPageStats JSON> }.
 export async function bingIngest(env, req) {
-  const key = req.headers.get('x-bing-key') || '';
-  if (!env.BING_API_KEY || !env.EV || key.length < 8 || key !== env.BING_API_KEY) return json({ error: 'Not allowed.' }, 403);
+  // Trim both sides: a pasted secret often carries a stray space or newline.
+  const key = (req.headers.get('x-bing-key') || '').trim(), want = String(env.BING_API_KEY || '').trim();
+  if (!want || !env.EV || key.length < 8 || key !== want) return json({ error: 'Not allowed.' }, 403);
   const b = await req.json().catch(() => null);
   const list = (x) => (Array.isArray(x) ? x : Array.isArray(x?.d) ? x.d : null);
   const qs = list(b?.queries), ps = list(b?.pages);

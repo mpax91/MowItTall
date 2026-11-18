@@ -4,7 +4,7 @@
 // Needs one GitHub secret: BING_API_KEY (Bing Webmaster Tools → Settings → API access). Free, no AI.
 //
 //   BING_API_KEY=... node scripts/bing-pull.mjs
-const KEY = process.env.BING_API_KEY;
+const KEY = (process.env.BING_API_KEY || '').trim();
 const SITE = process.env.SITE_URL || 'https://mowittall.com/';
 const INGEST = process.env.INGEST_URL || 'https://mowittall.com/api/seo/bing-ingest';
 const HOSTS = ['https://ssl.bing.com/webmaster/api.svc/json', 'https://www.bing.com/webmaster/api.svc/json', 'https://api.bing.com/webmaster/api.svc/json'];
@@ -34,5 +34,6 @@ console.log(`Bing answered: ${queries.length} query rows, ${pages.length} page r
 
 const r = await fetch(INGEST, { method: 'POST', headers: { 'content-type': 'application/json', 'x-bing-key': KEY }, body: JSON.stringify({ queries, pages }) });
 const out = await r.text();
+if (r.status === 403) { console.error('The site refused the data: this key doesn\'t match the BING_API_KEY secret in Cloudflare (Workers & Pages → mowittall → Settings → Variables and Secrets). Bing accepted it, so put this same key there too.'); process.exit(1); }
 if (!r.ok) { console.error(`The site refused the data (${r.status}): ${out.slice(0, 300)}`); process.exit(1); }
 console.log('Saved to the site:', out);
