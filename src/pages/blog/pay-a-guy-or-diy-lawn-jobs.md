@@ -42,7 +42,7 @@ Here’s every lawn job, ranked from “pay someone, no shame” to “never pay
 
 **Cleanups and hedges** are a toss-up. Fine to hire. Fine to DIY on a nice Saturday with a podcast. One rule for spring: no power raking a lawn that just woke up.
 
-**Leaves** depend on your trees. Live in a forest? Pay. Normal yard? [Mow over them](/blog/you-never-needed-a-leaf-blower/). They turn into free lawn food.
+**Leaves** depend on your trees. Live in a forest? Pay. Normal yard? [Mow the light layers in](/guides/should-i-mulch-leaves-into-lawn/) and they turn into free lawn food. The big October and November drop is a blow-or-rake job.
 
 **Aeration** needs a heavy machine for one afternoon. Hire it, or split a rental with the neighbor. Either way, buy the seed yourself. Crews love cheap seed.
 

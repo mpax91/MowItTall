@@ -40,7 +40,7 @@ const MORE = {
   seed: ['/guides/when-to-overseed-lawn/', 'When and how to seed'],
   'fall-weeds': ['/blog/fall-kill-weeds-or-plant-seed/', 'Weeds or seed first?'],
   'spot-weeds': ['/weeds/', 'Name that weed'],
-  leaves: ['/blog/you-never-needed-a-leaf-blower/', 'Mulch, don’t blow'],
+  leaves: ['/guides/should-i-mulch-leaves-into-lawn/', 'Mulch, blow or rake?'],
   summer: ['/resources/should-i-water-my-lawn/', 'Should I water?'],
   winter: ['/blog/lawn-mower-maintenance-diy/', 'Mower care'],
 };

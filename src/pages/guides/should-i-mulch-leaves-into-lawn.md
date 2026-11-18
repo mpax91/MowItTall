@@ -9,7 +9,7 @@ answer: "<b>Yes. Mow right over them.</b> Chopped leaves fall down between the g
 date: 2026-11-16
 minutes: 3
 topics: [mowing, feeding]
-tools: [["/blog/mulching-vs-bagging/", "Mulch or bag picker"], ["/blog/you-never-needed-a-leaf-blower/", "Life without a leaf blower"], ["/calendar/", "Lawn calendar"]]
+tools: [["/blog/mulching-vs-bagging/", "Mulch or bag picker"], ["/calendar/", "Lawn calendar"]]
 faq:
   - q: "Is it bad to leave leaves on the lawn over winter?"
     a: "Whole leaves, yes. A thick wet mat blocks light, smothers grass and invites snow mold. Chopped leaves, no. Mow them into small bits and they disappear into the lawn."
@@ -28,7 +28,7 @@ sources:
     url: "https://ipm.cahnr.uconn.edu/leaf_disposal_mulch_mowing/"
 ---
 
-Every fall, half the Northeast spends three Saturdays raking leaves into giant bags so the town can haul away free lawn food. Then they buy fertilizer in spring. Don't be half the Northeast.
+Every fall, half the Northeast spends three Saturdays raking leaves into giant bags so the town can haul away free lawn food. Then they buy fertilizer in spring. On light leaf days, you can skip that.
 
 ## Why Mulching Leaves Works
 
@@ -46,8 +46,9 @@ Every fall, half the Northeast spends three Saturdays raking leaves into giant b
 5. **Look down.** If you see grass through the leaf bits, you're done. If it looks like a brown carpet, mow again in a different direction.
 6. **Do it often.** Once a week through leaf season beats one heroic mow in December.
 
-## When to Bag Instead (or Move Them)
+## When to Blow, Rake or Bag Instead
 
+- **It's peak leaf season.** Late October into November, big trees can drop more in a week than any mower can chop. Blow or rake the bulk to the curb or your beds, then mulch what's left.
 - **It's a foot deep under the oak.** Mow once to chop, then rake or bag the extra and dump it in your garden beds. Chopped leaves are great mulch.
 - **You just seeded.** New grass is tiny. Keep leaves off it with a light rake or a blower on low (battery, we're in Bedford).
 - **The leaves are soaking wet and won't chop.** Wait a day.
@@ -55,4 +56,4 @@ Every fall, half the Northeast spends three Saturdays raking leaves into giant b
 
 ## The Bottom Line
 
-Mow the leaves. See grass through the bits. Go inside. The lawn gets dinner, you get your Saturday back. Want the rest of the fall checklist? It's on the [lawn calendar](/calendar/).
+Mow the light layers in. Blow or rake the avalanche. See grass through the bits. Go inside. The lawn gets dinner, you get your Saturday back. Want the rest of the fall checklist? It's on the [lawn calendar](/calendar/).

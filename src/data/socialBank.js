@@ -3,7 +3,7 @@
 // src/pages/crm/social-bank.json.js (read by worker/plan.js) and src/pages/social/[slug].jpg.js (the 4:5 cards).
 import { SOCIAL } from './social.js';
 import { ALT_HOOKS, ENGAGE } from './socialHooks.js';
-import { MOMENTS } from './socialPlan.js';
+import { MOMENTS, LAUNCH_POSTS } from './socialPlan.js';
 import { MONTH_PAGES } from './monthPages.js';
 import { TASKS } from './tasks.js';
 import { TASK_LINKS } from './gamePlan.js';
@@ -35,7 +35,7 @@ function weedMonths(when) {
   if (/all year/.test(w)) [4, 5, 6, 7, 8, 9, 10].forEach((x) => m.add(x));
   return [...m];
 }
-const KIND_LABEL = { post: 'From the Blog', guide: 'Straight Answer', tool: 'Free Tool', weed: 'Weed of the Week', month: 'This Month', tip: 'Quick Tip', moment: 'On This Day', engage: 'Your Turn', job: 'Lawn Job' };
+const KIND_LABEL = { intro: 'Meet Mow It Tall', post: 'From the Blog', guide: 'Straight Answer', tool: 'Free Tool', weed: 'Weed of the Week', month: 'This Month', tip: 'Quick Tip', moment: 'On This Day', engage: 'Your Turn', job: 'Lawn Job' };
 
 // posts: allPosts(...) output; guides: [[path, module]] from import.meta.glob; pins: allPins() output
 export function bankItems({ posts, guides, pins }) {
@@ -83,6 +83,7 @@ export function bankItems({ posts, guides, pins }) {
     add({ id: `job-${t.id}`, kind: 'job', url, title: t.title, hooks: [`Lawn job this week: ${t.title.replace(/\s*\([^)]*\)/g, '')}.`], take: `${strip(t.short)} ${strip(t.why)}`.slice(0, 300), months: ms, topics: [], og: `/og/${ogSlug(url.split('#')[0])}.png`, pin: null, task: t.id });
   }
   for (const m of MOMENTS) add({ id: `moment-${m.id}`, kind: 'moment', url: null, title: m.title, hooks: [m.text], take: '', months: [], topics: [], link: m.link, moment: m.id, og: null, pin: null });
+  for (const l of LAUNCH_POSTS) add({ id: `intro-${l.id}`, kind: 'intro', url: l.url, title: l.title, hooks: l.hooks, take: l.take, nd: null, photo: '', months: [], topics: [], og: `/og/${ogSlug(l.url)}.png`, pin: null });
   for (const e of ENGAGE) add({ id: `engage-${e.id}`, kind: 'engage', url: null, title: 'Your turn', hooks: [e.text], take: '', months: e.months || [], topics: [], link: e.link, og: null, pin: null });
   // Moments and questions borrow the linked item's URL and share card.
   const byId = Object.fromEntries(items.map((x) => [x.id, x]));

@@ -117,12 +117,12 @@ export const OPS = [
     id: 'fall', group: 'season', label: 'Fall wrap-up', word: 'OCT TO NOV', tone: 'yes',
     title: 'Putting the lawn to bed, in order',
     sections: [{ h: 'The order', ordered: true, list: [
-      '<b>Mow the leaves</b> into the lawn instead of raking. Free fertilizer.',
+      '<b>Mow light leaves</b> into the lawn. Free fertilizer. Heavy piles: blow or rake them off first.',
       '<b>Last feeding</b> around Columbus Day (Thanksgiving if you’re a Lawn Psycho).',
       '<b>Last mow</b> a little shorter, about 3 inches, so it doesn’t mat under snow.',
       '<b>Clean the mower deck</b> and run the gas out or add stabilizer.',
       '<b>Stake the edges</b> of the driveway so the plow knows where the lawn is.',
     ] }],
-    more: { href: '/blog/you-never-needed-a-leaf-blower/', text: 'Why you never needed a leaf blower' },
+    more: { href: '/guides/should-i-mulch-leaves-into-lawn/', text: 'When to mulch leaves (and when to blow or rake)' },
   },
 ];

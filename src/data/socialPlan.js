@@ -61,8 +61,8 @@ export const MOMENTS = [
   { id: 'halloween', on: '10-31', kind: 'holiday', title: 'Halloween', text: 'It’s here. The Super Bowl of lawns. Mowed yesterday, edged today, stripes facing the street.', link: 'blog/halloween-is-the-lawn-super-bowl' },
   { id: 'dst-end', rule: ['nth', 11, 0, 1], kind: 'season', title: 'Clocks fall back', text: 'Clocks fell back. Fewer evenings to mow, and the grass is slowing down. Here’s when to call it for the year.', link: 'guides/when-to-stop-mowing' },
   { id: 'veterans-day', on: '11-11', kind: 'holiday', title: 'Veterans Day', text: 'Thank you to every veteran today. No lawn tips. Just thanks.', link: null },
-  { id: 'thanksgiving', rule: ['nth', 11, 4, 4], kind: 'holiday', title: 'Thanksgiving', text: 'Grateful for rain on the right days, sharp blades, and neighbors who don’t start leaf blowers at 7am. Happy Thanksgiving.', link: 'tool-hall' },
-  { id: 'black-friday', rule: ['after', 'thanksgiving', 1], kind: 'holiday', title: 'Black Friday', text: 'Shopping for a lawn person? Step away from the leaf blower. Small, useful, quiet gifts they’ll use every week.', link: 'blog/lawn-gift-guide' },
+  { id: 'thanksgiving', rule: ['nth', 11, 4, 4], kind: 'holiday', title: 'Thanksgiving', text: 'Grateful for rain on the right days, sharp blades, and a lawn that made it through another season. Happy Thanksgiving from Mow It Tall.', link: 'guides/when-to-stop-mowing' },
+  { id: 'black-friday', rule: ['after', 'thanksgiving', 1], kind: 'holiday', title: 'Black Friday', text: 'Shopping for a lawn person? Skip the gimmicks. Small, useful gifts they’ll use every week.', link: 'blog/lawn-gift-guide' },
   { id: 'winter', on: '12-21', kind: 'season', title: 'First day of winter', text: 'Shortest day of the year. From here, every day gets a little longer. Opening Day is coming.', link: 'blog/lawn-off-season-training' },
   { id: 'christmas', on: '12-25', kind: 'holiday', title: 'Christmas', text: 'Merry Christmas. Lawn’s asleep. If you need a fix, there’s a snowy Christmas yard to mow in the games.', link: 'tool-games' },
   { id: 'nye', on: '12-31', kind: 'holiday', title: 'New Year’s Eve', text: 'Last day of the year. Want next year’s lawn plan ready by morning? Seven questions.', link: 'tool-plan' },
@@ -91,3 +91,39 @@ export function imagePrompt(item, platform = 'instagram') {
   const scene = item.photo || `A suburban Northeast front lawn that illustrates: ${item.title}`;
   return `Photo-realistic image, ${size}. ${scene.replace(/\.$/, '')}. Setting: a real, slightly imperfect suburban yard in the Northeast US (Westchester, NY), ${item.season || 'in season'}, natural daylight, shot on a phone from about chest height. No people's faces, no house numbers, no brand logos, no text or lettering in the image. Leave clean space in the top third for a headline.`;
 }
+
+// ---------------------------------------------------------------- the first weeks of a brand-new account (Nov 18, 2026)
+// Mike started posting on Nov 18, 2026 with zero followers. Early on, posts should say what Mow It Tall is and show
+// off the free tools, not talk to an audience that doesn't exist yet ("how to handle your lawn compliments").
+//   series       one intro post per listed day (day 0 = start). A day taken by a holiday pushes it to the next free day.
+//   quietDays    no "Your turn" questions (a question to an empty room looks sad); Friday gets a fun post instead.
+//   audienceDays items in NEEDS_AUDIENCE wait this long (they assume people already follow and have good lawns).
+export const LAUNCH = {
+  start: '2026-11-18',
+  quietDays: 28,
+  audienceDays: 75,
+  series: [
+    [1, 'intro-hello'], [2, 'tool-measure'], [3, 'intro-name'], [5, 'intro-free'], [7, 'tool-weeds'], [9, 'intro-stance'],
+  ],
+};
+// Intro posts (used once, ever). Mike reviews all copy.
+export const LAUNCH_POSTS = [
+  { id: 'hello', url: '/', title: 'Meet Mow It Tall',
+    hooks: ['Hi, I’m Mike. I mow my own lawn in Bedford, NY, and I got tired of lawn advice written for Florida.'],
+    take: 'Mow It Tall is the easy guide to a better lawn for Northeast homeowners. Plain answers, a few jokes, free tools, no sales pitch. Follow along for one useful thing a day.' },
+  { id: 'name', url: '/guides/how-high-to-mow-grass/', title: 'Why “Mow It Tall”?',
+    hooks: ['Why “Mow It Tall”? Because the easiest upgrade for almost any lawn is raising the mower.'],
+    take: 'Taller grass shades out weeds, holds on to water and grows deeper roots. Most lawns around here get cut too short. That’s the whole name.' },
+  { id: 'free', url: '/plan/', title: 'Start Here: Your Free Lawn Plan',
+    hooks: ['Everything on Mow It Tall is free, no sign-up needed. Here’s the best place to start.'],
+    take: 'Answer a few quick questions and get a lawn plan for your yard: what to do each month, and what you can skip.' },
+  { id: 'stance', url: '/guides/when-to-overseed-lawn/', title: 'Seed in September',
+    hooks: ['Something you’ll hear from me a lot: seed in September. Not spring. Not on top of the snow.'],
+    take: 'In the Northeast, fall is when new grass actually wins. Spring seed has to fight crabgrass and summer heat. I’ll keep saying it until it sticks.' },
+];
+// Wait until the account has an audience (LAUNCH.audienceDays).
+export const NEEDS_AUDIENCE = ['blog/lawn-compliments', 'engage-q-hall', 'engage-q-seed', 'engage-q-game', 'tool-hall'];
+// Never scheduled automatically (Mike can still pick them by hand). The leaf blower post is being rewritten (Nov 18).
+export const HOLD = ['blog/you-never-needed-a-leaf-blower'];
+// Bump when the planning rules change: planned rows you haven't edited get re-planned from tomorrow on.
+export const PLAN_V = 2;

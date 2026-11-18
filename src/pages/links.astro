@@ -1,5 +1,6 @@
 ---
 // Link-in-bio page for Instagram, TikTok, X and Threads (instead of Linktree). Not for search: noindex.
+// The worker puts the link the newest Instagram post promised at the top of the list (worker/plan.js linksPage).
 // Bio links carry utm tags (see HQ → Social → Setup Plan), and each button sends a GA4 event.
 import SocialChips from '../components/SocialChips.astro';
 import Base from '../layouts/Base.astro';
@@ -37,7 +38,8 @@ const LINKS = [
     )}
   </main>
 </Base>
-<style>
+<style is:global>
+  /* global: the worker adds the latest-post buttons to this list as the page is served (worker/plan.js linksPage) */
   .links-list { list-style: none; padding: 0; margin: 0 0 24px; display: grid; gap: 10px; }
   .links-btn { display: block; text-decoration: none; background: var(--paper); color: var(--ink); border: 3px solid var(--ink); border-radius: 12px; padding: 14px 16px; box-shadow: 0 4px 0 rgba(5, 20, 10, 0.35); }
   .links-btn b { display: block; font: 800 1.1rem/1.25 var(--display); }
@@ -47,5 +49,10 @@ const LINKS = [
   .links-follow h2 { font: 800 1.05rem/1.2 var(--display); margin: 8px 0 10px; color: #eef5e6; }
   .links-more { margin: 14px 0 0; font-size: 0.92rem; color: #cfe3c4; }
   .links-more a { color: #eef5e6; font-weight: 700; }
+  .links-btn.is-post { background: #f6c945; color: #12301d; border-color: #12301d; }
+  .links-btn.is-post span { color: #3d3410; }
+  .links-recent details { background: rgba(255, 255, 255, 0.06); border-radius: 12px; padding: 10px 12px; }
+  .links-recent summary { cursor: pointer; font-weight: 700; color: #eef5e6; }
+  .links-recent ul { list-style: none; padding: 0; margin: 10px 0 0; display: grid; gap: 10px; }
   .links-follow h2 span { font-weight: 600; color: #9fd36a; margin-left: 4px; }
 </style>

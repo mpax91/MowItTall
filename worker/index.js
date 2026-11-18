@@ -3,7 +3,7 @@ import { PLAYBOOK } from './playbook.js';
 import { ingest, summary, exportRows, nightly, rollup, evInit, etDate } from './events.js';
 import { seoTick, seoReport } from './seo.js';
 import { axAdmin, axTick } from './ax.js';
-import { planAdmin, planTick, radarTick } from './plan.js';
+import { planAdmin, planTick, radarTick, linksPage } from './plan.js';
 import { scoresList, scoresSave, scoresAdmin, SCORES_TABLE, SCORES_INDEX } from './scores.js';
 // Mow It Tall API (Cloudflare Worker). Everything that isn't /api/* is served straight from ./dist.
 // Lawn Hall of Fame / Hall of Shame: anyone can upload, Mike approves before anything shows,
@@ -386,6 +386,8 @@ export default {
       if (req.method === 'GET' || req.method === 'HEAD') {
         try { await init(env.DB); const r = await shortRedirect(req, env, ctx, url); if (r) return r; } catch { /* fall through to the page */ }
       }
+      // Link in bio: the newest Instagram post's promised link goes on top (worker/plan.js).
+      if (url.pathname === '/links/' && req.method === 'GET' && env.DB) { try { await init(env.DB); return await linksPage(env, req); } catch { /* plain page */ } }
       return env.ASSETS.fetch(req);
     }
     // First-party event log: no Hall database needed, never errors back to the page.

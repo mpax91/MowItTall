@@ -22,7 +22,7 @@
 //   THREADS_TOKEN         threads_content_publish (refreshed by worker/social.js)
 //   BLUESKY_APP_PASSWORD  Bluesky → Settings → Privacy and security → App passwords (handle: BLUESKY_HANDLE)
 //   PINTEREST_TOKEN       pins:write + boards:read (Trial access: pins are only visible to you until Standard access)
-import { momentsFor, WEEK, SPECS, AUTO_PLATFORMS, imagePrompt } from '../src/data/socialPlan.js';
+import { momentsFor, WEEK, SPECS, AUTO_PLATFORMS, imagePrompt, LAUNCH, NEEDS_AUDIENCE, HOLD, PLAN_V } from '../src/data/socialPlan.js';
 import { IDEAS } from '../src/data/socialHooks.js';
 import { BASE_TAGS, TOPIC_TAGS } from '../src/data/social.js';
 import { TASKS } from '../src/data/tasks.js';
@@ -75,7 +75,19 @@ async function bank(env) {
   bankCache = { at: Date.now(), built, items, byId: Object.fromEntries(items.map((x) => [x.id, x])) };
   return bankCache;
 }
-const REUSE = { post: 365, guide: 365, weed: 330, month: 330, tip: 330, job: 330, moment: 300, engage: 180, tool: 42 };
+const REUSE = { post: 365, guide: 365, weed: 330, month: 330, tip: 330, job: 330, moment: 300, engage: 180, tool: 42, intro: 100000 };
+// A post that did much better than usual (see hotItems) can come back after this many days, with its next hook.
+const HOT_REUSE = 75;
+const launchDay = (date) => dayDiff(LAUNCH.start, date);
+const HOLD_SET = new Set(HOLD), AUDIENCE_SET = new Set(NEEDS_AUDIENCE);
+// Rules for a brand-new account and for held items (socialPlan.js LAUNCH / NEEDS_AUDIENCE / HOLD).
+function allowed(it, date) {
+  if (HOLD_SET.has(it.id)) return false;
+  const ld = launchDay(date);
+  if (ld < LAUNCH.audienceDays && AUDIENCE_SET.has(it.id)) return false;
+  if (ld < LAUNCH.quietDays && it.kind === 'engage') return false;
+  return true;
+}
 
 /* ================================================================ planning */
 // History: when each item last went (or is planned to go) out, and how many times, from sp_rows + HQ → Social's log.
@@ -94,7 +106,29 @@ async function history(env) {
       if (l.platform === 'pinterest') (pinByItem[id] ||= []).push(d); else (byItem[id] ||= new Set()).add(d);
     }
   } catch { /* no HQ log yet */ }
-  return { byItem: Object.fromEntries(Object.entries(byItem).map(([k, v]) => [k, [...v].sort()])), pinByItem, byDate };
+  return { byItem: Object.fromEntries(Object.entries(byItem).map(([k, v]) => [k, [...v].sort()])), pinByItem, byDate, hot: await hotItems(env) };
+}
+// Hot items: a post whose likes + comments + shares + saves came in at 2× (or more) the platform's usual post,
+// with at least 5. Matched from the calendar's posted rows to the stats HQ Analytics pulls (EV social_posts).
+async function hotItems(env) {
+  const hot = new Map();
+  if (!env.EV) return hot;
+  try {
+    const { results: rows } = await env.DB.prepare("SELECT item, platform, post_id, post_url FROM sp_rows WHERE status = 'posted' AND item IS NOT NULL AND (post_id IS NOT NULL OR post_url IS NOT NULL)").all();
+    if (!rows.length) return hot;
+    const { results: stats } = await env.EV.prepare('SELECT platform, id, url, COALESCE(likes, 0) + COALESCE(comments, 0) + COALESCE(shares, 0) + COALESCE(saves, 0) eng FROM social_posts').all();
+    const med = {}, byKey = new Map();
+    const per = {}; for (const p of stats) (per[p.platform] ||= []).push(p.eng);
+    for (const [k, v] of Object.entries(per)) { v.sort((a, b) => a - b); med[k] = v[Math.floor(v.length / 2)] || 0; }
+    for (const p of stats) { byKey.set(`${p.platform}|${p.id}`, p); if (p.url) byKey.set(`${p.platform}|${p.url}`, p); }
+    for (const r of rows) {
+      const p = byKey.get(`${r.platform}|${r.post_id}`) || byKey.get(`${r.platform}|${r.post_url}`) || [...byKey.values()].find((x) => x.platform === r.platform && r.post_id && String(x.id).endsWith(String(r.post_id).split('_').pop()));
+      if (!p || (per[r.platform] || []).length < 4) continue;
+      const ratio = p.eng / Math.max(1, med[r.platform]);
+      if (p.eng >= 5 && ratio >= 2) hot.set(r.item, Math.max(hot.get(r.item) || 0, ratio));
+    }
+  } catch { /* stats not there yet */ }
+  return hot;
 }
 const recentWithin = (dates = [], date, days) => dates.some((d) => d !== date && Math.abs(dayDiff(d, date)) < days);
 const timesBefore = (dates = [], date) => dates.filter((d) => d < date).length;
@@ -105,13 +139,16 @@ function pick(B, H, date, kinds, { month, avoidTopics = [], prefer = null, pinte
   for (const it of B.items) {
     if (!kinds.includes(it.kind)) continue;
     if (pinterest && !it.pin) continue;
+    if (!allowed(it, date)) continue;
     const used = pinterest ? H.pinByItem[it.id] : H.byItem[it.id];
-    if (recentWithin(used, date, pinterest ? 365 : REUSE[it.kind] || 365)) continue;
+    const isHot = !pinterest && H.hot?.has(it.id) && it.kind !== 'tool';
+    if (recentWithin(used, date, pinterest ? 365 : isHot ? HOT_REUSE : REUSE[it.kind] || 365)) continue;
     let s = !it.months.length ? 1.2 : it.months.includes(m) ? 3 : it.months.includes(next) ? 1.6 : -4;
     if (s < 0 && !allowOff) continue;
     if ((it.kind === 'tip' || it.kind === 'month') && !it.months.includes(m)) continue; // "October tip" only in October // never burn an out-of-season post early: it would be missing when its season comes
     if (it.topics?.some((t) => avoidTopics.includes(t))) s -= 1;
     if (prefer && prefer(it)) s += 1.5;
+    if (isHot && used?.length) s += 1 + Math.min(1, (H.hot.get(it.id) - 2) / 4); // encore: it did great last time
     s += (hash(date + it.id) % 1000) / 2500; // stable tie-break, so a re-plan gives the same answer
     if (s > bestScore) { bestScore = s; best = it; }
   }
@@ -139,7 +176,10 @@ function planDay(B, H, date, cache) {
   const prevTopics = [B.byId[H.byDate[addDays(date, -1)]]?.topics || [], B.byId[H.byDate[addDays(date, -2)]]?.topics || []].flat();
   let slot, label, chosen = null;
   const mo = moments[date];
+  const ld = launchDay(date);
+  const intro = !mo && ld >= 0 ? LAUNCH.series.find(([d, id]) => d <= ld && B.byId[id] && !(H.byItem[id] || []).some((x) => x !== date)) : null;
   if (mo) { slot = 'moment'; label = mo.title; chosen = { item: B.byId[`moment-${mo.id}`] }; }
+  else if (intro) { slot = 'launch'; label = 'Getting Started: Meet Mow It Tall'; chosen = { item: B.byId[intro[1]] }; }
   else if (dnum === 1 && B.byId[`month-${['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'][m - 1]}`]) {
     slot = 'month'; label = 'First of the Month'; chosen = { item: B.byId[`month-${['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'][m - 1]}`] };
   } else if (jobs[date] && B.byId[jobs[date]] && !recentWithin(H.byItem[jobs[date]], date, 300)) { slot = 'job'; label = 'Lawn Job Day'; chosen = { item: B.byId[jobs[date]] }; }
@@ -156,7 +196,10 @@ function planDay(B, H, date, cache) {
       const id = ids.find((x) => B.byId[x] && !recentWithin(H.byItem[x], date, 300));
       chosen = id ? { item: B.byId[id] } : pick(B, H, date, ['post', 'guide'], { avoidTopics });
       if (id && wk > 1 && id === slotItem(m, wk, 'diy')) label = 'Thursday: Same as This Week’s Email';
-    } else if (slot === 'fun') chosen = pick(B, H, date, ['engage'], { avoidTopics }) || pick(B, H, date, ['post'], { prefer: (it) => it.topics?.includes('fun') });
+    } else if (slot === 'fun') {
+      chosen = pick(B, H, date, ['engage'], { avoidTopics }) || pick(B, H, date, ['post'], { prefer: (it) => it.topics?.includes('fun') });
+      if (launchDay(date) < LAUNCH.quietDays) label = 'Friday Fun (no questions yet: building the audience first)';
+    }
     else if (slot === 'weekend') {
       const open = TASKS.filter((t) => t.level <= 2 && inWindow(t, m, dnum)).map((t) => `job-${t.id}`);
       chosen = pick(B, H, date, ['job'], { prefer: (it) => open.includes(it.id), avoidTopics });
@@ -165,6 +208,7 @@ function planDay(B, H, date, cache) {
     if (!chosen) chosen = pick(B, H, date, ['post', 'guide', 'weed', 'tip', 'engage', 'tool'], { avoidTopics });
     if (!chosen) chosen = lru(B, H, date);
   }
+  if (chosen?.item && H.hot?.has(chosen.item.id) && (H.byItem[chosen.item.id] || []).some((d) => d < date)) label = `${label} · Encore (did great last time)`;
   // Pinterest: its own pick, ~45 days ahead of the season
   const ahead = addDays(date, 45);
   const pin = pick(B, H, date, ['guide', 'post'], { month: Number(ahead.slice(5, 7)), pinterest: true });
@@ -175,7 +219,7 @@ function lru(B, H, date) {
   const m = Number(date.slice(5, 7));
   let best = null, bestAge = -1;
   for (const it of B.items) {
-    if (!['tool', 'engage'].includes(it.kind) || (it.months.length && !it.months.includes(m))) continue; // posts and guides keep the once-a-year rule
+    if (!['tool', 'engage'].includes(it.kind) || (it.months.length && !it.months.includes(m)) || !allowed(it, date)) continue; // posts and guides keep the once-a-year rule
     const used = (H.byItem[it.id] || []).filter((d) => d !== date);
     const near = used.reduce((a, d) => Math.min(a, Math.abs(dayDiff(d, date))), 9999);
     if (near < 21) continue;
@@ -187,6 +231,11 @@ function lru(B, H, date) {
 const inWindow = (t, m, d) => { const v = m * 100 + d, s = t.start[0] * 100 + t.start[1], e = t.end[0] * 100 + t.end[1]; return s <= e ? v >= s && v <= e : v >= s || v <= e; };
 
 /* ================================================================ copy per platform */
+// Visible links stay clean (no utm tags in the copy). Links that sit behind a preview card (Facebook's link field,
+// Bluesky's card, Pinterest) keep utm tags so HQ Analytics knows exactly which platform sent the visit.
+const HIDDEN_LINK = new Set(['facebook', 'bluesky', 'pinterest']); // the link sits behind a card, so utm tags don't show
+const cleanLink = (url) => (url ? `${SITE}${url}` : '');
+const stripUtm = (u) => String(u || '').replace(/[?&]utm_[a-z]+=[^&#]*/g, '').replace(/^([^?#]*)&/, '$1?');
 const linkFor = (url, platform) => (url ? `${SITE}${url.split('#')[0]}${url.includes('?') ? '&' : '?'}utm_source=${platform}&utm_medium=social&utm_campaign=daily${url.includes('#') ? '#' + url.split('#')[1] : ''}` : '');
 const fit = (s, n) => (s.length <= n ? s : s.slice(0, n - 1).replace(/[\s,;:]+\S*$/, '') + '…');
 function hashtags(it) {
@@ -196,11 +245,11 @@ function hashtags(it) {
 export function buildText(it, platform, hookIdx = 0) {
   const hook = it.hooks[hookIdx % it.hooks.length];
   const take = it.take || '';
-  const L = linkFor(it.url, platform);
+  const L = cleanLink(it.url);
   const plain = it.kind === 'moment' || it.kind === 'engage';
   switch (platform) {
     case 'facebook': return [hook, plain ? '' : take, L].filter(Boolean).join('\n\n');
-    case 'instagram': return fit([hook, plain ? '' : take, it.url ? 'Link in bio.' : '', hashtags(it)].filter(Boolean).join('\n\n'), 2200);
+    case 'instagram': return fit([hook, plain ? '' : take, it.url ? 'Link in bio (it’s the first one).' : '', hashtags(it)].filter(Boolean).join('\n\n'), 2200);
     case 'threads': { const body = plain ? hook : `${hook}\n\n${firstSentence(take)}`; return `${fit(body, 500 - (L ? L.length + 2 : 0))}${L ? `\n\n${L}` : ''}`; }
     case 'bluesky': { let t = plain ? hook : `${hook} ${firstSentence(take)}`; if (graphemes(t) > 300) t = hook; return graphemes(t) > 300 ? fit(t, 295) : t; }
     case 'x': return `${fit(hook, 280 - (L ? 24 : 0))}${L ? ` ${L}` : ''}`;
@@ -217,9 +266,9 @@ function rowsFor(B, H, date, plan) {
     const n = timesBefore(H.byItem[it.id], date);
     for (const p of ['facebook', 'instagram', 'threads', 'bluesky', 'x']) {
       out.push({ date, platform: p, slot: plan.slot, label: plan.label, item: it.id, hook: n, title: it.title, text: buildText(it, p, n),
-        image: p === 'instagram' || p === 'threads' ? it.card : p === 'bluesky' || p === 'x' ? it.og : null, link: it.url ? linkFor(it.url, p) : null, gap: plan.gap ? 1 : 0 });
+        image: p === 'instagram' || p === 'threads' ? it.card : p === 'bluesky' || p === 'x' ? it.og : null, link: it.url ? (HIDDEN_LINK.has(p) ? linkFor(it.url, p) : cleanLink(it.url)) : null, gap: plan.gap ? 1 : 0 });
     }
-    if (dow === 6 && it.nd !== null) out.push({ date, platform: 'nextdoor', slot: plan.slot, label: plan.label, item: it.id, hook: n, title: it.title, text: buildText(it, 'nextdoor', n), image: null, link: linkFor(it.url, 'nextdoor'), gap: 0 });
+    if (dow === 6 && it.nd !== null) out.push({ date, platform: 'nextdoor', slot: plan.slot, label: plan.label, item: it.id, hook: n, title: it.title, text: buildText(it, 'nextdoor', n), image: null, link: cleanLink(it.url), gap: 0 });
   }
   if (plan.pin) out.push({ date, platform: 'pinterest', slot: 'pin', label: 'Daily Pin (45 days ahead)', item: plan.pin.id, hook: 0, title: plan.pin.pin.title, text: plan.pin.pin.desc, image: plan.pin.pin.img, link: linkFor(plan.pin.url, 'pinterest'), gap: 0 });
   return out;
@@ -236,6 +285,12 @@ async function saveRows(db, rows) {
 // Make sure every day from..to (today or later) has rows. Days are planned in order so each pick sees the last.
 export async function ensurePlanned(env, from, to) {
   const today = etNow().date;
+  // New planning rules (PLAN_V): re-plan everything from tomorrow that you haven't edited or posted.
+  if ((await kvGet(env.DB, 'planV', 1)) !== PLAN_V) {
+    await env.DB.prepare("DELETE FROM sp_rows WHERE date > ? AND edited = 0 AND status = 'planned'").bind(today).run();
+    await kvSet(env.DB, 'planV', PLAN_V);
+    bankCache = null;
+  }
   if (from < today) from = today;
   if (to < from) return 0;
   const { results } = await env.DB.prepare('SELECT DISTINCT date FROM sp_rows WHERE date BETWEEN ? AND ?').bind(from, to).all();
@@ -279,7 +334,7 @@ const abs = (u) => (u && u.startsWith('/') ? SITE + u : u);
 const PUBLISHERS = {
   facebook: { on: (env) => !!env.META_PAGE_TOKEN, async go(env, row) {
     const { page } = await metaIds(env);
-    const body = { message: row.text.replace(row.link || '\u0000', '').trim(), access_token: env.META_PAGE_TOKEN };
+    const body = { message: row.text.replace(row.link || '\u0000', '').replace(stripUtm(row.link) || '\u0000', '').trim(), access_token: env.META_PAGE_TOKEN };
     if (row.link) body.link = row.link;
     const j = await post(`https://graph.facebook.com/${page}/feed`, body);
     return { id: j.id, url: `https://www.facebook.com/${j.id}` };
@@ -452,7 +507,7 @@ export async function radarTick(env, { force = false } = {}) {
 function replyDraft(it) {
   if (!it) return '';
   const ans = it.short || firstSentence(it.take) || it.hooks?.[0] || '';
-  return `${ans}\n\n${it.take && it.take !== ans ? it.take.replace(ans, '').trim() + '\n\n' : ''}I wrote up the details (free, no sign-up) here if it helps: ${linkFor(it.url, 'reddit').replace('utm_medium=social', 'utm_medium=community')}`.trim();
+  return `${ans}\n\n${it.take && it.take !== ans ? it.take.replace(ans, '').trim() + '\n\n' : ''}I wrote up the details (free, no sign-up) here if it helps: ${cleanLink(it.url)}`.trim();
 }
 
 /* ================================================================ HQ endpoints */
@@ -570,4 +625,43 @@ export async function planAdmin(env, req, url) {
     return json({ ok: true });
   }
   return json({ error: 'Not found.' }, 404);
+}
+
+/* ================================================================ /links/ (link in bio), kept in step with the calendar */
+// Instagram posts say "Link in bio (it’s the first one)". The bio points at mowittall.com/links/, so this page must
+// always lead with the page the newest Instagram post promised, then the few before it (people scroll back).
+// The worker adds them to the static page as it's served (no JavaScript needed), straight from sp_rows:
+// posted or copied rows up to today, plus today's planned row once its posting time has passed (in case the
+// publish is a minute late). Links are clean (the visit's source comes from the bio link itself).
+const escH = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+export async function linksFeed(env, limit = 6) {
+  await planInit(env.DB);
+  const { date, hm } = etNow();
+  const s = await settings(env.DB);
+  const dow = new Date(date + 'T12:00:00Z').getUTCDay();
+  const due = s.live && hm >= (s.times[dow] || '10:00');
+  const { results } = await env.DB.prepare(`SELECT date, item, title, link, status FROM sp_rows WHERE platform = 'instagram' AND link IS NOT NULL AND date <= ?
+    AND (status IN ('posted', 'copied') OR (date = ? AND status = 'planned' AND ?)) ORDER BY date DESC LIMIT 30`).bind(date, date, due ? 1 : 0).all();
+  const seen = new Set(), out = [];
+  for (const r of results) {
+    const href = stripUtm(r.link).replace(SITE, '') || '/';
+    if (seen.has(href)) continue;
+    seen.add(href);
+    out.push({ date: r.date, item: r.item, title: r.title, href, today: r.date === date });
+    if (out.length >= limit) break;
+  }
+  return out;
+}
+export async function linksPage(env, req) {
+  const res = await env.ASSETS.fetch(req);
+  if (!res.ok || !(res.headers.get('content-type') || '').includes('text/html')) return res;
+  let feed = [];
+  try { feed = await linksFeed(env); } catch { return res; } // never break the page
+  const headers = new Headers(res.headers); headers.set('cache-control', 'no-store');
+  if (!feed.length) return new Response(res.body, { status: res.status, headers });
+  const [top, ...rest] = feed;
+  const li = (f, main) => `<li><a class="links-btn${main ? ' is-post' : ''}" href="${escH(f.href)}" data-track="link_page_click" data-track-target="post:${escH(f.item)}"><b>${main ? '📌 ' : ''}${escH(f.title)}</b><span>${main ? (f.today ? 'From today’s post' : 'From the latest post') : 'From a recent post'}</span></a></li>`;
+  const html = li(top, true) + (rest.length ? `<li class="links-recent"><details><summary>More from recent posts</summary><ul>${rest.map((f) => li(f, false)).join('')}</ul></details></li>` : '');
+  return new HTMLRewriter().on('ul.links-list', { element(el) { el.prepend(html, { html: true }); } })
+    .transform(new Response(res.body, { status: res.status, headers }));
 }

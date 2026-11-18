@@ -96,7 +96,7 @@ const TIPS = {
   ballpark: 'Real-life tip: stripes are just grass bent in different directions. A roller behind the mower makes them pop.',
   club: 'Real-life tip: taller grass shows patterns better. Set your deck to 3.5 to 4 inches.',
   halloween: 'Real-life tip: mow leaves when they’re dry. If you can see grass through the confetti, you’re done.',
-  thanksgiving: 'Real-life tip: chopped leaves feed the lawn for free. Skip the rake, skip the blower.',
+  thanksgiving: 'Real-life tip: a light layer of chopped leaves feeds the lawn for free. Big piles? Blow or rake them off first.',
   christmas: 'Real-life tip: please don’t actually mow in the snow. Do the last cut of the year in November, a notch lower.',
 };
 
