@@ -1,7 +1,7 @@
 import { crmPublic, crmAdmin, crmInbound, crmEvents, dripTick } from './crm.js';
 import { PLAYBOOK } from './playbook.js';
 import { ingest, summary, exportRows, nightly, rollup, evInit, etDate } from './events.js';
-import { seoTick, seoReport } from './seo.js';
+import { seoTick, seoReport, bingIngest } from './seo.js';
 import { axAdmin, axTick } from './ax.js';
 import { planAdmin, planTick, radarTick, linksPage } from './plan.js';
 import { scoresList, scoresSave, scoresAdmin, SCORES_TABLE, SCORES_INDEX } from './scores.js';
@@ -394,6 +394,9 @@ export default {
     // Email: sign-ups, open/click tracking, unsubscribe (worker/crm.js, own database).
     if (url.pathname.startsWith('/api/crm/') || url.pathname.startsWith('/api/m/')) {
       try { return await crmPublic(req, env, ctx, url); } catch (e) { console.log('crm', e?.message); return json({ error: 'Something broke on our end. Try again in a minute.' }, 500); }
+    }
+    if (url.pathname === '/api/seo/bing-ingest' && req.method === 'POST') {
+      try { return await bingIngest(env, req); } catch (e) { console.log('bing ingest', e?.message); return json({ error: 'Something broke on our end.' }, 500); }
     }
     if (url.pathname === '/api/e') return req.method === 'POST' ? await ingest(req, env, ctx).catch(() => new Response(null, { status: 204 })) : bad('Not found.', 404);
     // Read-only export for MikeCOS: EXPORT_KEY (if set) works here as well as the admin password.

@@ -1,0 +1,23 @@
+name: Bing Webmaster pull
+# Daily, free. Bing blocks Cloudflare's Worker addresses, so the SEO Autopilot gets Bing data from here instead.
+# See scripts/bing-pull.mjs. Needs the BING_API_KEY repository secret.
+on:
+  schedule:
+    - cron: '41 10 * * *'   # ~5:41am Eastern
+  workflow_dispatch: {}
+permissions:
+  contents: read
+jobs:
+  pull:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: scripts
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/bing-pull.mjs
+        env:
+          BING_API_KEY: ${{ secrets.BING_API_KEY }}

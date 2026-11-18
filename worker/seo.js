@@ -224,30 +224,56 @@ async function pullSitemaps(env) {
 }
 
 /* ---------------------------------------------------------------- 4. Bing */
+// Bing often refuses requests from Cloudflare's shared Worker addresses ("ThrottleIP", or a bare 400). So there
+// are two ways in: the worker tries itself (below), and a free daily GitHub Actions job (.github/workflows/bing.yml)
+// calls Bing from GitHub's machines and posts the answers to POST /api/seo/bing-ingest (see bingIngest).
 const bingDate = (s) => { const m = /\((\d+)/.exec(String(s)); return m ? etDay(Number(m[1])) : null; };
-async function pullBing(env) {
-  // Bing sometimes answers "ThrottleIP" to requests from Cloudflare's shared addresses. Try both of Bing's
-  // API hosts, one call at a time; if both are throttled, the next hourly run tries again.
-  const bases = env.SEO_API_BASE ? [`${env.SEO_API_BASE}/bing`] : ['https://ssl.bing.com/webmaster/api.svc/json', 'https://www.bing.com/webmaster/api.svc/json', 'https://api.bing.com/webmaster/api.svc/json'];
-  const q = async (m) => {
-    let last;
-    for (const base of bases) {
-      const r = await fetch(`${base}/${m}?siteUrl=${encodeURIComponent(origin(env) + '/')}&apikey=${encodeURIComponent(env.BING_API_KEY)}`, { headers: { accept: 'application/json', 'user-agent': 'MowItTall-SEO/1.0 (+https://mowittall.com)' } }).catch((e) => ({ ok: false, status: 0, json: async () => ({ Message: e.message }) }));
-      const j = await r.json().catch(() => ({}));
-      if (r.ok && !j.ErrorCode) return j.d || [];
-      last = `Bing ${m}: ${j.Message || r.status}`;
-      if (!/Throttle/i.test(last) && r.status !== 0) break;
-    }
-    throw new Error(last);
-  };
-  const qs = await q('GetQueryStats');
-  const ps = await q('GetPageStats');
+async function storeBing(env, qs, ps) {
   const T = (rows, keyFn) => JSON.stringify(rows.map((r) => [bingDate(r.Date), keyFn(r.Query), r.Clicks || 0, r.Impressions || 0, r.AvgImpressionPosition > 0 ? r.AvgImpressionPosition : 0]).filter((r) => r[0] && r[1]));
   await env.EV.batch([
     env.EV.prepare(`INSERT OR REPLACE INTO bing_query (date, query, clicks, impressions, position) SELECT j.value->>0, j.value->>1, j.value->>2, j.value->>3, j.value->>4 FROM json_each(?) j`).bind(T(qs, (k) => String(k || '').toLowerCase())),
     env.EV.prepare(`INSERT OR REPLACE INTO bing_page (date, page, clicks, impressions, position) SELECT j.value->>0, j.value->>1, j.value->>2, j.value->>3, j.value->>4 FROM json_each(?) j`).bind(T(ps, pathOf)),
   ]);
   return { queries: qs.length, pages: ps.length };
+}
+async function pullBing(env) {
+  const bases = env.SEO_API_BASE ? [`${env.SEO_API_BASE}/bing`] : ['https://ssl.bing.com/webmaster/api.svc/json', 'https://www.bing.com/webmaster/api.svc/json', 'https://api.bing.com/webmaster/api.svc/json'];
+  const q = async (m) => {
+    const tried = [];
+    for (const base of bases) {
+      const r = await fetch(`${base}/${m}?siteUrl=${encodeURIComponent(origin(env) + '/')}&apikey=${encodeURIComponent(env.BING_API_KEY)}`, { headers: { accept: 'application/json', 'user-agent': 'MowItTall-SEO/1.0 (+https://mowittall.com)' } }).catch((e) => ({ ok: false, status: 0, text: async () => e.message }));
+      const body = await r.text().catch(() => '');
+      let j = null; try { j = JSON.parse(body); } catch {}
+      // Only a real answer counts: a JSON body with a "d" list. Anything else (HTML, empty, an error) is a miss.
+      if (r.ok && j && !j.ErrorCode && Array.isArray(j.d)) return j.d;
+      tried.push(`${new URL(base).host} ${r.status}${j?.Message ? ' ' + j.Message : body ? ' ' + body.replace(/\s+/g, ' ').slice(0, 80) : ''}`);
+      // A wrong key or site is the same on every host, so stop; throttling/blocks (400/403/429/5xx) try the next host.
+      if (r.status === 401 || /InvalidApiKey|NotAuthorized/i.test(body)) break;
+    }
+    throw new Error(`Bing ${m}: ${tried.join(' | ')}`);
+  };
+  const qs = await q('GetQueryStats');
+  const ps = await q('GetPageStats');
+  return storeBing(env, qs, ps);
+}
+
+// POST /api/seo/bing-ingest  (from the GitHub Actions job). Auth: header x-bing-key = the BING_API_KEY secret,
+// so there's no extra secret to manage. Body: { queries: <GetQueryStats JSON>, pages: <GetPageStats JSON> }.
+export async function bingIngest(env, req) {
+  const key = req.headers.get('x-bing-key') || '';
+  if (!env.BING_API_KEY || !env.EV || key.length < 8 || key !== env.BING_API_KEY) return json({ error: 'Not allowed.' }, 403);
+  const b = await req.json().catch(() => null);
+  const list = (x) => (Array.isArray(x) ? x : Array.isArray(x?.d) ? x.d : null);
+  const qs = list(b?.queries), ps = list(b?.pages);
+  if (!qs || !ps) return json({ error: 'Expected { queries, pages } from Bing.' }, 400);
+  await seoInit(env.EV);
+  const r = await storeBing(env, qs, ps);
+  const runs = (await getState(env.EV, 'runs')) || {};
+  runs.bing = runs['bing:ok'] = Date.now(); runs['bing:via'] = 'github';
+  await setState(env.EV, 'runs', runs);
+  const errs = (await getState(env.EV, 'errors')) || [];
+  if (errs.some((e) => e.task === 'bing')) await setState(env.EV, 'errors', errs.filter((e) => e.task !== 'bing'));
+  return json({ ok: true, ...r });
 }
 
 /* ---------------------------------------------------------------- 5. build-time audit → HQ */
@@ -335,7 +361,8 @@ export async function seoTick(env, { force = false } = {}) {
     if (due('sitemaps', 20)) { await step('sitemaps', () => pullSitemaps(env)); budget -= 1; }
     await step('inspect', () => inspectBatch(env, Math.min(INSPECT_PER_RUN, Math.max(budget - 2, 0))));
   }
-  if (env.BING_API_KEY && due('bing', 20)) await step('bing', () => pullBing(env));
+  // Once the GitHub job is delivering Bing data, the worker only steps in if that job has missed a day.
+  if (env.BING_API_KEY && due('bing', runs['bing:via'] === 'github' ? 30 : 20)) await step('bing', async () => { const r = await pullBing(env); runs['bing:via'] = 'worker'; return r; });
   await setState(db, 'runs', runs);
   return did;
 }
