@@ -41,7 +41,7 @@ export const etToday = () => new Intl.DateTimeFormat('en-CA', { timeZone: ET, ye
 export const addDays = (date, n) => { const d = new Date(date + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
 export const daysBetween = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000) + 1;
 
-export const S = { section: 'overview', range: '28d', from: '', to: '', cmp: 'prev', grain: 'auto', filters: [], status: null, sub: {} };
+export const S = { section: 'inbox', range: '28d', from: '', to: '', cmp: 'prev', grain: 'auto', filters: [], status: null, sub: {} };
 export const RANGES = [['today', 'Today'], ['yesterday', 'Yesterday'], ['7d', 'Last 7 Days'], ['28d', 'Last 28 Days'], ['90d', 'Last 90 Days'], ['365d', 'Last 12 Months'],
   ['mtd', 'This Month'], ['lastmonth', 'Last Month'], ['ytd', 'This Year'], ['all', 'All Time'], ['custom', 'Custom…']];
 

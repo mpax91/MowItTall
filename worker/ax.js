@@ -28,6 +28,7 @@
 import { evInit, etDate, rollup } from './events.js';
 import { seoInit, googleToken, serviceAccount } from './seo.js';
 import { socialInit, socialTick, socialStatus, SOCIAL_SOURCES } from './social.js';
+import { inboxScan, inboxAdmin, inboxUnread } from './inbox.js';
 
 const DAY = 86400000;
 const addDays = (date, n) => { const d = new Date(date + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
@@ -370,6 +371,8 @@ export async function axTick(env, { force = false } = {}) {
   if (env.CLARITY_TOKEN && (force || !runs.clarity?.lastOk || etDate(runs.clarity.lastOk) !== today) && (force || hour >= 6) && (!runs.clarity || runs.clarity.ok || Date.now() - runs.clarity.at > 6 * 3600000))
     await step('clarity', () => pullClarity(env, addDays(today, -1)));
   await socialTick(env, step, due);
+  // Inbox: turn whatever just changed into notifications (worker/inbox.js).
+  try { const r = await inboxScan(env); if (r.added) did.inbox = `${r.added} new`; } catch (e) { did.inbox = 'error: ' + e.message; }
   return did;
 }
 
@@ -417,6 +420,7 @@ export async function axAdmin(env, req, url) {
           runs: Object.fromEntries(SOCIAL_SOURCES.map(([id, label]) => [id, { label, ...(runs[`social:${id}`] || {}) }])) },
       },
       events: evs, params,
+      inbox: { unread: await inboxUnread(db) },
     });
   }
 
@@ -451,6 +455,8 @@ export async function axAdmin(env, req, url) {
       FROM social_posts WHERE date BETWEEN ? AND ? ${plat && /^[a-z]{1,20}$/.test(plat) ? 'AND platform = ?' : ''} ORDER BY created DESC LIMIT 1000`).bind(from, to, ...(plat && /^[a-z]{1,20}$/.test(plat) ? [plat] : [])).all();
     return json({ posts: results });
   }
+
+  if (p.startsWith('/api/admin/ax/inbox')) return inboxAdmin(env, req, url);
 
   // Saved views (Explore): small JSON list in ax_state.
   if (p === '/api/admin/ax/views' && req.method === 'GET') return json({ views: (await getState(env.EV, 'views')) || [] });

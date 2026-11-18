@@ -1,5 +1,6 @@
 ---
 // HQ Analytics: Mike's full analytics suite (Nov 17, 2026). Desktop-first, still works on a phone.
+// Opens on the Inbox (Nov 18): every notification worth knowing about, with an unread count in the sidebar.
 // A standalone page (not the site layout): no site header/footer, no tracking. Everything private comes from
 // /api/admin/ax/* (worker/ax.js) with the same ADMIN_KEY the rest of HQ uses (remembered in localStorage).
 import '@fontsource-variable/bricolage-grotesque';
@@ -8,6 +9,7 @@ import '@fontsource/atkinson-hyperlegible-next/700.css';
 import '../../../styles/ax.css';
 
 const NAV = [
+  ['inbox', 'Inbox', 'M3 13h5l2 3h4l2-3h5M5 5h14l2 8v6H3v-6z'],
   ['', 'Dashboards'],
   ['overview', 'Overview', 'M3 13h4v8H3zM10 3h4v18h-4zM17 8h4v13h-4z'],
   ['acquisition', 'Traffic Sources', 'M4 12h10M10 6l6 6-6 6M20 4v16'],
@@ -52,7 +54,7 @@ const NAV = [
       <a class="ax-brand" href="/admin/"><span class="ax-logo" aria-hidden="true">🌱</span><span><b>Mow It Tall</b><small>HQ Analytics</small></span></a>
       <ul>
         {NAV.map(([id, label, d]) => id
-          ? <li><a href={`#${id}`} data-nav={id}><svg viewBox="0 0 24 24" aria-hidden="true"><path d={d} /></svg><span>{label}</span></a></li>
+          ? <li><a href={`#${id}`} data-nav={id}><svg viewBox="0 0 24 24" aria-hidden="true"><path d={d} /></svg><span>{label}</span>{id === 'inbox' && <b class="ax-badge" data-inbox-badge hidden>0</b>}</a></li>
           : <li class="ax-side-h">{label}</li>)}
       </ul>
       <div class="ax-side-f">
@@ -84,20 +86,21 @@ const NAV = [
     import { S, RANGES, readHash, writeHash, api, setKey, hasKey, clearCache, period, renderFilters, onRerender, onGo, dlabel, daysBetween } from '../../../scripts/ax/core.js';
     import * as V from '../../../scripts/ax/views.js';
     import { calendar, radar } from '../../../scripts/ax/plan.js';
+    import { inbox, setBadge } from '../../../scripts/ax/inbox.js';
 
     const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector<T>(s)!;
     const VIEWS: Record<string, [string, (root: HTMLElement, refresh?: () => Promise<void>) => Promise<void>]> = {
       overview: ['Overview', V.overview], acquisition: ['Traffic Sources', V.acquisition], content: ['Content & Engagement', V.content], conversions: ['Conversions', V.conversions],
       audience: ['Audience', V.audience], seo: ['SEO', V.seo], email: ['Email', V.email], social: ['Social', V.social], ux: ['UX (Clarity)', V.ux], ga4: ['GA4 Cross-Check', V.ga4],
-      explore: ['Explore', V.explore], sources: ['Sources & Export', V.sources], calendar: ['Content Calendar', calendar], radar: ['Reddit Radar', radar],
+      explore: ['Explore', V.explore], sources: ['Sources & Export', V.sources], calendar: ['Content Calendar', calendar], radar: ['Reddit Radar', radar], inbox: ['Inbox', inbox],
     };
     let token = 0;
-    async function loadStatus() { S.status = await api('/api/admin/ax/status'); }
+    async function loadStatus() { S.status = await api('/api/admin/ax/status'); setBadge(S.status.inbox?.unread || 0); }
     async function render() {
       const my = ++token;
       if (!VIEWS[S.section]) S.section = 'overview';
       const [title, fn] = VIEWS[S.section];
-      $('[data-title]').textContent = title; document.title = `${title} | HQ Analytics`;
+      $('[data-title]').textContent = title; document.title = `${title} | HQ Analytics`; setBadge(S.status?.inbox?.unread || 0);
       document.querySelectorAll<HTMLElement>('[data-nav]').forEach((a) => a.setAttribute('aria-current', String(a.dataset.nav === S.section)));
       const p = period();
       $('[data-period]').innerHTML = `${dlabel(p.from, 'date', true)} – ${dlabel(p.to, 'date', true)} · ${p.len} day${p.len === 1 ? '' : 's'}${p.prev ? ` <span>vs ${dlabel(p.prev.from, 'date', true)} – ${dlabel(p.prev.to, 'date', true)}</span>` : ''}`;
@@ -105,8 +108,8 @@ const NAV = [
       view.innerHTML = '';
       view.dataset.section = S.section;
       renderFilters();
-      const planning = S.section === 'calendar' || S.section === 'radar';
-      document.querySelector<HTMLElement>('.ax-top-ctl')!.style.visibility = planning ? 'hidden' : '';
+      const planning = S.section === 'calendar' || S.section === 'radar' || S.section === 'inbox';
+      document.querySelector<HTMLElement>('.ax-top-ctl')!.style.display = planning ? 'none' : '';
       document.querySelector<HTMLElement>('.ax-top-row.is-sub')!.hidden = planning;
       try { await fn(view, async () => { await loadStatus(); render(); }); }
       catch (e: any) { if (my === token) view.insertAdjacentHTML('beforeend', `<p class="ax-empty is-err">${e.message}</p>`); }
@@ -134,6 +137,8 @@ const NAV = [
       $('[data-refresh]').addEventListener('click', async () => { clearCache(); await loadStatus(); render(); });
       document.querySelectorAll<HTMLAnchorElement>('[data-nav]').forEach((a) => a.addEventListener('click', (e) => { e.preventDefault(); goTo(a.dataset.nav!); }));
       onRerender(render);
+      // keep the Inbox badge fresh while the page sits open
+      setInterval(async () => { try { const r = await api('/api/admin/ax/inbox'); setBadge(r.unread); } catch { /* offline */ } }, 10 * 60000);
       onGo(goTo);
       addEventListener('hashchange', () => { const before = S.section; readHash(); syncControls(); if (before !== S.section) render(); });
       addEventListener('keydown', (e) => { if (e.key === 'Escape') { const d = $('[data-drawer]'); if (!d.hidden) { d.hidden = true; d.innerHTML = ''; document.body.classList.remove('has-drawer'); } } });
