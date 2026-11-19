@@ -7,7 +7,7 @@
 //   social    follower changes per platform, posts doing much better than usual
 //   traffic   big jumps or drops in visits / users / engaged visits / leads, new traffic sources, pages taking off,
 //             best day ever
-//   search    new Google searches you showed up for, first Google click on a page, pages newly indexed or dropped,
+//   search    new Google searches you showed up for, first Google click on a page, pages dropped out of Google,
 //             and a daily checklist of up to 10 not-yet-indexed pages to request in Search Console (its daily limit)
 //   milestone follower and sign-up milestones (10, 25, 50, 100…)
 //   idea      weekly: "almost page 1" search terms, pages that show in Google but don't get clicked, the weekly recap
@@ -15,7 +15,9 @@
 //   problem   a data pull that keeps failing, a scheduled social post that failed
 //
 // Items have fixed ids (e.g. "signup:42", "traffic:sessions:2026-11-18"), so a rule can fire every hour without
-// making duplicates. State (what was already announced) lives in ax_state under "inbox:*".
+// making duplicates. One action per item (Nov 19): "Done" clears it (done_at). There's no read/unread any more; the
+// read_at column is only kept for old rows. "Google indexed N pages" items were dropped: the daily not-indexed
+// checklist covers indexing. State (what was already announced) lives in ax_state under "inbox:*".
 
 import { etDate, rollup } from './events.js';
 import { SOCIAL_SOURCES } from './social.js';
@@ -46,11 +48,11 @@ export async function inboxInit(db) {
 async function getState(db, k) { const r = await db.prepare('SELECT v FROM ax_state WHERE k = ?').bind(k).first(); return r ? JSON.parse(r.v) : null; }
 async function setState(db, k, v) { await db.prepare('INSERT INTO ax_state (k, v, at) VALUES (?, ?, ?) ON CONFLICT (k) DO UPDATE SET v = excluded.v, at = excluded.at').bind(k, JSON.stringify(v), Date.now()).run(); }
 
-// item: { id, kind, tone?, title, detail?, go?, link?, list?, day?, at?, update? }  update = refresh the text while it's still unread
+// item: { id, kind, tone?, title, detail?, go?, link?, list?, day?, at?, update? }  update = refresh the text while it's still open
 // list = a checklist: [{ t: label, s: note, href, done: ms|null }] (HQ ticks an entry when Mike opens its link).
 function put(db, it) {
   const sql = `INSERT INTO ax_inbox (id, kind, tone, title, detail, go, link, list, day, at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    ON CONFLICT (id) DO ${it.update ? 'UPDATE SET title = excluded.title, detail = excluded.detail, at = excluded.at WHERE read_at IS NULL AND done_at IS NULL' : 'NOTHING'}`;
+    ON CONFLICT (id) DO ${it.update ? 'UPDATE SET title = excluded.title, detail = excluded.detail, at = excluded.at WHERE done_at IS NULL' : 'NOTHING'}`;
   return db.prepare(sql).bind(it.id, it.kind, it.tone || 'info', short(it.title, 200), it.detail ? short(it.detail, 600) : null, it.go || null, it.link || null,
     it.list ? JSON.stringify(it.list) : null, it.day || etDate(), it.at || Date.now());
 }
@@ -204,20 +206,21 @@ async function searchRules({ db, now, st }) {
   try {
     const since = st.indexSince || now - DAY;
     const { results } = await db.prepare(`SELECT path, field, before, after, at FROM seo_inspect_log WHERE at > ? AND field IN ('verdict', 'first') ORDER BY at`).bind(since).all();
-    const added = results.filter((r) => (r.field === 'verdict' && r.after === 'PASS') || (r.field === 'first' && /indexed/i.test(r.after || '') && !/not indexed/i.test(r.after || '')));
     const dropped = results.filter((r) => r.field === 'verdict' && r.before === 'PASS' && r.after !== 'PASS');
     const day = etDate();
-    if (added.length && st.indexSince) out.push({ id: `index:new:${day}`, kind: 'search', tone: 'good', title: `Google indexed ${added.length} more page${added.length === 1 ? '' : 's'}`, detail: added.slice(0, 8).map((r) => r.path).join(', '), go: 'seo', update: true });
     if (dropped.length) out.push({ id: `index:drop:${day}`, kind: 'problem', tone: 'bad', title: `${dropped.length} page${dropped.length === 1 ? '' : 's'} dropped out of Google`, detail: dropped.slice(0, 8).map((r) => r.path).join(', '), go: 'seo/index', update: true });
     st.indexSince = now;
   } catch { /* */ }
   try {
-    // PageSpeed (worker/seo.js checks the top 5 pages weekly): flag a page the first time it's under 90 on mobile.
+    // PageSpeed (worker/seo.js checks the top 5 pages weekly, slow ones every 6 hours): flag a page the first time it's
+    // under 90 on mobile. Once every page's latest score is 90+ again (e.g. after a fix), the item clears itself.
     const { results } = await db.prepare('SELECT path, score, checked_at FROM seo_speed WHERE score IS NOT NULL AND checked_at > ?').bind(st.speedSince || 0).all();
     const slow = results.filter((r) => r.score < 90);
     if (slow.length) out.push({ id: `speed:${etDate()}`, kind: 'problem', tone: 'bad', title: `PageSpeed under 90 on mobile: ${slow.map((r) => r.path).join(', ')}`,
-      detail: slow.map((r) => `${r.path} scored ${r.score}`).join(' · ') + '. Tell Claude and it’ll speed it up.', go: 'seo/index', update: true });
+      detail: slow.map((r) => `${r.path} scored ${r.score}`).join(' · ') + '. Tell Claude and it’ll speed it up. Once it’s fixed, this clears itself after the next check.', go: 'seo/index', update: true });
     st.speedSince = now;
+    const stillSlow = await db.prepare('SELECT COUNT(*) n FROM seo_speed WHERE score IS NOT NULL AND score < 90').first();
+    if (!stillSlow?.n) await db.prepare("UPDATE ax_inbox SET done_at = ? WHERE id LIKE 'speed:%' AND done_at IS NULL").bind(now).run();
   } catch { /* table not created yet */ }
   return out;
 }
@@ -370,6 +373,12 @@ export async function inboxScan(env, { force = false } = {}) {
   const now = Date.now(), today = etDate();
   const st = (await getState(db, 'inbox:state')) || {};
   const first = !st.started;
+  if (!st.v2) {
+    // Nov 19: read/unread went away (one "Done" action). Items Mike already marked read count as done, except checklists
+    // (opening a checklist link marked it read); "Google indexed N pages" items are retired.
+    await db.prepare("UPDATE ax_inbox SET done_at = ? WHERE done_at IS NULL AND ((read_at IS NOT NULL AND list IS NULL) OR id LIKE 'index:new:%')").bind(now).run();
+    st.v2 = now;
+  }
   const ctx = { env, db, now, today, st, first };
   const rules = [['crm', crmRules], ['followers', followerRules], ['posts', postRules], ['search', searchRules], ['indexTodo', indexTodoRules], ['photos', photoRules], ['radar', radarRules], ['problems', problemRules], ['weekly', weeklyRules]];
   // Traffic once a day, after ~1am Eastern (yesterday is complete).
@@ -406,8 +415,9 @@ export async function inboxScan(env, { force = false } = {}) {
 
 /* ================================================================ HQ endpoints (called from axAdmin) */
 const json = (data, status = 200) => new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' } });
+// "unread" (name kept for the status API and sidebar badge) = items still in the inbox, i.e. not marked Done.
 export async function inboxUnread(db) {
-  try { await inboxInit(db); return (await db.prepare('SELECT COUNT(*) n FROM ax_inbox WHERE read_at IS NULL AND done_at IS NULL').first())?.n || 0; } catch { return 0; }
+  try { await inboxInit(db); return (await db.prepare('SELECT COUNT(*) n FROM ax_inbox WHERE done_at IS NULL').first())?.n || 0; } catch { return 0; }
 }
 export async function inboxAdmin(env, req, url) {
   const db = env.EV;
@@ -425,7 +435,7 @@ export async function inboxAdmin(env, req, url) {
     const b = await req.json().catch(() => ({}));
     const ids = (Array.isArray(b.ids) ? b.ids : []).slice(0, 300).map(String);
     const now = Date.now();
-    const sets = { read: 'read_at = COALESCE(read_at, ?)', unread: 'read_at = NULL', dismiss: 'done_at = ?, read_at = COALESCE(read_at, ?)', restore: 'done_at = NULL' };
+    const sets = { dismiss: 'done_at = ?, read_at = COALESCE(read_at, ?)', restore: 'done_at = NULL' }; // dismiss = "Done"
     if (b.action === 'tick') {
       // Tick one checklist entry (HQ does this when Mike opens its link). b.ids = [item id], b.i = entry index, b.done = false to untick.
       const row = await db.prepare('SELECT list FROM ax_inbox WHERE id = ?').bind(ids[0] || '').first();
@@ -435,8 +445,7 @@ export async function inboxAdmin(env, req, url) {
       await db.prepare('UPDATE ax_inbox SET list = ?, read_at = COALESCE(read_at, ?) WHERE id = ?').bind(JSON.stringify(list), now, ids[0]).run();
       return json({ ok: true, list, unread: await inboxUnread(db) });
     }
-    if (b.action === 'readall') await db.prepare('UPDATE ax_inbox SET read_at = ? WHERE read_at IS NULL AND done_at IS NULL').bind(now).run();
-    else if (sets[b.action] && ids.length) {
+    if (sets[b.action] && ids.length) {
       const nBind = (sets[b.action].match(/\?/g) || []).length;
       await db.prepare(`UPDATE ax_inbox SET ${sets[b.action]} WHERE id IN (${ids.map(() => '?').join(',')})`).bind(...Array(nBind).fill(now), ...ids).run();
     } else return json({ error: 'Nothing to do.' }, 400);

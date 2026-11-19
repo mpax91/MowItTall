@@ -332,7 +332,7 @@ export async function syncAudit(env) {
 
 /* ---------------------------------------------------------------- 6. PageSpeed (mobile, top 5 pages) */
 const SPEED_FIXED = ['/', '/plan/', '/weeds/', '/measure/'];
-const SPEED_EVERY = 7 * DAY;
+const SPEED_EVERY = 7 * DAY, SPEED_SLOW_EVERY = DAY / 4; // pages under 90 get rechecked sooner, so a fix shows up the same day
 export async function speedPages(db) {
   const top = await db.prepare(`SELECT page FROM gsc_page WHERE page LIKE '/blog/%' AND page NOT LIKE '/blog/topic/%' AND page != '/blog/' AND date > ?
     GROUP BY page ORDER BY SUM(clicks) DESC, SUM(impressions) DESC LIMIT 1`).bind(addDays(etDay(), -28)).first().catch(() => null);
@@ -358,9 +358,10 @@ async function speedOne(env, path) {
 async function speedTick(env) {
   const db = env.EV;
   const pages = await speedPages(db);
-  const { results } = await db.prepare('SELECT path, checked_at FROM seo_speed').all();
+  const { results } = await db.prepare('SELECT path, score, checked_at FROM seo_speed').all();
   const at = Object.fromEntries(results.map((x) => [x.path, x.checked_at || 0]));
-  const next = pages.filter((p) => Date.now() - (at[p] || 0) > SPEED_EVERY).sort((x, y) => (at[x] || 0) - (at[y] || 0))[0];
+  const slow = new Set(results.filter((x) => x.score != null && x.score < 90).map((x) => x.path));
+  const next = pages.filter((p) => Date.now() - (at[p] || 0) > (slow.has(p) ? SPEED_SLOW_EVERY : SPEED_EVERY)).sort((x, y) => (at[x] || 0) - (at[y] || 0))[0];
   if (!next) return { skipped: 'all fresh' };
   const now = Date.now();
   try {
