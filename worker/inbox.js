@@ -21,6 +21,8 @@
 
 import { etDate, rollup } from './events.js';
 import { SOCIAL_SOURCES } from './social.js';
+import { gradeAll, PNAME as GP } from './grades.js';
+import { bank } from './plan.js';
 
 const HOUR = 3600000, DAY = 24 * HOUR;
 const addDays = (date, n) => { const d = new Date(date + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
@@ -135,6 +137,39 @@ async function postRules({ db, now }) {
         out.push({ id: `post:${plat}:${p.id}`, kind: 'social', tone: 'good', title: `Your ${pname(plat)} post is taking off: ${fmtN(p.eng)} likes, comments, shares and saves`,
           detail: `${p.text ? `“${short(p.text, 90)}” · ` : ''}Your usual post gets about ${fmtN(median)}.${p.seen ? ` Seen ${fmtN(p.seen)} times.` : ''}`, go: 'social', link: p.url || null, update: true });
     }
+  }
+  return out;
+}
+
+// Post grades (Nov 19): a drop (one day's item across platforms) or an unlinked post that settles at an A, the
+// first time grades switch on for a platform, and an item the calendar has started resting.
+async function gradeRules({ env, now, st, first }) {
+  const all = await gradeAll(env, { B: await bank(env).catch(() => null), nowMs: now });
+  const out = [];
+  const on = st.gradesOn || {};
+  for (const [plat, l] of Object.entries(all.learning)) {
+    if (l.graded > 0 && !on[plat]) {
+      on[plat] = now;
+      if (!first) out.push({ id: `grades:on:${plat}`, kind: 'milestone', tone: 'good', title: `Post grades are on for ${GP[plat]}`, detail: `${l.settled} settled posts to compare against. Every new post gets an A–F grade.`, go: 'social/grades' });
+    }
+  }
+  st.gradesOn = on;
+  const cut = now - 10 * DAY;
+  for (const d of all.drops) {
+    if (d.letter !== 'A' || d.provisional || Date.parse(d.date + 'T12:00:00Z') < cut) continue;
+    out.push({ id: `grade:drop:${d.key}`, kind: 'social', tone: 'good', title: `A-grade post: ${short(d.title, 90)}`,
+      detail: `${d.best ? d.best + '. ' : ''}Better than ${Math.min(99, Math.round(d.rank))}% of recent posts. The calendar can bring it back after 75 days.`, go: 'social/grades', day: d.date });
+  }
+  for (const [k, g] of all.posts) {
+    const i = all.info.get(k);
+    if (i.link || g.letter !== 'A' || g.provisional || i.created < cut) continue;
+    out.push({ id: `grade:post:${k}`, kind: 'social', tone: 'good', title: `A-grade ${GP[i.platform]} post${i.text ? `: “${short(i.text, 70)}”` : ''}`,
+      detail: `${g.best ? g.best + '. ' : ''}It isn’t linked to a calendar item, so it won’t come back on its own.`, go: 'social/grades', link: i.url || null, day: i.date });
+  }
+  for (const x of Object.values(all.items)) {
+    if (!x.autoRest || x.mark) continue;
+    out.push({ id: `grade:rest:${x.item}:${x.lastRun}`, kind: 'idea', tone: 'info', title: `Resting “${short(x.title, 80)}”`,
+      detail: 'Its last two runs got a D or F, so the calendar won’t bring it back. Mark it Favorite in Social → Grades to keep it in the rotation.', go: 'social/grades' });
   }
   return out;
 }
@@ -380,7 +415,7 @@ export async function inboxScan(env, { force = false } = {}) {
     st.v2 = now;
   }
   const ctx = { env, db, now, today, st, first };
-  const rules = [['crm', crmRules], ['followers', followerRules], ['posts', postRules], ['search', searchRules], ['indexTodo', indexTodoRules], ['photos', photoRules], ['radar', radarRules], ['problems', problemRules], ['weekly', weeklyRules]];
+  const rules = [['crm', crmRules], ['followers', followerRules], ['posts', postRules], ['grades', gradeRules], ['search', searchRules], ['indexTodo', indexTodoRules], ['photos', photoRules], ['radar', radarRules], ['problems', problemRules], ['weekly', weeklyRules]];
   // Traffic once a day, after ~1am Eastern (yesterday is complete).
   if (force || (st.trafficDay !== today && new Date().getUTCHours() >= 6)) {
     rules.push(['traffic', async (c) => {

@@ -29,6 +29,8 @@ import { evInit, etDate, rollup } from './events.js';
 import { seoInit, googleToken, serviceAccount } from './seo.js';
 import { socialInit, socialTick, socialStatus, SOCIAL_SOURCES } from './social.js';
 import { inboxScan, inboxAdmin, inboxUnread } from './inbox.js';
+import { gradeAll, gradesInit, recordHistory, whatWorks, resurface, saveConfig, setMark, DEFAULT_CONFIG, METRIC_LABELS, PNAME as GPNAME, labelFor, matureHoursFor } from './grades.js';
+import { bank, REUSE, HOT_REUSE } from './plan.js';
 
 const DAY = 86400000;
 const addDays = (date, n) => { const d = new Date(date + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
@@ -413,6 +415,8 @@ export async function axTick(env, { force = false } = {}) {
     }
   }
   await socialTick(env, step, due);
+  // Post grades: keep each young post's grade every few hours, for the ↑/↓ trend arrows (worker/grades.js).
+  try { const r = await recordHistory(env, await gradeAll(env)); if (r.recorded) did.grades = `${r.recorded} grades recorded`; } catch (e) { did.grades = 'error: ' + e.message; }
   // Inbox: turn whatever just changed into notifications (worker/inbox.js).
   try { const r = await inboxScan(env); if (r.added) did.inbox = `${r.added} new`; } catch (e) { did.inbox = 'error: ' + e.message; }
   return did;
@@ -499,6 +503,36 @@ export async function axAdmin(env, req, url) {
   }
 
   if (p.startsWith('/api/admin/ax/inbox')) return inboxAdmin(env, req, url);
+
+  // Post Grades (worker/grades.js): every post, drop and content item graded A–F, What Works, Resurface lists.
+  if (p === '/api/admin/ax/grades' && req.method === 'GET') {
+    await gradesInit(env.EV);
+    const B = await bank(env).catch(() => null);
+    const all = await gradeAll(env, { B });
+    const today = etDate();
+    const posts = [...all.posts].map(([k, g]) => {
+      const i = all.info.get(k);
+      const it = i.link?.item ? B?.byId?.[i.link.item] : null;
+      return { key: k, ...i, itemTitle: it?.title || i.link?.item || null, kind: it?.kind || null, grade: g };
+    }).sort((a, b) => b.created - a.created);
+    const labels = Object.fromEntries(Object.keys(DEFAULT_CONFIG.weights).map((pl) => [pl, Object.fromEntries(Object.keys(DEFAULT_CONFIG.weights[pl]).map((m) => [m, labelFor(pl, m)]))]));
+    return json({
+      today, config: all.config, custom: all.custom, defaults: DEFAULT_CONFIG, labels, metricLabels: METRIC_LABELS, platforms: GPNAME,
+      mature: Object.fromEntries(Object.keys(GPNAME).map((pl) => [pl, matureHoursFor(pl)])),
+      learning: all.learning, posts, drops: all.drops, items: Object.values(all.items),
+      works: whatWorks(all), resurface: resurface(all, { today, reuse: REUSE, hotReuse: HOT_REUSE }),
+    });
+  }
+  if (p === '/api/admin/ax/grades/settings' && req.method === 'PUT') {
+    const b = await req.json().catch(() => ({}));
+    try { const r = await saveConfig(env.EV, b.reset ? null : b.config); return json({ ok: true, ...r }); }
+    catch (e) { return json({ error: e.message }, 400); }
+  }
+  if (p === '/api/admin/ax/grades/mark' && req.method === 'POST') {
+    const b = await req.json().catch(() => ({}));
+    if (!/^[\w\-/]{1,120}$/.test(b.item || '')) return json({ error: 'Pick an item.' }, 400);
+    return json({ ok: true, marks: await setMark(env.EV, b.item, b.mark) });
+  }
 
   // Saved views (Explore): small JSON list in ax_state.
   if (p === '/api/admin/ax/views' && req.method === 'GET') return json({ views: (await getState(env.EV, 'views')) || [] });

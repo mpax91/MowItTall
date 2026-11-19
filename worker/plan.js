@@ -28,6 +28,7 @@ import { BASE_TAGS, TOPIC_TAGS } from '../src/data/social.js';
 import { TASKS } from '../src/data/tasks.js';
 import { placeOf } from '../src/scripts/agenda.js';
 import { slotItem, moreItems, weekOf } from './calendar.js';
+import { gradeAll, plannerSignals } from './grades.js';
 
 const SITE = 'https://mowittall.com';
 const DAY = 86400000;
@@ -67,7 +68,7 @@ export async function settings(db) { const s = await kvGet(db, 'settings', {}); 
 
 /* ================================================================ the content pool */
 let bankCache = null;
-async function bank(env) {
+export async function bank(env) {
   if (bankCache && Date.now() - bankCache.at < 10 * 60000) return bankCache;
   const r = await env.ASSETS.fetch(new Request(`${SITE}/crm/social-bank.json`));
   if (!r.ok) throw new Error('The social content pool isn’t in this build yet (/crm/social-bank.json).');
@@ -75,9 +76,9 @@ async function bank(env) {
   bankCache = { at: Date.now(), built, items, byId: Object.fromEntries(items.map((x) => [x.id, x])) };
   return bankCache;
 }
-const REUSE = { post: 365, guide: 365, weed: 330, month: 330, tip: 330, job: 330, moment: 300, engage: 180, tool: 42, intro: 100000 };
+export const REUSE = { post: 365, guide: 365, weed: 330, month: 330, tip: 330, job: 330, moment: 300, engage: 180, tool: 42, intro: 100000 };
 // A post that did much better than usual (see hotItems) can come back after this many days, with its next hook.
-const HOT_REUSE = 75;
+export const HOT_REUSE = 75;
 const launchDay = (date) => dayDiff(LAUNCH.start, date);
 const HOLD_SET = new Set(HOLD), AUDIENCE_SET = new Set(NEEDS_AUDIENCE);
 // Rules for a brand-new account and for held items (socialPlan.js LAUNCH / NEEDS_AUDIENCE / HOLD).
@@ -106,7 +107,15 @@ async function history(env) {
       if (l.platform === 'pinterest') (pinByItem[id] ||= []).push(d); else (byItem[id] ||= new Set()).add(d);
     }
   } catch { /* no HQ log yet */ }
-  return { byItem: Object.fromEntries(Object.entries(byItem).map(([k, v]) => [k, [...v].sort()])), pinByItem, byDate, hot: await hotItems(env) };
+  const hot = await hotItems(env);
+  // Post grades (worker/grades.js, Nov 19): an item whose latest settled drop got an A, or that Mike marked Favorite,
+  // is an encore; D/F nudge it down; "Rest" (Mike's mark, or two D/F runs in a row) keeps it off the calendar.
+  let grades = new Map();
+  try {
+    grades = plannerSignals(await gradeAll(env, { B: await bank(env).catch(() => null) }));
+    for (const [id, g] of grades) if ((g.letter === 'A' || g.favorite) && !g.rest) hot.set(id, Math.max(hot.get(id) || 0, 3));
+  } catch { /* no grades yet */ }
+  return { byItem: Object.fromEntries(Object.entries(byItem).map(([k, v]) => [k, [...v].sort()])), pinByItem, byDate, hot, grades };
 }
 // Hot items: a post whose likes + comments + shares + saves came in at 2× (or more) the platform's usual post,
 // with at least 5. Matched from the calendar's posted rows to the stats HQ Analytics pulls (EV social_posts).
@@ -140,6 +149,8 @@ function pick(B, H, date, kinds, { month, avoidTopics = [], prefer = null, pinte
     if (!kinds.includes(it.kind)) continue;
     if (pinterest && !it.pin) continue;
     if (!allowed(it, date)) continue;
+    const gr = H.grades?.get(it.id);
+    if (gr?.rest) continue; // resting: Mike's mark, or its last two runs got a D or F
     const used = pinterest ? H.pinByItem[it.id] : H.byItem[it.id];
     const isHot = !pinterest && H.hot?.has(it.id) && it.kind !== 'tool';
     if (recentWithin(used, date, pinterest ? 365 : isHot ? HOT_REUSE : REUSE[it.kind] || 365)) continue;
@@ -149,6 +160,11 @@ function pick(B, H, date, kinds, { month, avoidTopics = [], prefer = null, pinte
     if (it.topics?.some((t) => avoidTopics.includes(t))) s -= 1;
     if (prefer && prefer(it)) s += 1.5;
     if (isHot && used?.length) s += 1 + Math.min(1, (H.hot.get(it.id) - 2) / 4); // encore: it did great last time
+    if (gr && !pinterest) {
+      s += { B: 0.5, D: -0.8, F: -1.5 }[gr.letter] || 0;
+      // This time last year it got an A or B: bring it back around the same date.
+      if (gr.goodDates.some((d) => Math.abs(dayDiff(d, addDays(date, -365))) <= 21)) s += 0.7;
+    }
     s += (hash(date + it.id) % 1000) / 2500; // stable tie-break, so a re-plan gives the same answer
     if (s > bestScore) { bestScore = s; best = it; }
   }

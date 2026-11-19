@@ -312,6 +312,7 @@ const NAV = [
     import * as V from '../../scripts/ax/views.js';
     import { calendar, radar } from '../../scripts/ax/plan.js';
     import { inbox, setBadge } from '../../scripts/ax/inbox.js';
+    import { grades } from '../../scripts/ax/grades.js';
 
     const $ = <T extends HTMLElement = HTMLElement>(s: string) => document.querySelector<T>(s)!;
     const VIEWS: Record<string, [string, (root: HTMLElement, refresh?: () => Promise<void>) => Promise<void>]> = {
@@ -325,7 +326,7 @@ const NAV = [
     const TABS: Record<string, [string, string, View | string][]> = {
       seo: [['perf', 'Performance', V.seo], ['index', 'Indexing & Speed', 'seo-auto'], ['checks', 'Site Checks', 'seo-checks'], ['rank', 'Rank Tracker', 'seo-rank'], ['guides', 'Guides & To-Dos', 'seo-guides']],
       email: [['stats', 'Performance', V.email], ['crm', 'People & Emails', 'members']],
-      social: [['stats', 'Performance', V.social], ['queue', 'Post Queue', 'social']],
+      social: [['stats', 'Performance', V.social], ['grades', 'Grades', grades], ['queue', 'Post Queue', 'social']],
       sources: [['export', 'Sources & Export', V.sources], ['events', 'Event Log & Setup', 'analytics']],
     };
     let token = 0;
@@ -353,7 +354,7 @@ const NAV = [
       view.hidden = !!hostPart;
       (window as any).__hqPart = hostPart; // read by the panel script if it loads after this render
       if (hostPart) dispatchEvent(new CustomEvent('hq:show', { detail: { part: hostPart } }));
-      const planning = !!hostPart || S.section === 'calendar' || S.section === 'radar' || S.section === 'inbox';
+      const planning = !!hostPart || S.section === 'calendar' || S.section === 'radar' || S.section === 'inbox' || tab?.[0] === 'grades';
       document.querySelector<HTMLElement>('.ax-top-ctl')!.style.display = planning ? 'none' : '';
       document.querySelector<HTMLElement>('.ax-top-row.is-sub')!.hidden = planning;
       if (hostPart) return;

@@ -19,6 +19,8 @@
 //   X_BEARER_TOKEN     X API bearer token. X charges for most reads now, so this runs once a week and only reads
 //                      the profile + last 20 posts.
 
+import { snapPosts } from './grades.js';
+
 const TZ = 'America/New_York';
 const DAY = 86400000;
 const etParts = (ms) => {
@@ -62,6 +64,8 @@ async function posts(db, platform, list) {
     return [platform, String(p.id), p.created, t.date, t.hour, t.dow, String(p.text || '').slice(0, 500), p.url || null, p.type || null,
       num(p.impressions), num(p.reach), num(p.views), num(p.likes), num(p.comments), num(p.shares), num(p.saves), num(p.clicks), p.extra ? JSON.stringify(p.extra) : null, Date.now()];
   });
+  // Growth snapshots for post grades (worker/grades.js). Never blocks the pull.
+  await snapPosts(db, platform, list.filter((p) => p.id && p.created)).catch((e) => console.log('grade snapshot failed', e?.message));
   for (let i = 0; i < rows.length; i += 50) {
     await db.prepare(`INSERT OR REPLACE INTO social_posts (platform, id, created, date, hour, dow, text, url, type, impressions, reach, views, likes, comments, shares, saves, clicks, extra, updated)
       SELECT j.value->>0, j.value->>1, j.value->>2, j.value->>3, j.value->>4, j.value->>5, j.value->>6, j.value->>7, j.value->>8, j.value->>9, j.value->>10, j.value->>11,
@@ -361,9 +365,16 @@ export const SOCIAL_SOURCES = [
   ['x', 'X', (env) => !!env.X_BEARER_TOKEN, pullX, 24 * 7 - 1],
 ];
 // step(task, fn) and due(task, hours) come from ax.js so runs are logged in one place.
+// While a platform has a post under 3 days old, pull it every 6 hours instead of daily, so post grades can see how
+// fast it grows (Nov 19). X stays weekly (paid reads).
+const YOUNG_EVERY = 6;
 export async function socialTick(env, step, due) {
   await socialInit(env.EV);
-  for (const [id, , on, fn, every] of SOCIAL_SOURCES) {
+  let young = new Set();
+  try { young = new Set((await env.EV.prepare('SELECT DISTINCT platform FROM social_posts WHERE created > ?').bind(Date.now() - 3 * DAY).all()).results.map((r) => r.platform)); } catch { /* */ }
+  for (const [id, , on, fn, every0] of SOCIAL_SOURCES) {
+    const hasYoung = id === 'meta' ? young.has('facebook') || young.has('instagram') : young.has(id);
+    const every = id !== 'x' && hasYoung ? Math.min(every0, YOUNG_EVERY) : every0;
     if (!on(env) || !due(`social:${id}`, every)) continue;
     await step(`social:${id}`, () => fn(env, env.EV));
   }
