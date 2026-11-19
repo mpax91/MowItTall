@@ -334,6 +334,13 @@ async function problemRules({ env, db, now }) {
     out.push({ id: `problem:seo:${e.task}:${hash(String(e.msg).replace(/\d+/g, '#').slice(0, 80))}`, kind: 'problem', tone: bing && /Throttle/i.test(e.msg) ? 'info' : 'bad',
       title: `Search autopilot: ${e.task} keeps failing`, detail: `${bing && /Throttle/i.test(e.msg) ? 'Bing limits Cloudflare’s shared servers; it retries every hour. ' : ''}Error: ${short(e.msg, 220)}`, go: 'seo/index' });
   }
+  // Bing comes from a daily GitHub Actions job (Bing blocks Cloudflare). Flag it if that job goes quiet for 2 days.
+  const ghBing = await db.prepare("SELECT v FROM seo_state WHERE k = 'bing:github'").first().then((r) => (r ? JSON.parse(r.v) : 0)).catch(() => 0);
+  if (env.BING_API_KEY && ghBing && now - ghBing > 50 * HOUR) {
+    out.push({ id: `problem:seo:bing-github:${Math.floor(ghBing / DAY)}`, kind: 'problem', tone: 'bad', title: 'Bing data stopped coming in',
+      detail: `The daily GitHub job that fetches Bing data last delivered ${Math.round((now - ghBing) / DAY)} days ago. Open it on GitHub and press "Run workflow"; if it fails, its log says why.`,
+      go: 'seo/index', link: 'https://github.com/mpax91/MowItTall/actions/workflows/bing.yml' });
+  }
   const all = Object.entries(runs);
   const LABEL = { ga4: 'Google Analytics', clarity: 'Clarity', 'social:meta': 'Facebook + Instagram', 'social:threads': 'Threads', 'social:youtube': 'YouTube', 'social:bluesky': 'Bluesky', 'social:pinterest': 'Pinterest', 'social:reddit': 'Reddit', 'social:x': 'X' };
   const off = new Set(SOCIAL_SOURCES.filter(([, , on]) => !on(env)).map(([id]) => `social:${id}`));

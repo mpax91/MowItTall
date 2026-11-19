@@ -4,6 +4,7 @@ name: Bing Webmaster pull
 on:
   schedule:
     - cron: '41 10 * * *'   # ~5:41am Eastern
+    - cron: '17 21 * * *'   # ~4:17pm Eastern backup: GitHub sometimes skips scheduled runs; a second pull is harmless
   workflow_dispatch: {}
 permissions:
   contents: read

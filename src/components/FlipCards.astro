@@ -2,6 +2,10 @@
 // Tap-to-flip cards. Both faces are in the page for search engines and screen readers;
 // the button just turns the card over.
 import PixelIcon from './PixelIcon.astro';
+import { existsSync } from 'node:fs';
+
+// <src>-480/-960.webp always; a -720.webp is used too where it exists (it's what most phones pick, at about half the bytes of -960).
+const srcsetOf = (src: string) => [`${src}-480.webp 480w`, existsSync(`public${src}-720.webp`) && `${src}-720.webp 720w`, `${src}-960.webp 960w`].filter(Boolean).join(', ');
 
 interface Item {
   id?: string;
@@ -15,8 +19,9 @@ interface Props {
   items: Item[];
   layout?: 'grid' | 'list';
   headingLevel?: 'h3' | 'h2';
+  eager?: number;   // how many cards at the top load their first photo right away (0 for lists lower on the page)
 }
-const { items, layout = 'grid', headingLevel = 'h3' } = Astro.props;
+const { items, layout = 'grid', headingLevel = 'h3', eager = 2 } = Astro.props;
 const H = headingLevel;
 ---
 <ul class:list={['flips', `flips-${layout}`]} data-flips>
@@ -29,9 +34,16 @@ const H = headingLevel;
               <div class="flip-photos-track" tabindex="0" aria-label={`${it.title} photos. Swipe for more.`}>
                 {it.photos.map((p, j) => (
                   <figure class="flip-photo-slide">
-                    <img class="flip-photo" data-pin-nopin="true" src={`${p.src}-480.webp`} srcset={`${p.src}-480.webp 480w, ${p.src}-960.webp 960w`}
-                      sizes="(min-width: 700px) 640px, 92vw" width="960" height="720" alt={p.alt}
-                      loading={i < 2 && j === 0 ? 'eager' : 'lazy'} decoding="async" />
+                    {j === 0 ? (
+                      <img class="flip-photo" data-pin-nopin="true" src={`${p.src}-480.webp`} srcset={srcsetOf(p.src)}
+                        sizes="(min-width: 700px) 640px, 92vw" width="960" height="720" alt={p.alt}
+                        loading={i < eager ? 'eager' : 'lazy'} fetchpriority={i === 0 && eager > 0 ? 'high' : undefined} decoding="async" />
+                    ) : (
+                      // Photos 2+ sit off to the side of the swipe track, where browsers load "lazy" images anyway.
+                      // They get their real src only when the card is on screen (or swiped), so the page loads light.
+                      <img class="flip-photo" data-pin-nopin="true" data-src={`${p.src}-480.webp`} data-srcset={srcsetOf(p.src)}
+                        sizes="(min-width: 700px) 640px, 92vw" width="960" height="720" alt={p.alt} decoding="async" />
+                    )}
                     {p.caption && <figcaption>{p.caption}{it.photos.length > 1 && <span> · {j + 1}/{it.photos.length}</span>}</figcaption>}
                   </figure>
                 ))}
@@ -76,7 +88,11 @@ const H = headingLevel;
   };
   for (const list of document.querySelectorAll('[data-flips]')) {
     const cards = [...list.querySelectorAll('.flip')];
-    const fitAll = () => cards.forEach(fit);
+    // Read every height first, then write them all: one layout pass instead of one per card.
+    const fitAll = () => {
+      const hs = cards.map((c) => c.querySelector(c.classList.contains('is-flipped') ? '.flip-back' : '.flip-front').offsetHeight);
+      cards.forEach((c, i) => { c.querySelector('.flip-inner').style.height = `${hs[i]}px`; });
+    };
     fitAll();
     new ResizeObserver(fitAll).observe(list);
     document.fonts?.ready.then(fitAll);
@@ -93,15 +109,22 @@ const H = headingLevel;
       const prev = ph.querySelector('.prev'), next = ph.querySelector('.next');
       const n = track.children.length;
       let k = 0, x0 = null, y0 = 0, dx = 0, mode = null;
-      const go = (i, animate = true) => {
+      const load = (j) => {
+        const img = track.children[j]?.querySelector('img');
+        if (!img?.dataset.src) return;
+        img.srcset = img.dataset.srcset; img.src = img.dataset.src;
+        delete img.dataset.src; delete img.dataset.srcset;
+      };
+      ph._load = load;
+      const go = (i, animate = true, preload = true) => {
         k = Math.max(0, Math.min(n - 1, i));
         track.style.transition = animate ? 'transform 0.28s ease-out' : 'none';
         track.style.transform = `translateX(${-k * 100}%)`;
         dots.forEach((d, j) => d.classList.toggle('on', j === k));
         if (prev) prev.hidden = k <= 0;
         if (next) next.setAttribute('aria-label', k >= n - 1 ? 'Show the fix' : 'Next photo');
-        // load the next photo early so it's ready before the swipe lands
-        track.children[Math.min(n - 1, k + 1)]?.querySelector('img')?.setAttribute('loading', 'eager');
+        // load this photo and the next one so it's ready before the swipe lands
+        if (preload) { load(k); load(k + 1); }
       };
       ph._go = go;
       track.addEventListener('pointerdown', (e) => {
@@ -157,7 +180,20 @@ const H = headingLevel;
         if (mx > 50 && Math.abs(mx) > Math.abs(my) * 1.5 && card.classList.contains('is-flipped')) flip(card);
       });
       back.addEventListener('pointercancel', () => { bx = null; });
-      go(0, false);
+      go(0, false, false);   // no preloading at start-up: the page's first paint gets the bandwidth
+    }
+    // Once the page has loaded, a card's second photo loads as the card comes on screen, ahead of the first swipe.
+    const photoSets = [...list.querySelectorAll('[data-photos]')];
+    if (photoSets.length) {
+      const watch = () => {
+        const pio = new IntersectionObserver((ens) => {
+          for (const en of ens) if (en.isIntersecting) { en.target._load?.(1); pio.unobserve(en.target); }
+        }, { rootMargin: '200px 0px' });
+        photoSets.forEach((ph) => pio.observe(ph));
+      };
+      if (document.readyState === 'complete') watch(); else addEventListener('load', watch, { once: true });
+      // Swiping or tapping the arrow starts loading right away, even before the page finishes loading.
+      photoSets.forEach((ph) => ph.addEventListener('pointerdown', () => ph._load?.(1), { once: true }));
     }
     // On photo cards the button is keyboard-only, so taps anywhere else on the card flip it.
     for (const card of list.querySelectorAll('.flip.has-photos')) {

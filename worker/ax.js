@@ -313,17 +313,45 @@ async function pullGA4(env, from, to) {
 }
 
 const CLARITY_DIMS = ['(all)', 'URL', 'Device', 'Channel', 'Source'];
+// Clarity allows 10 export calls per project per day (the count resets at midnight UTC). Every call is counted
+// in ax_state 'clarity:budget', each breakdown is fetched once per day of data, and a 429 pauses pulls until the
+// reset, so "Check Now" / "Refresh" clicks and retries can't burn through the allowance any more.
+const CLARITY_MAX_CALLS = 8;   // keep 2 of the 10 spare
+const utcDay = (t = Date.now()) => new Date(t).toISOString().slice(0, 10);
+const nextUtcMidnight = () => { const d = new Date(); d.setUTCHours(24, 0, 0, 0); return d.getTime(); };
+async function clarityBudget(db) {
+  const b = (await getState(db, 'clarity:budget')) || {};
+  if (b.day !== utcDay()) return { day: utcDay(), calls: 0, done: b.done && typeof b.done === 'object' ? b.done : {}, pausedUntil: b.pausedUntil || 0 };
+  return { done: {}, pausedUntil: 0, ...b };
+}
+// What's left to fetch for this day of data (nothing if Clarity is paused or today's calls are used up).
+async function clarityTodo(db, date) {
+  const b = await clarityBudget(db);
+  if (b.pausedUntil > Date.now() || b.calls >= CLARITY_MAX_CALLS) return { b, dims: [] };
+  return { b, dims: CLARITY_DIMS.filter((d) => !(b.done[date] || []).includes(d)) };
+}
 async function pullClarity(env, date) {
   const db = env.EV;
+  const { b, dims } = await clarityTodo(db, date);
   const out = [];
-  for (const dim of CLARITY_DIMS) {
+  const save = () => {
+    for (const k of Object.keys(b.done)) if (k < addDays(date, -7)) delete b.done[k];   // keep the record small
+    return setState(db, 'clarity:budget', b);
+  };
+  for (const dim of dims) {
+    if (b.calls >= CLARITY_MAX_CALLS) break;
     const qs = new URLSearchParams({ numOfDays: '1' });
     if (dim !== '(all)') qs.set('dimension1', dim);
     const base = env.SEO_API_BASE ? `${env.SEO_API_BASE}/clarity` : 'https://www.clarity.ms/export-data/api/v1/project-live-insights';
+    b.calls++;
     const r = await fetch(`${base}?${qs}`, { headers: { authorization: `Bearer ${env.CLARITY_TOKEN}`, 'content-type': 'application/json' } });
     const txt = await r.text();
-    if (!r.ok) throw new Error(`Clarity ${r.status}: ${txt.slice(0, 160)}`);
-    let body; try { body = JSON.parse(txt); } catch { throw new Error('Clarity sent something that isn’t JSON.'); }
+    if (r.status === 429) {
+      b.pausedUntil = nextUtcMidnight(); await save();
+      throw Object.assign(new Error(`Clarity 429: ${txt.slice(0, 120)}`), { paused: true, partial: out.join(', ') });
+    }
+    if (!r.ok) { await save(); throw new Error(`Clarity ${r.status}: ${txt.slice(0, 160)}`); }
+    let body; try { body = JSON.parse(txt); } catch { await save(); throw new Error('Clarity sent something that isn’t JSON.'); }
     const rows = [];
     for (const m of Array.isArray(body) ? body : []) {
       for (const info of m.information || []) {
@@ -344,9 +372,12 @@ async function pullClarity(env, date) {
       db.prepare(`INSERT INTO clarity_m SELECT j.value->>0, j.value->>1, j.value->>2, j.value->>3, j.value->>4, j.value->>5 FROM json_each(?) j WHERE true
         ON CONFLICT (date, dim, value, metric, field) DO UPDATE SET v = v + excluded.v`).bind(JSON.stringify(rows)),
     ]);
+    b.done[date] = [...new Set([...(b.done[date] || []), dim])];
+    await save();
     out.push(`${dim}: ${rows.length}`);
   }
-  return out.join(', ');
+  const left = CLARITY_DIMS.filter((d) => !(b.done[date] || []).includes(d));
+  return `${out.join(', ') || 'nothing new'}${left.length ? ` (still to fetch: ${left.join(', ')})` : ''} · ${b.calls}/10 Clarity calls used today`;
 }
 
 // Hourly from the cron. Each pull decides whether it's due.
@@ -367,9 +398,20 @@ export async function axTick(env, { force = false } = {}) {
       return pullGA4(env, addDays(today, -3), today);
     });
   }
-  // Clarity: once a day, early morning UTC (≈ "the last 24 hours" = yesterday). Max 5 of Clarity's 10 daily calls.
-  if (env.CLARITY_TOKEN && (force || !runs.clarity?.lastOk || etDate(runs.clarity.lastOk) !== today) && (force || hour >= 6) && (!runs.clarity || runs.clarity.ok || Date.now() - runs.clarity.at > 6 * 3600000))
-    await step('clarity', () => pullClarity(env, addDays(today, -1)));
+  // Clarity: once a day, early morning UTC (≈ "the last 24 hours" = yesterday). Each breakdown is fetched once,
+  // and only while the daily call allowance lasts, so forced runs ("Check Now") cost nothing once it's done.
+  if (env.CLARITY_TOKEN && (force || hour >= 6) && (await clarityTodo(env.EV, addDays(today, -1))).dims.length) {
+    try { const info = await pullClarity(env, addDays(today, -1)); await logRun(env.EV, 'clarity', true, info); did.clarity = info; }
+    catch (e) {
+      if (e.paused) {
+        // Out of calls for today: that's a pause, not a breakage. It picks up after midnight UTC.
+        const msg = `Paused: Clarity’s 10-calls-a-day limit was reached; picks up again after 7pm ET.${e.partial ? ' Got ' + e.partial + '.' : ''}`;
+        const runs2 = (await getState(env.EV, 'runs')) || {};
+        runs2.clarity = { at: Date.now(), ok: true, paused: true, info: msg, lastOk: runs2.clarity?.lastOk || null };
+        await setState(env.EV, 'runs', runs2); did.clarity = msg;
+      } else { await logRun(env.EV, 'clarity', false, e.message); did.clarity = 'error: ' + e.message; }
+    }
+  }
   await socialTick(env, step, due);
   // Inbox: turn whatever just changed into notifications (worker/inbox.js).
   try { const r = await inboxScan(env); if (r.added) did.inbox = `${r.added} new`; } catch (e) { did.inbox = 'error: ' + e.message; }

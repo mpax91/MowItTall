@@ -279,6 +279,8 @@ export async function bingIngest(env, req) {
   const runs = (await getState(env.EV, 'runs')) || {};
   runs.bing = runs['bing:ok'] = Date.now(); runs['bing:via'] = 'github';
   await setState(env.EV, 'runs', runs);
+  // Kept apart from 'runs' too: the hourly job rewrites 'runs' at its end and could wipe this if they overlap.
+  await setState(env.EV, 'bing:github', Date.now());
   const errs = (await getState(env.EV, 'errors')) || [];
   if (errs.some((e) => e.task === 'bing')) await setState(env.EV, 'errors', errs.filter((e) => e.task !== 'bing'));
   return json({ ok: true, ...r });
@@ -425,10 +427,15 @@ export async function seoTick(env, { force = false } = {}) {
     if (quota) { const d = new Date(); d.setUTCHours(8, 30, 0, 0); if (d <= new Date()) d.setUTCDate(d.getUTCDate() + 1); runs['speed:wait'] = d.getTime(); }
     else if (!did.speed?.error) delete runs['speed:wait'];
   }
-  // Once the GitHub job is delivering Bing data, the worker only steps in if that job has missed a day.
-  // "Check now" doesn't force it while GitHub is delivering: Cloudflare's route is blocked by Bing anyway.
-  const bingFresh = runs['bing:via'] === 'github' && Date.now() - (runs.bing || 0) < 30 * 3600000;
-  if (env.BING_API_KEY && !(force && bingFresh) && due('bing', runs['bing:via'] === 'github' ? 30 : 20)) await step('bing', async () => { const r = await pullBing(env); runs['bing:via'] = 'worker'; return r; });
+  // Bing refuses Cloudflare's shared Worker addresses ("ThrottleIP"), so once the daily GitHub job has delivered
+  // even once, Bing comes only from there and the worker stops trying (its tries could only fail). If that job
+  // goes quiet, the HQ Inbox says so (worker/inbox.js). The worker only tries Bing itself before GitHub ever has.
+  const ghAt = Math.max((await getState(db, 'bing:github')) || 0, runs['bing:via'] === 'github' ? runs.bing || 0 : 0);
+  if (ghAt) {
+    runs.bing = Math.max(runs.bing || 0, ghAt); runs['bing:ok'] = Math.max(runs['bing:ok'] || 0, ghAt); runs['bing:via'] = 'github';
+    const errs = (await getState(db, 'errors')) || [];
+    if (errs.some((e) => e.task === 'bing')) await setState(db, 'errors', errs.filter((e) => e.task !== 'bing'));
+  } else if (env.BING_API_KEY && due('bing', 20)) await step('bing', async () => { const r = await pullBing(env); runs['bing:via'] = 'worker'; return r; });
   await setState(db, 'runs', runs);
   return did;
 }

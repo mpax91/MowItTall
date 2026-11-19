@@ -118,20 +118,32 @@ async function pullMeta(env, db) {
     out.push(`FB ${await days(db, 'facebook', rows)} daily values`);
   }
   // Facebook posts (last 60 days) with reactions/comments/shares + lifetime insights
-  const fbPostCand = ['post_impressions_unique', 'post_impressions', 'post_media_view', 'post_total_media_view_unique', 'post_clicks'];
-  const pj = await getJSON(`${G}/${me.id}/published_posts?fields=id,message,created_time,permalink_url,status_type,shares,reactions.summary(total_count).limit(0),comments.summary(total_count).limit(0)&since=${Math.floor((Date.now() - POST_DAYS * DAY) / 1000)}&limit=50&access_token=${tok}`);
+  const fbPostCand = ['post_impressions_unique', 'post_impressions', 'post_media_view', 'post_total_media_view_unique', 'post_clicks', 'post_reactions_by_type_total'];
+  // Reaction and comment counts on a Page's posts need the 'pages_read_user_content' permission. Without it Meta
+  // refuses the whole list (error #10), so ask for the plain list instead and take reactions from post insights
+  // (read_insights). Comment counts come back as soon as the token includes pages_read_user_content.
+  const postsSince = Math.floor((Date.now() - POST_DAYS * DAY) / 1000);
+  const basicFields = 'id,message,created_time,permalink_url,status_type,shares';
+  let pj, fullFields = true;
+  try {
+    pj = await getJSON(`${G}/${me.id}/published_posts?fields=${basicFields},reactions.summary(total_count).limit(0),comments.summary(total_count).limit(0)&since=${postsSince}&limit=50&access_token=${tok}`);
+  } catch (e) {
+    if (!/#10\b|pages_read_user_content|Page Public Content/i.test(e.message)) throw e;
+    fullFields = false;
+    pj = await getJSON(`${G}/${me.id}/published_posts?fields=${basicFields}&since=${postsSince}&limit=50&access_token=${tok}`);
+  }
   const fbPosts = pj.data || [];
   let pOk = [];
-  if (fbPosts.length) pOk = await workingMetrics(db, 'fbpost', fbPostCand, (m) => getJSON(`${G}/${fbPosts[0].id}/insights?metric=${m}&access_token=${tok}`));
-  const PN = { post_impressions_unique: 'reach', post_impressions: 'impressions', post_media_view: 'views', post_total_media_view_unique: 'viewers', post_clicks: 'clicks' };
+  if (fbPosts.length) pOk = await workingMetrics(db, 'fbpost2', fbPostCand, (m) => getJSON(`${G}/${fbPosts[0].id}/insights?metric=${m}&access_token=${tok}`));
+  const PN = { post_impressions_unique: 'reach', post_impressions: 'impressions', post_media_view: 'views', post_total_media_view_unique: 'viewers', post_clicks: 'clicks', post_reactions_by_type_total: 'reactions' };
   const fbRows = [];
   for (const p of fbPosts) {
     const st = {};
-    if (pOk.length) { try { const ins = await getJSON(`${G}/${p.id}/insights?metric=${pOk.join(',')}&access_token=${tok}`); for (const m of ins.data || []) st[PN[m.name]] = m.values?.[0]?.value; } catch { /* keep basics */ } }
+    if (pOk.length) { try { const ins = await getJSON(`${G}/${p.id}/insights?metric=${pOk.join(',')}&access_token=${tok}`); for (const m of ins.data || []) { const v = m.values?.[0]?.value; st[PN[m.name]] = v && typeof v === 'object' ? Object.values(v).reduce((a, b) => a + (Number(b) || 0), 0) : v; } } catch { /* keep basics */ } }
     fbRows.push({ id: p.id, created: Date.parse(p.created_time), text: p.message, url: p.permalink_url, type: p.status_type, reach: st.reach, impressions: st.impressions, views: st.views, clicks: st.clicks,
-      likes: p.reactions?.summary?.total_count, comments: p.comments?.summary?.total_count, shares: p.shares?.count || 0 });
+      likes: p.reactions?.summary?.total_count ?? st.reactions, comments: p.comments?.summary?.total_count, shares: p.shares?.count || 0 });
   }
-  out.push(`FB ${await posts(db, 'facebook', fbRows)} posts`);
+  out.push(`FB ${await posts(db, 'facebook', fbRows)} posts${fullFields ? '' : ' (no comment counts: token lacks pages_read_user_content)'}`);
 
   // Instagram (professional account linked to the Page)
   const ig = me.instagram_business_account;

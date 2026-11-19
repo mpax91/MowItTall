@@ -42,11 +42,11 @@ const groups = WEED_GROUPS.map((g) => ({ ...g, items: WEEDS.filter((w) => w.grou
         {WEED_GROUPS.map((g) => <a class="weed-chip" href={`#group-${g.id}`}>{g.title}</a>)}
       </nav>
     </header>
-    {groups.map((g) => (
+    {groups.map((g, gi) => (
       <section class="weed-sec" aria-labelledby={`group-${g.id}`}>
         <h2 class="weed-group" id={`group-${g.id}`}>{g.title}</h2>
         {g.note && <p class="weed-group-note">{g.note}</p>}
-        <FlipCards items={g.items} layout="list" headingLevel="h3" />
+        <FlipCards items={g.items} layout="list" headingLevel="h3" eager={gi === 0 ? 1 : 0} />
       </section>
     ))}
     <p class="page-note">
