@@ -52,7 +52,12 @@ const NAV = [
   <meta name="robots" content="noindex, nofollow" />
   <title>Mow It Tall HQ</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <script is:inline>try { var t = localStorage.getItem('mit-ax-theme'); if (t) document.documentElement.dataset.theme = t; } catch (e) {}</script>
+  <script is:inline>try {
+    // Inside MikeOS (?embed=1 in a frame): MikeOS has its own Inbox/To-Do/Overview/Short Links and follows the system theme.
+    var emb = window.self !== window.top && /[?&]embed=1\b/.test(location.search);
+    if (emb) document.documentElement.classList.add('is-embed');
+    var t = localStorage.getItem('mit-ax-theme'); if (t && !emb) document.documentElement.dataset.theme = t;
+  } catch (e) {}</script>
 </head>
 <body class="ax">
   <div class="ax-login" data-login hidden>
@@ -308,7 +313,7 @@ const NAV = [
   <div class="ax-drawer" data-drawer hidden></div>
 
   <script>
-    import { S, RANGES, readHash, writeHash, api, setKey, hasKey, clearCache, period, renderFilters, onRerender, onGo, dlabel, daysBetween } from '../../scripts/ax/core.js';
+    import { S, RANGES, readHash, writeHash, api, setKey, hasKey, clearCache, period, renderFilters, onRerender, onGo, dlabel, daysBetween, EMBED, toParent, MIKEOS_ORIGIN } from '../../scripts/ax/core.js';
     import * as V from '../../scripts/ax/views.js';
     import { calendar, radar } from '../../scripts/ax/plan.js';
     import { inbox, setBadge } from '../../scripts/ax/inbox.js';
@@ -331,8 +336,18 @@ const NAV = [
     };
     let token = 0;
     async function loadStatus() { S.status = await api('/api/admin/ax/status'); setBadge(S.status.inbox?.unread || 0); }
+    // Embedded in MikeOS: these four are MikeOS tabs (same data, two-way). Going to one from inside HQ (an Inbox "Open",
+    // a "Check these off on the To-Do tab" link…) switches the MikeOS tab instead; the first render just lands on
+    // Traffic Sources without bouncing MikeOS anywhere.
+    const MIRRORED = new Set(['inbox', 'todo', 'overview', 'links']);
+    let rendered = false;
     async function render() {
       const my = ++token;
+      if (EMBED && MIRRORED.has(S.section)) {
+        if (rendered) toParent({ type: 'mit-hq:open-tab', tab: S.section });
+        S.section = 'acquisition'; S.sub = {}; writeHash();
+      }
+      rendered = true;
       if (!VIEWS[S.section]) S.section = 'overview';
       const [title, base] = VIEWS[S.section];
       const tabs = TABS[S.section];
@@ -393,6 +408,8 @@ const NAV = [
       // keep the Inbox badge fresh while the page sits open
       setInterval(async () => { try { const r = await api('/api/admin/ax/inbox'); setBadge(r.unread); } catch { /* offline */ } }, 10 * 60000);
       onGo(goTo);
+      // MikeOS can send HQ somewhere ("seo/index", "email/crm"…).
+      if (EMBED) addEventListener('message', (e) => { if (MIKEOS_ORIGIN.test(e.origin) && e.data?.type === 'mit-hq:go' && typeof e.data.go === 'string') goTo(e.data.go.slice(0, 60)); });
       addEventListener('hashchange', () => { const before = S.section + '/' + (S.sub.tab || ''); readOldHash(); syncControls(); if (before !== S.section + '/' + (S.sub.tab || '')) render(); });
       addEventListener('keydown', (e) => { if (e.key === 'Escape') { const d = $('[data-drawer]'); if (!d.hidden) { d.hidden = true; d.innerHTML = ''; document.body.classList.remove('has-drawer'); } } });
       render();

@@ -41,6 +41,12 @@ export const etToday = () => new Intl.DateTimeFormat('en-CA', { timeZone: ET, ye
 export const addDays = (date, n) => { const d = new Date(date + 'T12:00:00Z'); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
 export const daysBetween = (a, b) => Math.round((Date.parse(b) - Date.parse(a)) / 86400000) + 1;
 
+// Shown inside MikeOS (Sites → Mow It Tall → Full HQ)? Then hash changes are reported to MikeOS so its URL keeps the
+// place, and MikeOS can ask HQ to go somewhere. Only MikeOS origins are trusted either way.
+export const MIKEOS_ORIGIN = /^https:\/\/([a-z0-9-]+\.)?mikeos\.pages\.dev$/;
+export const EMBED = (() => { try { return window.self !== window.top && new URLSearchParams(location.search).get('embed') === '1'; } catch { return true; } })();
+export const PARENT = (() => { try { const o = location.ancestorOrigins?.[0] || new URL(document.referrer).origin; return MIKEOS_ORIGIN.test(o) ? o : null; } catch { return null; } })();
+export const toParent = (msg) => { if (EMBED && PARENT) parent.postMessage(msg, PARENT); };
 export const S = { section: 'inbox', range: '28d', from: '', to: '', cmp: 'prev', grain: 'auto', filters: [], status: null, sub: {} };
 export const RANGES = [['today', 'Today'], ['yesterday', 'Yesterday'], ['7d', 'Last 7 Days'], ['28d', 'Last 28 Days'], ['90d', 'Last 90 Days'], ['365d', 'Last 12 Months'],
   ['mtd', 'This Month'], ['lastmonth', 'Last Month'], ['ytd', 'This Year'], ['all', 'All Time'], ['custom', 'Custom…']];
@@ -94,6 +100,7 @@ export function writeHash() {
   for (const [k, v] of Object.entries(S.sub)) if (v != null && v !== '') p.set(`x.${k}`, v);
   const qs = p.toString();
   history.replaceState(null, '', `#${S.section}${qs ? '?' + qs : ''}`);
+  toParent({ type: 'mit-hq:hash', hash: location.hash });
 }
 export const setSub = (k, v) => { S.sub[k] = v; writeHash(); };
 

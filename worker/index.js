@@ -233,6 +233,14 @@ async function shortRedirect(req, env, ctx, url) {
 }
 
 /* ---------- admin dashboard (/admin/) */
+// HQ (/admin/*) may be framed by Mike's own MikeOS (and its preview builds); the rest of the site keeps SAMEORIGIN.
+const FRAME_ANCESTORS = "frame-ancestors 'self' https://mikeos.pages.dev https://*.mikeos.pages.dev";
+function embeddable(res) {
+  const r = new Response(res.body, res);
+  r.headers.delete('X-Frame-Options');
+  r.headers.set('Content-Security-Policy', FRAME_ANCESTORS);
+  return r;
+}
 const PLATFORMS = ['instagram', 'facebook', 'nextdoor', 'x', 'pinterest'];
 async function dash(env, req, url) {
   if (!env.ADMIN_KEY) return bad('Set the ADMIN_KEY secret in Cloudflare first.', 503);
@@ -388,7 +396,10 @@ export default {
       }
       // Link in bio: the newest Instagram post's promised link goes on top (worker/plan.js).
       if (url.pathname === '/links/' && req.method === 'GET' && env.DB) { try { await init(env.DB); return await linksPage(env, req); } catch { /* plain page */ } }
-      return env.ASSETS.fetch(req);
+      const res = await env.ASSETS.fetch(req);
+      // HQ can be shown inside MikeOS (Sites → Mow It Tall → Full HQ, Nov 20). Every other page stays unframeable.
+      if (url.pathname.startsWith('/admin/')) return embeddable(res);
+      return res;
     }
     // First-party event log: no Hall database needed, never errors back to the page.
     // Email: sign-ups, open/click tracking, unsubscribe (worker/crm.js, own database).

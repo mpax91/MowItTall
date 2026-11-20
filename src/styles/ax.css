@@ -494,3 +494,10 @@ line.ax-gl { stroke: var(--line); stroke-width: 1; }
 .gr-set-a { margin-top: 14px; }
 @media (max-width: 760px) { .gr-cols { grid-template-columns: 1fr; } }
 .gr-detail > td { text-align: left; }
+
+/* Inside MikeOS (Sites → Mow It Tall → Full HQ, Nov 20): MikeOS already shows the name, Inbox, To-Do, Overview and
+   Short Links, so HQ drops its brand, those four nav items and the footer links. */
+.is-embed .ax-brand, .is-embed .ax-side-f { display: none; }
+.is-embed .ax-side li:has(> a[data-nav="inbox"]), .is-embed .ax-side li:has(> a[data-nav="todo"]),
+.is-embed .ax-side li:has(> a[data-nav="overview"]), .is-embed .ax-side li:has(> a[data-nav="links"]) { display: none; }
+.is-embed .ax-side li.ax-side-h:first-child { display: none; }
